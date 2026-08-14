@@ -1,32 +1,97 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import gsap from 'gsap'
+import { useGSAP } from '@gsap/react'
+
+gsap.registerPlugin(useGSAP)
+
+const navItems = [
+  { id: 'discover', label: 'Tìm mentor' },
+  { id: 'booking', label: 'Lịch luyện tập' },
+  { id: 'feedback', label: 'Phản hồi' },
+]
+
+const people = {
+  1: { name: 'Trần Minh Khoa', role: 'Mentor', initials: 'MK' },
+  2: { name: 'Nguyễn An', role: 'Student', initials: 'NA' },
+  3: { name: 'Lê Thu Hà', role: 'Student', initials: 'TH' },
+}
+
+function ArrowIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
+      <path d="M4 10h11M11 6l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function CheckIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 20 20" fill="none">
+      <path d="m5 10 3 3 7-7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function Message({ children, compact = false }) {
+  if (!children) return null
+  const normalized = children.toLowerCase()
+  const tone = normalized.includes('lỗi') || normalized.includes('vui lòng')
+    ? 'error'
+    : normalized.includes('đang xử lý')
+      ? 'loading'
+      : 'success'
+
+  return (
+    <div className={`message message-${tone} ${compact ? 'message-compact' : ''}`} role="status" aria-live="polite">
+      <span className="message-mark"><CheckIcon /></span>
+      <span>{children}</span>
+    </div>
+  )
+}
 
 function App() {
+  const appRef = useRef(null)
+  const [activeView, setActiveView] = useState('discover')
   const [currentUser, setCurrentUser] = useState('2')
-  
-  // States for Question Filtering
   const [tags, setTags] = useState([])
   const [questions, setQuestions] = useState(null)
-  
-  // States for Booking
   const [bookingRes, setBookingRes] = useState('')
-  const [bookingId, setBookingId] = useState('') // Just for reference
-  
-  // States for Mentor
+  const [bookingId, setBookingId] = useState('')
+  const [bookingStage, setBookingStage] = useState('Chưa tạo')
   const [mentorInputId, setMentorInputId] = useState('')
   const [mentorRes, setMentorRes] = useState('')
-  
-  // States for Link & Feedback
   const [authInputId, setAuthInputId] = useState('')
   const [linkRes, setLinkRes] = useState('')
+  const [meetingLink, setMeetingLink] = useState('')
   const [feedback, setFeedback] = useState('')
   const [feedbackRes, setFeedbackRes] = useState('')
+
+  const activePerson = people[currentUser]
+  const isMentor = activePerson.role === 'Mentor'
+
+  useGSAP(() => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    gsap.fromTo('.app-nav',
+      { y: reducedMotion ? 0 : -18, opacity: 0 },
+      { y: 0, opacity: 1, duration: reducedMotion ? 0.01 : 0.65, ease: 'power3.out' },
+    )
+  }, { scope: appRef })
+
+  useGSAP(() => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    gsap.fromTo('.view-enter',
+      { y: reducedMotion ? 0 : 18, opacity: 0 },
+      { y: 0, opacity: 1, duration: reducedMotion ? 0.01 : 0.5, stagger: 0.06, ease: 'power3.out' },
+    )
+  }, { scope: appRef, dependencies: [activeView], revertOnUpdate: true })
 
   const fetchAPI = async (endpoint, options = {}) => {
     const headers = {
       'Content-Type': 'application/json',
       'X-User-Id': currentUser,
-      ...options.headers
+      ...options.headers,
     }
+
     try {
       const response = await fetch(`/api${endpoint}`, { ...options, headers })
       const data = await response.json()
@@ -34,6 +99,10 @@ function App() {
     } catch (error) {
       return { status: 500, data: { message: error.message } }
     }
+  }
+
+  const toggleTag = (value, checked) => {
+    setTags((current) => checked ? [...current, value] : current.filter((tag) => tag !== value))
   }
 
   const handleSearchQuestions = async () => {
@@ -44,167 +113,313 @@ function App() {
   }
 
   const handleBookSlot = async () => {
-    setBookingRes('Đang xử lý...')
+    setBookingRes('Đang xử lý yêu cầu đặt lịch...')
     const { status, data } = await fetchAPI('/bookings', {
       method: 'POST',
-      body: JSON.stringify({ slot_id: 1 })
+      body: JSON.stringify({ slot_id: 1 }),
     })
+
     if (status === 201) {
-      setBookingRes(`Thành công! Booking ID: ${data.booking_id} (Pending)`)
-      setBookingId(data.booking_id)
+      const id = String(data.booking_id)
+      setBookingRes(`Đã gửi yêu cầu BK-${id.padStart(4, '0')}. Mentor sẽ xác nhận lịch.`)
+      setBookingId(id)
+      setMentorInputId(id)
+      setAuthInputId(id)
+      setBookingStage('Chờ xác nhận')
     } else {
       setBookingRes(`Lỗi: ${data.message || data.error}`)
     }
   }
 
   const handleMentorAction = async (action) => {
-    if (!mentorInputId) return setMentorRes('Vui lòng nhập ID')
-    setMentorRes('Đang xử lý...')
+    if (!mentorInputId) return setMentorRes('Vui lòng nhập Booking ID')
+    setMentorRes('Đang xử lý cập nhật trạng thái...')
     const { status, data } = await fetchAPI(`/bookings/${mentorInputId}/${action}`, { method: 'POST' })
-    if (status === 200) setMentorRes(`Thành công: ${data.message}`)
-    else setMentorRes(`Lỗi: ${data.message || data.error}`)
+
+    if (status === 200) {
+      const nextStage = action === 'accept' ? 'Đã xác nhận' : 'Hoàn thành'
+      setMentorRes(data.message || `Đã chuyển trạng thái sang ${nextStage}.`)
+      setBookingStage(nextStage)
+      setBookingId(mentorInputId)
+      setAuthInputId(mentorInputId)
+    } else {
+      setMentorRes(`Lỗi: ${data.message || data.error}`)
+    }
   }
 
   const handleViewLink = async () => {
-    if (!authInputId) return setLinkRes('Vui lòng nhập ID')
-    setLinkRes('Đang xử lý...')
+    if (!authInputId) return setLinkRes('Vui lòng nhập Booking ID')
+    setLinkRes('Đang xử lý quyền truy cập...')
     const { status, data } = await fetchAPI(`/bookings/${authInputId}/meeting-link`)
-    if (status === 200) setLinkRes(`Link: ${data.meeting_link}`)
-    else setLinkRes(`Lỗi: ${data.message || data.error}`)
+
+    if (status === 200) {
+      setMeetingLink(data.meeting_link)
+      setLinkRes('Đã xác thực quyền truy cập. Link chỉ hiển thị cho hai bên tham gia.')
+    } else {
+      setMeetingLink('')
+      setLinkRes(`Lỗi: ${data.message || data.error}`)
+    }
   }
 
   const handleSubmitFeedback = async () => {
-    if (!authInputId || !feedback) return setFeedbackRes('Vui lòng nhập đủ thông tin')
-    setFeedbackRes('Đang xử lý...')
+    if (!authInputId || !feedback.trim()) return setFeedbackRes('Vui lòng nhập Booking ID và nội dung phản hồi')
+    setFeedbackRes('Đang xử lý phản hồi...')
     const { status, data } = await fetchAPI(`/bookings/${authInputId}/feedback`, {
       method: 'POST',
-      body: JSON.stringify({ content: feedback })
+      body: JSON.stringify({ content: feedback.trim() }),
     })
-    if (status === 200) setFeedbackRes('Gửi feedback thành công!')
+
+    if (status === 200) setFeedbackRes('Đã lưu phản hồi cho buổi luyện tập.')
     else setFeedbackRes(`Lỗi: ${data.message || data.error}`)
   }
 
+  const navigate = (view) => {
+    setActiveView(view)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
-    <>
-      <div className="bg-blobs">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
-      </div>
+    <main ref={appRef} className="app-shell">
+      <div className="ambient-shape ambient-one" aria-hidden="true" />
+      <div className="ambient-shape ambient-two" aria-hidden="true" />
 
-      <div className="flex flex-col items-center min-h-screen pb-12">
-        <header className="glass-panel w-[90%] max-w-5xl mt-8 p-6 flex flex-wrap justify-between items-center gap-4">
-          <h1 className="text-2xl font-bold">Interview Practice (React + Tailwind)</h1>
-          <div className="flex items-center gap-3">
-            <label className="text-sm font-medium">Đăng nhập (Giả lập):</label>
-            <select 
-              className="bg-slate-900/60 border border-white/20 rounded-lg px-3 py-2 outline-none focus:border-blue-500"
-              value={currentUser} 
-              onChange={e => setCurrentUser(e.target.value)}
+      <header className="app-nav">
+        <button className="wordmark" onClick={() => navigate('discover')} aria-label="Về trang tìm mentor">
+          <span className="wordmark-mark">IP</span>
+          <span>Interview Practice</span>
+        </button>
+
+        <nav className="nav-links" aria-label="Điều hướng chính">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              className={activeView === item.id ? 'nav-link is-active' : 'nav-link'}
+              onClick={() => navigate(item.id)}
+              aria-current={activeView === item.id ? 'page' : undefined}
             >
-              <option value="2">Student B (ID: 2)</option>
-              <option value="3">Student C (ID: 3)</option>
-              <option value="1">Mentor A (ID: 1)</option>
-            </select>
-          </div>
-        </header>
+              {item.label}
+            </button>
+          ))}
+        </nav>
 
-        <main className="w-[90%] max-w-5xl mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          {/* Section 1: Questions */}
-          <section className="glass-panel p-6 flex flex-col">
-            <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-white/10">📚 Ngân hàng câu hỏi</h2>
-            <div className="flex items-center gap-4 mb-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" value="1" onChange={(e) => {
-                  const val = e.target.value;
-                  setTags(prev => e.target.checked ? [...prev, val] : prev.filter(t => t !== val))
-                }} className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
-                React
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" value="2" onChange={(e) => {
-                  const val = e.target.value;
-                  setTags(prev => e.target.checked ? [...prev, val] : prev.filter(t => t !== val))
-                }} className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
-                Node.js
-              </label>
-              <button onClick={handleSearchQuestions} className="ml-auto bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-all active:scale-95">Tìm kiếm</button>
+        <div className="identity-control">
+          <label htmlFor="demo-user">Chế độ xem</label>
+          <select id="demo-user" value={currentUser} onChange={(event) => setCurrentUser(event.target.value)}>
+            <option value="2">Student · Nguyễn An</option>
+            <option value="3">Student · Thu Hà</option>
+            <option value="1">Mentor · Minh Khoa</option>
+          </select>
+          <span className="avatar" aria-hidden="true">{activePerson.initials}</span>
+        </div>
+      </header>
+
+      {activeView === 'discover' && (
+        <div className="page-container">
+          <section className="page-intro view-enter">
+            <div>
+              <p className="context-line">Chuẩn bị cho Front-end Intern</p>
+              <h1>Tìm đúng người để luyện đúng điều bạn còn thiếu.</h1>
             </div>
-            
-            <ul className="flex flex-col gap-2 mt-2">
-              {questions?.length === 0 && <li className="bg-black/20 p-3 rounded-lg text-sm">Không tìm thấy câu hỏi phù hợp.</li>}
-              {questions?.map((q, i) => (
-                <li key={i} className={`bg-black/20 p-3 rounded-lg text-sm ${q.error ? 'text-red-400' : ''}`}>
-                  {q.error ? q.message : `[ID: ${q.id}] ${q.content}`}
-                </li>
-              ))}
-            </ul>
+            <p className="intro-copy">Chọn mentor theo chuyên môn, kiểm tra lại bộ câu hỏi liên quan và gửi yêu cầu trong cùng một luồng.</p>
           </section>
 
-          {/* Section 2: Student Book */}
-          <section className="glass-panel p-6 flex flex-col">
-            <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-white/10">🎓 Dành cho Sinh Viên</h2>
-            <p className="mb-4 text-slate-300">Slot 1 (2026-09-01) của Mentor A</p>
-            <button onClick={handleBookSlot} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-all active:scale-95 w-fit">Đặt lịch (Book Slot)</button>
-            <p className={`mt-4 p-3 rounded-lg text-sm min-h-[44px] ${bookingRes.includes('Lỗi') ? 'bg-red-500/20 text-red-200' : 'bg-green-500/20 text-green-200'}`}>
-              {bookingRes}
-            </p>
+          <section className="discover-grid view-enter">
+            <div className="mentor-column">
+              <div className="section-heading">
+                <div>
+                  <p className="context-line">Một mentor phù hợp</p>
+                  <h2>Trần Minh Khoa</h2>
+                </div>
+                <span className="verified-badge"><CheckIcon /> Đã xác minh</span>
+              </div>
+
+              <div className="mentor-summary">
+                <div className="mentor-avatar">MK</div>
+                <div>
+                  <p className="mentor-role">Senior Front-end Engineer</p>
+                  <p>6 năm kinh nghiệm · Tiếng Việt / English</p>
+                </div>
+              </div>
+
+              <p className="mentor-bio">Tập trung vào phỏng vấn Front-end entry-level, cách trình bày quyết định kỹ thuật và phản hồi có dẫn chứng.</p>
+
+              <div className="expertise-list" aria-label="Chuyên môn">
+                <span>React</span>
+                <span>JavaScript</span>
+                <span>Behavioral interview</span>
+              </div>
+
+              <div className="question-tool">
+                <div className="tool-heading">
+                  <div>
+                    <h3>Bộ câu hỏi nên ôn</h3>
+                    <p>Lọc nhanh nội dung trước buổi luyện.</p>
+                  </div>
+                  <button className="text-action" onClick={handleSearchQuestions}>Tải câu hỏi</button>
+                </div>
+
+                <fieldset className="tag-options">
+                  <legend className="sr-only">Lọc câu hỏi theo chủ đề</legend>
+                  <label>
+                    <input type="checkbox" value="1" onChange={(event) => toggleTag(event.target.value, event.target.checked)} />
+                    <span>React</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" value="2" onChange={(event) => toggleTag(event.target.value, event.target.checked)} />
+                    <span>Node.js</span>
+                  </label>
+                </fieldset>
+
+                <div className="question-results" aria-live="polite">
+                  {questions === null && <p className="empty-copy">Chọn chủ đề rồi tải danh sách câu hỏi.</p>}
+                  {questions?.length === 0 && <p className="empty-copy">Không tìm thấy câu hỏi phù hợp.</p>}
+                  {questions?.map((question) => (
+                    <div key={question.id || question.message} className={question.error ? 'question-row is-error' : 'question-row'}>
+                      <span>{question.error ? '!' : String(question.id).padStart(2, '0')}</span>
+                      <p>{question.error ? question.message : question.content}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <aside className="booking-composer">
+              <div className="section-heading">
+                <div>
+                  <p className="context-line">Lịch gần nhất</p>
+                  <h2>Chọn thời gian luyện</h2>
+                </div>
+                <span className="availability">Còn chỗ</span>
+              </div>
+
+              <div className="slot-picker" role="radiogroup" aria-label="Chọn thời gian">
+                <button className="slot is-selected" role="radio" aria-checked="true">
+                  <strong>Thứ Ba, 01/09</strong>
+                  <span>10:00–11:00 · GMT+7</span>
+                </button>
+                <button className="slot" role="radio" aria-checked="false">
+                  <strong>Thứ Tư, 02/09</strong>
+                  <span>10:00–11:00 · GMT+7</span>
+                </button>
+              </div>
+
+              <div className="booking-details">
+                <div><span>Vị trí mục tiêu</span><strong>Front-end Intern</strong></div>
+                <div><span>Thời lượng</span><strong>60 phút</strong></div>
+                <div><span>Hình thức</span><strong>Google Meet</strong></div>
+              </div>
+
+              <label className="field-label" htmlFor="practice-goal">Mục tiêu buổi luyện</label>
+              <textarea id="practice-goal" rows="4" defaultValue="Luyện cách trình bày kiến thức React và xử lý câu hỏi tiếp nối." />
+
+              <button className="primary-button" onClick={handleBookSlot} disabled={isMentor}>
+                <span>{isMentor ? 'Chuyển sang Student để đặt lịch' : 'Gửi yêu cầu đặt lịch'}</span>
+                <span className="button-icon"><ArrowIcon /></span>
+              </button>
+              <Message>{bookingRes}</Message>
+            </aside>
+          </section>
+        </div>
+      )}
+
+      {activeView === 'booking' && (
+        <div className="page-container">
+          <section className="page-intro compact-intro view-enter">
+            <div>
+              <p className="context-line">{bookingId ? `Booking BK-${bookingId.padStart(4, '0')}` : 'Booking chưa được tạo'}</p>
+              <h1>Chi tiết lịch luyện tập</h1>
+            </div>
+            <span className={`stage-badge stage-${bookingStage.toLowerCase().replaceAll(' ', '-')}`}>{bookingStage}</span>
           </section>
 
-          {/* Section 3: Mentor Action */}
-          <section className="glass-panel p-6 flex flex-col">
-            <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-white/10">👨‍🏫 Dành cho Mentor</h2>
-            <p className="mb-3 text-sm text-slate-300">Nhập Booking ID để xử lý:</p>
-            <div className="flex flex-wrap gap-3 mb-4">
-              <input 
-                type="number" 
-                placeholder="Booking ID..." 
-                value={mentorInputId}
-                onChange={e => setMentorInputId(e.target.value)}
-                className="bg-slate-900/60 border border-white/20 rounded-lg px-3 py-2 flex-1 min-w-[120px] outline-none focus:border-blue-500"
-              />
-              <button onClick={() => handleMentorAction('accept')} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium transition-all active:scale-95">Accept</button>
-              <button onClick={() => handleMentorAction('complete')} className="bg-amber-500 hover:bg-amber-400 text-white px-4 py-2 rounded-lg font-medium transition-all active:scale-95">Complete</button>
+          <section className="booking-workspace view-enter">
+            <div className="booking-main">
+              <div className="people-row">
+                <div className="person-card"><span className="avatar avatar-large">NA</span><div><span>Student</span><strong>Nguyễn An</strong></div></div>
+                <div className="connection-line"><span /></div>
+                <div className="person-card"><span className="avatar avatar-large">MK</span><div><span>Mentor</span><strong>Trần Minh Khoa</strong></div></div>
+              </div>
+
+              <div className="session-facts">
+                <div><span>Thời gian</span><strong>10:00, Thứ Ba 01/09/2026</strong></div>
+                <div><span>Mục tiêu</span><strong>Front-end Intern · React</strong></div>
+                <div><span>Thời lượng</span><strong>60 phút · GMT+7</strong></div>
+              </div>
+
+              <div className="timeline-section">
+                <h2>Tiến trình booking</h2>
+                <div className="timeline">
+                  <div className="timeline-item is-done"><span className="timeline-dot"><CheckIcon /></span><div><strong>Yêu cầu được tạo</strong><p>Nguyễn An · vừa xong</p></div></div>
+                  <div className={['Đã xác nhận', 'Hoàn thành'].includes(bookingStage) ? 'timeline-item is-done' : 'timeline-item'}><span className="timeline-dot"><CheckIcon /></span><div><strong>Mentor xác nhận lịch</strong><p>{['Đã xác nhận', 'Hoàn thành'].includes(bookingStage) ? 'Trần Minh Khoa · đã cập nhật' : 'Đang chờ phản hồi'}</p></div></div>
+                  <div className={bookingStage === 'Hoàn thành' ? 'timeline-item is-done' : 'timeline-item'}><span className="timeline-dot"><CheckIcon /></span><div><strong>Buổi luyện hoàn thành</strong><p>{bookingStage === 'Hoàn thành' ? 'Mentor đã xác nhận hoàn thành' : 'Chưa diễn ra'}</p></div></div>
+                </div>
+              </div>
             </div>
-            <p className={`mt-auto p-3 rounded-lg text-sm min-h-[44px] ${mentorRes.includes('Lỗi') ? 'bg-red-500/20 text-red-200' : 'bg-green-500/20 text-green-200'}`}>
-              {mentorRes}
-            </p>
+
+            <aside className="action-panel">
+              <div>
+                <p className="context-line">Thao tác theo vai trò</p>
+                <h2>{isMentor ? 'Xử lý yêu cầu' : 'Truy cập buổi luyện'}</h2>
+                <p className="support-copy">Bạn đang xem với quyền {isMentor ? 'Mentor' : 'Student'}.</p>
+              </div>
+
+              <label className="field-label" htmlFor="booking-action-id">Booking ID</label>
+              <input id="booking-action-id" type="number" placeholder="Ví dụ: 12" value={isMentor ? mentorInputId : authInputId} onChange={(event) => isMentor ? setMentorInputId(event.target.value) : setAuthInputId(event.target.value)} />
+
+              {isMentor ? (
+                <div className="action-stack">
+                  <button className="primary-button" onClick={() => handleMentorAction('accept')}><span>Xác nhận lịch</span><span className="button-icon"><ArrowIcon /></span></button>
+                  <button className="secondary-button" onClick={() => handleMentorAction('complete')}>Đánh dấu hoàn thành</button>
+                  <Message compact>{mentorRes}</Message>
+                </div>
+              ) : (
+                <div className="action-stack">
+                  <button className="primary-button" onClick={handleViewLink}><span>Kiểm tra meeting link</span><span className="button-icon"><ArrowIcon /></span></button>
+                  {meetingLink && <a className="meeting-link" href={meetingLink} target="_blank" rel="noreferrer">Tham gia qua Google Meet <ArrowIcon /></a>}
+                  <Message compact>{linkRes}</Message>
+                </div>
+              )}
+            </aside>
+          </section>
+        </div>
+      )}
+
+      {activeView === 'feedback' && (
+        <div className="page-container">
+          <section className="page-intro compact-intro view-enter">
+            <div><p className="context-line">Sau buổi luyện tập</p><h1>Biến nhận xét thành bước luyện tiếp theo.</h1></div>
+            <p className="intro-copy">Phản hồi chỉ được gửi sau khi booking đã hoàn thành.</p>
           </section>
 
-          {/* Section 4: Auth & Feedback */}
-          <section className="glass-panel p-6 flex flex-col">
-            <h2 className="text-xl font-semibold mb-4 pb-2 border-b border-white/10">🔒 Link Meeting & Feedback</h2>
-            
-            <div className="flex gap-3 mb-3">
-              <input 
-                type="number" 
-                placeholder="Booking ID..." 
-                value={authInputId}
-                onChange={e => setAuthInputId(e.target.value)}
-                className="bg-slate-900/60 border border-white/20 rounded-lg px-3 py-2 w-32 outline-none focus:border-blue-500"
-              />
-              <button onClick={handleViewLink} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition-all active:scale-95 flex-1">Xem Link Meeting</button>
+          <section className="feedback-grid view-enter">
+            <div className="feedback-context">
+              <div className="section-heading"><div><p className="context-line">Buổi luyện gần nhất</p><h2>Front-end Intern</h2></div><span className="verified-badge">60 phút</span></div>
+              <div className="feedback-person"><span className="avatar avatar-large">MK</span><div><strong>Trần Minh Khoa</strong><p>Senior Front-end Engineer</p></div></div>
+              <dl className="session-metadata">
+                <div><dt>Thời gian</dt><dd>01/09/2026 · 10:00</dd></div>
+                <div><dt>Trọng tâm</dt><dd>React và cách diễn đạt</dd></div>
+                <div><dt>Trạng thái</dt><dd>{bookingStage}</dd></div>
+              </dl>
             </div>
-            <div className="p-3 bg-black/20 rounded-lg text-sm mb-4 min-h-[44px] text-blue-300 break-all">{linkRes}</div>
 
-            <div className="flex gap-3 mb-3">
-              <input 
-                type="text" 
-                placeholder="Nhập feedback..." 
-                value={feedback}
-                onChange={e => setFeedback(e.target.value)}
-                className="bg-slate-900/60 border border-white/20 rounded-lg px-3 py-2 flex-1 outline-none focus:border-blue-500"
-              />
-              <button onClick={handleSubmitFeedback} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg font-medium transition-all active:scale-95">Gửi</button>
+            <div className="feedback-form">
+              <div className="section-heading"><div><p className="context-line">{isMentor ? 'Góc nhìn của mentor' : 'Phản hồi dành cho bạn'}</p><h2>{isMentor ? 'Phản hồi có cấu trúc' : 'Nội dung phản hồi'}</h2></div></div>
+
+              <label className="field-label" htmlFor="feedback-booking-id">Booking ID</label>
+              <input id="feedback-booking-id" type="number" placeholder="Ví dụ: 12" value={authInputId} onChange={(event) => setAuthInputId(event.target.value)} />
+
+              <label className="field-label" htmlFor="feedback-content">Điểm mạnh, điểm cần cải thiện và hành động tiếp theo</label>
+              <textarea id="feedback-content" rows="8" placeholder="Ví dụ: Bạn giải thích component lifecycle rõ ràng. Cần nêu trade-off cụ thể hơn. Bước tiếp theo: luyện hai câu về state management." value={feedback} onChange={(event) => setFeedback(event.target.value)} readOnly={!isMentor && feedbackRes.includes('Đã lưu')} />
+
+              <button className="primary-button" onClick={handleSubmitFeedback} disabled={!isMentor}><span>{isMentor ? 'Gửi phản hồi' : 'Chuyển sang Mentor để gửi'}</span><span className="button-icon"><ArrowIcon /></span></button>
+              <Message>{feedbackRes}</Message>
             </div>
-            <p className={`mt-auto p-3 rounded-lg text-sm min-h-[44px] ${feedbackRes.includes('Lỗi') ? 'bg-red-500/20 text-red-200' : 'bg-green-500/20 text-green-200'}`}>
-              {feedbackRes}
-            </p>
           </section>
+        </div>
+      )}
 
-        </main>
-      </div>
-    </>
+      <footer className="app-footer"><p>Interview Practice PoC</p><p>Question Bank · Booking · Feedback</p></footer>
+    </main>
   )
 }
 
