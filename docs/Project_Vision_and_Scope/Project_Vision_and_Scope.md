@@ -8,11 +8,11 @@
 |---|---|
 | Owner/Producer | Hưng — Thành viên 3 |
 | Công cụ hỗ trợ | Codex |
-| Phiên bản | 0.2-ai-reference |
-| Trạng thái | Reviewed by AI checks; pending human audit và Product Owner approval |
+| Phiên bản | 0.3-ai-cross-branch-reference |
+| Trạng thái | Cross-branch AI reconciliation completed; pending Hưng/PO audit và Sponsor acceptance |
 | Branch | `feat/member-3-scope-backlog` |
 | Ngày cập nhật | 14/08/2026 |
-| Reviewer/Approver | `[CẦN BỔ SUNG — Product Owner/Sponsor]` |
+| Reviewer/Approver | Hưng/Product Owner; Sponsor/giảng viên — review record pending |
 | Điều kiện phê duyệt | Evidence được kiểm chứng; scope/policy được chốt; backlog/workflow/RTM nhất quán; review record hoàn tất |
 
 Theo định nghĩa baseline, tài liệu chỉ trở thành baseline sau formal review/agreement và sau đó chỉ thay đổi qua change control ([Software Configuration Management, Slide 017](../refs/07-software-configuration-management.md#slide-017--baseline-3)).
@@ -259,22 +259,27 @@ flowchart LR
 - Personalized learning path và analytics nâng cao.
 - Subscription, coupon, group session và enterprise/university partnership.
 
-## 15. Open decisions
+## 15. Canonical decision register
 
-| ID | Decision cần chốt | Owner | Ảnh hưởng nếu chưa chốt |
+Decision IDs use the same meaning in Vision, Backlog and Workflow. The evidence/status rationale is detailed in the [Product Backlog Cross-Branch Consistency Audit](Product_Backlog_Cross_Branch_Consistency_Audit.md).
+
+| ID | Decision cần chốt | Owner | Trạng thái / ảnh hưởng |
 |---|---|---|---|
-| DEC-01 | Sponsor, Product Owner, PM và reviewer/approver | Sponsor/group | Không thể Approved baseline |
-| DEC-02 | Pilot segment, sample size, mentor/booking target | PO/Research | OBJ-01/market validation chưa executable |
-| DEC-03 | Cancellation, reschedule, no-show và completion authority | PO/Operations | BR/AC/state machine còn conditional |
-| DEC-04 | Free/manual payment treatment trong pilot | PO/Sponsor | Scope/terms/operations chưa khóa |
-| DEC-05 | Retention/deletion/privacy policy | PO/Privacy owner | Acceptance/security chưa đủ |
-| DEC-06 | Estimate/capacity/date/budget | Team/PM/Sponsor | Chưa thể xác nhận delivery feasibility |
+| DEC-01 | Sponsor, Product Owner, PM và acceptance authority | Sponsor/group | Proposed resolved from Member 1 snapshot: Hưng PO, Gia Thành PM/Scrum Master, giảng viên Sponsor; formal acceptance pending |
+| DEC-02 | Pilot segment, sample size, mentor/booking target | PO/Research | Open; OBJ-01/market validation chưa executable |
+| DEC-03 | Cancellation, reschedule, no-show, completion authority/cutoff/evidence | PO/Operations | Open; BR/AC/state machine và old-slot reschedule protection còn conditional |
+| DEC-04 | Free/manual payment hoặc credit treatment trong pilot | PO/Sponsor | Open; payment automation vẫn out of scope nhưng terms/operations chưa khóa |
+| DEC-05 | Retention/deletion/privacy notice/consent policy | PO/Privacy owner | Open; acceptance/security chưa đủ |
+| DEC-06 | Estimate/capacity/date/budget | Team/PM/Sponsor | Proposed resolved from Member 1 snapshot: 12 tuần, 816 giờ, working estimate 688 giờ, guardrail 756 giờ, cash ceiling 1.125.000 VND; formal acceptance pending |
+| DEC-07 | Meeting-link creation/update authority và provider-outage fallback | PO/Technical | Open; ảnh hưởng US-14/session exception |
+| DEC-08 | US-17 review và minimal US-20 operations có thuộc MRF | PO | AI proposal: include as Must để khớp Proposal/Charter/20-story estimate; PO inspection pending |
+| DEC-09 | Reminder cadence/timezone/suppression/fallback | PO/Operations | Open; US-22 remains Stretch/not Ready |
 
 ## 16. Kết luận và baseline readiness
 
 Vision đề xuất giữ Question Bank -> Mentor -> Booking -> External Session -> Feedback làm core loop và loại AI/video/payment automation khỏi MVP. Bản này đáp ứng cấu trúc tham chiếu về context, current/future use case, problem/objective, inclusion/exclusion, assumption/risk và conclusion ([User Requirements, Slide 017](../refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4)).
 
-**Readiness:** `Reviewed — conditionally ready for human audit`, chưa phải `Approved baseline`. Điều kiện nâng trạng thái: bổ sung/kiểm chứng E-06; đóng DEC-01..DEC-06 ở mức cần cho MVP; đồng bộ backlog/workflow/prototype/architecture/PoC; inspection và PO approval được ghi nhận.
+**Readiness:** `Reviewed — conditionally ready for human audit`, chưa phải `Approved baseline`. Điều kiện nâng trạng thái: bổ sung/kiểm chứng E-06; chốt các DEC-02/03/04/05/07/08/09 cần cho R1; ghi acceptance cho DEC-01/06; xử lý discrepancy trong cross-branch audit; inspection và PO/Sponsor approval được ghi nhận.
 
 ## 17. Ref compliance index
 

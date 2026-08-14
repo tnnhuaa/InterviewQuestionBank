@@ -8,8 +8,8 @@
 |---|---|
 | Owner/Producer | Hưng — Thành viên 3 |
 | Công cụ hỗ trợ | Codex |
-| Phiên bản | 0.2-ai-reference |
-| Trạng thái | AI checks completed; pending human walkthrough/PO approval |
+| Phiên bản | 0.3-ai-cross-branch-reference |
+| Trạng thái | Cross-branch AI reconciliation completed; pending human walkthrough/PO approval |
 | Branch | `feat/member-3-scope-backlog` |
 | Ngày cập nhật | 14/08/2026 |
 | Reviewer/Approver | `[CẦN BỔ SUNG — Hùng/Trí/PO]` |
@@ -78,22 +78,22 @@ flowchart TD
 |---|---|---|
 | `Pending` | Student đã gửi yêu cầu, chờ Mentor xử lý | Không |
 | `Confirmed` | Mentor đã chấp nhận và slot được khóa | Không |
-| `RescheduleProposed` | Một bên đề xuất slot mới, chờ bên còn lại quyết định | Không |
+| `RescheduleProposed` | Một bên đề xuất slot mới, chờ bên còn lại quyết định; proposal không giữ slot mới, còn old slot của booking trước đó Confirmed phải tiếp tục được bảo vệ | Không cho slot mới; conditional cho old slot |
 | `Rejected` | Mentor từ chối yêu cầu Pending | Có cho booking hiện tại |
 | `Cancelled` | Booking bị hủy theo policy bởi actor được phép | Có |
 | `Completed` | Buổi gặp đã diễn ra và actor có thẩm quyền xác nhận | Có cho booking lifecycle; cho phép feedback/review |
 | `NoShow` | Ngoại lệ vắng mặt được ghi nhận theo policy | Có/conditional — PO phải chốt |
 
-Không dùng lẫn `Reschedule`, `Propose change` và `Reschedule proposed`; canonical term là `RescheduleProposed` trong dữ liệu và “Đề xuất đổi lịch” trong UI.
+Không dùng lẫn `Reschedule`, `Propose change` và `Reschedule proposed`; canonical business term là `RescheduleProposed`, API/storage token là `RESCHEDULE_PROPOSED` và UI có thể dùng “Đề xuất đổi lịch”. Các token khác lần lượt là `PENDING`, `CONFIRMED`, `REJECTED`, `CANCELLED`, `COMPLETED` và conditional `NO_SHOW` theo backlog mục 2.1.
 
 ### 4.2 Booking transition table
 
 | From | Event/actor | Guard | To | Side effect/audit | Trace |
 |---|---|---|---|---|---|
 | — | Student `CreateBooking` | Slot available; goal/type/position hợp lệ | `Pending` | Tạo một booking, audit creation | US-11, BR-02/03/08, AC-11-01 |
-| `Pending` | Owning Mentor `Accept` | Slot chưa thuộc booking Confirmed khác | `Confirmed` | Atomic slot lock; transition audit; emit notification event | US-12, BR-02/08/09, AC-12-01 |
+| `Pending` | Owning Mentor `Accept` | Slot chưa thuộc booking occupying-state khác; request retry-safe | `Confirmed` | Atomic slot lock; transition audit; emit one deduplicated notification event | US-12, BR-02/08/09/10, AC-12-01 |
 | `Pending` | Owning Mentor `Reject` | Reason hợp lệ | `Rejected` | Release/keep slot availability; audit reason | US-12, BR-08, AC-12-02 |
-| `Pending`/`Confirmed` | Authorized party `ProposeReschedule` | Proposed slot hợp lệ; policy cho phép | `RescheduleProposed` | Lưu previous state/old-new slot/requester/reason | US-12, US-13; BR-08; AC-12-02, AC-13-01 |
+| `Pending`/`Confirmed` | Authorized party `ProposeReschedule` | Proposed slot hợp lệ; policy cho phép; nếu source là Confirmed thì old slot vẫn được bảo vệ | `RescheduleProposed` | Lưu previous state/old-new slot/requester/reason; không giữ new slot trước acceptance | US-12, US-13; BR-02, BR-08; AC-12-02, AC-12-03, AC-13-01 |
 | `RescheduleProposed` | Other party `AcceptReschedule` | New slot vẫn available | `Confirmed` | Atomic switch/lock; release old slot; audit | US-13; BR-02, BR-08; AC-13-01 |
 | `RescheduleProposed` | Other party `RejectReschedule` | DEC-03 policy | Previous state hoặc `Cancelled` `[DEC-03]` | Audit decision/reason | US-13, BR-08, AC-13-01 |
 | `Pending`/`Confirmed`/`RescheduleProposed` | Authorized party `Cancel` | Cutoff/reason/policy `[DEC-03]` | `Cancelled` | Release slot if applicable; audit/notify | US-13; BR-08, BR-09; AC-13-01, AC-19-01 |
@@ -138,7 +138,7 @@ Hệ thống chỉ hiển thị câu hỏi Published. Filter kết hợp vị tr
 
 ### 6.2 Mentor discovery và booking
 
-Chỉ mentor Approved có profile/slot công khai. Khi Student gửi booking, hệ thống kiểm tra slot còn khả dụng. Một slot chỉ có tối đa một booking Confirmed.
+Chỉ mentor Approved có profile/slot công khai. Khi Student gửi booking, hệ thống kiểm tra slot còn khả dụng. Một slot chỉ có tối đa một booking ở occupying state theo BR-02; retry create/transition phải idempotent theo BR-10.
 
 ### 6.3 Confirmation và session
 
@@ -150,12 +150,12 @@ Mentor chỉ gửi feedback cho booking Completed. Student chỉ review mentor t
 
 ## 7. Business rules và ngoại lệ
 
-Canonical rule catalogue, source/changeability/owner nằm trong [Product Backlog and Acceptance Criteria, mục 1.2](Product_Backlog_and_Acceptance_Criteria.md#12-business-rules-dùng-chung). Workflow phải thực thi cùng nghĩa, không tạo biến thể cục bộ.
+Canonical rule catalogue, source/changeability/owner nằm trong [Product Backlog and Acceptance Criteria, mục 2](Product_Backlog_and_Acceptance_Criteria.md#2-canonical-business-rules-and-semantics). Workflow phải thực thi cùng nghĩa, không tạo biến thể cục bộ.
 
 | ID | Quy tắc workflow |
 |---|---|
 | BR-01 | Chỉ mentor `Approved` được công khai profile/slot và nhận booking. |
-| BR-02 | Một slot có tối đa một booking `Confirmed`. |
+| BR-02 | Một slot có tối đa một booking ở occupying state (`Confirmed`, `Completed`, conditional `NoShow`); old slot của confirmed-source reschedule vẫn được bảo vệ đến khi proposal được giải quyết. |
 | BR-03 | Booking phải có goal, position/interview type và slot hợp lệ. |
 | BR-04 | Chỉ Student/Mentor thuộc booking và Admin có thẩm quyền được xem booking/meeting link/feedback. |
 | BR-05 | Feedback chỉ được tạo cho booking `Completed`. |
@@ -163,15 +163,17 @@ Canonical rule catalogue, source/changeability/owner nằm trong [Product Backlo
 | BR-07 | Question chỉ công khai khi `Published`, có taxonomy và provenance hợp lệ. |
 | BR-08 | Booking transition phải theo canonical state machine và audit actor/reason/timestamp phù hợp. |
 | BR-09 | Notification failure không rollback/điều khiển booking state; retry/fallback/idempotent, internal state là source of truth. |
+| BR-10 | Create booking và critical transition phải retry-safe bằng idempotency key; retry giống nhau không tạo booking/transition/event trùng. |
+| BR-11 | Meeting link, verification evidence, feedback và private profile data không public/log đầy đủ; retention/deletion theo DEC-05. |
 
 ### 7.1 Exception workflow
 
 | Exception | Expected workflow/result | Trace |
 |---|---|---|
-| Slot vừa được Confirmed bởi request khác | Accept/create thất bại với conflict; chọn slot khác; không tạo booking Confirmed thứ hai | BR-02, AC-12-01, TC-B/TC-SLOT |
+| Slot vừa thuộc booking occupying-state khác | Accept/create thất bại với stable conflict; chọn slot khác; không tạo owner/transition/event thứ hai | BR-02, BR-10, AC-12-01, TC-B/TC-SLOT |
 | Invalid/unauthorized transition | Trả lỗi an toàn; state/slot không đổi; ghi security/audit phù hợp | BR-04, BR-08, AC-02-01, AC-13-01 |
 | Reject | Booking `Rejected`; reason/audit; Student quay lại mentor/slot search | BR-08, AC-12-02 |
-| Reschedule | `RescheduleProposed`; bên còn lại accept/reject; slot switch atomic khi accept | BR-02, BR-08, AC-13-01 |
+| Reschedule | `RescheduleProposed`; old confirmed slot vẫn được bảo vệ, new slot chưa bị giữ; bên còn lại accept/reject và switch atomic | BR-02, BR-08, AC-12-03, AC-13-01 |
 | Cancellation | `Cancelled` theo DEC-03; slot được release phù hợp; notification không điều khiển state | BR-08, BR-09, AC-13-01, AC-19-01 |
 | No-show | Gửi tới Admin/actor có thẩm quyền; `NoShow` chỉ dùng sau khi DEC-03 được duyệt | BR-08, AC-20-01 |
 | Meeting provider outage | Booking giữ `Confirmed`; hiển thị hướng xử lý/fallback; không tự Complete/Cancel | BR-09, AC-19-01 |
@@ -231,11 +233,11 @@ erDiagram
 | FS-02 | US-04, US-05, US-18 | BR-07 | AC-04-01, AC-05-01, AC-18-01 | S02-S03, A03; TC-Q |
 | FS-03 | US-06 | BR-04 | AC-06-01 | S02-S03; TC-Q |
 | FS-04 | US-07, US-08, US-09, US-10 | BR-01, BR-02, BR-08 | AC-07-01, AC-08-01, AC-09-01, AC-10-01 | S04-S05, M01-M04, A02; TC-M/TC-SLOT |
-| FS-05 | US-11 | BR-02, BR-03, BR-08 | AC-11-01 | S06; TC-B |
-| FS-06 | US-12, US-13 | BR-02, BR-08 | AC-12-01, AC-12-02, AC-13-01 | S07, M05-M06; TC-B |
-| FS-07 | US-14, US-19 | BR-04, BR-09 | AC-14-01, AC-19-01 | S08/M07; TC-SESSION/TC-N |
-| FS-08, FS-08A | US-13, US-14, US-20 | BR-04, BR-08 | AC-13-01, AC-14-01, AC-20-01 | Session/Admin; TC-B/TC-ADM |
-| FS-09 | US-15 | BR-04, BR-05 | AC-15-01 | M08; TC-F |
+| FS-05 | US-11 | BR-02, BR-03, BR-08, BR-10 | AC-11-01, AC-11-02 | S06; TC-B |
+| FS-06 | US-12, US-13 | BR-02, BR-08, BR-10 | AC-12-01, AC-12-02, AC-12-03, AC-13-01, AC-13-02 | S07, M05-M06; TC-B |
+| FS-07 | US-14, US-19 | BR-04, BR-09, BR-11 | AC-14-01, AC-14-02, AC-19-01, AC-19-02 | S08/M07; TC-SESSION/TC-N |
+| FS-08, FS-08A | US-13, US-14, US-20 | BR-04, BR-08, BR-11 | AC-13-01, AC-13-02, AC-14-01, AC-14-02, AC-20-01 | Session/Admin; TC-B/TC-ADM |
+| FS-09 | US-15 | BR-04, BR-05, BR-11 | AC-15-01, AC-15-02 | M08; TC-F |
 | FS-10 | US-17 | BR-06 | AC-17-01 | S10; TC-F |
 | FS-11 | US-06, US-16 | BR-04 | AC-06-01, AC-16-01 | S09 -> S02; TC-F/TC-Q |
 
@@ -258,16 +260,16 @@ Prototype/workflow cần exploratory test với input xấu/đối nghịch theo
 
 | ID | Decision | Owner | Blocked content |
 |---|---|---|---|
-| DEC-03 | Cancellation/reschedule/no-show/mark-complete authority và policy | PO/Operations | Transition conditional, US-12/13/15/20 readiness |
-| DEC-04 | Review/Admin exception có thuộc minimum releasable feature | PO | FS-10/Admin slice |
-| DEC-05 | Reminder cadence/fallback | PO/Operations | US-22, notification UX |
+| DEC-03 | Cancellation/reschedule/no-show/mark-complete authority, cutoff, evidence và old-slot handling | PO/Operations | Transition conditional, US-12/13/15/20 readiness |
+| DEC-08 | Review/Admin exception có thuộc minimum releasable feature | PO | AI proposal includes US-17/20 as Must; PO inspection pending |
+| DEC-09 | Reminder cadence/timezone/suppression/fallback | PO/Operations | US-22, notification UX |
 | DEC-07 | Meeting-link creation/update authority và outage fallback | PO/Technical | FS-07/exception UI |
 
 ## 13. Kết quả future state và readiness
 
 Workflow thành công khi Student hoàn thành vòng lặp từ câu hỏi đến feedback mà không cần điều phối cốt lõi qua kênh riêng, và dữ liệu thu được đủ để đánh giá KPI cùng giả thuyết kinh doanh.
 
-**Readiness:** `AI-assisted reference — conditionally ready for human walkthrough`. Chưa Approved cho đến khi DEC-03/07 được chốt ở mức MVP, Hùng/Trí xác nhận Prototype/PoC mapping, PO inspection/acceptance được ghi nhận và refs được audit.
+**Readiness:** `AI-assisted reference — conditionally ready for human walkthrough`. Chưa Approved cho đến khi DEC-03/07 được chốt ở mức MVP, DEC-08 được PO xác nhận, Hùng cung cấp prototype/usability evidence, Trí cung cấp PoC evidence đạt các EN-03..EN-07, và PO inspection/acceptance được ghi nhận.
 
 ## 14. Ref compliance index
 
