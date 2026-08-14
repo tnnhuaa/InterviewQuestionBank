@@ -1,135 +1,86 @@
-# PROJECT CHARTER — INTERVIEW PRACTICE PLATFORM
+# PROJECT CHARTER - INTERVIEW PRACTICE PLATFORM
 
-## 1. Thông tin kiểm soát tài liệu
+## 1. Thông tin kiểm soát
 
 | Thuộc tính | Giá trị |
 |---|---|
-| Sponsor | [CẦN BỔ SUNG] |
-| Product Owner | [CẦN BỔ SUNG] |
-| Project Manager/Scrum Master | [CẦN BỔ SUNG] |
-| Nhóm thực hiện | [CẦN BỔ SUNG] |
-| Phiên bản | 0.1 |
-| Ngày | 12/08/2026 |
-| Trạng thái | Draft — chưa phê duyệt baseline |
+| Sponsor | Giảng viên phụ trách môn học (phê duyệt ở mốc Go/No-Go) |
+| Product Owner | Hưng - Vision, scope và backlog |
+| Project Manager / Scrum Master | Gia Thành - điều phối baseline, nguồn lực, tiến độ và rủi ro |
+| Nhóm thực hiện | Gia Thành, Hùng, Hưng, Trí, Luân |
+| Phiên bản | 1.0 - planning baseline |
+| Ngày baseline | 14/08/2026 |
+| Thời gian đề xuất | 17/08/2026-08/11/2026 (12 tuần) |
+| Trạng thái | Chờ Sponsor/giảng viên phê duyệt để trở thành cam kết |
 
-## 2. Mục đích dự án
+## 2. Bối cảnh, mục tiêu và phạm vi
 
-Interview Practice Platform giúp sinh viên chuẩn bị phỏng vấn theo một vòng lặp thống nhất: chọn vị trí, luyện câu hỏi, đặt lịch với mentor, tham gia mock interview, nhận feedback và luyện lại chủ đề yếu.
+Sinh viên Việt Nam hiện phải tự ghép các nguồn câu hỏi, kênh tìm mentor, lịch và feedback. MVP tạo vòng lặp **Question Bank -> tìm mentor -> booking -> mock interview -> feedback -> luyện lại**, giúp giảm ma sát điều phối và tạo bằng chứng cho quyết định có nên mở rộng sản phẩm hay không.
 
-## 3. Nhu cầu kinh doanh và lý do thực hiện
+Mục tiêu của dự án là bàn giao web MVP có thể pilot cho ba vai trò Student, Mentor và Admin. Thành công ở cấp dự án được đánh giá bằng các điều kiện sau:
 
-Sinh viên hiện phải kết hợp nhiều nguồn nội dung và kênh liên lạc để luyện phỏng vấn. Quy trình này tốn thời gian, khó đánh giá chất lượng câu trả lời và phụ thuộc vào mạng lưới cá nhân. Dự án kiểm chứng liệu Question Bank kết hợp Mentor Marketplace có thể giảm ma sát và nâng chất lượng chuẩn bị cho nhóm người dùng entry-level tại Việt Nam hay không.
-
-## 4. Mục tiêu và tiêu chí thành công cấp cao
-
-| Mục tiêu | Chỉ số/điều kiện |
+| Mục tiêu | Chỉ số / điều kiện thành công |
 |---|---|
 | Xác nhận vấn đề | Ít nhất 70% mẫu discovery xác nhận một pain cốt lõi |
-| Tìm nội dung hiệu quả | Ít nhất 80% phiên usability test tìm được câu hỏi phù hợp; median ≤ 2 phút |
-| Hoàn tất booking | Ít nhất 80% phiên usability test tạo được yêu cầu hợp lệ |
-| Booking đáng tin cậy | Ít nhất 80% booking đã xác nhận thực sự diễn ra |
-| Feedback có giá trị | Ít nhất 90% booking hoàn thành có điểm mạnh, điểm yếu và hành động tiếp theo |
-| Chất lượng kỹ thuật | 100% critical workflow pass; không còn defect Critical/High trước UAT |
+| Khả năng dùng | Ít nhất 80% phiên usability test tìm được câu hỏi phù hợp trong median <= 2 phút và tạo được booking hợp lệ |
+| Giá trị vận hành | Ít nhất 80% booking đã xác nhận diễn ra; ít nhất 90% booking hoàn thành có feedback gồm điểm mạnh, điểm yếu và hành động tiếp theo |
+| Chất lượng kỹ thuật | 100% critical workflow test pass; không còn defect Critical/High trước UAT |
 
-Mục tiêu số lượng người dùng, mentor và booking tuyệt đối: **[CẦN BỔ SUNG]**.
+MVP bao gồm authentication/RBAC, Question Bank, mentor profile/verification/availability, booking, meeting link ngoài hệ thống, feedback/review, admin tối thiểu và notification. AI interviewer, video/recording tích hợp, payment/payout, mobile native, ATS và ML recommendation nằm ngoài phạm vi.
 
-## 5. Phạm vi cấp cao
+## 3. Tổ chức và trách nhiệm
 
-### 5.1 Trong phạm vi MVP
-
-- Authentication và phân quyền Student/Mentor/Admin.
-- Question Bank: taxonomy, tìm kiếm/lọc, chi tiết, bookmark và trạng thái luyện.
-- Mentor profile, verification và availability.
-- Booking lifecycle, khóa time slot và notification.
-- Link họp ngoài, feedback rubric và review hợp lệ.
-- Admin tối thiểu cho nội dung, mentor, booking và report.
-- Deployment, test, UAT và tài liệu sử dụng.
-
-### 5.2 Ngoài phạm vi nếu chưa qua change control
-
-- AI interviewer, tự động chấm, speech analysis.
-- Video call tích hợp, ghi âm và phiên âm.
-- Payment escrow/payout tự động.
-- Mobile native, ATS, job board và ML recommendation.
-
-### 5.3 Deliverable chính
-
-1. Bộ requirement, workflow, backlog và acceptance criteria.
-2. Prototype luồng Student, Mentor và Admin.
-3. Ứng dụng web MVP đã deployment.
-4. Question Bank pilot và danh sách mentor pilot.
-5. Test report, UAT evidence và báo cáo KPI.
-6. User guide, release note và risk register cập nhật.
-
-## 6. Mốc chính
-
-| Mốc | Tỷ lệ lịch dự án | Exit criteria |
-|---|---:|---|
-| Discovery complete | 15% | Evidence vấn đề, stakeholder map, scope draft |
-| Requirement/prototype baseline | 30% | Workflow, prototype, backlog được PO duyệt |
-| Foundation complete | 45% | Kiến trúc, CI/CD, auth và dữ liệu nền hoạt động |
-| Question Bank complete | 60% | Luồng tìm/lọc/luyện đạt acceptance criteria |
-| Marketplace complete | 85% | Luồng mentor/booking/feedback end-to-end hoạt động |
-| UAT and release | 100% | Critical tests pass, UAT ký nhận, deployment sẵn sàng |
-
-Ngày cụ thể phụ thuộc thời lượng dự án **[CẦN BỔ SUNG]**.
-
-## 7. Stakeholder chính
-
-| Stakeholder | Vai trò |
-|---|---|
-| Sponsor/giảng viên | Phê duyệt charter, baseline và thay đổi lớn |
-| Product Owner | Quyết định ưu tiên, acceptance và release |
-| Nhóm phát triển | Phân tích, thiết kế, xây dựng, kiểm thử và vận hành |
-| Sinh viên/ứng viên | Người dùng/customer chính; cung cấp discovery và UAT |
-| Mentor/HR/người phỏng vấn | Cung cấp dịch vụ, review nội dung và feedback |
-| Nhà cung cấp ngoài | Hosting, database, email và công cụ họp |
-
-## 8. Thẩm quyền và governance
-
-### 8.1 Thẩm quyền
-
-- Product Owner ưu tiên backlog và chấp nhận story dựa trên acceptance criteria.
-- Project Manager/Scrum Master điều phối kế hoạch, risk, dependency và escalation.
-- Nhóm kỹ thuật quyết định cách triển khai trong giới hạn architecture, security và scope đã duyệt.
-- Admin pilot có quyền duyệt mentor, nội dung và xử lý report theo policy.
-
-### 8.2 Change control
-
-Mọi thay đổi ảnh hưởng MVP, lịch, ngân sách hoặc dữ liệu nhạy cảm phải có change request gồm lý do, lợi ích, effort, risk, tác động và người phê duyệt. AI, video và payment mặc định được đưa vào Future Backlog.
-
-## 9. Giả định
-
-- Có thể tuyển một nhóm mentor và sinh viên đủ cho pilot.
-- MVP dùng Google Meet/Zoom hoặc link họp ngoài.
-- Nhóm dùng free tier khi đáp ứng acceptance criteria.
-- Một người có thể giữ nhiều vai trò nhưng trách nhiệm phải rõ.
-- Feedback rubric được mentor chấp nhận sau khi thử nghiệm.
-
-## 10. Ràng buộc
-
-- Thời lượng, capacity và ngân sách chưa được xác nhận.
-- Nội dung phải tôn trọng bản quyền và lưu provenance.
-- Dữ liệu hồ sơ, booking, link họp và feedback cần kiểm soát truy cập.
-- Marketplace mới có nguồn cung mentor hạn chế.
-- MVP phải tránh phụ thuộc không cần thiết vào AI, video và payment.
-
-## 11. Rủi ro cấp cao
-
-| Rủi ro | Mức | Phản ứng |
+| Thành viên | Vai trò chính | Trách nhiệm / đầu ra |
 |---|---|---|
-| Thiếu mentor pilot | Cao | Tuyển sớm từ alumni, CLB, giảng viên; chạy concierge pilot |
-| Sinh viên không chuyển từ câu hỏi sang booking | Cao | Đo funnel, phỏng vấn nguyên nhân, thử CTA và value proposition |
-| Chất lượng mentor/feedback không đều | Cao | Verification, rubric, hướng dẫn và moderation |
-| Trùng lịch/no-show | Cao | Lock slot, reminder, cancellation policy và admin resolution |
-| Scope creep | Cao | Baseline, future backlog và change control |
-| Rò rỉ dữ liệu | Cao | Least privilege, privacy-by-design, audit và incident response |
+| Gia Thành | PM/Scrum Master, initiation & estimation | Charter, Resource Plan, Cost-Time-Resources, hai estimate độc lập, theo dõi baseline |
+| Hùng | UI/UX | Clickable prototype, workflow và bằng chứng usability |
+| Hưng | Product Owner/BA | Vision & Scope, Product Backlog, acceptance criteria, Future-State Workflow |
+| Trí | PoC/E2E | PoC core flow, dữ liệu seed, test và kết quả năm rủi ro kỹ thuật |
+| Luân | Architecture/technical lead | Technology stack, ADR, architecture, hỗ trợ kỹ thuật cho PoC |
 
-## 12. Phê duyệt
+Sponsor phê duyệt charter, phạm vi baseline và thay đổi lớn. Product Owner ưu tiên backlog và chấp nhận story. PM/Scrum Master quản lý lịch, dependency, risk và escalation. Quyết định kỹ thuật phải tuân theo architecture/ADR đã được chấp nhận.
 
-| Vai trò | Họ tên | Quyết định | Ngày/Chữ ký |
-|---|---|---|---|
-| Sponsor | [CẦN BỔ SUNG] | Approve/Reject | [CẦN BỔ SUNG] |
-| Product Owner | [CẦN BỔ SUNG] | Approve/Reject | [CẦN BỔ SUNG] |
-| Project Manager | [CẦN BỔ SUNG] | Accept responsibility | [CẦN BỔ SUNG] |
+## 4. Giả định và ràng buộc
 
+### Giả định planning
+
+- Có 5 thành viên, mỗi người cam kết trung bình 16 giờ/tuần trong 12 tuần.
+- Nhóm dành 15% capacity cho học tập, review, nghỉ và rủi ro; chỉ 816 giờ được xem là capacity cam kết.
+- Có đủ sinh viên và mentor cho discovery, prototype test và pilot nhỏ.
+- MVP dùng Google Meet, Zoom hoặc link họp ngoài; free tier đáp ứng phát triển và pilot nhỏ.
+- Question và dữ liệu pilot được nhóm/mentor biên soạn hợp pháp, có provenance.
+
+### Ràng buộc
+
+- Không phát triển AI, video tích hợp hoặc payment trong release này nếu không có change request được Sponsor/PO phê duyệt.
+- Booking, meeting link, feedback và bằng chứng mentor là dữ liệu riêng tư; phải kiểm soát truy cập theo role và ownership.
+- Booking phải chống double booking; notification lỗi không được rollback nghiệp vụ đã commit.
+- Capacity là bán thời gian; không dùng overtime kéo dài để bù kế hoạch.
+
+## 5. Milestone và lịch baseline
+
+| Mốc | Thời gian | Exit criteria |
+|---|---|---|
+| M1 - Discovery/Charter | 17/08-30/08 | Stakeholder map, problem evidence, charter và resource baseline được duyệt |
+| M2 - Requirement/Prototype baseline | 31/08-13/09 | Vision, workflow, backlog, acceptance criteria và prototype được PO chấp nhận |
+| M3 - Foundation | 14/09-27/09 | ADR/architecture, CI/CD, auth/RBAC và dữ liệu nền hoạt động |
+| M4 - Question Bank | 28/09-11/10 | Luồng tìm/lọc/xem/luyện pass acceptance criteria |
+| M5 - Mentor Marketplace | 12/10-01/11 | Mentor, availability, booking, meeting handoff, feedback và notification chạy end-to-end |
+| M6 - UAT/Release | 02/11-08/11 | Critical tests pass, không còn Critical/High defect, UAT evidence và triển khai pilot sẵn sàng |
+
+## 6. Go/No-Go
+
+| Gate | Quyết định Go khi | No-Go/Pivot khi |
+|---|---|---|
+| G1 - Problem | Pain được discovery xác nhận và có hành vi hiện tại cần cải thiện | Chỉ có ý kiến chung, không có nhu cầu thực |
+| G2 - Supply | Có mentor Approved và slot đủ cho pilot | Không tuyển được supply đúng phân khúc |
+| G3 - Prototype | >=80% người thử hoàn tất tìm câu hỏi và booking không cần hỗ trợ lớn | Luồng vẫn khó hiểu hoặc không tạo được booking hợp lệ |
+| G4 - Technical | Năm PoC: double booking, authorization, transition/audit, filter và notification retry đều pass | Còn access leak hoặc booking không nhất quán |
+| G5 - Delivery | Forecast của cả hai estimate <= 816 giờ capacity cam kết, cash cost <= 1.125.000 VND | Core loop vượt capacity/budget hoặc phải cắt kiểm soát chất lượng |
+| G6 - Pilot | Booking diễn ra, feedback hữu ích và có tín hiệu quay lại | Conversion/completion/value quá thấp sau pilot |
+
+## 7. Tham chiếu
+
+- `docs/refs/03-software-project-initiation.md`, slide 008: Charter phải nêu bối cảnh, governance, nguồn lực, milestone, impact, assumptions và phê duyệt.
+- `docs/Project_Vision_and_Scope/Project_Vision_and_Scope.md`: product goal, phạm vi MVP và ràng buộc.
+- `docs/Project_Feasibility/feasibility.md`: sáu Go/No-Go gates và năm điều kiện PoC.
