@@ -2,7 +2,7 @@
 
 | Thuộc tính | Giá trị |
 |---|---|
-| Phiên bản | 0.2 |
+| Phiên bản | 0.3 |
 | Ngày cập nhật | 14/08/2026 |
 | Architecture owner | Luân |
 | Trạng thái | Baseline cho PoC; cần cập nhật theo POC_Result.md |
@@ -70,7 +70,7 @@ Cấu trúc này giữ transaction booking trong một database, giảm chi phí
 | Data access | `pg` + versioned SQL migrations | Parameterized SQL; transaction do application service quản lý |
 | Data | PostgreSQL | ACID, constraint, row lock, index, audit và backup |
 | Job/queue | PostgreSQL outbox + worker module | At-least-once, idempotent, retry/dead-letter state |
-| Auth | Server-side session cookie | `Secure`, `HttpOnly`, `SameSite`; exact CORS allowlist và CSRF control |
+| Auth | Server-side session qua same-origin `/api` proxy | `__Host-` cookie `Secure`, `HttpOnly`, `SameSite=Lax`; CSRF control |
 | Test | Vitest, React Testing Library, Supertest, Playwright | Integration/concurrency dùng PostgreSQL thật |
 | CI/CD | Lint, audit, test, migration check, build | Frontend và backend pipeline độc lập |
 | Deployment | Static frontend + containerized API/worker + managed PostgreSQL | Provider-neutral configuration; TLS và secret ngoài repository |
@@ -84,10 +84,12 @@ flowchart LR
     Mentor["Mentor"] --> FE
     Admin["Administrator"] --> FE
     Sponsor["PO / Operations"] --> FE
-    FE -->|"HTTPS REST/JSON"| API["Express API"]
-    API --> DB[("PostgreSQL")]
+    FE -->|"same-origin /api/v1"| Proxy["Static Host Reverse Proxy"]
+    Proxy -->|"HTTPS REST/JSON"| API["Express API"]
+    API -->|"business data + outbox transaction"| DB[("PostgreSQL")]
+    Worker["Notification Worker"] --> DB
+    Worker --> Email["Email Provider"]
     API --> Obj["Private Object Storage (optional)"]
-    API --> Email["Email Provider"]
     Student --> Meet["External Meeting Provider"]
     Mentor --> Meet
 ```
@@ -95,7 +97,8 @@ flowchart LR
 ### Trust boundaries
 
 - Browser/client là untrusted; Express API xác thực mọi input, session, role và ownership.
-- Frontend và API là hai origin độc lập; CORS chỉ cho phép origin cấu hình, không dùng wildcard với credential.
+- Frontend và API là hai deployable độc lập, nhưng browser dùng cùng origin `/api`; static host reverse proxy request đến API để tránh phụ thuộc third-party cookie.
+- API origin chỉ chấp nhận proxy/origin đã cấu hình; nếu mở direct cross-origin access thì CORS không dùng wildcard với credential.
 - Email/meeting provider nằm ngoài trust boundary; không làm nguồn chân lý cho booking.
 - Verification document và meeting link là dữ liệu nhạy cảm, tách khỏi public profile.
 - Admin action có quyền cao phải được audit.
@@ -104,9 +107,9 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    Browser["Web Browser"] -->|HTTPS| CDN["Static Hosting / CDN"]
-    CDN --> Browser
-    Browser -->|"HTTPS + session cookie"| API["Express Modular Monolith"]
+    Browser["Web Browser"] -->|"GET static assets"| CDN["Static Hosting / CDN"]
+    Browser -->|"same-origin /api/v1 + session cookie"| Proxy["Edge Rewrite / Reverse Proxy"]
+    Proxy -->|HTTPS| API["Express Modular Monolith"]
     API --> DB[("PostgreSQL")]
     API --> Obj["Private Object Storage (optional)"]
     API --> Outbox[("Outbox tables in PostgreSQL")]
@@ -122,13 +125,25 @@ Frontend và backend có build/deployment độc lập. Môi trường tối thi
 
 | Thành phần | Mặc định cho PoC/pilot | Chi phí tham chiếu 14/08/2026 | Giới hạn cần ghi nhận |
 |---|---|---:|---|
-| React static frontend | Vercel Hobby | 0 USD cho personal/non-commercial | Fair-use/usage cap; pilot thương mại phải xem lại plan |
+| React static frontend + `/api` rewrite | Vercel Hobby | 0 USD cho personal/non-commercial | Fair-use/usage cap; pilot thương mại phải xem lại plan |
 | Express API | Render Free web service | 0 USD | Cold start, 750 free instance-hours/workspace; không dùng cho production SLA |
 | PostgreSQL | Neon Free | 0 USD | 0.5 GB/project, 100 CU-hours/project; scale-to-zero |
 | Notification | Fake provider trong PoC; provider adapter ở pilot | TBD | Báo giá/quota phải được chốt trước pilot thật |
-| Domain | URL mặc định của provider trong PoC | 0 USD | Custom domain và DNS là cost riêng |
+| Browser/API domain | URL frontend mặc định + same-origin rewrite | 0 USD | Custom domain và DNS là cost riêng khi pilot public |
 
 Render Free PostgreSQL không được chọn làm baseline vì database free hết hạn sau 30 ngày. Worker được phép chạy cùng API process trong PoC một-instance; staging/production phải tách process hoặc chứng minh deployment platform bảo đảm singleton/idempotent worker. Mọi giá/quota phải được kiểm tra lại khi phê duyệt Cost–Time–Resource baseline.
+
+### 5.2 Browser/API session topology
+
+Baseline không để browser gọi trực tiếp `*.onrender.com` từ `*.vercel.app`. Browser luôn gọi `/api/v1` trên origin đang phục vụ React; static host rewrite/reverse proxy chuyển request đến Express API.
+
+- Local: Vite development proxy chuyển `/api` đến API local.
+- PoC/pilot: static host rewrite chuyển `/api/:path*` đến backend deployment.
+- Session cookie dùng prefix `__Host-`, `Secure`, `HttpOnly`, `SameSite=Lax`, `Path=/` và không đặt `Domain`.
+- Mutation dùng CSRF token/header; API kiểm tra `Origin`/`Sec-Fetch-Site` khi phù hợp.
+- API base URL phía frontend là relative `/api/v1`; không nhúng backend origin vào production bundle.
+
+Nếu sau này browser gọi trực tiếp `api.example.com` từ `app.example.com`, nhóm phải cập nhật ADR/security test cho CORS, cookie scope và CSRF trước khi đổi topology.
 
 ## 6. Backend module design
 
@@ -209,6 +224,33 @@ Mentor/Admin hợp lệ chuyển booking sang Completed theo policy. Feedback se
 
 ## 8. Data design
 
+### 8.1 Conceptual ER model
+
+```mermaid
+erDiagram
+    USER ||--o| STUDENT_PROFILE : has
+    USER ||--o| MENTOR_PROFILE : has
+    MENTOR_PROFILE ||--o{ MENTOR_VERIFICATION : submits
+    MENTOR_PROFILE ||--o{ AVAILABILITY_SLOT : publishes
+    STUDENT_PROFILE ||--o{ BOOKING : requests
+    MENTOR_PROFILE ||--o{ BOOKING : receives
+    AVAILABILITY_SLOT ||--o{ BOOKING : selected_by
+    BOOKING ||--o{ BOOKING_TRANSITION : records
+    BOOKING ||--o| FEEDBACK : produces
+    BOOKING ||--o| REVIEW : produces
+    USER ||--o{ PRACTICE_PROGRESS : owns
+    QUESTION ||--o{ PRACTICE_PROGRESS : tracked_for
+    QUESTION ||--o{ QUESTION_POSITION : classified_by
+    POSITION ||--o{ QUESTION_POSITION : contains
+    QUESTION ||--o{ QUESTION_TOPIC : classified_by
+    TOPIC ||--o{ QUESTION_TOPIC : contains
+    BOOKING ||--o{ NOTIFICATION_JOB : emits
+```
+
+Một slot có thể có nhiều booking `PENDING`, nhưng partial unique index chỉ cho một booking ở trạng thái chiếm slot. `Feedback` và `Review` đều unique theo `booking_id`; review chỉ thuộc Student của booking. `NotificationJob` là quan hệ logic qua aggregate ID/event key và không được điều khiển booking state.
+
+### 8.2 Entity responsibilities
+
 | Entity | Trường/chức năng chính |
 |---|---|
 | User | id, email, status, roles, auth metadata |
@@ -217,7 +259,7 @@ Mentor/Admin hợp lệ chuyển booking sang Completed theo policy. Feedback se
 | MentorVerification | mentor_id, evidence ref, status, decision audit |
 | Position/Topic | taxonomy và trạng thái |
 | Question | content, type, difficulty, status, provenance, version |
-| QuestionTag | many-to-many question ↔ position/topic |
+| QuestionPosition/QuestionTopic | many-to-many question ↔ position/topic; composite unique key |
 | PracticeProgress | student_id, question_id, bookmark, status |
 | AvailabilitySlot | mentor_id, start/end UTC, timezone, status |
 | Booking | student, mentor, slot, goal, type, state, meeting ref |
@@ -228,7 +270,7 @@ Mentor/Admin hợp lệ chuyển booking sang Completed theo policy. Feedback se
 | IdempotencyRecord | actor, key, operation, request hash, response ref |
 | Report/AuditLog | target, actor, action, reason, timestamp |
 
-### Data consistency
+### 8.3 Data consistency
 
 - Lưu instant theo UTC; giữ timezone nguồn để hiển thị/audit.
 - Dùng database constraint để bảo đảm unique review/feedback per booking.
@@ -285,8 +327,9 @@ Booking accept/reschedule/cancel/complete, meeting-link access, feedback create/
 
 - Server-side session lưu hash/token reference và expiry; session ID chỉ nằm trong cookie.
 - Password hash bằng Argon2id hoặc thuật toán được security review chấp nhận; rate limit login/reset.
-- Cookie `Secure`, `HttpOnly`, `SameSite` phù hợp deployment; frontend gửi credential chỉ đến API origin cấu hình.
-- CORS dùng allowlist chính xác; cookie-authenticated mutation có CSRF protection.
+- Cookie `__Host-` có `Secure`, `HttpOnly`, `SameSite=Lax`, `Path=/`, không có `Domain`; frontend chỉ gọi relative `/api/v1`.
+- Static host proxy request đến API; cookie-authenticated mutation có CSRF token và origin check.
+- Nếu direct cross-origin API được bật sau này, CORS phải dùng allowlist chính xác và quyết định cookie scope phải qua security review.
 - Session revoke, email verification và reset token ngắn hạn.
 
 ### Authorization
@@ -308,13 +351,20 @@ Booking accept/reschedule/cancel/complete, meeting-link access, feedback create/
 
 ### Initial service targets
 
-| Target | Mục tiêu pilot |
-|---|---:|
-| Common API response | ≤ 3 giây trong điều kiện test |
-| Critical workflow test pass | 100% |
-| Critical/High open defect trước UAT | 0 |
-| Notification | Retry được; không mất business transaction |
-| Backup restore | Test trước pilot |
+Profile kiểm chứng pilot dùng một API instance, connection pool được cấu hình, PostgreSQL có ít nhất 1.000 Published Question, 100 Mentor, 1.000 future Slot và 500 Booking. Load test chạy 20 virtual users đồng thời trong 10 phút sau warm-up. Đây là baseline kỹ thuật để so sánh; phải cập nhật khi quy mô pilot thực tế được duyệt.
+
+| Target | Mục tiêu pilot | Cách kiểm chứng |
+|---|---:|---|
+| Search/list API | p95 ≤ 3 giây; HTTP 5xx < 1% | Load test theo profile trên với deterministic dataset |
+| Booking detail/mutation | p95 ≤ 3 giây, không tính provider notification | Integration/load test trên staging |
+| Booking consistency | Đúng 1 winner trong 20 concurrent confirm cùng slot | PostgreSQL concurrency test theo ADR-002 |
+| Critical workflow test pass | 100% | PoC/integration/E2E report cho năm critical workflow |
+| Critical/High open defect trước UAT | 0 | Defect register và UAT exit review |
+| Notification enqueue | Outbox cùng transaction; worker pickup p95 ≤ 10 giây khi provider hoạt động | Fake-provider integration test và job metrics |
+| Backup/restore | RPO ≤ 24 giờ; RTO ≤ 4 giờ | Nightly logical backup và restore drill trước pilot |
+| Transport security | TLS 1.2 trở lên | Deployment/security configuration check |
+
+Free-tier deployment không có uptime SLA; availability target chỉ được baseline sau khi nhóm chọn paid pilot plan hoặc nhà cung cấp có SLA phù hợp.
 
 ### Observability
 
@@ -371,6 +421,16 @@ PoC chưa có source/result tại ngày 14/08/2026. Để tránh hai bên hiểu
 
 Sau khi nhận result, Luân phải: (1) đối chiếu ADR assumption với evidence; (2) cập nhật trạng thái ADR; (3) sửa diagram/data/API nếu PoC khác baseline; (4) ghi deviation và trade-off, không âm thầm sửa lịch sử ADR.
 
+Design review là gate bắt buộc trước khi chấp nhận architecture cho MVP:
+
+| Mục | Trạng thái hiện tại | Exit evidence |
+|---|---|---|
+| Review backlog/module mapping | Prepared | Luân và Trí xác nhận module/API phục vụ đủ năm PoC |
+| Review database/concurrency design | Pending PoC | Migration và concurrent test result được review |
+| Review authorization/session topology | Pending PoC | Ownership matrix và deployed same-origin session test pass |
+| Review notification/deployment | Pending PoC | Failure/retry evidence và worker topology được xác nhận |
+| Quyết định cuối | Pending | Meeting note hoặc PR review ghi Accept/Revise và ADR status mới |
+
 ### Recommended delivery order
 
 1. Repository, CI/CD, auth/RBAC, schema và audit foundation.
@@ -392,4 +452,15 @@ Sau khi nhận result, Luân phải: (1) đối chiếu ADR assumption với evi
 | PII leakage | Data classification, log redaction, private storage, retention |
 | Content/review abuse | Provenance, moderation, report/appeal và audit |
 | Stack mismatch với team | Spike và ADR sau skill matrix; tránh công nghệ mới không cần thiết |
+
+## 17. Traceability với slide tham chiếu
+
+| Nội dung slide | Cách architecture đáp ứng |
+|---|---|
+| [03 — Slide 011: Which Architecture?](../refs/03-software-project-initiation.md) | ADR-001 giải thích architectural style, technology stack, framework và deployment platform |
+| [06.1 — Slides 032–033: System Architecture](../refs/06-1-agile-planning.md) | Backlog traceability, system context, components, interfaces, NFR và design-review gate |
+| [05.1 — Slide 024: Solution Engineering Decomposition](../refs/05-1-work-breakdown-structure.md) | ER model, module design, technology, external integrations và ADR patterns |
+| [07 — Slides 041–050: SCM, CI/CD và DevOps](../refs/07-software-configuration-management.md) | Branch/lockfile, independent pipelines, Docker, environment configuration và monitoring |
+| [10.1 — Slides 010–014: Technology risk](../refs/10-1-agile-risk-management.md) | Ưu tiên stack quen thuộc; PoC gates, transition indicator và contingency qua ADR |
+| [11 — Slides 024–025: Quality requirements](../refs/11-software-quality-management.md) | NFR có metric, test profile, evaluation method và exit criteria |
 

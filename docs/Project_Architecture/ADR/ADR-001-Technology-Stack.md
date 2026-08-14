@@ -2,7 +2,7 @@
 
 | Thuộc tính | Giá trị |
 |---|---|
-| Trạng thái | Accepted for PoC and MVP baseline |
+| Trạng thái | Accepted for PoC; Proposed for MVP |
 | Ngày quyết định | 14/08/2026 |
 | Người chịu trách nhiệm | Luân — Architecture/Technology Stack |
 | Người cần xác nhận bằng PoC | Trí — End-to-End PoC |
@@ -62,6 +62,18 @@ Không chọn vì: yêu cầu hiện tại là frontend/backend độc lập; MV
 
 Không chọn vì: Java/Spring không nằm trong năng lực nhóm đã cung cấp; chi phí học và setup làm giảm tốc độ PoC mà không tạo lợi ích cần thiết cho quy mô pilot.
 
+### 3.1 Architectural styles đã xem xét
+
+Slide môn học yêu cầu trả lời cả “vì sao chọn architectural style”, không chỉ framework. Ba style được đánh giá như sau:
+
+| Style | Transaction booking | Testability | Operations/cost | Team fit | Kết luận |
+|---|---|---|---|---|---|
+| **Modular monolith backend** | Một transaction/DB boundary | Module và integration test rõ | Một API deployable; chi phí thấp | Phù hợp Express | **Chọn** |
+| Microservices | Cần distributed consistency/saga | Service test tốt nhưng E2E phức tạp | Nhiều service, network và observability | Quá sức pilot | Không chọn |
+| Serverless functions theo route | Transaction ngắn khả thi | Dễ test đơn vị, khó worker/lifecycle | Scale-to-zero nhưng có cold start/connection pressure | Thêm platform coupling | Không chọn làm baseline |
+
+Modular monolith không có nghĩa mọi module được phép sửa chung dữ liệu tùy ý. Modules giao tiếp qua application contracts; Booking giữ state machine, Notification chỉ nhận outbox event và frontend không truy cập database.
+
 ## 4. Quyết định
 
 Chọn phương án A với baseline sau:
@@ -78,7 +90,7 @@ Chọn phương án A với baseline sau:
 | Database | PostgreSQL, dùng `pg` và versioned SQL migrations |
 | Architecture style | Modular monolith backend; frontend là deployable riêng |
 | Background work | Transactional outbox trong PostgreSQL; worker logic tách khỏi request path |
-| Authentication | Server-side session; cookie `Secure`, `HttpOnly`, `SameSite`; CORS allowlist chính xác |
+| Authentication | Server-side session qua same-origin `/api` reverse proxy; `__Host-` cookie `Secure`, `HttpOnly`, `SameSite=Lax` |
 | Unit/integration test | Vitest; React Testing Library; Supertest; PostgreSQL thật cho integration/concurrency test |
 | E2E test | Playwright cho critical workflow |
 | Quality/CI | ESLint, formatter, dependency audit, migration check, test và build trong CI |
@@ -111,7 +123,7 @@ Trong bài nộp PoC, hai project có thể nằm dưới `poc/mentor-booking-fe
 
 Deployment pilot đề xuất:
 
-- Frontend static: Vercel Hobby hoặc static host tương đương.
+- Frontend static: Vercel Hobby hoặc static host tương đương; cấu hình same-origin `/api/*` rewrite đến backend.
 - Backend API: Render Free cho demo/PoC; chuyển sang paid instance khi pilot cần uptime ổn định.
 - Database: Neon Free cho PoC/pilot nhỏ; dùng pooled connection và theo dõi quota.
 - Worker: chạy cùng backend process chỉ trong PoC một-instance; tách thành worker process ở staging/production khi nền tảng hỗ trợ.
@@ -134,7 +146,7 @@ Deployment pilot đề xuất:
 - Free tier có cold start, quota và không phải production SLA.
 - Chạy worker cùng API chỉ phù hợp PoC; không được giả định an toàn khi scale nhiều instance.
 
-## 7. PoC gates trước khi giữ trạng thái Accepted
+## 7. PoC gates trước khi Accepted cho MVP
 
 Trí cần ghi Pass/Fail và evidence cho:
 
@@ -144,6 +156,7 @@ Trí cần ghi Pass/Fail và evidence cho:
 4. Multi-tag question filter không duplicate và không lộ Draft.
 5. Notification provider lỗi không rollback booking; retry không gửi trùng theo event key.
 6. Frontend build, backend test và migration chạy được độc lập trong CI.
+7. Deployed frontend đăng nhập và gọi protected `/api/v1` qua same-origin proxy; cookie không phụ thuộc third-party access và CSRF negative test pass.
 
 Nếu một gate thất bại do giới hạn stack thay vì lỗi triển khai, ADR này chuyển thành `Superseded` hoặc `Rejected` bằng ADR mới; không sửa lịch sử quyết định.
 
@@ -159,5 +172,6 @@ Kiểm tra ngày 14/08/2026:
 - PostgreSQL locking: https://www.postgresql.org/docs/current/explicit-locking.html
 - Playwright: https://playwright.dev/docs/intro
 - Vercel pricing: https://vercel.com/pricing
+- Vercel external-origin rewrites: https://vercel.com/docs/routing/rewrites
 - Render free services: https://render.com/docs/free
 - Neon pricing: https://neon.com/pricing
