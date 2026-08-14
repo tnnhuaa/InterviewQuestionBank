@@ -56,7 +56,6 @@ function App() {
   const [tags, setTags] = useState([])
   const [questions, setQuestions] = useState(null)
   const [bookingRes, setBookingRes] = useState('')
-  const [bookingId, setBookingId] = useState('')
   const [bookingStage, setBookingStage] = useState('Chưa tạo')
   const [mentorInputId, setMentorInputId] = useState('')
   const [mentorRes, setMentorRes] = useState('')
@@ -122,7 +121,6 @@ function App() {
     if (status === 201) {
       const id = String(data.booking_id)
       setBookingRes(`Đã gửi yêu cầu BK-${id.padStart(4, '0')}. Mentor sẽ xác nhận lịch.`)
-      setBookingId(id)
       setMentorInputId(id)
       setAuthInputId(id)
       setBookingStage('Chờ xác nhận')
@@ -140,7 +138,6 @@ function App() {
       const nextStage = action === 'accept' ? 'Đã xác nhận' : 'Hoàn thành'
       setMentorRes(data.message || `Đã chuyển trạng thái sang ${nextStage}.`)
       setBookingStage(nextStage)
-      setBookingId(mentorInputId)
       setAuthInputId(mentorInputId)
     } else {
       setMentorRes(`Lỗi: ${data.message || data.error}`)
@@ -215,13 +212,9 @@ function App() {
 
       {activeView === 'discover' && (
         <div className="page-container">
-          <section className="page-intro view-enter">
-            <div>
-              <p className="context-line">Chuẩn bị cho Front-end Intern</p>
-              <h1>Tìm đúng người để luyện đúng điều bạn còn thiếu.</h1>
-            </div>
-            <p className="intro-copy">Chọn mentor theo chuyên môn, kiểm tra lại bộ câu hỏi liên quan và gửi yêu cầu trong cùng một luồng.</p>
-          </section>
+          <header className="page-title view-enter">
+            <h1>Tìm mentor phù hợp</h1>
+          </header>
 
           <section className="discover-grid view-enter">
             <div className="mentor-column">
@@ -295,11 +288,11 @@ function App() {
               <div className="slot-picker" role="radiogroup" aria-label="Chọn thời gian">
                 <button className="slot is-selected" role="radio" aria-checked="true">
                   <strong>Thứ Ba, 01/09</strong>
-                  <span>10:00–11:00 · GMT+7</span>
+                  <span>10:00-11:00 · GMT+7</span>
                 </button>
                 <button className="slot" role="radio" aria-checked="false">
                   <strong>Thứ Tư, 02/09</strong>
-                  <span>10:00–11:00 · GMT+7</span>
+                  <span>10:00-11:00 · GMT+7</span>
                 </button>
               </div>
 
@@ -324,13 +317,9 @@ function App() {
 
       {activeView === 'booking' && (
         <div className="page-container">
-          <section className="page-intro compact-intro view-enter">
-            <div>
-              <p className="context-line">{bookingId ? `Booking BK-${bookingId.padStart(4, '0')}` : 'Booking chưa được tạo'}</p>
-              <h1>Chi tiết lịch luyện tập</h1>
-            </div>
-            <span className={`stage-badge stage-${bookingStage.toLowerCase().replaceAll(' ', '-')}`}>{bookingStage}</span>
-          </section>
+          <header className="page-title view-enter">
+            <h1>Lịch luyện tập</h1>
+          </header>
 
           <section className="booking-workspace view-enter">
             <div className="booking-main">
@@ -386,10 +375,9 @@ function App() {
 
       {activeView === 'feedback' && (
         <div className="page-container">
-          <section className="page-intro compact-intro view-enter">
-            <div><p className="context-line">Sau buổi luyện tập</p><h1>Biến nhận xét thành bước luyện tiếp theo.</h1></div>
-            <p className="intro-copy">Phản hồi chỉ được gửi sau khi booking đã hoàn thành.</p>
-          </section>
+          <header className="page-title view-enter">
+            <h1>Phản hồi</h1>
+          </header>
 
           <section className="feedback-grid view-enter">
             <div className="feedback-context">
