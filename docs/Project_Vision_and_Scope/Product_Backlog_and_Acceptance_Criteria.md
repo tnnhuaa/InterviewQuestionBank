@@ -8,7 +8,7 @@
 |---|---|
 | Owner/Producer | Hưng — Member 3 / Product Owner |
 | Supporting tool | Codex |
-| Version | 0.6-ai-six-member-reference |
+| Version | 0.7-ai-bootstrap-provenance |
 | Branch | `feat/member-3-scope-backlog` |
 | Updated | 15/08/2026 |
 | Status | Cross-branch/tree inspection and six-member role reconciliation completed; pending PO/team inspection and Sponsor acceptance |
@@ -33,6 +33,7 @@ Release R1 is a responsive web MVP for Student, Mentor and Administrator. It inc
 | EV-03 — PoC implementation | [`e1d6911`](https://github.com/tnnhuaa/InterviewQuestionBank/tree/e1d691135497d6d10b786d539bb5888c4b0f8291/poc) | Partial question, booking, link, feedback and worker implementation | Implementation evidence only; not accepted as passing the five PoC gates |
 | EV-04 — Prototype specification on remote `main` | [`6548e12`](https://github.com/tnnhuaa/InterviewQuestionBank/blob/6548e129d702facf741641dbfb2e38ddf392d310/docs/Project_Prototype/Prototype_Workflow.md) | Screen IDs, user flows, states and prototype test tasks | Requirement/prototype specification; no dedicated Member 2 branch, clickable frames, handoff or usability result found |
 | EV-05 — Member 3 prior scope baseline | [`dca6a09`](https://github.com/tnnhuaa/InterviewQuestionBank/tree/dca6a09998f2082880525e41bb4899fa069278f6/docs/Project_Vision_and_Scope) | Vision, backlog, future-state workflow and AI validation | Input superseded by this 0.3 reconciliation for backlog semantics |
+| EV-06 — Tuấn Anh repository/document bootstrap | [`ff41b3c`](https://github.com/tnnhuaa/InterviewQuestionBank/commit/ff41b3ce37b6187df6590d1d77b057e59792f25d), [`0743a68`](https://github.com/tnnhuaa/InterviewQuestionBank/commit/0743a685195a3396511a59c83515860c9f11bfdd) | Root repository initialization, `docs/` skeleton and starter content for 16 initial paths | Historical configuration/document contribution; specialist owners remain responsible for correctness, evidence and acceptance |
 
 Cross-branch discrepancies and their required owner actions are retained in section 14 of this document so the submission tree contains only the three Member 3 deliverables required by `Task_W10.pdf`.
 
@@ -263,7 +264,7 @@ Milestone alignment is Discovery/Charter → Requirements/Prototype → Foundati
 
 | ID | Decision | Owner | Reconciled status / impact |
 |---|---|---|---|
-| DEC-01 | Sponsor, PO, PM, Team Lead and acceptance authority | Sponsor/group | **Proposed resolved:** Hưng PO, Gia Thành PM/Scrum Master, Tuấn Anh Team Lead/Integration & Document Control, instructor Sponsor; formal acceptance record pending |
+| DEC-01 | Sponsor, PO, PM, Team Lead and acceptance authority | Sponsor/group | **Proposed resolved:** Hưng PO, Gia Thành PM/Scrum Master, Tuấn Anh repository/document bootstrap contributor and Team Lead/Integration & Document Control, instructor Sponsor; formal acceptance record pending |
 | DEC-02 | First pilot segment, sample size, Mentor/booking absolute targets | PO/Research | Open; blocks executable market/pilot plan |
 | DEC-03 | Cancel/reschedule/no-show/completion authority, cutoff and evidence policy | PO/Operations | Open; blocks readiness of US-12/13/15/20 and reschedule occupancy design |
 | DEC-04 | Free/manual payment or credit treatment during pilot | PO/Sponsor | Open; payment automation remains out of scope, but terms/operations need a decision |

@@ -8,7 +8,7 @@
 |---|---|
 | Owner/Producer | Hưng — Thành viên 3 |
 | Công cụ hỗ trợ | Codex |
-| Phiên bản | 0.6-ai-six-member-reference |
+| Phiên bản | 0.7-ai-bootstrap-provenance |
 | Trạng thái | Cross-branch/tree inspection and six-member role reconciliation completed; pending Hưng/PO inspection và Sponsor acceptance |
 | Branch | `feat/member-3-scope-backlog` |
 | Ngày cập nhật | 15/08/2026 |
@@ -265,7 +265,7 @@ Decision IDs use the same meaning in Vision, Backlog and Workflow. The evidence/
 
 | ID | Decision cần chốt | Owner | Trạng thái / ảnh hưởng |
 |---|---|---|---|
-| DEC-01 | Sponsor, Product Owner, PM, Team Lead và acceptance authority | Sponsor/group | Proposed resolved: Hưng PO, Gia Thành PM/Scrum Master, Tuấn Anh Team Lead/Integration & Document Control, giảng viên Sponsor; formal acceptance pending |
+| DEC-01 | Sponsor, Product Owner, PM, Team Lead và acceptance authority | Sponsor/group | Proposed resolved: Hưng PO, Gia Thành PM/Scrum Master, Tuấn Anh repository/document bootstrap contributor và Team Lead/Integration & Document Control, giảng viên Sponsor; formal acceptance pending |
 | DEC-02 | Pilot segment, sample size, mentor/booking target | PO/Research | Open; OBJ-01/market validation chưa executable |
 | DEC-03 | Cancellation, reschedule, no-show, completion authority/cutoff/evidence | PO/Operations | Open; BR/AC/state machine và old-slot reschedule protection còn conditional |
 | DEC-04 | Free/manual payment hoặc credit treatment trong pilot | PO/Sponsor | Open; payment automation vẫn out of scope nhưng terms/operations chưa khóa |
