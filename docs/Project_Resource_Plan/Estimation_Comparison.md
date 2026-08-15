@@ -2,7 +2,9 @@
 
 ## 1. Mục đích và phạm vi
 
-Tài liệu so sánh hai estimate độc lập cho **toàn bộ MVP** đã baseline trong Vision & Scope: 20 Must stories, hoạt động cross-cutting (discovery, architecture, test, deployment/UAT, documentation) và không gồm AI, video tích hợp, payment, mobile native hay ML. Cả hai là forecast tại thời điểm inception, không phải commitment.
+Tài liệu so sánh hai estimate độc lập cho **baseline trước thay đổi JD**: 20 Must stories, hoạt động cross-cutting (discovery, architecture, test, deployment/UAT, documentation) và không gồm AI, video tích hợp, payment, mobile native hay ML. Cả hai là forecast tại thời điểm inception, không phải commitment.
+
+Theo change brief, JD intake, extraction/OCR, requirement analysis, question mapping và preparation plan sẽ bổ sung các Must story mới. Vì các story đó chưa được cập nhật/phê duyệt trong Product Backlog tại thời điểm lập bảng này, các số 657/756 và 598/688 chỉ là mốc tham chiếu trước thay đổi; PM/PO phải re-estimate và rebaseline trước khi dùng chúng cho Go/No-Go của scope JD.
 
 ## 2. Dữ liệu đầu vào và giả định chung
 
@@ -10,7 +12,7 @@ Tài liệu so sánh hai estimate độc lập cho **toàn bộ MVP** đã basel
 |---|---|---|
 | Scope count | 20 Must stories; US-21-23 là Should/Could, không tính vào baseline | Product Backlog |
 | Technical scope | Relational DB, RBAC, booking consistency, outbox/retry, external meeting link | Architecture và Feasibility |
-| Team capacity | 5 người x 16 giờ x 12 tuần = 960 giờ nominal; 15% reserve = 816 giờ commitment | Resource Plan |
+| Team capacity | 6 người x 16 giờ x 12 tuần = 1.152 giờ nominal; 15% reserve = khoảng 979 giờ commitment | Resource Plan |
 | Contingency | 15% effort cho uncertainty ban đầu | Planning assumption; cone of uncertainty trong lecture |
 | Labor rate | 50.000 VND/giờ, chỉ là giá trị học thuật nội bộ | Planning assumption |
 | Historical-data limitation | Nhóm chưa có historical actuals của dự án tương tự; vì vậy không dùng estimation by analogy. Hệ số năng suất của phương pháp A là structured expert judgment và phải được recalibrate sau PoC/sprint đầu | Transparency note |
@@ -36,7 +38,7 @@ MVP có web CRUD/workflow nhưng có booking transaction, object authorization, 
 | Contingency | 15% x 657, làm tròn | +99 |
 | **Top-down planning estimate** | 657 + 99 | **756 giờ** |
 
-Duration forecast: `756 / (5 x 16 x 0,85) = 11,1 tuần`. Vì vậy phương pháp A phù hợp cửa sổ 12 tuần nhưng chỉ còn khoảng 0,9 tuần buffer; không được thêm scope.
+Duration forecast tham chiếu: `756 / (6 x 16 x 0,85) = 9,3 tuần`. Vì vậy phương pháp A phù hợp cửa sổ 12 tuần và còn khoảng 2,7 tuần buffer **cho baseline trước thay đổi JD**; không được coi đây là buffer để hấp thụ scope mới.
 
 ## 4. Phương pháp B - Bottom-up + Three-point
 
@@ -56,7 +58,7 @@ Công thức PERT cho từng epic: **E = (O + 4M + P) / 6**, trong đó O = opti
 | Contingency | 15% x 598, làm tròn |  |  | **90 giờ** |
 | **Bottom-up planning estimate** |  |  |  | **688 giờ** |
 
-Các dòng PERT được làm tròn đến giờ gần nhất để review; tổng 598 giờ khớp bảng Cost-Time-Resources. Duration forecast: `688 / 68 giờ/tuần = 10,1 tuần`, còn khoảng 1,9 tuần buffer trong cửa sổ 12 tuần.
+Các dòng PERT được làm tròn đến giờ gần nhất để review; tổng 598 giờ khớp bảng Cost-Time-Resources. Duration forecast tham chiếu: `688 / 81,6 giờ/tuần = 8,4 tuần`, còn khoảng 3,6 tuần buffer trong cửa sổ 12 tuần **cho baseline trước thay đổi JD**.
 
 ## 5. So sánh và quyết định
 
@@ -65,17 +67,17 @@ Các dòng PERT được làm tròn đến giờ gần nhất để review; tổ
 | Effort trước contingency | 657 giờ | 598 giờ |
 | Contingency 15% | 99 giờ | 90 giờ |
 | Planning estimate | **756 giờ** | **688 giờ** |
-| Duration forecast | 11,1 tuần | 10,1 tuần |
-| So với capacity 816 giờ | còn 60 giờ | còn 128 giờ |
+| Duration forecast tham chiếu với 6 người | 9,3 tuần | 8,4 tuần |
+| So với capacity ~979 giờ | còn 223 giờ | còn 291 giờ |
 | Labor value gồm contingency | 37.800.000 VND | 34.400.000 VND |
 
 Chênh lệch planning estimate là **68 giờ (9,9% so với bottom-up)**. Top-down cao hơn vì rate theo story và complexity factor rộng cho booking/security/reliability tạo guardrail bảo thủ; bottom-up tách work package nên bỏ bớt double counting, nhưng còn rủi ro omission và phụ thuộc độ trưởng thành của backlog/architecture.
 
-**Quyết định:** dùng **688 giờ Bottom-up + Three-point** làm working baseline vì có traceability đến epic/work package. Dùng **756 giờ Top-down parametric** làm guardrail độc lập: nếu reforecast tiến gần 756 giờ, PM phải báo PO/Sponsor, kiểm tra scope/assumption và kích hoạt change control. Cả hai estimate đều nằm dưới 816 giờ commitment; Go chỉ có hiệu lực khi các gate Problem, Supply, Prototype và năm PoC kỹ thuật cũng pass.
+**Quyết định:** dùng **688 giờ Bottom-up + Three-point** làm working baseline **cho scope trước thay đổi JD** vì có traceability đến epic/work package. Dùng **756 giờ Top-down parametric** làm guardrail độc lập cho cùng scope. Khi backlog JD được PO phê duyệt, PM phải cập nhật WBS/PERT và top-down count, rồi trình một baseline mới trước Go; không được suy diễn phần buffer tham chiếu là capacity đã được phê duyệt cho scope mới.
 
 ## 6. Kế hoạch giảm bất định
 
 1. Sau M2, dùng backlog/prototype được PO chấp nhận để review lại story count, rate judgment và các complexity factor của phương pháp A.
 2. Sau M3/M5, ghi actual effort của foundation và booking PoC; cập nhật productivity, PERT ranges và forecast.
-3. Cuối mỗi sprint, so actual/carry-over với 68 giờ/tuần capacity commitment. Hai sprint thấp hơn forecast hoặc một critical PoC fail phải reforecast ngay.
+3. Cuối mỗi sprint, so actual/carry-over với 81,6 giờ/tuần capacity commitment. Hai sprint thấp hơn forecast hoặc một critical PoC fail phải reforecast ngay.
 4. Chỉ đưa Should/Could vào plan khi Must backlog, reserve và Go/No-Go vẫn an toàn.

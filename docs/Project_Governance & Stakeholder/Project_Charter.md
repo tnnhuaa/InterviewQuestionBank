@@ -7,7 +7,7 @@
 | Sponsor | Giảng viên phụ trách môn học (phê duyệt ở mốc Go/No-Go) |
 | Product Owner | Hưng - Vision, scope và backlog |
 | Project Manager / Scrum Master | Gia Thành - điều phối baseline, nguồn lực, tiến độ và rủi ro |
-| Nhóm thực hiện | Gia Thành, Hùng, Hưng, Trí, Luân |
+| Nhóm thực hiện | Gia Thành, Hùng, Hưng, Trí, Luân, Tuấn Anh |
 | Phiên bản | 1.0 - planning baseline |
 | Ngày baseline | 14/08/2026 |
 | Thời gian đề xuất | 17/08/2026-08/11/2026 (12 tuần) |
@@ -15,7 +15,7 @@
 
 ## 2. Bối cảnh, mục tiêu và phạm vi
 
-Sinh viên Việt Nam hiện phải tự ghép các nguồn câu hỏi, kênh tìm mentor, lịch và feedback. MVP tạo vòng lặp **Question Bank -> tìm mentor -> booking -> mock interview -> feedback -> luyện lại**, giúp giảm ma sát điều phối và tạo bằng chứng cho quyết định có nên mở rộng sản phẩm hay không.
+Sinh viên Việt Nam thường đọc một mô tả công việc cụ thể (Job Description - JD) nhưng không biết cần ôn kiến thức, kỹ năng và câu hỏi nào để chuẩn bị phỏng vấn. Họ phải tự ghép các nguồn câu hỏi, tài liệu, kênh tìm mentor, lịch và feedback; vì vậy MVP cần tạo vòng lặp **JD -> extract/OCR -> phân tích yêu cầu -> mapping Question Bank -> kế hoạch ôn -> self-practice hoặc booking mentor -> mock interview -> feedback -> luyện lại**, giúp giảm ma sát điều phối và tạo bằng chứng cho quyết định có nên mở rộng sản phẩm hay không.
 
 Mục tiêu của dự án là bàn giao web MVP có thể pilot cho ba vai trò Student, Mentor và Admin. Thành công ở cấp dự án được đánh giá bằng các điều kiện sau:
 
@@ -26,29 +26,30 @@ Mục tiêu của dự án là bàn giao web MVP có thể pilot cho ba vai trò
 | Giá trị vận hành | Ít nhất 80% booking đã xác nhận diễn ra; ít nhất 90% booking hoàn thành có feedback gồm điểm mạnh, điểm yếu và hành động tiếp theo |
 | Chất lượng kỹ thuật | 100% critical workflow test pass; không còn defect Critical/High trước UAT |
 
-MVP bao gồm authentication/RBAC, Question Bank, mentor profile/verification/availability, booking, meeting link ngoài hệ thống, feedback/review, admin tối thiểu và notification. AI interviewer, video/recording tích hợp, payment/payout, mobile native, ATS và ML recommendation nằm ngoài phạm vi.
+MVP bao gồm authentication/RBAC, JD ingestion, text extraction/OCR, requirement analysis, taxonomy normalization, question mapping, preparation plan, Question Bank, mentor profile/verification/availability, booking, meeting link ngoài hệ thống, feedback/review, admin tối thiểu và notification. AI interviewer, video/recording tích hợp, payment/payout, mobile native, ATS và ML recommendation nằm ngoài phạm vi.
 
 ## 3. Tổ chức và trách nhiệm
 
 | Thành viên | Vai trò chính | Trách nhiệm / đầu ra |
 |---|---|---|
 | Gia Thành | PM/Scrum Master, initiation & estimation | Charter, Resource Plan, Cost-Time-Resources, hai estimate độc lập, theo dõi baseline |
+| Tuấn Anh | Trưởng nhóm / leadership & governance | Điều phối nhóm, phê duyệt scope/priority, hỗ trợ escalation, theo dõi độ sẵn sàng delivery |
 | Hùng | UI/UX | Clickable prototype, workflow và bằng chứng usability |
 | Hưng | Product Owner/BA | Vision & Scope, Product Backlog, acceptance criteria, Future-State Workflow |
 | Trí | PoC/E2E | PoC core flow, dữ liệu seed, test và kết quả năm rủi ro kỹ thuật |
 | Luân | Architecture/technical lead | Technology stack, ADR, architecture, hỗ trợ kỹ thuật cho PoC |
 
-Sponsor phê duyệt charter, phạm vi baseline và thay đổi lớn. Product Owner ưu tiên backlog và chấp nhận story. PM/Scrum Master quản lý lịch, dependency, risk và escalation. Quyết định kỹ thuật phải tuân theo architecture/ADR đã được chấp nhận.
+Sponsor phê duyệt charter, phạm vi baseline và thay đổi lớn. Trưởng nhóm hỗ trợ PM/PO trong điều phối, escalation và cam kết delivery. Product Owner ưu tiên backlog và chấp nhận story. PM/Scrum Master quản lý lịch, dependency, risk và escalation. Quyết định kỹ thuật phải tuân theo architecture/ADR đã được chấp nhận.
 
 ## 4. Giả định và ràng buộc
 
 ### Giả định planning
 
-- Có 5 thành viên, mỗi người cam kết trung bình 16 giờ/tuần trong 12 tuần.
-- Nhóm dành 15% capacity cho học tập, review, nghỉ và rủi ro; chỉ 816 giờ được xem là capacity cam kết.
+- Có 6 thành viên, mỗi người cam kết trung bình 16 giờ/tuần trong 12 tuần.
+- Nhóm dành 15% capacity cho học tập, review, nghỉ và rủi ro; chỉ khoảng 979 giờ được xem là capacity cam kết.
 - Có đủ sinh viên và mentor cho discovery, prototype test và pilot nhỏ.
 - MVP dùng Google Meet, Zoom hoặc link họp ngoài; free tier đáp ứng phát triển và pilot nhỏ.
-- Question và dữ liệu pilot được nhóm/mentor biên soạn hợp pháp, có provenance.
+- Question, JD mẫu và dữ liệu pilot được nhóm/mentor biên soạn hợp pháp, có provenance.
 
 ### Ràng buộc
 
@@ -64,7 +65,7 @@ Sponsor phê duyệt charter, phạm vi baseline và thay đổi lớn. Product 
 | M1 - Discovery/Charter | 17/08-30/08 | Stakeholder map, problem evidence, charter và resource baseline được duyệt |
 | M2 - Requirement/Prototype baseline | 31/08-13/09 | Vision, workflow, backlog, acceptance criteria và prototype được PO chấp nhận |
 | M3 - Foundation | 14/09-27/09 | ADR/architecture, CI/CD, auth/RBAC và dữ liệu nền hoạt động |
-| M4 - Question Bank | 28/09-11/10 | Luồng tìm/lọc/xem/luyện pass acceptance criteria |
+| M4 - JD intake & analysis | 28/09-11/10 | Nhập JD, extract/OCR, xác nhận text, taxonomy mapping và preparation plan pass acceptance criteria |
 | M5 - Mentor Marketplace | 12/10-01/11 | Mentor, availability, booking, meeting handoff, feedback và notification chạy end-to-end |
 | M6 - UAT/Release | 02/11-08/11 | Critical tests pass, không còn Critical/High defect, UAT evidence và triển khai pilot sẵn sàng |
 
@@ -76,7 +77,7 @@ Sponsor phê duyệt charter, phạm vi baseline và thay đổi lớn. Product 
 | G2 - Supply | Có mentor Approved và slot đủ cho pilot | Không tuyển được supply đúng phân khúc |
 | G3 - Prototype | >=80% người thử hoàn tất tìm câu hỏi và booking không cần hỗ trợ lớn | Luồng vẫn khó hiểu hoặc không tạo được booking hợp lệ |
 | G4 - Technical | Năm PoC: double booking, authorization, transition/audit, filter và notification retry đều pass | Còn access leak hoặc booking không nhất quán |
-| G5 - Delivery | Forecast của cả hai estimate <= 816 giờ capacity cam kết, cash cost <= 1.125.000 VND | Core loop vượt capacity/budget hoặc phải cắt kiểm soát chất lượng |
+| G5 - Delivery | Forecast đã rebaseline cho scope JD <= khoảng 979 giờ capacity cam kết, cash cost <= 1.125.000 VND | Core loop vượt capacity/budget hoặc phải cắt kiểm soát chất lượng |
 | G6 - Pilot | Booking diễn ra, feedback hữu ích và có tín hiệu quay lại | Conversion/completion/value quá thấp sau pilot |
 
 ## 7. Tham chiếu
