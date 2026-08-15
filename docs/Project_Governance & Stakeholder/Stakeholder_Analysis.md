@@ -2,11 +2,11 @@
 
 ## 1. Tóm tắt
 
-Dự án phụ thuộc đồng thời vào demand side (sinh viên) và supply side (mentor). Governance phải bảo vệ trải nghiệm của cả hai nhóm, đồng thời cho Sponsor/Product Owner đủ dữ liệu để kiểm soát phạm vi, chất lượng và tính khả thi.
+Dự án tạo giá trị ban đầu từ JD-to-preparation-plan và giá trị thực hành từ Mentor Marketplace. Governance phải bảo vệ dữ liệu JD của Student, chất lượng taxonomy/mapping và trải nghiệm của cả Student/Mentor, đồng thời cho Sponsor/Product Owner đủ dữ liệu để kiểm soát phạm vi, chất lượng và tính khả thi.
 
 ## 2. Sponsor
 
-Sponsor: **[CẦN BỔ SUNG]**.
+Sponsor: **Giảng viên phụ trách môn học**; tên người ký và approval record được ghi tại Charter khi phê duyệt baseline.
 
 ### 2.1 Kỳ vọng của Sponsor
 
@@ -25,11 +25,11 @@ Sponsor: **[CẦN BỔ SUNG]**.
 | ST-03 | Gia Thành — Project Manager/Scrum Master | Kế hoạch, delivery, risk và team health | Cao | Cao | Manage closely |
 | ST-04 | Tuấn Anh — Team Lead | Tích hợp sản phẩm, chất lượng PR, configuration/document control và release readiness | Cao trong delivery | Cao | Manage closely |
 | ST-05 | Development team | Requirement rõ, môi trường và quyết định kịp thời | Trung bình | Cao | Keep engaged |
-| ST-06 | Sinh viên/ứng viên | Nội dung phù hợp, booking dễ, riêng tư và giá hợp lý | Trung bình | Cao | Co-design/test |
-| ST-07 | Mentor/HR | Yêu cầu rõ, lịch kiểm soát được, uy tín và compensation | Trung bình | Cao | Co-design/test |
-| ST-08 | Administrator/moderator | Quy trình duyệt, report và audit rõ | Trung bình | Cao | Involve early |
+| ST-06 | Sinh viên/ứng viên | JD được xử lý riêng tư, plan/mapping dễ hiểu và booking có ngữ cảnh | Trung bình | Cao | Co-design/test |
+| ST-07 | Mentor/HR | JD/topic cần luyện rõ, lịch kiểm soát được, uy tín và feedback phù hợp | Trung bình | Cao | Co-design/test |
+| ST-08 | Administrator/moderator | Taxonomy/alias, quy trình duyệt, report và audit rõ | Trung bình | Cao | Involve early |
 | ST-09 | Hosting/database provider | Sử dụng đúng quota và điều khoản | Cao gián tiếp | Thấp | Monitor |
-| ST-10 | Email/calendar/video provider | Tích hợp ổn định, tuân thủ policy | Cao gián tiếp | Thấp | Monitor/fallback |
+| ST-10 | Extraction/OCR, email/calendar/video provider | Tích hợp ổn định, tuân thủ privacy/policy và có fallback | Cao gián tiếp | Thấp | Monitor/fallback |
 | ST-11 | Cố vấn pháp lý/privacy | Consent, privacy notice, terms và xử lý dữ liệu | Trung bình | Trung bình | Consult |
 
 ## 4. Nhu cầu, trách nhiệm và thẩm quyền
@@ -68,24 +68,26 @@ Sponsor: **[CẦN BỔ SUNG]**.
 ### Sinh viên/ứng viên
 
 - Cung cấp discovery evidence và tham gia usability/UAT.
+- Chỉ upload JD có quyền sử dụng; kiểm tra/sửa text trước khi xác nhận analysis.
 - Cung cấp mục tiêu booking trung thực, tuân thủ lịch và community rules.
 - Chỉ chia sẻ dữ liệu cần thiết.
 
 ### Mentor/HR
 
 - Cung cấp bằng chứng xác minh và lịch chính xác.
+- Chỉ sử dụng JD/preparation-plan context được chia sẻ cho mục đích của booking.
 - Thực hiện mock interview trong phạm vi đã công bố.
 - Gửi feedback có cấu trúc và tuân thủ privacy/community rules.
 
 ### Administrator
 
-- Duyệt mentor/câu hỏi, xử lý report và quản lý taxonomy.
+- Duyệt mentor/câu hỏi, xử lý report và quản lý taxonomy/alias; không xem JD riêng tư nếu không có thẩm quyền nghiệp vụ.
 - Giữ audit trail cho quyết định moderation và booking exception.
 
 ### Nhà cung cấp dịch vụ
 
-- Cung cấp hosting, database, email hoặc video meeting theo SLA/quota.
-- Không được xem là nguồn chân lý duy nhất cho booking; hệ thống phải có trạng thái nội bộ và fallback.
+- Cung cấp hosting, database/storage, extraction/OCR, email hoặc video meeting theo SLA/quota đã chọn.
+- Không được xem là nguồn chân lý cho booking hoặc kết quả analysis; hệ thống phải có trạng thái nội bộ, kiểm tra output và fallback.
 
 ## 5. Power–Interest matrix
 
@@ -101,8 +103,11 @@ Sponsor: **[CẦN BỔ SUNG]**.
 - Danh tính Sponsor và acceptance authority chính thức.
 - Xác nhận capacity hằng tuần của Tuấn Anh trước khi rebaseline schedule/estimate; không dùng thành viên mới để thêm scope ngầm.
 - Phân khúc nghề nghiệp đầu tiên và quy mô pilot.
+- Định dạng/kích thước/số trang JD, retention file và safety checks.
+- OCR adapter, failure/timeout policy và tiêu chuẩn extraction dùng cho pilot.
+- Owner của taxonomy/alias, matching version/threshold và bộ JD relevance test.
 - Tiêu chí xác minh mentor và policy hủy/no-show.
-- Dữ liệu nào được công khai, lưu bao lâu và ai có quyền xóa.
+- Dữ liệu JD/mapping/plan nào được Mentor xem, lưu bao lâu và ai có quyền xóa.
 - Ngưỡng KPI và điều kiện Go/Pivot/Stop.
 
 ## 7. Kế hoạch truyền thông

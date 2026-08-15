@@ -2,244 +2,244 @@
 
 ## 1. Định nghĩa workflow
 
-Future state mô tả trải nghiệm mục tiêu của MVP: dữ liệu về vị trí, câu hỏi, mentor, booking và feedback nằm trong một workflow; video meeting vẫn do công cụ ngoài cung cấp. Workflow là black-box business view theo [User Requirements, Slide 017](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4); field, schema và constraint kỹ thuật thuộc Architecture.
+Future state mô tả black-box business workflow của MVP: Student đưa một Job Description (JD) vào hệ thống, kiểm tra text, nhận preparation plan có question mapping, rồi tự luyện hoặc đặt mentor và dùng feedback để cập nhật kế hoạch. Field/schema/constraint kỹ thuật thuộc Architecture. Cách mô tả current/future use case và domain nằm trong cấu trúc Vision & Scope của [User Requirements, Slide 017](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4).
 
 ## 2. Kịch bản chính
 
-An chọn Front-end Intern, lọc nhóm JavaScript Fundamentals và đánh dấu câu hỏi đã luyện. An tìm mentor theo chuyên môn và lịch rảnh, gửi booking kèm mục tiêu. Mentor xác nhận, hai bên dùng link Google Meet/Zoom. Sau buổi luyện, mentor gửi rubric; An thấy chủ đề yếu và quay lại Question Bank.
+An có một JD Front-end Intern. An dán text hoặc upload file, xem nội dung được trích xuất và sửa lỗi trước khi xác nhận. Hệ thống nhận diện position, seniority, skill/technology, chuẩn hóa alias theo taxonomy và mapping các Question Published kèm requirement nguồn và lý do. An tạo preparation plan, tự luyện một số câu hỏi rồi chọn mentor phù hợp với topic trong plan. Booking mang theo JD/plan context; mentor xác nhận, hai bên dùng meeting link ngoài hệ thống. Sau buổi luyện, feedback gồm strength, weakness và next action được đưa trở lại preparation plan.
 
 ## 3. End-to-end workflow tương lai
 
 ```mermaid
 flowchart TD
-    A["Student chọn vị trí mục tiêu"] --> B["Duyệt/lọc Question Bank"]
-    B --> C["Bookmark và cập nhật trạng thái luyện"]
-    C --> D["Tìm mentor theo chuyên môn/lịch"]
-    D --> E["Chọn slot và gửi mục tiêu"]
-    E --> F{"Mentor xử lý"}
-    F -- "Từ chối" --> D
-    F -- "Đề xuất lịch khác" --> G["Student chấp nhận/từ chối"]
-    G -- "Chấp nhận" --> H["Booking được xác nhận"]
-    G -- "Từ chối" --> D
-    F -- "Chấp nhận" --> H
-    H --> I["Cấp link họp/nhắc lịch"]
-    I --> J["Mock interview ngoài hệ thống"]
-    J --> JC{"Kết quả buổi gặp"}
-    JC -- "Đã diễn ra" --> JD["Actor có thẩm quyền mark Completed"]
-    JC -- "No-show/ngoại lệ" --> X["Admin/actor xử lý theo policy"]
-    JD --> K["Mentor gửi feedback rubric"]
-    K --> L["Student xem điểm yếu/next action"]
-    L --> B
-    K --> M["Student review mentor"]
-    E -. "Student cancel" .-> CXL["Cancelled theo policy"]
-    H -. "Một bên cancel" .-> CXL
-    G -. "Không thống nhất lịch" .-> CXL
-    X --> CXL
+    A["Student dán text hoặc upload JD"] --> B{"Loại nguồn"}
+    B -- "Text/PDF có text" --> C["Direct text extraction"]
+    B -- "Ảnh/PDF scan" --> D["OCR fallback"]
+    C --> E["Student kiểm tra và sửa text"]
+    D --> E
+    E --> F["Xác nhận corrected text"]
+    F --> G["Nhận diện position/seniority/skill/requirement"]
+    G --> H["Chuẩn hóa keyword/alias theo taxonomy"]
+    H --> I["Mapping Question Published"]
+    I --> J["Preparation plan có match reason"]
+    J --> K["Tự luyện trong Question Bank"]
+    J --> L["Tìm mentor theo topic/availability"]
+    K --> J
+    L --> M["Gửi booking kèm JD hoặc plan"]
+    M --> N{"Mentor xử lý"}
+    N -- "Reject" --> L
+    N -- "Propose reschedule" --> O["Student chấp nhận hoặc từ chối"]
+    O -- "Accept" --> P["Booking Confirmed"]
+    O -- "Reject" --> L
+    N -- "Accept" --> P
+    P --> Q["Meeting link ngoài hệ thống"]
+    Q --> R{"Kết quả buổi gặp"}
+    R -- "Đã diễn ra" --> S["Authorized actor mark Completed"]
+    R -- "No-show/exception" --> X["Xử lý theo policy"]
+    S --> T["Mentor gửi feedback rubric"]
+    T --> U["Cập nhật next action trong plan"]
+    U --> J
+    T --> V["Student review mentor"]
 ```
 
-`Completed` là transition bắt buộc trước Feedback; feedback không phải booking state. Nhánh dotted thể hiện exception/policy còn cần PO xác nhận, không tuyên bố policy đã được duyệt.
+`Completed` là booking transition bắt buộc trước feedback; feedback không phải booking state. Flow no-show/cancel/reschedule chỉ được bật theo policy đã phê duyệt. Extraction/OCR thành công không đồng nghĩa analysis đúng; Student confirmation là gate bắt buộc.
 
 ## 4. Đặc tả workflow
 
 | Bước | Actor | Precondition | Hoạt động | Postcondition |
 |---|---|---|---|---|
-| FS-01 | Student | Đã đăng nhập | Chọn vị trí/chủ đề mục tiêu | Profile có learning goal |
-| FS-02 | Student | Có câu hỏi Published | Search/filter và xem chi tiết | Câu hỏi phù hợp được hiển thị |
-| FS-03 | Student | Có quyền Student | Bookmark/đổi trạng thái luyện | Progress được lưu |
-| FS-04 | Student | Có mentor Approved | Lọc mentor và xem profile/slot | Chọn được mentor/slot |
-| FS-05 | Student | Slot còn trống | Gửi goal, interview type, topic | Booking Pending |
-| FS-06 | Mentor | Là chủ slot | Accept/Reject/Propose change | Booking đổi trạng thái hợp lệ |
-| FS-07 | System | Booking Confirmed | Khóa slot, gửi thông báo, cấp link | Hai bên có thông tin buổi gặp |
-| FS-08 | Hai bên | Đến lịch | Thực hiện mock interview ngoài hệ thống | Booking đủ điều kiện Complete |
-| FS-08A | Actor có thẩm quyền theo policy | Buổi gặp đã diễn ra và đủ điều kiện policy | Mark booking `Completed`; ghi actor/timestamp/audit | Booking `Completed` |
-| FS-09 | Mentor | Booking Completed | Chấm rubric và ghi next action | Feedback chỉ hai bên xem được |
-| FS-10 | Student | Booking Completed | Review mentor | Review gắn booking hợp lệ |
-| FS-11 | Student | Có feedback | Mở chủ đề/câu hỏi được gợi ý | Vòng lặp luyện tiếp bắt đầu |
+| FS-01 | Student | Đã đăng nhập | Dán JD text hoặc upload file trong giới hạn được phê duyệt | JobDescription thuộc Student được tạo |
+| FS-02 | System/worker | Nguồn hợp lệ | Direct extract text; OCR chỉ khi ảnh/PDF scan cần thiết | Extraction kết thúc với text hoặc failure code an toàn |
+| FS-03 | Student | Có extracted/pasted text | Xem, sửa và xác nhận corrected text | Một text version được xác nhận cho analysis |
+| FS-04 | System | Corrected text đã xác nhận | Nhận diện position, seniority, skill, technology và requirement chính | Requirement giữ raw evidence và trạng thái normalize |
+| FS-05 | System | Có taxonomy/alias pilot | Chuẩn hóa requirement và mapping Question Published | Match ổn định theo matching version; có score/reason |
+| FS-06 | Student/System | Có match hợp lệ | Chọn/ghi nhận topic, question và tạo preparation plan | Plan thuộc Student, tham chiếu JD và match version |
+| FS-07 | Student | Có plan hoặc Question Published | Mở câu hỏi, bookmark và cập nhật trạng thái luyện | Practice progress riêng tư được lưu |
+| FS-08 | Student | Có topic/plan và mentor Approved | Lọc mentor theo expertise/availability | Chọn được mentor/slot hoặc nhận empty state rõ |
+| FS-09 | Student | Slot khả dụng; có JD/plan thuộc quyền sở hữu | Gửi booking với context tối thiểu cần thiết | Booking `Pending` tham chiếu JD hoặc plan |
+| FS-10 | Mentor | Là chủ slot/booking | Accept/Reject/Propose reschedule | Booking chuyển trạng thái hợp lệ và có audit |
+| FS-11 | System/hai bên | Booking `Confirmed` | Khóa slot, notification và cấp quyền meeting link | Hai bên có thông tin buổi gặp; provider không là source of truth |
+| FS-12 | Hai bên | Đến lịch | Mock interview qua công cụ ngoài | Booking đủ điều kiện xử lý completion/no-show |
+| FS-13 | Mentor/authorized actor | Booking `Completed` | Gửi feedback rubric | Feedback riêng tư có strength, weakness, next action |
+| FS-14 | Student/System | Có feedback | Áp dụng next action vào plan; Student có thể review mentor | Vòng lặp luyện tiếp bắt đầu |
 
 ### 4.1 Canonical booking states
 
-| State | Ý nghĩa | Terminal? |
-|---|---|---|
-| `Pending` | Student đã gửi yêu cầu, chờ Mentor xử lý | Không |
-| `Confirmed` | Mentor đã chấp nhận và slot được khóa | Không |
-| `RescheduleProposed` | Một bên đề xuất slot mới, chờ bên còn lại quyết định; proposal không giữ slot mới, còn old slot của booking trước đó Confirmed phải tiếp tục được bảo vệ | Không cho slot mới; conditional cho old slot |
-| `Rejected` | Mentor từ chối yêu cầu Pending | Có cho booking hiện tại |
-| `Cancelled` | Booking bị hủy theo policy bởi actor được phép | Có |
-| `Completed` | Buổi gặp đã diễn ra và actor có thẩm quyền xác nhận | Có cho booking lifecycle; cho phép feedback/review |
-| `NoShow` | Ngoại lệ vắng mặt được ghi nhận theo policy | Có/conditional — PO phải chốt |
+| Business state | API/storage token | Slot occupancy | Ý nghĩa |
+|---|---|---|---|
+| Pending | `PENDING` | Không | Booking đang chờ Mentor quyết định |
+| Confirmed | `CONFIRMED` | Có | Mentor đã nhận và slot được giữ |
+| Reschedule proposed | `RESCHEDULE_PROPOSED` | Slot cũ giữ; slot mới chưa chiếm | Bên còn lại phải chấp nhận/từ chối đề xuất |
+| Rejected | `REJECTED` | Không | Mentor từ chối request hiện tại |
+| Cancelled | `CANCELLED` | Không | Booking được hủy theo policy |
+| Completed | `COMPLETED` | Có dưới dạng lịch sử | Buổi luyện đã diễn ra và completion được ghi nhận |
+| No-show | `NO_SHOW` | Có điều kiện | Ngoại lệ attendance; chỉ dùng khi policy/evidence được duyệt |
 
-Không dùng lẫn `Reschedule`, `Propose change` và `Reschedule proposed`; canonical business term là `RescheduleProposed`, API/storage token là `RESCHEDULE_PROPOSED` và UI có thể dùng “Đề xuất đổi lịch”. Các token khác lần lượt là `PENDING`, `CONFIRMED`, `REJECTED`, `CANCELLED`, `COMPLETED` và conditional `NO_SHOW` theo [booking-state vocabulary tại Backlog mục 1.3](Product_Backlog_and_Acceptance_Criteria.md#13-booking-state-vocabulary).
+Không dùng `OCR` để gọi toàn bộ JD analysis; không dùng lẫn `Reschedule`, `Propose change` và `Reschedule proposed`. Vocabulary đầy đủ nằm tại [Backlog mục 1.3](Product_Backlog_and_Acceptance_Criteria.md#13-booking-state-vocabulary).
 
 ### 4.2 Booking transition table
 
-| From | Event/actor | Guard | To | Side effect/audit | Trace |
+| From | Command/actor | Guard | To | Side effect | Trace |
 |---|---|---|---|---|---|
-| — | Student `CreateBooking` | Slot available; goal/type/position hợp lệ | `Pending` | Tạo một booking, audit creation | US-11, BR-02/03/08, AC-11-01 |
-| `Pending` | Owning Mentor `Accept` | Slot chưa thuộc booking occupying-state khác; request retry-safe | `Confirmed` | Atomic slot lock; transition audit; emit one deduplicated notification event | US-12, BR-02/08/09/10, AC-12-01 |
-| `Pending` | Owning Mentor `Reject` | Reason hợp lệ | `Rejected` | Release/keep slot availability; audit reason | US-12, BR-08, AC-12-02 |
-| `Pending`/`Confirmed` | Authorized party `ProposeReschedule` | Proposed slot hợp lệ; policy cho phép; nếu source là Confirmed thì old slot vẫn được bảo vệ | `RescheduleProposed` | Lưu previous state/old-new slot/requester/reason; không giữ new slot trước acceptance | US-12, US-13; BR-02, BR-08; AC-12-02, AC-12-03, AC-13-01 |
-| `RescheduleProposed` | Other party `AcceptReschedule` | New slot vẫn available | `Confirmed` | Atomic switch/lock; release old slot; audit | US-13; BR-02, BR-08; AC-13-01 |
-| `RescheduleProposed` | Other party `RejectReschedule` | Approved reschedule policy | Previous state hoặc `Cancelled` theo policy | Audit decision/reason | US-13, BR-08, AC-13-01 |
-| `Pending`/`Confirmed`/`RescheduleProposed` | Authorized party `Cancel` | Approved cutoff/reason/policy | `Cancelled` | Release slot if applicable; audit/notify | US-13; BR-08, BR-09; AC-13-01, AC-19-01 |
-| `Confirmed` | Authorized actor `MarkCompleted` | Session time reached; approved completion policy | `Completed` | Audit actor/time; enable feedback/review | US-15, US-17; BR-05, BR-06, BR-08; AC-15-01, AC-17-01 |
-| `Confirmed` | Authorized actor/Admin `MarkNoShow` | Approved no-show evidence/policy | `NoShow` `[conditional]` | Audit evidence/decision; exception handling | US-13, US-20; BR-08; AC-13-01, AC-20-01 |
+| — | `CreateBooking` / Student | Slot khả dụng; JD/plan thuộc Student; context hợp lệ | Pending | Ghi booking + event idempotent | US-11, US-30; BR-03/10/18 |
+| Pending | `Accept` / owning Mentor | Mentor/slot hợp lệ; transaction lock/constraint pass | Confirmed | Giữ slot + outbox event | US-12; BR-02/08/10 |
+| Pending | `Reject` / owning Mentor | Reason hợp lệ | Rejected | Audit + event | US-12; BR-08 |
+| Pending/Confirmed | `ProposeReschedule` / authorized party | Policy cho phép; slot mới hợp lệ | Reschedule proposed | Giữ slot cũ; lưu proposal | US-12/13; BR-02/08/10 |
+| Reschedule proposed | `AcceptReschedule` / other party | Slot mới còn khả dụng tại commit | Confirmed | Chuyển slot atomically | US-13; BR-02/08/10 |
+| Reschedule proposed | `RejectReschedule` / other party | Policy xác định trạng thái an toàn | Policy-defined | Giải phóng/giữ slot theo quyết định | US-13; BR-08 |
+| Pending/Confirmed/Reschedule proposed | `Cancel` / authorized party | Cutoff/reason theo policy | Cancelled | Giải phóng slot phù hợp + event | US-13; BR-08/10 |
+| Confirmed | `MarkCompleted` / authorized actor | Đã tới thời điểm; completion policy pass | Completed | Audit; enable feedback/review | US-15/17; BR-05/06/08 |
+| Confirmed | `MarkNoShow` / authorized actor | Authority/evidence policy pass | No-show | Audit + operations action | US-20; BR-08 |
 
-Invalid transition must fail without partial state/slot side effect. Notification failure never changes the committed target state.
+Invalid transition phải thất bại mà không để lại state/slot side effect. Notification failure không đổi target state đã commit.
 
-## 5. Input model
+## 5. Input và output model nghiệp vụ
 
-### Student goal
+### JD source
 
-- Vị trí mục tiêu, seniority và loại phỏng vấn.
-- Chủ đề/câu hỏi muốn luyện.
-- Mốc phỏng vấn dự kiến và ghi chú cần thiết.
+- `source_type`: pasted text hoặc PDF/PNG/JPEG theo baseline PoC; file không quá 10 MB.
+- Original file reference, filename/media type, processing status và ownership.
+- Page/language/time limits, malware checks, retention và việc ratify giới hạn cho MVP là policy/architecture decision; không được client tự quyết định.
 
-### Mentor profile và availability
+### Extraction và correction
 
-- Chuyên môn, kinh nghiệm, phạm vi hỗ trợ và ngôn ngữ.
-- Bằng chứng xác minh và trạng thái duyệt.
-- Duration, timezone và time slot.
+- `extracted_text`, extraction method/version/status và error code an toàn.
+- `corrected_text`, correction version, confirmed timestamp và confirming Student.
+- Analysis chỉ dùng corrected version đã xác nhận.
 
-### Booking request
+### Requirement và question-mapping data
 
-- Student, mentor, slot, mục tiêu và interview type.
-- Trạng thái, meeting link, lý do từ chối/hủy/đổi lịch.
-- Timestamp và audit trail của transition.
+- Raw requirement/evidence span từ corrected text.
+- Position, seniority, skill/technology và normalized taxonomy topic.
+- Question ID, match score, match reason và matching version.
+- Chỉ Question `Published` có taxonomy/provenance hợp lệ được đưa vào kết quả.
 
-### Feedback rubric
+### Preparation plan
 
-- Kiến thức/chuyên môn.
-- Cấu trúc và độ rõ câu trả lời.
-- Giao tiếp và sự tự tin.
-- Xử lý câu hỏi tiếp nối.
-- Điểm mạnh, điểm yếu, evidence và next action.
+- Student, JobDescription, selected requirement/topic/question và plan status.
+- Plan lưu reference/version; không sao chép nội dung nhạy cảm không cần thiết.
+- Feedback next action có thể thêm/chuyển ưu tiên item nhưng không ghi đè lịch sử.
+
+### Mentor, booking và feedback
+
+- Mentor expertise/availability và verification status.
+- Booking tham chiếu `job_description_id` hoặc `preparation_plan_id`, mentor, slot, mục tiêu và interview type.
+- Mentor chỉ xem context tối thiểu cần luyện; original file không tự động được chia sẻ.
+- Feedback gồm rubric, strength, weakness, evidence và next action.
 
 ## 6. Các stage xử lý
 
-### 6.1 Discover và self-practice
+### 6.1 JD intake và text confirmation
 
-Hệ thống chỉ hiển thị câu hỏi Published. Filter kết hợp vị trí, chủ đề, loại và độ khó; không làm mất câu hỏi có nhiều tag. Progress là dữ liệu riêng của Student.
+Hệ thống phân biệt pasted text, PDF có text và PNG/JPEG/PDF scan. Baseline PoC nhận file tối đa 10 MB; direct extraction được ưu tiên và internal OCR là fallback. Unsupported/corrupt/empty/password-protected/over-limit input phải thất bại an toàn. Student luôn xem và sửa text trước analysis.
 
-### 6.2 Mentor discovery và booking
+### 6.2 Requirement analysis và taxonomy normalization
 
-Chỉ mentor Approved có profile/slot công khai. Khi Student gửi booking, hệ thống kiểm tra slot còn khả dụng. Một slot chỉ có tối đa một booking ở occupying state theo BR-02; retry create/transition phải idempotent theo BR-10.
+PoC dùng keyword, alias, taxonomy và rule; kết quả giữ raw evidence để người review hiểu vì sao requirement được tạo. Unknown term không được tự gán topic như một sự thật; phải ở trạng thái unmapped/reviewable.
 
-### 6.3 Confirmation và session
+### 6.3 Question mapping và preparation plan
 
-Transition phải tuân theo state machine. Notification failure không được làm mất booking; trạng thái nội bộ là nguồn chân lý. Meeting link chỉ hiển thị cho đúng hai bên và admin có thẩm quyền.
+Mapping chỉ lấy Question Published hợp lệ, tạo kết quả ổn định với cùng corrected text, taxonomy và matching version. Mỗi kết quả hiển thị requirement nguồn, topic, câu hỏi và reason. Student có thể loại/chọn item trước khi tạo plan.
 
-### 6.4 Feedback và review
+### 6.4 Self-practice và mentor booking
 
-Mentor chỉ gửi feedback cho booking Completed. Student chỉ review mentor từ booking hợp lệ. Feedback riêng tư; review công khai phải qua policy và report flow.
+Student có thể luyện trực tiếp hoặc tìm mentor từ topic/plan. Booking phải giữ reference đến JD hoặc plan thuộc Student; mentor được xem context tối thiểu theo ownership policy.
+
+### 6.5 Session, feedback và learning loop
+
+Booking transition dùng canonical state machine; meeting link ngoài hệ thống. Feedback chỉ sau `Completed`, riêng tư theo booking và tạo next action quay về plan/Question Bank.
 
 ## 7. Business rules và ngoại lệ
 
-Canonical rule catalogue nằm trong [Product Backlog and Acceptance Criteria, mục 1.2](Product_Backlog_and_Acceptance_Criteria.md#12-business-rules). Workflow phải thực thi cùng nghĩa, không tạo biến thể cục bộ.
+Canonical rule catalogue, source/owner và changeability nằm tại [Product Backlog and Acceptance Criteria, mục 1.2](Product_Backlog_and_Acceptance_Criteria.md#12-business-rules). Workflow áp dụng các nhóm rule sau:
 
-| ID | Quy tắc workflow |
-|---|---|
-| BR-01 | Chỉ mentor `Approved` được công khai profile/slot và nhận booking. |
-| BR-02 | Một slot có tối đa một booking ở occupying state (`Confirmed`, `Completed`, conditional `NoShow`); old slot của confirmed-source reschedule vẫn được bảo vệ đến khi proposal được giải quyết. |
-| BR-03 | Booking phải có goal, position/interview type và slot hợp lệ. |
-| BR-04 | Chỉ Student/Mentor thuộc booking và Admin có thẩm quyền được xem booking/meeting link/feedback. |
-| BR-05 | Feedback chỉ được tạo cho booking `Completed`. |
-| BR-06 | Student chỉ review một lần cho booking hợp lệ đã `Completed`. |
-| BR-07 | Question chỉ công khai khi `Published`, có taxonomy và provenance hợp lệ. |
-| BR-08 | Booking transition phải theo canonical state machine và audit actor/reason/timestamp phù hợp. |
-| BR-09 | Notification failure không rollback/điều khiển booking state; retry/fallback/idempotent, internal state là source of truth. |
-| BR-10 | Create booking và critical transition phải retry-safe bằng idempotency key; retry giống nhau không tạo booking/transition/event trùng. |
-| BR-11 | Meeting link, verification evidence, feedback và private profile data không public/log đầy đủ; retention/deletion theo privacy policy được phê duyệt. |
+- `BR-12`–`BR-14`: input/file validation, direct extraction/OCR routing và corrected-text confirmation.
+- `BR-15`–`BR-17`: requirement evidence, taxonomy normalization, deterministic mapping và plan ownership.
+- `BR-18`–`BR-19`: booking context cùng privacy/retention của JD, mapping và plan.
+- `BR-01`–`BR-11`: mentor, booking, Question, notification, meeting link và feedback hiện có.
 
-### 7.1 Exception workflow
-
-| Exception | Expected workflow/result | Trace |
+| Ngoại lệ | Hành vi yêu cầu | Rule/verification |
 |---|---|---|
-| Slot vừa thuộc booking occupying-state khác | Accept/create thất bại với stable conflict; chọn slot khác; không tạo owner/transition/event thứ hai | BR-02, BR-10, AC-12-01, TC-B/TC-SLOT |
-| Invalid/unauthorized transition | Trả lỗi an toàn; state/slot không đổi; ghi security/audit phù hợp | BR-04, BR-08, AC-02-01, AC-13-01 |
-| Reject | Booking `Rejected`; reason/audit; Student quay lại mentor/slot search | BR-08, AC-12-02 |
-| Reschedule | `RescheduleProposed`; old confirmed slot vẫn được bảo vệ, new slot chưa bị giữ; bên còn lại accept/reject và switch atomic | BR-02, BR-08, AC-12-03, AC-13-01 |
-| Cancellation | `Cancelled` theo policy; slot được release phù hợp; notification không điều khiển state | BR-08, BR-09, AC-13-01, AC-19-01 |
-| No-show | Gửi tới Admin/actor có thẩm quyền; `NoShow` chỉ dùng sau khi authority/evidence policy được duyệt | BR-08, AC-20-01 |
-| Meeting provider outage | Booking giữ `Confirmed`; hiển thị hướng xử lý/fallback; không tự Complete/Cancel | BR-09, AC-19-01 |
-| Notification timeout/duplicate | Booking đã commit; job retry idempotent; operation queue thấy failure | BR-09, AC-19-01 |
-| Feedback actor/state sai | Chặn; không tạo feedback partial; không lộ booking | BR-04, BR-05, AC-15-01 |
-
-### 7.2 Admin/operations flow
-
-```mermaid
-flowchart LR
-    Q["Open report / booking exception"] --> R["Admin xem dữ liệu tối thiểu và timeline"]
-    R --> D{"Quyết định theo authority/policy"}
-    D --> A["Resolve / moderate / record action"]
-    A --> U["Audit actor, reason, timestamp"]
-    U --> N["Notify affected parties qua retryable event"]
-```
-
-Internal note/evidence không hiển thị public. Admin action không được bypass state machine hoặc sửa history âm thầm.
+| File unsupported/corrupt/encrypted/over limit | Từ chối trước xử lý; báo lỗi an toàn; không tạo analysis/match | BR-12/19; AC-24-01/02 |
+| Direct extraction không có usable text | Chuyển OCR chỉ khi loại nguồn/policy cho phép; nếu không thì failure có retry/manual action | BR-13; AC-25-01/02 |
+| Extraction/OCR sai | Student sửa; analysis cũ bị invalidated khi corrected version đổi | BR-14; AC-26-01 |
+| Requirement không map taxonomy | Giữ raw evidence ở trạng thái unmapped; không bịa topic/question | BR-15; AC-27-01 |
+| Không có Question relevant | Empty state nêu coverage gap; không trả Draft hoặc hạ threshold ngầm | BR-16; AC-28-01/02 |
+| Matching chạy lại cùng version | Kết quả order/score/reason ổn định; version mới tạo result set mới | BR-16; AC-28-01 |
+| User khác truy cập JD/plan | Từ chối server-side; không lộ object/file/text | BR-19; NFR-01/11 |
+| Mentor mở booking context | Chỉ thấy context tối thiểu của booking thuộc mình | BR-18/19; AC-30-01 |
+| Booking/notification/provider failure | Booking state nội bộ vẫn authoritative; retry/fallback không tạo duplicate | BR-09/10; TC-B/TC-N |
 
 ## 8. Future domain mapping
 
 ```mermaid
 erDiagram
-    USER ||--o| STUDENT_GOAL : has
-    USER ||--o| MENTOR_PROFILE : has
-    MENTOR_PROFILE ||--o{ MENTOR_VERIFICATION : submits
-    MENTOR_PROFILE ||--o{ SLOT : offers
+    USER ||--o{ JOB_DESCRIPTION : owns
+    JOB_DESCRIPTION ||--o{ JD_REQUIREMENT : yields
+    JD_REQUIREMENT }o--|| TAXONOMY : normalizes_to
+    JD_REQUIREMENT ||--o{ JD_QUESTION_MATCH : produces
+    QUESTION ||--o{ JD_QUESTION_MATCH : appears_in
+    JOB_DESCRIPTION ||--o{ PREPARATION_PLAN : creates
+    PREPARATION_PLAN ||--o{ PLAN_ITEM : contains
+    QUESTION ||--o{ PLAN_ITEM : references
     USER ||--o{ PRACTICE_PROGRESS : owns
-    QUESTION ||--o{ PRACTICE_PROGRESS : tracks
-    QUESTION }o--o{ TAXONOMY : classified_by
-    USER ||--o{ BOOKING : requests
-    MENTOR_PROFILE ||--o{ BOOKING : receives
-    SLOT ||--o{ BOOKING : selected_for
-    BOOKING ||--o{ BOOKING_TRANSITION : audits
+    QUESTION ||--o{ PRACTICE_PROGRESS : tracked_for
+    USER ||--o{ BOOKING : student
+    USER ||--o{ MENTOR_PROFILE : has
+    MENTOR_PROFILE ||--o{ AVAILABILITY_SLOT : publishes
+    AVAILABILITY_SLOT ||--o{ BOOKING : requested_for
+    JOB_DESCRIPTION ||--o{ BOOKING : context_for
+    PREPARATION_PLAN ||--o{ BOOKING : context_for
+    BOOKING ||--o{ BOOKING_TRANSITION : records
     BOOKING ||--o| FEEDBACK : produces
-    BOOKING ||--o| REVIEW : produces
-    BOOKING ||--o{ NOTIFICATION_EVENT : emits
-    BOOKING ||--o{ REPORT : may_have
+    BOOKING ||--o| REVIEW : permits
+    FEEDBACK }o--o{ PLAN_ITEM : updates
 ```
 
-Đây là conceptual mapping để giữ consistency; field/schema/constraint chi tiết thuộc Architecture. Question–Taxonomy là many-to-many về khái niệm; implementation phải đảm bảo filter không duplicate.
+Đây là conceptual domain mapping để đồng bộ thuật ngữ và quan hệ. Schema, nullable/unique constraint, storage và API chi tiết thuộc Architecture. `JDQuestionMatch` là mapping data giữa requirement và Question, không phải một lời khẳng định rằng recommendation luôn đúng.
 
 ## 9. Rủi ro và giới hạn
 
-- Mentor supply thấp có thể làm kết quả tìm kiếm rỗng.
-- No-show và đổi lịch cần quy trình admin thủ công trong pilot.
-- Meeting provider outage nằm ngoài quyền kiểm soát trực tiếp.
-- Nội dung và feedback có thể sai hoặc không phù hợp; cần moderation/report.
-- Recommendation cá nhân hóa chưa thuộc MVP.
+- OCR quality phụ thuộc file/ảnh; correction không được bỏ qua.
+- Taxonomy/alias thiếu làm giảm requirement recall và mapping relevance.
+- JD có thể chứa PII hoặc thông tin công ty; cần data minimization, authorization, retention và deletion.
+- Rule-based matching có thể bỏ sót synonym mới; phải version và đánh giá bằng bộ JD pilot.
+- Mentor supply thấp vẫn ảnh hưởng booking, nhưng không chặn preparation plan/self-practice.
+- Meeting/OCR/email provider outage nằm ngoài quyền kiểm soát trực tiếp.
+- Semantic/ML matching, payment và video tích hợp không thuộc MVP.
 
 ## 10. Traceability
 
-| Workflow | Stories | BR | AC | Prototype/verification |
-|---|---|---|---|---|
-| FS-01 | US-01, US-03 | BR-03, BR-04 | AC-01-01, AC-03-01 | S01; TC-AUTH/TC-STUDENT |
-| FS-02 | US-04, US-05, US-18 | BR-07 | AC-04-01, AC-05-01, AC-18-01 | S02-S03, A03; TC-Q |
-| FS-03 | US-06 | BR-04 | AC-06-01 | S02-S03; TC-Q |
-| FS-04 | US-07, US-08, US-09, US-10 | BR-01, BR-02, BR-08 | AC-07-01, AC-08-01, AC-09-01, AC-10-01 | S04-S05, M01-M04, A02; TC-M/TC-SLOT |
-| FS-05 | US-11 | BR-02, BR-03, BR-08, BR-10 | AC-11-01, AC-11-02 | S06; TC-B |
-| FS-06 | US-12, US-13 | BR-02, BR-08, BR-10 | AC-12-01, AC-12-02, AC-12-03, AC-13-01, AC-13-02 | S07, M05-M06; TC-B |
-| FS-07 | US-14, US-19 | BR-04, BR-09, BR-11 | AC-14-01, AC-14-02, AC-19-01, AC-19-02 | S08/M07; TC-SESSION/TC-N |
-| FS-08, FS-08A | US-13, US-14, US-20 | BR-04, BR-08, BR-11 | AC-13-01, AC-13-02, AC-14-01, AC-14-02, AC-20-01 | Session/Admin; TC-B/TC-ADM |
-| FS-09 | US-15 | BR-04, BR-05, BR-11 | AC-15-01, AC-15-02 | M08; TC-F |
-| FS-10 | US-17 | BR-06 | AC-17-01 | S10; TC-F |
-| FS-11 | US-06, US-16 | BR-04 | AC-06-01, AC-16-01 | S09 -> S02; TC-F/TC-Q |
+| Workflow area | Requirement | Stories | Verification |
+|---|---|---|---|
+| JD intake/extraction/correction | RQ-11 | US-24, US-25, US-26 | AC-24/25/26; TC-JD; OBJ-02 |
+| Requirement analysis/mapping/plan | RQ-12 | US-27, US-28, US-29 | AC-27/28/29; TC-MAP/PLAN; OBJ-03/04/05 |
+| Question self-practice | RQ-03 | US-04, US-05, US-06, US-18 | TC-Q; OBJ-05 |
+| Mentor discovery | RQ-05 | US-07–US-10 | TC-M/TC-SLOT |
+| Plan-to-booking context | RQ-13 | US-30, US-11 | AC-30-01/AC-11; TC-B; OBJ-06 |
+| Booking/session/notification | RQ-06/07/09 | US-12–US-14, US-19, US-22 | TC-B/SESSION/N; OBJ-06 |
+| Feedback/review/loop | RQ-08 | US-15–US-17 | TC-F; OBJ-07/08 |
+| Moderation/operations | RQ-10 | US-18, US-20, US-23 | TC-ADM; NFR-08 |
 
 ## 11. Workflow validation scenarios
 
-| ID | Scenario | Pass condition |
-|---|---|---|
-| WV-01 | Question multi-tag, zero/one/many result | Correct deterministic result; no duplicate/draft leak |
-| WV-02 | Happy booking -> Confirmed -> Completed -> Feedback | State order đúng; feedback chỉ sau Completed |
-| WV-03 | Concurrent accept cùng slot | Chính xác một Confirmed; request còn lại conflict an toàn |
-| WV-04 | Reject/reschedule/cancel | Actor/action/next state/reason rõ; không có dead end trái policy |
-| WV-05 | Unauthorized meeting/feedback access | Bị chặn server-side, không lộ dữ liệu/object existence không cần thiết |
-| WV-06 | Notification/meeting provider failure | Booking source of truth giữ đúng; retry/fallback hiển thị |
-| WV-07 | No-show/report/admin resolution | Authority, policy và audit rule được xác định rõ |
-| WV-08 | Feedback-to-question loop | Student thấy next action và quay về taxonomy/topic phù hợp |
+Các scenario dưới đây là điều kiện cần kiểm thử, không phải tuyên bố đã pass. Việc dùng happy, negative, boundary, malicious và workflow test bám theo [Software Quality Management, Slide 007](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-software-quality-management.md#slide-007--how-to-meet-user-requirements).
 
-Prototype/workflow cần exploratory test với input xấu hoặc đối nghịch theo [Software Quality Management, Slide 007](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-software-quality-management.md#slide-007--how-to-meet-user-requirements). Các scenario trên là điều kiện cần kiểm thử, không phải kết quả test.
+| ID | Scenario | Expected outcome |
+|---|---|---|
+| WV-01 | Paste một JD hợp lệ | Text xuất hiện trong review; Student sửa/xác nhận trước analysis |
+| WV-02 | Upload PDF có text và ảnh/PDF scan | Direct extraction được ưu tiên; OCR chỉ dùng khi cần và có trạng thái rõ |
+| WV-03 | File unsupported/corrupt/empty/over limit | Từ chối an toàn, không tạo match/plan rác |
+| WV-04 | Alias `ReactJS` trong corrected text | Normalize về topic `React`, giữ raw evidence |
+| WV-05 | JD có requirement không có taxonomy | Hiển thị unmapped/coverage gap, không bịa Question |
+| WV-06 | Mapping lặp cùng input/version | Cùng result order, score và reason; không có Draft Question |
+| WV-07 | Student tạo preparation plan | Mỗi item trace được về requirement/topic/question/reason |
+| WV-08 | Student chuyển plan sang mentor booking | Booking tham chiếu JD/plan thuộc Student; Mentor thấy context tối thiểu |
+| WV-09 | User không thuộc booking mở JD/plan/feedback | Bị từ chối server-side, không lộ object existence/content không cần thiết |
+| WV-10 | Happy booking → Completed → Feedback | Feedback đủ rubric/next action và quay lại plan |
+| WV-11 | Double booking/reschedule race | Một slot chỉ có một booking chiếm chỗ; loser ở safe state |
+| WV-12 | Notification/provider failure | Booking đã commit giữ nguyên; retry/deduplication/fallback hoạt động |
 
 ## 12. Kết quả future state
 
-Workflow thành công khi Student hoàn thành vòng lặp từ câu hỏi đến feedback mà không cần điều phối cốt lõi qua kênh riêng, và dữ liệu thu được đủ để đánh giá KPI cùng giả thuyết kinh doanh. Các policy còn cần phê duyệt cho cancellation/reschedule/no-show/completion, meeting-link fallback và reminder được quản lý tại [Open product decisions](Product_Backlog_and_Acceptance_Criteria.md#10-open-product-decisions).
-
+Workflow đạt mục tiêu khi Student chuyển được một JD hợp lệ thành corrected text, requirement/mapping có thể giải thích và preparation plan; từ đó tự luyện hoặc hoàn thành mentor booking/feedback mà vẫn giữ trace về JD. Các policy chưa đủ context để tự suy luận được quản lý trong [Open product decisions](Product_Backlog_and_Acceptance_Criteria.md#10-open-product-decisions).

@@ -2,243 +2,180 @@
 
 ## 1. Mục đích
 
-Prototype kiểm chứng ba luồng: Student đi từ Question Bank đến feedback; Mentor đi từ onboarding đến gửi feedback; Admin duyệt và xử lý ngoại lệ. Prototype ưu tiên logic, trạng thái, nội dung và usability; không dùng như bằng chứng rằng backend, security hoặc concurrency đã hoàn thành.
+Prototype kiểm chứng luồng JD → preparation plan → self-practice hoặc Mentor booking → session → feedback. Năm màn hình Student chính tập trung vào quyết định của người dùng, không tách mỗi trạng thái kỹ thuật thành một màn hình. Mentor/Admin dùng các view hỗ trợ cần thiết. Prototype kiểm chứng workflow, nội dung và usability; không phải bằng chứng rằng extraction, security, matching hoặc concurrency đã được triển khai.
 
 ## 2. Prototype narrative
 
 ### Current-state story
 
-An tìm câu hỏi Front-end từ nhiều nguồn, tự ghi chú, nhắn nhiều người để tìm mentor và nhận feedback rời rạc. An mất thời gian điều phối và không biết nên luyện gì tiếp.
+An đọc một JD Front-end Intern, tự đoán requirement, tìm câu hỏi trên nhiều nguồn và không biết phần nào đã bao phủ. Khi tìm được mentor, An phải mô tả lại mục tiêu qua tin nhắn; feedback sau buổi không liên kết rõ với JD hoặc nội dung đã luyện.
 
 ### Future-state story
 
-An chọn Front-end Intern, luyện câu hỏi JavaScript, tìm mentor đã xác minh và chọn slot. Booking được xác nhận, An tham gia bằng link họp ngoài, nhận rubric và mở lại nhóm câu hỏi được mentor gợi ý.
+An dán text hoặc upload JD, kiểm tra/sửa nội dung được trích xuất, rồi xem requirement/topic cùng Question được đề xuất và lý do mapping. An chọn item để tạo preparation plan, tự luyện hoặc tìm Mentor đúng topic. Booking mang theo context tối thiểu; sau session ngoài hệ thống, feedback cập nhật next action trong plan.
 
-## 3. Student prototype flow
-
-```mermaid
-flowchart LR
-    S01["S01 Dashboard"] --> S02["S02 Question Bank"]
-    S02 --> S03["S03 Question Detail"]
-    S03 --> S04["S04 Mentor Search"]
-    S04 --> S05["S05 Mentor Profile"]
-    S05 --> S06["S06 Booking Form"]
-    S06 --> S07["S07 Booking Status"]
-    S07 --> S08["S08 Session Detail"]
-    S08 --> S09["S09 Feedback"]
-    S09 --> S02
-    S09 --> S10["S10 Review"]
-```
-
-### Screen S01 — Dashboard / Goal
-
-**Mục tiêu:** giúp Student chọn vị trí và thấy hành động tiếp theo.
-
-- Target role, interview date optional, progress summary.
-- CTA “Luyện câu hỏi” và “Tìm mentor”.
-- Trạng thái rỗng giải thích cách bắt đầu.
-- Không hiển thị score giả khi chưa có dữ liệu.
-
-### Screen S02 — Question Bank
-
-- Search; filter Position, Topic, Interview Type, Difficulty.
-- Result item có title, tag, difficulty, practice status.
-- Zero-result state cho phép bỏ từng filter.
-- Pagination/load-more và sort rõ.
-- Test case: một question có nhiều tag không xuất hiện trùng.
-
-### Screen S03 — Question Detail
-
-- Question content, context, answer criteria/hints và provenance nếu phù hợp.
-- Bookmark; trạng thái Not started/Practicing/Confident.
-- CTA “Tìm mentor cho chủ đề này” truyền topic/position sang search.
-- Không dùng “đáp án duy nhất” cho behavioral question.
-
-### Screen S04 — Mentor Search
-
-- Filter expertise, interview type, language và availability.
-- Chỉ mentor Approved xuất hiện.
-- Card có kinh nghiệm, service scope, rating count và slot gần nhất.
-- Empty state phân biệt “không có mentor” và “không có slot theo filter”.
-
-### Screen S05 — Mentor Profile
-
-- Bio, expertise, verification badge có giải thích, service format, rating và policy.
-- Availability theo timezone của Student, có nhãn timezone.
-- CTA chọn slot; slot đã giữ/xác nhận không thể chọn.
-- Disclosure rằng buổi họp dùng công cụ ngoài.
-
-### Screen S06 — Booking Form
-
-- Mentor/slot summary cố định.
-- Required: target position/interview type, goal và nội dung muốn luyện.
-- Optional: câu hỏi/topic đã chọn và note.
-- Policy hủy/no-show hiển thị trước submit.
-- Validation cụ thể; chống submit lặp.
-
-### Screen S07 — Booking Status
-
-- Timeline Pending/Confirmed/Reschedule proposed/Rejected/Cancelled.
-- Hiển thị actor, thời điểm và hành động hợp lệ tiếp theo.
-- Reschedule cho phép chấp nhận hoặc quay lại chọn slot.
-- Rejection/cancellation có reason theo policy, không lộ note nội bộ.
-
-### Screen S08 — Session Detail
-
-- Goal, topic, mentor, thời gian địa phương và countdown.
-- Meeting link chỉ xuất hiện khi Confirmed và đúng actor.
-- Nút add-to-calendar/export nếu nằm trong capacity.
-- Link hỗ trợ/report và rule khi no-show.
-
-### Screen S09 — Feedback
-
-- Rubric: knowledge, structure, communication, follow-up handling.
-- Strengths, weaknesses, evidence và next actions.
-- Link đến topic/question được đề xuất.
-- Không công khai feedback; Student kiểm soát việc chia sẻ.
-
-### Screen S10 — Mentor Review
-
-- Rating, comment, guideline và report notice.
-- Chỉ một review cho booking Completed.
-- Success state giải thích moderation/visibility.
-
-## 4. Mentor prototype flow
+## 3. Student prototype flow — năm màn hình chính
 
 ```mermaid
 flowchart LR
-    M01["M01 Onboarding"] --> M02["M02 Verification Status"]
-    M02 --> M03["M03 Profile & Services"]
-    M03 --> M04["M04 Availability"]
-    M04 --> M05["M05 Booking Inbox"]
-    M05 --> M06["M06 Booking Decision"]
-    M06 --> M07["M07 Session Detail"]
-    M07 --> M08["M08 Feedback Form"]
+    P01["P01 JD Intake"] --> P02["P02 Review Text"]
+    P02 --> P03["P03 Preparation Plan"]
+    P03 -->|"Self-practice"| P03
+    P03 -->|"Practice with Mentor"| P04["P04 Mentor & Booking"]
+    P04 --> P05["P05 Session & Feedback"]
+    P05 --> P03
 ```
 
-### Screen M01 — Mentor onboarding
+### P01 — Nhập Job Description
+
+**Mục tiêu:** bắt đầu bằng JD cụ thể thay vì yêu cầu người dùng tự chọn topic.
+
+- Tab/choice cho paste text và upload file.
+- Hiển thị baseline PoC: PDF/PNG/JPEG, tối đa 10 MB/file; số trang, language pack và timeout lấy từ cấu hình đã được phê duyệt.
+- Privacy notice: mục đích xử lý, ai có thể xem, retention/deletion link.
+- File/text summary trước submit; chống submit lặp.
+- State: idle, selected, validating, uploading, rejected và processing.
+- Error riêng cho empty, unsupported, corrupt/encrypted, over-limit hoặc processing failure.
+
+### P02 — Kiểm tra và xác nhận text
+
+**Mục tiêu:** Student kiểm soát input được dùng cho analysis.
+
+- Nêu extraction method/status: pasted/direct extraction/OCR; OCR không được mô tả như toàn bộ analysis.
+- Editable text area, original-file reference và cảnh báo đoạn nghi ngờ nếu có evidence.
+- CTA “Xác nhận và phân tích”; analysis bị chặn khi text chưa xác nhận.
+- Khi sửa một confirmed version, giải thích requirement/match/plan cũ cần regenerate.
+- State: processing, succeeded, failed/retry, empty text, editing, confirmed.
+
+### P03 — Kế hoạch ôn tập
+
+**Mục tiêu:** giải thích JD và cho Student chọn hành động tiếp theo.
+
+- Summary position, seniority và requirement được phát hiện.
+- Mỗi requirement giữ raw evidence và normalized topic; item unmapped hiển thị coverage gap thay vì gán topic giả.
+- Mỗi Question đề xuất hiển thị title, topic, difficulty, requirement nguồn và match reason; không hứa chắc xuất hiện trong phỏng vấn.
+- Chỉ Question Published; có empty state khi không đủ Question relevant.
+- Student chọn/bỏ item, bookmark, đặt trạng thái Not started/Practicing/Confident và tạo/cập nhật preparation plan.
+- CTA trên cùng plan: “Tự luyện” hoặc “Luyện với mentor”.
+- State: analyzing, no requirement, partial taxonomy, no match, plan ready, stale/regenerate.
+
+### P04 — Mentor và booking
+
+**Mục tiêu:** chuyển plan context sang một booking rõ ràng.
+
+- Mentor list lọc theo plan topic, interview type, language và availability; chỉ Mentor Approved xuất hiện.
+- Mentor detail và slot có timezone; empty state phân biệt không có mentor với không có slot phù hợp.
+- Booking form giữ mentor/slot, JD/preparation-plan reference, selected topic/question và goal.
+- Chỉ chia sẻ context tối thiểu; original file không tự động chia sẻ với Mentor.
+- Hiển thị policy hủy/reschedule/no-show trước submit; giá/payment không thuộc MVP.
+- Booking state nằm trong cùng view bằng timeline/tab: Pending, Confirmed, Reschedule proposed, Rejected, Cancelled.
+- Validation và retry không được tạo booking trùng.
+
+### P05 — Session và feedback
+
+**Mục tiêu:** hoàn thành buổi luyện và đóng vòng lặp về plan.
+
+- Booking summary, local time, Mentor, topic và goal.
+- Meeting link chỉ hiện khi Confirmed và đúng actor; provider failure có fallback rõ.
+- Completion/no-show action chỉ cho actor được policy cho phép.
+- Feedback view: rubric, strength, weakness, evidence và next action.
+- CTA áp dụng next action vào preparation plan hoặc mở Question liên quan.
+- Review Mentor chỉ sau Completed và chỉ một lần.
+- State: upcoming, provider failure, completed-awaiting-feedback, feedback ready và reviewed.
+
+## 4. Mentor supporting views
+
+```mermaid
+flowchart LR
+    M01["M01 Profile, Verification & Availability"] --> M02["M02 Booking Context & Decision"]
+    M02 --> M03["M03 Session & Feedback"]
+```
+
+### M01 — Profile, verification và availability
 
 - Expertise, experience, language, interview types và service scope.
-- Verification evidence upload/reference với privacy notice.
-- Draft/save và field validation.
+- Verification evidence có privacy notice; Draft/Pending/Approved/Rejected và reason.
+- Chỉ Mentor Approved được publish profile/slot.
+- Slot có timezone; chặn past/invalid/overlap và không xóa trực tiếp slot đang bị booking chiếm.
 
-### Screen M02 — Verification status
+### M02 — Booking context và decision
 
-- Draft/Pending/Approved/Rejected cùng reason/action.
-- Mentor Pending/Rejected không thể publish slot.
-- Re-submit tạo audit event và giữ lịch sử quyết định.
+- Hiển thị Student goal, normalized topic, selected Questions và phần JD/plan tối thiểu được phép chia sẻ.
+- Không cấp quyền xem original file/full text mặc định.
+- Accept, Reject hoặc Propose reschedule; reason và next state rõ.
+- Cảnh báo slot conflict; không làm UI như thể booking đã Confirmed trước server result.
 
-### Screen M03 — Profile and services
+### M03 — Session và feedback
 
-- Public preview tách khỏi private contact/evidence.
-- Duration, format và expectations.
-- Policy/availability link.
-
-### Screen M04 — Availability
-
-- Create/edit/delete future slot; timezone rõ.
-- Ngăn slot end ≤ start, quá khứ hoặc overlap.
-- Slot có booking Confirmed không được xóa trực tiếp.
-
-### Screen M05 — Booking inbox
-
-- Tabs Pending/Upcoming/Completed/Cancelled.
-- Card có goal, target role, topic và slot.
-- Không lộ dữ liệu ngoài phần cần cho quyết định.
-
-### Screen M06 — Booking decision
-
-- Accept, Reject có reason hoặc Propose new slot.
-- Confirmation dialog nhắc việc slot sẽ bị khóa.
-- Conflict state rõ nếu slot vừa được người khác xác nhận.
-
-### Screen M07 — Session detail
-
-- Student goal, selected topics/questions và meeting link.
-- Action mark completed/no-show theo policy.
+- Meeting link/time/context giống Student nhưng theo Mentor ownership.
 - Feedback CTA chỉ enable khi Completed.
+- Rubric bắt buộc strength, weakness và next action; cho liên kết topic/Question từ plan.
 
-### Screen M08 — Feedback form
-
-- Score/level cho từng rubric criterion.
-- Required strengths, improvement areas và next actions.
-- Gợi ý topic/question từ taxonomy.
-- Draft/save/submit; sau submit thay đổi theo policy/audit.
-
-## 5. Admin prototype flow
+## 5. Admin supporting views
 
 ```mermaid
 flowchart LR
-    A01["A01 Operations Dashboard"] --> A02["A02 Mentor Review"]
-    A01 --> A03["A03 Question Management"]
-    A01 --> A04["A04 Booking/Report Case"]
-    A02 --> A05["A05 Decision & Audit"]
-    A03 --> A05
-    A04 --> A05
+    A01["A01 Taxonomy & Question"] --> A02["A02 Mentor Review"]
+    A02 --> A03["A03 Operations & Reports"]
 ```
 
-### Screen A01 — Operations dashboard
+### A01 — Taxonomy và Question management
 
-- Pending mentor, draft/reported question, booking exception và open report counts.
-- Không dùng vanity metric thay operational queue.
+- CRUD/moderation Question với Draft/In review/Published/Archived.
+- Taxonomy/alias, provenance và matching coverage; không cho Draft xuất hiện trong plan.
+- Hiển thị coverage gap từ JD pilot mà không lộ corrected text không cần thiết.
 
-### Screen A02 — Mentor review
+### A02 — Mentor review
 
-- Public profile preview, restricted evidence, checklist và prior decision history.
-- Approve/Reject yêu cầu reason; audit actor/time.
+- Verification evidence riêng tư, decision reason và audit.
+- Approve/Reject theo authority; không sửa history.
 
-### Screen A03 — Question management
+### A03 — Operations và reports
 
-- CRUD, taxonomy, source/provenance, version và Draft/In review/Published/Archived.
-- Không publish khi thiếu position/topic hoặc required review.
-
-### Screen A04 — Booking/report case
-
-- Timeline booking, policy, report reason và dữ liệu tối thiểu cần xử lý.
-- Action resolve, hide review hoặc reschedule theo authority.
-- Internal note không hiển thị cho public.
-
-### Screen A05 — Decision and audit
-
-- Confirmation nêu tác động và đối tượng được thông báo.
-- Immutable audit summary sau quyết định.
+- Booking/notification exceptions, report reason và audit timeline.
+- JD/extraction failure chỉ hiện metadata cần vận hành; nội dung/file phải theo object authorization.
+- Action resolve/reschedule/hide review theo authority; internal note không public.
 
 ## 6. Cross-flow states cần prototype
 
-| Trạng thái | Màn hình bắt buộc |
+| State | Áp dụng |
 |---|---|
-| Loading | Skeleton/progress không gây layout shift lớn |
-| Empty | Câu hỏi, mentor, slot, booking, feedback |
-| Validation error | Inline, giữ dữ liệu đã nhập |
-| Permission denied | Không lộ sự tồn tại/nội dung nhạy cảm |
-| Conflict | Slot vừa bị giữ/xác nhận; CTA chọn slot khác |
-| Provider failure | Booking vẫn thành công; notification/link action có hướng xử lý |
-| Offline/timeout | Retry an toàn, tránh tạo booking/review trùng |
+| Loading/processing | Upload, extraction/OCR, analysis, matching, search, booking, feedback |
+| Empty | Extracted text, requirement, taxonomy coverage, Question match, Mentor, slot, feedback |
+| Validation error | File/text, corrected version, goal, slot, rubric, review |
+| Permission denied | JD/plan, verification, booking, meeting link, feedback, admin |
+| Conflict/stale | Corrected version changed, matching version changed, slot vừa bị giữ, duplicate submit |
+| Provider failure | Extraction/OCR, email hoặc meeting; internal state vẫn rõ và có retry/fallback |
+| Offline/timeout | Retry an toàn; không tạo Job/booking/review trùng |
 
 ## 7. Prototype test plan
 
-| Task | Persona | Success |
+| Task | Persona | Success signal |
 |---|---|---|
-| Tìm câu hỏi Front-end/JavaScript | Student | Đúng result trong ≤2 phút, không trợ giúp |
-| Bookmark và đổi trạng thái | Student | Thấy state được lưu và hiểu ý nghĩa |
-| Tìm mentor có slot phù hợp | Student | Chọn đúng timezone/chuyên môn |
-| Gửi booking hợp lệ | Student | Hoàn tất và hiểu Pending |
-| Xử lý reschedule | Student/Mentor | Hai bên hiểu trạng thái và bước tiếp theo |
-| Gửi feedback rubric | Mentor | Đủ strength/weakness/next action |
-| Duyệt mentor | Admin | Quyết định có reason và audit |
+| Dán hoặc upload JD và hiểu privacy/validation | Student | Chọn đúng input và biết file nào được chấp nhận |
+| Kiểm tra/sửa/confirm text | Student | Hiểu đây là text dùng cho analysis và biết cách sửa lỗi |
+| Giải thích một Question được đề xuất | Student | Chỉ ra được requirement nguồn, topic và match reason |
+| Xử lý requirement không map/không có Question | Student | Hiểu coverage gap, không tưởng hệ thống đã bao phủ đầy đủ |
+| Tạo plan và bắt đầu tự luyện | Student | Chọn item và mở đúng Question |
+| Chuyển plan sang Mentor booking | Student | Booking đúng Mentor/slot và có context phù hợp |
+| Hiểu Pending/Confirmed/Reschedule | Student/Mentor | Chọn đúng hành động/next state |
+| Xem booking context và gửi feedback | Mentor | Chỉ thấy dữ liệu cần thiết; feedback đủ ba phần |
+| Áp dụng feedback vào plan | Student | Next action quay về đúng plan/topic/Question |
+| Duyệt taxonomy/Question/Mentor | Admin | Quyết định có reason và không lộ JD private content |
 
-Thu completion rate, time-on-task, error, confidence và qualitative evidence. Mục tiêu Student task completion: ≥80%.
+Quan sát task completion, error recovery, time-on-task và lời giải thích của participant. Prototype owner không tự kết luận usability chỉ từ việc frame tồn tại.
 
 ## 8. Prototype handoff và traceability
 
-| Screen group | Stories |
-|---|---|
-| S01–S03 | US-03–06 |
-| S04–S08 | US-10–14,19 |
-| S09–S10 | US-16–17 |
-| M01–M04 | US-07–09 |
-| M05–M08 | US-12–15 |
-| A01–A05 | US-08,18,20 |
+| Prototype | Stories | Acceptance/Test focus |
+|---|---|---|
+| P01 | US-24 | AC-24; TC-JD; NFR-09/11 |
+| P02 | US-25, US-26 | AC-25/26; TC-JD |
+| P03 | US-03–US-06, US-18, US-27–US-29 | AC-27/28/29; TC-MAP/PLAN/Q; NFR-10 |
+| P04 | US-07–US-13, US-19, US-22, US-30 | AC-30/11/12/13; TC-M/SLOT/B/N |
+| P05 | US-14–US-17 | AC-14/15/16/17; TC-SESSION/F |
+| A01–A03 | US-08, US-18, US-20, US-23 | TC-ADM; NFR-01/08 |
 
-Mỗi frame trong công cụ thiết kế phải dùng screen ID trên, có link đến story/acceptance criteria và ghi rõ dữ liệu giả. Ảnh prototype chưa được tạo trong đợt tài liệu này; thư mục `img/` chỉ nên được thêm khi có artifact thật.
+Để đồng bộ với các frame chi tiết đã được Prototype owner dựng, năm composite view dùng mapping sau: `P01 ← S11`, `P02 ← S12`, `P03 ← S13/S14/S02/S03`, `P04 ← S04–S07`, `P05 ← S08–S10`. Mapping này gom các frame hiện có theo năm quyết định chính của người dùng; không yêu cầu xóa frame chi tiết hoặc tạo thêm màn hình kỹ thuật.
 
+Handoff phải ghi composite P-ID và S-ID tương ứng, link đến story/acceptance criteria và đánh dấu dữ liệu giả. Ảnh chỉ được thêm vào `img/` khi có artifact thật; specification này không tuyên bố clickable prototype đã được tạo hoặc test.
