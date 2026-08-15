@@ -1,24 +1,8 @@
 # Interview Practice Platform — Future-State Workflow
 
-> **AI-assisted reference version — Pending human audit.** Codex hỗ trợ đồng bộ state/rule/traceability; Hưng, Product Owner và các owner Prototype/PoC phải walkthrough và chốt policy. Đây chưa phải Approved workflow baseline.
-
-## 0. Kiểm soát tài liệu
-
-| Thuộc tính | Giá trị |
-|---|---|
-| Owner/Producer | Hưng — Thành viên 3 |
-| Công cụ hỗ trợ | Codex |
-| Phiên bản | 0.5-ai-six-member-reference |
-| Trạng thái | Cross-branch/tree inspection and six-member role reconciliation completed; pending human walkthrough/PO approval |
-| Branch | `feat/member-3-scope-backlog` |
-| Ngày cập nhật | 15/08/2026 |
-| Reviewer/Approver | Hùng/Prototype, Trí/PoC, Luân/Architecture, Tuấn Anh/Integration & Document Control, Hưng/PO — review record pending |
-
-Future workflow là black-box view của solution, không phải bằng chứng backend/concurrency/security đã hoàn thành. Vision & Scope cần future business use case/domain view theo [User Requirements, Slide 017](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4).
-
 ## 1. Định nghĩa workflow
 
-Future state mô tả trải nghiệm mục tiêu của MVP: dữ liệu về vị trí, câu hỏi, mentor, booking và feedback nằm trong một workflow; video meeting vẫn do công cụ ngoài cung cấp.
+Future state mô tả trải nghiệm mục tiêu của MVP: dữ liệu về vị trí, câu hỏi, mentor, booking và feedback nằm trong một workflow; video meeting vẫn do công cụ ngoài cung cấp. Workflow là black-box business view theo [User Requirements, Slide 017](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4); field, schema và constraint kỹ thuật thuộc Architecture.
 
 ## 2. Kịch bản chính
 
@@ -67,7 +51,7 @@ flowchart TD
 | FS-06 | Mentor | Là chủ slot | Accept/Reject/Propose change | Booking đổi trạng thái hợp lệ |
 | FS-07 | System | Booking Confirmed | Khóa slot, gửi thông báo, cấp link | Hai bên có thông tin buổi gặp |
 | FS-08 | Hai bên | Đến lịch | Thực hiện mock interview ngoài hệ thống | Booking đủ điều kiện Complete |
-| FS-08A | Actor có thẩm quyền `[DEC-03]` | Buổi gặp đã diễn ra và đủ điều kiện policy | Mark booking `Completed`; ghi actor/timestamp/audit | Booking `Completed` |
+| FS-08A | Actor có thẩm quyền theo policy | Buổi gặp đã diễn ra và đủ điều kiện policy | Mark booking `Completed`; ghi actor/timestamp/audit | Booking `Completed` |
 | FS-09 | Mentor | Booking Completed | Chấm rubric và ghi next action | Feedback chỉ hai bên xem được |
 | FS-10 | Student | Booking Completed | Review mentor | Review gắn booking hợp lệ |
 | FS-11 | Student | Có feedback | Mở chủ đề/câu hỏi được gợi ý | Vòng lặp luyện tiếp bắt đầu |
@@ -84,7 +68,7 @@ flowchart TD
 | `Completed` | Buổi gặp đã diễn ra và actor có thẩm quyền xác nhận | Có cho booking lifecycle; cho phép feedback/review |
 | `NoShow` | Ngoại lệ vắng mặt được ghi nhận theo policy | Có/conditional — PO phải chốt |
 
-Không dùng lẫn `Reschedule`, `Propose change` và `Reschedule proposed`; canonical business term là `RescheduleProposed`, API/storage token là `RESCHEDULE_PROPOSED` và UI có thể dùng “Đề xuất đổi lịch”. Các token khác lần lượt là `PENDING`, `CONFIRMED`, `REJECTED`, `CANCELLED`, `COMPLETED` và conditional `NO_SHOW` theo backlog mục 2.1.
+Không dùng lẫn `Reschedule`, `Propose change` và `Reschedule proposed`; canonical business term là `RescheduleProposed`, API/storage token là `RESCHEDULE_PROPOSED` và UI có thể dùng “Đề xuất đổi lịch”. Các token khác lần lượt là `PENDING`, `CONFIRMED`, `REJECTED`, `CANCELLED`, `COMPLETED` và conditional `NO_SHOW` theo [booking-state vocabulary tại Backlog mục 1.3](Product_Backlog_and_Acceptance_Criteria.md#13-booking-state-vocabulary).
 
 ### 4.2 Booking transition table
 
@@ -95,10 +79,10 @@ Không dùng lẫn `Reschedule`, `Propose change` và `Reschedule proposed`; can
 | `Pending` | Owning Mentor `Reject` | Reason hợp lệ | `Rejected` | Release/keep slot availability; audit reason | US-12, BR-08, AC-12-02 |
 | `Pending`/`Confirmed` | Authorized party `ProposeReschedule` | Proposed slot hợp lệ; policy cho phép; nếu source là Confirmed thì old slot vẫn được bảo vệ | `RescheduleProposed` | Lưu previous state/old-new slot/requester/reason; không giữ new slot trước acceptance | US-12, US-13; BR-02, BR-08; AC-12-02, AC-12-03, AC-13-01 |
 | `RescheduleProposed` | Other party `AcceptReschedule` | New slot vẫn available | `Confirmed` | Atomic switch/lock; release old slot; audit | US-13; BR-02, BR-08; AC-13-01 |
-| `RescheduleProposed` | Other party `RejectReschedule` | DEC-03 policy | Previous state hoặc `Cancelled` `[DEC-03]` | Audit decision/reason | US-13, BR-08, AC-13-01 |
-| `Pending`/`Confirmed`/`RescheduleProposed` | Authorized party `Cancel` | Cutoff/reason/policy `[DEC-03]` | `Cancelled` | Release slot if applicable; audit/notify | US-13; BR-08, BR-09; AC-13-01, AC-19-01 |
-| `Confirmed` | Authorized actor `MarkCompleted` | Session time reached; completion policy `[DEC-03]` | `Completed` | Audit actor/time; enable feedback/review | US-15, US-17; BR-05, BR-06, BR-08; AC-15-01, AC-17-01 |
-| `Confirmed` | Authorized actor/Admin `MarkNoShow` | No-show evidence/policy `[DEC-03]` | `NoShow` `[conditional]` | Audit evidence/decision; exception handling | US-13, US-20; BR-08; AC-13-01, AC-20-01 |
+| `RescheduleProposed` | Other party `RejectReschedule` | Approved reschedule policy | Previous state hoặc `Cancelled` theo policy | Audit decision/reason | US-13, BR-08, AC-13-01 |
+| `Pending`/`Confirmed`/`RescheduleProposed` | Authorized party `Cancel` | Approved cutoff/reason/policy | `Cancelled` | Release slot if applicable; audit/notify | US-13; BR-08, BR-09; AC-13-01, AC-19-01 |
+| `Confirmed` | Authorized actor `MarkCompleted` | Session time reached; approved completion policy | `Completed` | Audit actor/time; enable feedback/review | US-15, US-17; BR-05, BR-06, BR-08; AC-15-01, AC-17-01 |
+| `Confirmed` | Authorized actor/Admin `MarkNoShow` | Approved no-show evidence/policy | `NoShow` `[conditional]` | Audit evidence/decision; exception handling | US-13, US-20; BR-08; AC-13-01, AC-20-01 |
 
 Invalid transition must fail without partial state/slot side effect. Notification failure never changes the committed target state.
 
@@ -114,7 +98,7 @@ Invalid transition must fail without partial state/slot side effect. Notificatio
 
 - Chuyên môn, kinh nghiệm, phạm vi hỗ trợ và ngôn ngữ.
 - Bằng chứng xác minh và trạng thái duyệt.
-- Duration, fee placeholder, timezone và time slot.
+- Duration, timezone và time slot.
 
 ### Booking request
 
@@ -150,7 +134,7 @@ Mentor chỉ gửi feedback cho booking Completed. Student chỉ review mentor t
 
 ## 7. Business rules và ngoại lệ
 
-Canonical rule catalogue, source/changeability/owner nằm trong [Product Backlog and Acceptance Criteria, mục 2](Product_Backlog_and_Acceptance_Criteria.md#2-canonical-business-rules-and-semantics). Workflow phải thực thi cùng nghĩa, không tạo biến thể cục bộ.
+Canonical rule catalogue nằm trong [Product Backlog and Acceptance Criteria, mục 1.2](Product_Backlog_and_Acceptance_Criteria.md#12-business-rules). Workflow phải thực thi cùng nghĩa, không tạo biến thể cục bộ.
 
 | ID | Quy tắc workflow |
 |---|---|
@@ -164,7 +148,7 @@ Canonical rule catalogue, source/changeability/owner nằm trong [Product Backlo
 | BR-08 | Booking transition phải theo canonical state machine và audit actor/reason/timestamp phù hợp. |
 | BR-09 | Notification failure không rollback/điều khiển booking state; retry/fallback/idempotent, internal state là source of truth. |
 | BR-10 | Create booking và critical transition phải retry-safe bằng idempotency key; retry giống nhau không tạo booking/transition/event trùng. |
-| BR-11 | Meeting link, verification evidence, feedback và private profile data không public/log đầy đủ; retention/deletion theo DEC-05. |
+| BR-11 | Meeting link, verification evidence, feedback và private profile data không public/log đầy đủ; retention/deletion theo privacy policy được phê duyệt. |
 
 ### 7.1 Exception workflow
 
@@ -174,8 +158,8 @@ Canonical rule catalogue, source/changeability/owner nằm trong [Product Backlo
 | Invalid/unauthorized transition | Trả lỗi an toàn; state/slot không đổi; ghi security/audit phù hợp | BR-04, BR-08, AC-02-01, AC-13-01 |
 | Reject | Booking `Rejected`; reason/audit; Student quay lại mentor/slot search | BR-08, AC-12-02 |
 | Reschedule | `RescheduleProposed`; old confirmed slot vẫn được bảo vệ, new slot chưa bị giữ; bên còn lại accept/reject và switch atomic | BR-02, BR-08, AC-12-03, AC-13-01 |
-| Cancellation | `Cancelled` theo DEC-03; slot được release phù hợp; notification không điều khiển state | BR-08, BR-09, AC-13-01, AC-19-01 |
-| No-show | Gửi tới Admin/actor có thẩm quyền; `NoShow` chỉ dùng sau khi DEC-03 được duyệt | BR-08, AC-20-01 |
+| Cancellation | `Cancelled` theo policy; slot được release phù hợp; notification không điều khiển state | BR-08, BR-09, AC-13-01, AC-19-01 |
+| No-show | Gửi tới Admin/actor có thẩm quyền; `NoShow` chỉ dùng sau khi authority/evidence policy được duyệt | BR-08, AC-20-01 |
 | Meeting provider outage | Booking giữ `Confirmed`; hiển thị hướng xử lý/fallback; không tự Complete/Cancel | BR-09, AC-19-01 |
 | Notification timeout/duplicate | Booking đã commit; job retry idempotent; operation queue thấy failure | BR-09, AC-19-01 |
 | Feedback actor/state sai | Chặn; không tạo feedback partial; không lộ booking | BR-04, BR-05, AC-15-01 |
@@ -222,7 +206,6 @@ erDiagram
 - No-show và đổi lịch cần quy trình admin thủ công trong pilot.
 - Meeting provider outage nằm ngoài quyền kiểm soát trực tiếp.
 - Nội dung và feedback có thể sai hoặc không phù hợp; cần moderation/report.
-- Payment thủ công hoặc miễn phí làm giới hạn việc kiểm chứng unit economics.
 - Recommendation cá nhân hóa chưa thuộc MVP.
 
 ## 10. Traceability
@@ -251,32 +234,12 @@ erDiagram
 | WV-04 | Reject/reschedule/cancel | Actor/action/next state/reason rõ; không có dead end trái policy |
 | WV-05 | Unauthorized meeting/feedback access | Bị chặn server-side, không lộ dữ liệu/object existence không cần thiết |
 | WV-06 | Notification/meeting provider failure | Booking source of truth giữ đúng; retry/fallback hiển thị |
-| WV-07 | No-show/report/admin resolution | Authority/policy/audit rõ hoặc đánh dấu blocked bởi DEC-03 |
+| WV-07 | No-show/report/admin resolution | Authority, policy và audit rule được xác định rõ |
 | WV-08 | Feedback-to-question loop | Student thấy next action và quay về taxonomy/topic phù hợp |
 
-Prototype/workflow cần exploratory test với input xấu/đối nghịch theo [Software Quality Management, Slide 007](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-software-quality-management.md#slide-007--how-to-meet-user-requirements). Bản AI reference chỉ định nghĩa scenario, không tuyên bố đã test.
+Prototype/workflow cần exploratory test với input xấu hoặc đối nghịch theo [Software Quality Management, Slide 007](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-software-quality-management.md#slide-007--how-to-meet-user-requirements). Các scenario trên là điều kiện cần kiểm thử, không phải kết quả test.
 
-## 12. Open decisions
+## 12. Kết quả future state
 
-| ID | Decision | Owner | Blocked content |
-|---|---|---|---|
-| DEC-03 | Cancellation/reschedule/no-show/mark-complete authority, cutoff, evidence và old-slot handling | PO/Operations | Transition conditional, US-12/13/15/20 readiness |
-| DEC-08 | Review/Admin exception có thuộc minimum releasable feature | PO | AI proposal includes US-17/20 as Must; PO inspection pending |
-| DEC-09 | Reminder cadence/timezone/suppression/fallback | PO/Operations | US-22, notification UX |
-| DEC-07 | Meeting-link creation/update authority và outage fallback | PO/Technical | FS-07/exception UI |
-
-## 13. Kết quả future state và readiness
-
-Workflow thành công khi Student hoàn thành vòng lặp từ câu hỏi đến feedback mà không cần điều phối cốt lõi qua kênh riêng, và dữ liệu thu được đủ để đánh giá KPI cùng giả thuyết kinh doanh.
-
-**Readiness:** `AI-assisted reference — conditionally ready for human walkthrough`. Chưa Approved cho đến khi DEC-03/07 được chốt ở mức MVP, DEC-08 được PO xác nhận, Hùng cung cấp prototype/usability evidence, Trí cung cấp PoC evidence đạt các EN-03..EN-07, Tuấn Anh xác nhận integrated smoke path và consistency/configuration review, và PO inspection/acceptance được ghi nhận.
-
-## 14. Ref compliance index
-
-| Tiêu chí | Ref | Vị trí |
-|---|---|---|
-| User/problem/feature/prototype | [03.2, Slides 005, 014-015](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-005--discovering-user-requirements) | 2-4, 11 |
-| Future use case/domain/risk/conclusion | [03.2, Slide 017](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4) | 3-14 |
-| Traceability/inspection | [09, Slides 039-042](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/09-software-project-monitoring-and-control.md#slide-039--9-validate-scope) | 10-13 |
-| Negative/exploratory workflow | [11, Slide 007](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-software-quality-management.md#slide-007--how-to-meet-user-requirements) | 7, 11 |
+Workflow thành công khi Student hoàn thành vòng lặp từ câu hỏi đến feedback mà không cần điều phối cốt lõi qua kênh riêng, và dữ liệu thu được đủ để đánh giá KPI cùng giả thuyết kinh doanh. Các policy còn cần phê duyệt cho cancellation/reschedule/no-show/completion, meeting-link fallback và reminder được quản lý tại [Open product decisions](Product_Backlog_and_Acceptance_Criteria.md#10-open-product-decisions).
 

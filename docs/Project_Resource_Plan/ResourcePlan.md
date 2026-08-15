@@ -2,7 +2,7 @@
 
 ## 1. Mục đích và cơ sở lập kế hoạch
 
-Tài liệu xác định trách nhiệm, capacity, công cụ và lịch sử dụng nguồn lực cho MVP. Nhóm hiện có sáu thành viên: năm owner trong `Task_W10.pdf` và Tuấn Anh ở vai trò Team Lead cross-cutting. Thời lượng 12 tuần và baseline 816 giờ của năm thành viên ban đầu là đề xuất đã đối chiếu; capacity bổ sung của Tuấn Anh chỉ được tính sau khi xác nhận giờ cam kết.
+Tài liệu xác định trách nhiệm, capacity, công cụ và lịch sử dụng nguồn lực cho MVP. Nhóm có sáu thành viên; thời lượng dự kiến là 12 tuần. Capacity của Tuấn Anh chỉ được cộng vào cam kết sau khi xác nhận giờ tham gia hằng tuần.
 
 ## 2. Nhân lực và trách nhiệm
 
@@ -11,7 +11,7 @@ Tài liệu xác định trách nhiệm, capacity, công cụ và lịch sử d�
 | Sponsor | Phê duyệt charter, baseline, change lớn | Approval/decision | [CẦN BỔ SUNG] |
 | Product Owner/BA | Vision, discovery, backlog, priority, acceptance | Requirements/backlog/UAT | Hưng |
 | PM/Scrum Master | Charter, plan, estimate, sprint, risk, communication | Plan/status/risk/time-cost-resource | Gia Thành |
-| Team Lead/Configuration & Integration | Đã dựng repository skeleton và starter document set; tiếp tục quản lý cross-workstream dependency, PR/code review, document control, CI/integration và release readiness | Repository/document starting point, integrated product, controlled docs, merge/release evidence | Tuấn Anh |
+| Team Lead/Configuration & Integration | Quản lý cross-workstream dependency, PR/code review, document control, CI/integration và release readiness | Integrated product, controlled docs, merge/release evidence | Tuấn Anh |
 | UI/UX và prototype | Research, workflow, clickable prototype, usability | Prototype/handoff/design evidence | Hùng |
 | PoC/Back-end implementation | API, domain, booking concurrency, technical evidence | PoC/services/API/data/tests | Trí |
 | Architecture/DevOps/Security | Stack, ADR, boundaries, security, deployment guidance | Architecture/ADR/technical gates | Luân |
@@ -25,25 +25,16 @@ Một người có thể giữ nhiều vai trò. Nhóm phải ghi rõ accountabl
 
 | Workstream/deliverable | Accountable | Responsible | Consulted/Reviewer | Exit evidence |
 |---|---|---|---|---|
-| Repository skeleton và document scaffolding | Tuấn Anh | Tuấn Anh | Gia Thành, Hưng | **Completed:** [`ff41b3c`](https://github.com/tnnhuaa/InterviewQuestionBank/commit/ff41b3ce37b6187df6590d1d77b057e59792f25d) + [`0743a68`](https://github.com/tnnhuaa/InterviewQuestionBank/commit/0743a685195a3396511a59c83515860c9f11bfdd); root/docs structure và starter content đã bàn giao cho các owner |
 | Charter, resource và time-cost estimate | Gia Thành | Gia Thành | Tuấn Anh, Hưng, cả nhóm | Hai estimate độc lập, assumptions, capacity và approval record |
 | Prototype workflow/handoff/usability | Hùng | Hùng | Hưng, Tuấn Anh | Clickable link, exported evidence, task result và trace tới backlog |
-| Vision, Scope, Product Backlog, AC và Future Workflow | Hưng | Hưng | Tuấn Anh và owner các workstream | PO order/decision, RTM, inspection result và approved change record |
+| Vision, Scope, Product Backlog, AC và Future Workflow | Hưng | Hưng | Tuấn Anh và owner các workstream | PO order/decision, RTM, acceptance record và approved change record |
 | Architecture, stack và ADR | Luân | Luân | Trí, Tuấn Anh | ADR rationale/status, security/data/deployment constraints và review record |
 | End-to-End PoC | Trí | Trí | Luân, Tuấn Anh | Source, seed, commands và asserted Pass/Fail cho năm technical risks |
 | Integrated product foundation | Tuấn Anh | Tuấn Anh, Trí, Hùng | Luân, Hưng | Repository/CI, shared contracts, auth/RBAC foundation và integrated smoke test |
-| Document/configuration management | Tuấn Anh | Tuấn Anh; từng owner cập nhật file của mình | Gia Thành, Hưng | Đúng cây W10, version/source/link nhất quán, action item đóng trước merge |
+| Document/configuration management | Tuấn Anh | Tuấn Anh; từng owner cập nhật file của mình | Gia Thành, Hưng | Cây thư mục, version/source/link nhất quán; action item đóng trước merge |
 | UAT/release readiness | Hưng | Tuấn Anh và toàn nhóm | Gia Thành, pilot users | Critical tests pass, no Critical/High defect, UAT/PO acceptance và release evidence |
 
-### 2.2 Đóng góp và công việc của Tuấn Anh
-
-**Đã hoàn thành**
-
-- Khởi tạo repository và README gốc tại [`ff41b3c`](https://github.com/tnnhuaa/InterviewQuestionBank/commit/ff41b3ce37b6187df6590d1d77b057e59792f25d).
-- Tạo skeleton `docs/` và nội dung nền cho 16 đường dẫn ban đầu (1.925 dòng) tại [`0743a68`](https://github.com/tnnhuaa/InterviewQuestionBank/commit/0743a685195a3396511a59c83515860c9f11bfdd).
-- Bàn giao khung cấu trúc/nội dung khởi đầu; việc bootstrap không thay thế trách nhiệm của từng owner trong hoàn thiện, kiểm chứng và xin acceptance cho deliverable của mình.
-
-**Tiếp tục phụ trách**
+### 2.2 Trách nhiệm của Team Lead/Integration Lead
 
 - Duy trì integration checklist và dependency map giữa requirement, prototype, architecture, PoC và implementation.
 - Thiết lập/duy trì CI quality gates, shared contract và smoke path `Question -> Mentor -> Booking -> Session -> Feedback`.

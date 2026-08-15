@@ -8,9 +8,8 @@
 | Product Owner | Hưng |
 | Project Manager/Scrum Master | Gia Thành |
 | Team Lead/Integration Lead | Tuấn Anh |
-| Repository bootstrap/document scaffolding | Tuấn Anh — [`ff41b3c`](https://github.com/tnnhuaa/InterviewQuestionBank/commit/ff41b3ce37b6187df6590d1d77b057e59792f25d), [`0743a68`](https://github.com/tnnhuaa/InterviewQuestionBank/commit/0743a685195a3396511a59c83515860c9f11bfdd) |
 | Nhóm thực hiện | Gia Thành, Hùng, Hưng, Trí, Luân, Tuấn Anh |
-| Phiên bản | 0.3-ai-bootstrap-provenance |
+| Phiên bản | 0.4 |
 | Ngày | 15/08/2026 |
 | Trạng thái | Draft — chưa phê duyệt baseline |
 
@@ -94,7 +93,6 @@ Lịch đề xuất là 12 tuần, từ 17/08/2026 đến 08/11/2026; chỉ tr�
 
 - Product Owner ưu tiên backlog và chấp nhận story dựa trên acceptance criteria.
 - Project Manager/Scrum Master điều phối kế hoạch, risk, dependency và escalation.
-- Tuấn Anh đã khởi tạo repository, dựng cây `docs/` và nội dung nền ban đầu; từng deliverable owner tiếp tục chịu trách nhiệm về tính đúng, evidence và acceptance của tài liệu/phần triển khai mình sở hữu.
 - Team Lead điều phối WIP kỹ thuật, tích hợp giữa các workstream, PR/code review, configuration/document control và readiness trước merge/release.
 - Team Lead không thay Product Owner quyết định scope/acceptance, không thay Project Manager sở hữu lịch/risk và không tự thay đổi ADR do Architecture owner quản lý.
 - Nhóm kỹ thuật quyết định cách triển khai trong giới hạn architecture, security và scope đã duyệt.

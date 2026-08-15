@@ -23,7 +23,7 @@ Sponsor: **[CẦN BỔ SUNG]**.
 | ST-01 | Sponsor/giảng viên | Kết quả học tập, governance, chất lượng deliverable | Cao | Cao | Manage closely |
 | ST-02 | Hưng — Product Owner | Giá trị sản phẩm, backlog, acceptance | Cao | Cao | Manage closely |
 | ST-03 | Gia Thành — Project Manager/Scrum Master | Kế hoạch, delivery, risk và team health | Cao | Cao | Manage closely |
-| ST-04 | Tuấn Anh — Team Lead | Đã bootstrap repository và bộ tài liệu nền; tiếp tục phụ trách tích hợp, chất lượng PR, configuration/document control và release readiness | Cao trong delivery | Cao | Manage closely |
+| ST-04 | Tuấn Anh — Team Lead | Tích hợp sản phẩm, chất lượng PR, configuration/document control và release readiness | Cao trong delivery | Cao | Manage closely |
 | ST-05 | Development team | Requirement rõ, môi trường và quyết định kịp thời | Trung bình | Cao | Keep engaged |
 | ST-06 | Sinh viên/ứng viên | Nội dung phù hợp, booking dễ, riêng tư và giá hợp lý | Trung bình | Cao | Co-design/test |
 | ST-07 | Mentor/HR | Yêu cầu rõ, lịch kiểm soát được, uy tín và compensation | Trung bình | Cao | Co-design/test |
@@ -54,12 +54,10 @@ Sponsor: **[CẦN BỔ SUNG]**.
 
 ### Team Lead
 
-- Đã khởi tạo repository tại [`ff41b3c`](https://github.com/tnnhuaa/InterviewQuestionBank/commit/ff41b3ce37b6187df6590d1d77b057e59792f25d) và tạo skeleton `docs/` cùng nội dung nền ban đầu tại [`0743a68`](https://github.com/tnnhuaa/InterviewQuestionBank/commit/0743a685195a3396511a59c83515860c9f11bfdd).
 - Điều phối dependency và WIP kỹ thuật giữa prototype, requirement, architecture, PoC và implementation.
 - Thực hiện hoặc phân công phần tích hợp sản phẩm: repository foundation, CI quality gate, shared contracts và end-to-end integration.
 - Quản lý configuration/document workflow: đúng cây thư mục, owner/reviewer, version, link/evidence và consistency trước merge.
 - Tổ chức technical/document review; theo dõi action item đến khi đóng nhưng không tự phê duyệt scope thay Product Owner.
-- Skeleton và starter content là điểm khởi đầu được bàn giao; owner chuyên môn chịu trách nhiệm hoàn thiện, kiểm chứng và phê duyệt nội dung thuộc workstream của mình.
 
 ### Development team
 
@@ -104,7 +102,6 @@ Sponsor: **[CẦN BỔ SUNG]**.
 - Xác nhận capacity hằng tuần của Tuấn Anh trước khi rebaseline schedule/estimate; không dùng thành viên mới để thêm scope ngầm.
 - Phân khúc nghề nghiệp đầu tiên và quy mô pilot.
 - Tiêu chí xác minh mentor và policy hủy/no-show.
-- Booking miễn phí, trả phí thủ công hay credit trong pilot.
 - Dữ liệu nào được công khai, lưu bao lâu và ai có quyền xóa.
 - Ngưỡng KPI và điều kiện Go/Pivot/Stop.
 

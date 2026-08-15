@@ -56,7 +56,7 @@ flowchart LR
 
 ### Screen S04 — Mentor Search
 
-- Filter expertise, interview type, language, price placeholder và availability.
+- Filter expertise, interview type, language và availability.
 - Chỉ mentor Approved xuất hiện.
 - Card có kinh nghiệm, service scope, rating count và slot gần nhất.
 - Empty state phân biệt “không có mentor” và “không có slot theo filter”.
@@ -131,7 +131,7 @@ flowchart LR
 ### Screen M03 — Profile and services
 
 - Public preview tách khỏi private contact/evidence.
-- Duration, format, fee placeholder và expectations.
+- Duration, format và expectations.
 - Policy/availability link.
 
 ### Screen M04 — Availability
@@ -195,7 +195,7 @@ flowchart LR
 ### Screen A04 — Booking/report case
 
 - Timeline booking, policy, report reason và dữ liệu tối thiểu cần xử lý.
-- Action resolve, hide review, reschedule/credit placeholder theo authority.
+- Action resolve, hide review hoặc reschedule theo authority.
 - Internal note không hiển thị cho public.
 
 ### Screen A05 — Decision and audit
