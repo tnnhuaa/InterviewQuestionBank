@@ -21,15 +21,16 @@ Sponsor: **[CẦN BỔ SUNG]**.
 | ID | Stakeholder | Lợi ích/nhu cầu | Power | Interest | Chiến lược |
 |---|---|---|---|---|---|
 | ST-01 | Sponsor/giảng viên | Kết quả học tập, governance, chất lượng deliverable | Cao | Cao | Manage closely |
-| ST-02 | Product Owner | Giá trị sản phẩm, backlog, acceptance | Cao | Cao | Manage closely |
-| ST-03 | Project Manager/Scrum Master | Kế hoạch, delivery, risk và team health | Cao | Cao | Manage closely |
-| ST-04 | Development team | Requirement rõ, môi trường và quyết định kịp thời | Trung bình | Cao | Keep engaged |
-| ST-05 | Sinh viên/ứng viên | Nội dung phù hợp, booking dễ, riêng tư và giá hợp lý | Trung bình | Cao | Co-design/test |
-| ST-06 | Mentor/HR | Yêu cầu rõ, lịch kiểm soát được, uy tín và compensation | Trung bình | Cao | Co-design/test |
-| ST-07 | Administrator/moderator | Quy trình duyệt, report và audit rõ | Trung bình | Cao | Involve early |
-| ST-08 | Hosting/database provider | Sử dụng đúng quota và điều khoản | Cao gián tiếp | Thấp | Monitor |
-| ST-09 | Email/calendar/video provider | Tích hợp ổn định, tuân thủ policy | Cao gián tiếp | Thấp | Monitor/fallback |
-| ST-10 | Cố vấn pháp lý/privacy | Consent, privacy notice, terms và xử lý dữ liệu | Trung bình | Trung bình | Consult |
+| ST-02 | Hưng — Product Owner | Giá trị sản phẩm, backlog, acceptance | Cao | Cao | Manage closely |
+| ST-03 | Gia Thành — Project Manager/Scrum Master | Kế hoạch, delivery, risk và team health | Cao | Cao | Manage closely |
+| ST-04 | Tuấn Anh — Team Lead | Tích hợp thực thi, chất lượng PR, configuration/document control và release readiness | Cao trong delivery | Cao | Manage closely |
+| ST-05 | Development team | Requirement rõ, môi trường và quyết định kịp thời | Trung bình | Cao | Keep engaged |
+| ST-06 | Sinh viên/ứng viên | Nội dung phù hợp, booking dễ, riêng tư và giá hợp lý | Trung bình | Cao | Co-design/test |
+| ST-07 | Mentor/HR | Yêu cầu rõ, lịch kiểm soát được, uy tín và compensation | Trung bình | Cao | Co-design/test |
+| ST-08 | Administrator/moderator | Quy trình duyệt, report và audit rõ | Trung bình | Cao | Involve early |
+| ST-09 | Hosting/database provider | Sử dụng đúng quota và điều khoản | Cao gián tiếp | Thấp | Monitor |
+| ST-10 | Email/calendar/video provider | Tích hợp ổn định, tuân thủ policy | Cao gián tiếp | Thấp | Monitor/fallback |
+| ST-11 | Cố vấn pháp lý/privacy | Consent, privacy notice, terms và xử lý dữ liệu | Trung bình | Trung bình | Consult |
 
 ## 4. Nhu cầu, trách nhiệm và thẩm quyền
 
@@ -50,6 +51,13 @@ Sponsor: **[CẦN BỔ SUNG]**.
 - Duy trì kế hoạch, dependency, risk register và communication cadence.
 - Tổ chức sprint events và escalation.
 - Bảo đảm quyết định được ghi lại.
+
+### Team Lead
+
+- Điều phối dependency và WIP kỹ thuật giữa prototype, requirement, architecture, PoC và implementation.
+- Thực hiện hoặc phân công phần tích hợp sản phẩm: repository foundation, CI quality gate, shared contracts và end-to-end integration.
+- Quản lý configuration/document workflow: đúng cây thư mục, owner/reviewer, version, link/evidence và consistency trước merge.
+- Tổ chức technical/document review; theo dõi action item đến khi đóng nhưng không tự phê duyệt scope thay Product Owner.
 
 ### Development team
 
@@ -83,14 +91,15 @@ Sponsor: **[CẦN BỔ SUNG]**.
 
 | Nhóm | Stakeholder | Cách quản lý |
 |---|---|---|
-| Power cao, Interest cao | Sponsor, Product Owner, Project Manager | Trao đổi thường xuyên; xin quyết định theo milestone |
+| Power cao, Interest cao | Sponsor, Product Owner, Project Manager, Team Lead | Trao đổi thường xuyên; xin quyết định theo milestone và điều phối integration |
 | Power cao, Interest thấp | Nhà cung cấp hạ tầng/tích hợp | Theo dõi quota, outage, điều khoản; chuẩn bị fallback |
 | Power thấp/trung bình, Interest cao | Team, Student, Mentor, Admin | Đồng thiết kế, demo, research và UAT định kỳ |
 | Power thấp, Interest thấp | Công chúng/đối tác tương lai | Theo dõi; cập nhật khi phạm vi mở rộng |
 
 ## 6. Vấn đề cần quyết định
 
-- Tên chính thức, Sponsor, Product Owner và Project Manager.
+- Danh tính Sponsor và acceptance authority chính thức.
+- Xác nhận capacity hằng tuần của Tuấn Anh trước khi rebaseline schedule/estimate; không dùng thành viên mới để thêm scope ngầm.
 - Phân khúc nghề nghiệp đầu tiên và quy mô pilot.
 - Tiêu chí xác minh mentor và policy hủy/no-show.
 - Booking miễn phí, trả phí thủ công hay credit trong pilot.
@@ -102,9 +111,10 @@ Sponsor: **[CẦN BỔ SUNG]**.
 | Nội dung | Người tham gia | Nhịp | Kênh | Owner |
 |---|---|---|---|---|
 | Daily coordination | Nhóm dự án | Hằng ngày làm việc | Chat/stand-up | Scrum Master |
+| Integration/document-control review | Tuấn Anh và owner từng deliverable | Hai lần/tuần và trước merge | PR + checklist + action items | Tuấn Anh |
 | Backlog refinement | PO, BA, team | Mỗi tuần | Công cụ backlog | PO |
 | Sprint planning/review/retro | PO và team | Mỗi sprint | Meeting + backlog | Scrum Master |
-| Risk/change review | Sponsor, PO, PM | Mỗi tuần hoặc khi vượt ngưỡng | Risk/change log | PM |
+| Risk/change review | Sponsor, PO, PM, Team Lead | Mỗi tuần hoặc khi vượt ngưỡng | Risk/change log | PM |
 | Student research | BA/UX và sinh viên | Theo research plan | Interview/test | Research owner |
 | Mentor review | PO/BA và mentor | Trước prototype, pilot | Interview/demo | PO |
 | Milestone report | Sponsor và nhóm | Mỗi milestone | Báo cáo ngắn | PM |

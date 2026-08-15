@@ -8,11 +8,11 @@
 |---|---|
 | Owner/Producer | Hưng — Thành viên 3 |
 | Công cụ hỗ trợ | Codex |
-| Phiên bản | 0.4-ai-final-tree-reference |
-| Trạng thái | Cross-branch AI reconciliation and final repository-tree cleanup completed; pending human walkthrough/PO approval |
+| Phiên bản | 0.5-ai-six-member-reference |
+| Trạng thái | Cross-branch/tree inspection and six-member role reconciliation completed; pending human walkthrough/PO approval |
 | Branch | `feat/member-3-scope-backlog` |
 | Ngày cập nhật | 15/08/2026 |
-| Reviewer/Approver | `[CẦN BỔ SUNG — Hùng/Trí/PO]` |
+| Reviewer/Approver | Hùng/Prototype, Trí/PoC, Luân/Architecture, Tuấn Anh/Integration & Document Control, Hưng/PO — review record pending |
 
 Future workflow là black-box view của solution, không phải bằng chứng backend/concurrency/security đã hoàn thành. Vision & Scope cần future business use case/domain view theo [User Requirements, Slide 017](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4).
 
@@ -269,7 +269,7 @@ Prototype/workflow cần exploratory test với input xấu/đối nghịch theo
 
 Workflow thành công khi Student hoàn thành vòng lặp từ câu hỏi đến feedback mà không cần điều phối cốt lõi qua kênh riêng, và dữ liệu thu được đủ để đánh giá KPI cùng giả thuyết kinh doanh.
 
-**Readiness:** `AI-assisted reference — conditionally ready for human walkthrough`. Chưa Approved cho đến khi DEC-03/07 được chốt ở mức MVP, DEC-08 được PO xác nhận, Hùng cung cấp prototype/usability evidence, Trí cung cấp PoC evidence đạt các EN-03..EN-07, và PO inspection/acceptance được ghi nhận.
+**Readiness:** `AI-assisted reference — conditionally ready for human walkthrough`. Chưa Approved cho đến khi DEC-03/07 được chốt ở mức MVP, DEC-08 được PO xác nhận, Hùng cung cấp prototype/usability evidence, Trí cung cấp PoC evidence đạt các EN-03..EN-07, Tuấn Anh xác nhận integrated smoke path và consistency/configuration review, và PO inspection/acceptance được ghi nhận.
 
 ## 14. Ref compliance index
 

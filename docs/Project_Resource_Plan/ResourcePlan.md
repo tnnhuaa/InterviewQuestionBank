@@ -2,38 +2,63 @@
 
 ## 1. Mục đích và cơ sở lập kế hoạch
 
-Tài liệu xác định trách nhiệm, capacity, công cụ và lịch sử dụng nguồn lực cho MVP. Vì nhóm, thời lượng và giờ cam kết chưa được xác nhận, kế hoạch dùng vai trò và tỷ lệ; không giả định số người hoặc ngày cụ thể.
+Tài liệu xác định trách nhiệm, capacity, công cụ và lịch sử dụng nguồn lực cho MVP. Nhóm hiện có sáu thành viên: năm owner trong `Task_W10.pdf` và Tuấn Anh ở vai trò Team Lead cross-cutting. Thời lượng 12 tuần và baseline 816 giờ của năm thành viên ban đầu là đề xuất đã đối chiếu; capacity bổ sung của Tuấn Anh chỉ được tính sau khi xác nhận giờ cam kết.
 
 ## 2. Nhân lực và trách nhiệm
 
 | Vai trò | Trách nhiệm chính | Deliverable | Người phụ trách |
 |---|---|---|---|
 | Sponsor | Phê duyệt charter, baseline, change lớn | Approval/decision | [CẦN BỔ SUNG] |
-| Product Owner/BA | Vision, discovery, backlog, acceptance | Requirements/backlog/UAT | [CẦN BỔ SUNG] |
-| PM/Scrum Master | Kế hoạch, sprint, risk, communication | Plan/status/risk log | [CẦN BỔ SUNG] |
-| UI/UX | Research, workflow, prototype, usability | Prototype/design system | [CẦN BỔ SUNG] |
-| Front-end | Web UI, state, accessibility, test | Student/Mentor/Admin UI | [CẦN BỔ SUNG] |
-| Back-end | API, domain, auth, booking concurrency | Services/API/data | [CẦN BỔ SUNG] |
-| QA | Test strategy, cases, automation, defect/UAT | Test report/quality evidence | [CẦN BỔ SUNG] |
-| DevOps/Security | CI/CD, environment, secret, monitoring | Deployment/observability | [CẦN BỔ SUNG] |
-| Content/Moderator | Taxonomy, question review, mentor/report policy | Pilot content/operations | [CẦN BỔ SUNG] |
+| Product Owner/BA | Vision, discovery, backlog, priority, acceptance | Requirements/backlog/UAT | Hưng |
+| PM/Scrum Master | Charter, plan, estimate, sprint, risk, communication | Plan/status/risk/time-cost-resource | Gia Thành |
+| Team Lead/Configuration & Integration | Cross-workstream dependency, PR/code review, document control, CI/integration và release readiness | Integrated product, controlled docs, merge/release evidence | Tuấn Anh |
+| UI/UX và prototype | Research, workflow, clickable prototype, usability | Prototype/handoff/design evidence | Hùng |
+| PoC/Back-end implementation | API, domain, booking concurrency, technical evidence | PoC/services/API/data/tests | Trí |
+| Architecture/DevOps/Security | Stack, ADR, boundaries, security, deployment guidance | Architecture/ADR/technical gates | Luân |
+| Front-end implementation | Product UI, state, accessibility và integration test | Student/Mentor/Admin UI | Hùng; Tuấn Anh hỗ trợ integration |
+| QA/UAT | Test strategy, automation, defect/UAT và evidence review | Test report/quality evidence | Tuấn Anh điều phối peer review chéo; không owner nào tự duyệt deliverable của mình; Hưng chấp nhận UAT |
+| Content/Moderator | Taxonomy, question review, mentor/report policy | Pilot content/operations | Hưng accountable; nhóm hỗ trợ |
 
-Một người có thể giữ nhiều vai trò. Nhóm phải ghi rõ accountable owner cho Product, Architecture, Quality, Security/Privacy và Release.
+Một người có thể giữ nhiều vai trò. Nhóm phải ghi rõ accountable owner cho Product, Architecture, Quality, Security/Privacy và Release. Team Lead điều phối và kiểm tra integration nhưng không thay PO quyết định scope/acceptance, PM quyết định schedule/risk hay Architecture owner quyết định ADR.
+
+### 2.1 Phân công deliverable và implementation
+
+| Workstream/deliverable | Accountable | Responsible | Consulted/Reviewer | Exit evidence |
+|---|---|---|---|---|
+| Charter, resource và time-cost estimate | Gia Thành | Gia Thành | Tuấn Anh, Hưng, cả nhóm | Hai estimate độc lập, assumptions, capacity và approval record |
+| Prototype workflow/handoff/usability | Hùng | Hùng | Hưng, Tuấn Anh | Clickable link, exported evidence, task result và trace tới backlog |
+| Vision, Scope, Product Backlog, AC và Future Workflow | Hưng | Hưng | Tuấn Anh và owner các workstream | PO order/decision, RTM, inspection result và approved change record |
+| Architecture, stack và ADR | Luân | Luân | Trí, Tuấn Anh | ADR rationale/status, security/data/deployment constraints và review record |
+| End-to-End PoC | Trí | Trí | Luân, Tuấn Anh | Source, seed, commands và asserted Pass/Fail cho năm technical risks |
+| Integrated product foundation | Tuấn Anh | Tuấn Anh, Trí, Hùng | Luân, Hưng | Repository/CI, shared contracts, auth/RBAC foundation và integrated smoke test |
+| Document/configuration management | Tuấn Anh | Tuấn Anh; từng owner cập nhật file của mình | Gia Thành, Hưng | Đúng cây W10, version/source/link nhất quán, action item đóng trước merge |
+| UAT/release readiness | Hưng | Tuấn Anh và toàn nhóm | Gia Thành, pilot users | Critical tests pass, no Critical/High defect, UAT/PO acceptance và release evidence |
+
+### 2.2 Công việc cụ thể của Tuấn Anh
+
+- Duy trì integration checklist và dependency map giữa requirement, prototype, architecture, PoC và implementation.
+- Thiết lập/duy trì CI quality gates, shared contract và smoke path `Question -> Mentor -> Booking -> Session -> Feedback`.
+- Tham gia implementation ở foundation, auth/RBAC, integration và defect xuyên module; pair với Trí cho API/PoC, Hùng cho UI và Luân cho constraint/ADR.
+- Review PR/code và tài liệu theo traceability; kiểm tra source, version, owner, status và link/evidence trước merge.
+- Điều phối fix cho mismatch nhưng chuyển quyết định scope cho Hưng, schedule/risk cho Gia Thành và kiến trúc cho Luân.
 
 ## 3. Capacity và effort baseline
 
 | Thông tin | Giá trị |
 |---|---|
-| Số thành viên | [CẦN BỔ SUNG] |
-| Thời lượng | [CẦN BỔ SUNG] tuần |
-| Giờ/người/tuần | [CẦN BỔ SUNG] |
-| Capacity danh nghĩa | Thành viên × tuần × giờ/người/tuần |
-| Reserve | [CẦN BỔ SUNG]% cho học tập, risk và nghỉ |
-| Capacity commitment | Capacity danh nghĩa × (1 − reserve) |
+| Số thành viên | 6: Gia Thành, Hùng, Hưng, Trí, Luân, Tuấn Anh |
+| Thời lượng đề xuất | 12 tuần |
+| Baseline năm thành viên ban đầu | 5 × 12 × 16 = 960 giờ danh nghĩa; 816 giờ sau reserve 15% |
+| Giờ của Tuấn Anh | `h_TA` giờ/tuần — [CẦN TUẤN ANH XÁC NHẬN] |
+| Capacity bổ sung của Tuấn Anh | `12 × h_TA × (1 − 15%)` |
+| Revised commitment | `816 + 12 × h_TA × 0.85` giờ; cần PM/team/Sponsor rebaseline |
+| Working estimate hiện có | 688 giờ; không tự tăng scope khi capacity tăng |
+| Reserve | 15% cho học tập, risk và nghỉ |
 
 Quy tắc:
 
 - Chỉ commit sau khi story đạt Definition of Ready và người thực hiện estimate.
+- Capacity của Tuấn Anh chưa xác nhận không được dùng để cam kết thêm story hoặc kéo Future Backlog vào R1.
 - Không dùng 100% capacity cho feature; dành chỗ cho discovery, review, test, defect và documentation.
 - Theo dõi actual effort, velocity, carry-over và blocker để reforecast.
 - Không bù lịch bằng overtime kéo dài.

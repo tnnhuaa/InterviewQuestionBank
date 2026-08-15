@@ -8,11 +8,11 @@
 |---|---|
 | Owner/Producer | Hưng — Member 3 / Product Owner |
 | Supporting tool | Codex |
-| Version | 0.5-ai-final-tree-reference |
+| Version | 0.6-ai-six-member-reference |
 | Branch | `feat/member-3-scope-backlog` |
 | Updated | 15/08/2026 |
-| Status | Cross-branch AI inspection and final repository-tree cleanup completed; pending PO/team inspection and Sponsor acceptance |
-| Reviewer/Approver | Hưng/Development Team/Sponsor — signatures or review record pending |
+| Status | Cross-branch/tree inspection and six-member role reconciliation completed; pending PO/team inspection and Sponsor acceptance |
+| Reviewer/Approver | Tuấn Anh/Team Lead — integration/document consistency; Hưng/PO, Development Team và Sponsor — acceptance record pending |
 
 The quality criteria in the immutable [`docs/refs/` snapshot at `05ff4b9`](https://github.com/tnnhuaa/InterviewQuestionBank/tree/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs) are the single source of truth for evaluating this artifact. The snapshot is pinned because the final submission tree excludes reference-source files. When project documents disagree, this backlog records the discrepancy and required owner action; it does not silently treat a PoC or an unapproved branch as a new business requirement.
 
@@ -28,7 +28,7 @@ Release R1 is a responsive web MVP for Student, Mentor and Administrator. It inc
 
 | Evidence | Remote snapshot inspected | Contribution | Authority in this reconciliation |
 |---|---|---|---|
-| EV-01 — Member 1 governance/estimation | [`a060693`](https://github.com/tnnhuaa/InterviewQuestionBank/tree/a0606934f63da9497b574f092835197d55d08f10) | Hưng as PO; 12 weeks; 816 committed hours; 688-hour working estimate; 756-hour guardrail; 20 Must stories | Proposed project/release baseline; Sponsor acceptance still required |
+| EV-01 — Member 1 governance/estimation | [`a060693`](https://github.com/tnnhuaa/InterviewQuestionBank/tree/a0606934f63da9497b574f092835197d55d08f10) | Hưng as PO; 12 weeks; original five-member 816 committed hours; 688-hour working estimate; 756-hour guardrail; 20 Must stories | Proposed project/release baseline; Tuấn Anh capacity and Sponsor acceptance still required |
 | EV-02 — Member 5 architecture/ADR | [`8d6a10f`](https://github.com/tnnhuaa/InterviewQuestionBank/tree/8d6a10fd2d262fe5f1c9e696569841858326b4b7) | Modular monolith, PostgreSQL consistency, object authorization, outbox, NFRs and PoC gates | Technical constraint/design source; pending valid PoC evidence |
 | EV-03 — PoC implementation | [`e1d6911`](https://github.com/tnnhuaa/InterviewQuestionBank/tree/e1d691135497d6d10b786d539bb5888c4b0f8291/poc) | Partial question, booking, link, feedback and worker implementation | Implementation evidence only; not accepted as passing the five PoC gates |
 | EV-04 — Prototype specification on remote `main` | [`6548e12`](https://github.com/tnnhuaa/InterviewQuestionBank/blob/6548e129d702facf741641dbfb2e38ddf392d310/docs/Project_Prototype/Prototype_Workflow.md) | Screen IDs, user flows, states and prototype test tasks | Requirement/prototype specification; no dedicated Member 2 branch, clickable frames, handoff or usability result found |
@@ -251,7 +251,7 @@ Release R1 is a fixed-date proposal of six two-week sprints from 17/08/2026 thro
 |---|---|---|
 | Proposed MRF / Release Backlog | US-01–US-20 plus EN-01–EN-08 | PO/Sponsor approval and story sizing pending |
 | Stretch/Future | US-21–US-22 / US-23 | Must work and reserves cannot be consumed silently |
-| Committed capacity proposal | 816 hours after 15% reserve | From EV-01; Sponsor acceptance pending |
+| Committed capacity proposal | `816 + 12 × h_TA × 0.85` hours after 15% reserve | 816 hours is the original five-member proposal; Tuấn Anh must confirm weekly hours before team/PM/Sponsor rebaseline |
 | Working estimate | 688 hours bottom-up + three-point | Work-package estimate, not a sum of story estimates |
 | Independent guardrail | 756 hours top-down count/compute | Based on 20 Must stories and judgment; recalibrate after PoC/sprint actuals |
 | Planning buffer | 128 hours versus 688-hour forecast | Reserve is for uncertainty/quality, not added scope |
@@ -263,12 +263,12 @@ Milestone alignment is Discovery/Charter → Requirements/Prototype → Foundati
 
 | ID | Decision | Owner | Reconciled status / impact |
 |---|---|---|---|
-| DEC-01 | Sponsor, PO, PM and acceptance authority | Sponsor/group | **Proposed resolved by EV-01:** Hưng PO, Gia Thành PM/Scrum Master, instructor Sponsor; formal acceptance record pending |
+| DEC-01 | Sponsor, PO, PM, Team Lead and acceptance authority | Sponsor/group | **Proposed resolved:** Hưng PO, Gia Thành PM/Scrum Master, Tuấn Anh Team Lead/Integration & Document Control, instructor Sponsor; formal acceptance record pending |
 | DEC-02 | First pilot segment, sample size, Mentor/booking absolute targets | PO/Research | Open; blocks executable market/pilot plan |
 | DEC-03 | Cancel/reschedule/no-show/completion authority, cutoff and evidence policy | PO/Operations | Open; blocks readiness of US-12/13/15/20 and reschedule occupancy design |
 | DEC-04 | Free/manual payment or credit treatment during pilot | PO/Sponsor | Open; payment automation remains out of scope, but terms/operations need a decision |
 | DEC-05 | Retention, deletion, privacy notice and consent policy | PO/Privacy owner | Open; blocks final privacy acceptance/NFR evidence |
-| DEC-06 | Date, capacity, budget and estimate baseline | Team/PM/Sponsor | **Proposed resolved by EV-01:** 12 weeks, 816 hours, 688-hour working estimate, 756-hour guardrail, 1,125,000 VND cash ceiling; formal acceptance pending |
+| DEC-06 | Date, capacity, budget and estimate baseline | Team/PM/Sponsor | **Partially resolved:** 12 weeks, original five-member 816 hours, 688-hour working estimate, 756-hour guardrail and 1,125,000 VND cash ceiling; revised six-member capacity awaits Tuấn Anh's `h_TA` and formal acceptance |
 | DEC-07 | Meeting-link creation/update authority and provider-outage fallback | PO/Technical | Open; affects US-14/AC-14-02 |
 | DEC-08 | US-17 review and minimal US-20 operations in the MRF | PO | **AI proposal: include as Must** to match Proposal/Charter/20-story estimate; PO inspection pending |
 | DEC-09 | Reminder cadence, timezone, suppression and fallback | PO/Operations | Open; US-22 remains Stretch/not Ready |
@@ -285,6 +285,7 @@ After approval, a change to order, release class, BR, AC, dependency, NFR or dec
 - [ ] Member 2 supplies clickable prototype, handoff and observed usability evidence.
 - [ ] Member 4 replaces self-declared PoC results with assertions/evidence for EN-03–EN-07 and removes repository hygiene/security gaps.
 - [ ] Member 5 reviews reschedule occupancy and updates ADR status only after valid PoC evidence.
+- [ ] Tuấn Anh runs integration/document-control inspection, verifies the W10 tree, cross-document semantics, PR evidence and integrated smoke path before merge/release.
 - [ ] Every R1 story is walked through by customer/PO and team for understandability, value and verifiability.
 - [ ] Sponsor/PO records Accept/Revise and any change requests before status becomes Approved.
 
@@ -306,7 +307,7 @@ After approval, a change to order, release class, BR, AC, dependency, NFR or dec
 
 ## 14. Cross-branch consistency appendix
 
-This appendix preserves the remote-branch audit inside the required Product Backlog artifact. A specification, proposed planning baseline, implementation artifact and verified result are different evidence classes; no implementation is marked Pass without an asserted result.
+This appendix preserves cross-branch inspection evidence inside the required Product Backlog artifact. It is not a separate audit deliverable or an additional file. A specification, proposed planning baseline, implementation artifact and verified result are different evidence classes; no implementation is marked Pass without an asserted result.
 
 | ID | Severity | Cross-document discrepancy | Canonical response / exit evidence |
 |---|---|---|---|
@@ -323,7 +324,7 @@ This appendix preserves the remote-branch audit inside the required Product Back
 | CONS-11 | Critical | Notification test increments its pass count without an assertion; worker lacks deduplication, safe claim, backoff and Dead/manual state. | EN-07 fails until deterministic fake-provider and competing-worker database assertions pass. |
 | CONS-12 | Critical | The remote PoC tree tracks `poc/.env` and generated dependencies. No secret value was read in this audit. | Remove tracked generated/secret files, rotate any real credential, add ignore/secret checks and retain evidence. |
 | CONS-13 | High | The PoC UI is a narrow demo, not the complete S/M/A prototype specification or usability result. | Treat it as partial implementation; EN-01 remains open. |
-| CONS-14 | High | EV-01’s 688/756-hour values are whole-release forecasts, not story estimates or measured velocity. | Team sizes stories/enablers; PM records velocity range and will-have/might-have lines before commitment. |
+| CONS-14 | High | EV-01’s 688/756-hour values are whole-release forecasts for the original five-member plan, not story estimates, measured velocity or a six-member rebaseline. | Team sizes stories/enablers; Tuấn Anh confirms `h_TA`; PM records revised capacity, velocity range and will-have/might-have lines before commitment. |
 | CONS-15 | Medium | EV-01 counts 20 Must stories while US-17/20 minimality previously remained open. | DEC-08 proposes both as Must to match Proposal/Charter/estimate; PO confirms or rebaselines explicitly. |
 
 ### 14.1 Static validation retained with this artifact

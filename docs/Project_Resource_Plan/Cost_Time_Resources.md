@@ -2,23 +2,26 @@
 
 ## 1. Mục đích
 
-Tài liệu là khung baseline để nhóm điền sau khi xác nhận team, lịch và ngân sách. Mọi con số chưa có bằng chứng được giữ ở trạng thái `[CẦN BỔ SUNG]`.
+Tài liệu là khung baseline để nhóm phê duyệt sau khi xác nhận lịch, capacity của thành viên thứ sáu và ngân sách. Baseline năm thành viên ban đầu được giữ tách biệt với phần tăng thêm của Tuấn Anh để không biến capacity mới thành scope mới một cách ngầm định.
 
 ## 2. Baseline phê duyệt
 
 | Hạng mục | Baseline |
 |---|---|
-| Ngày bắt đầu | [CẦN BỔ SUNG] |
-| Ngày kết thúc | [CẦN BỔ SUNG] |
-| Thời lượng | [CẦN BỔ SUNG] tuần |
-| Team/capacity | [CẦN BỔ SUNG] |
-| Cash budget trần | [CẦN BỔ SUNG] VNĐ |
-| Contingency reserve | [CẦN BỔ SUNG]% |
+| Ngày bắt đầu | 17/08/2026 — proposed |
+| Ngày kết thúc | 08/11/2026 — proposed |
+| Thời lượng | 12 tuần — proposed baseline |
+| Team/capacity | 6 thành viên; 816 giờ committed của 5 thành viên ban đầu + `12 × h_TA × 0.85` giờ sau khi Tuấn Anh xác nhận `h_TA` |
+| Cash budget trần | 1.125.000 VNĐ — proposed, Sponsor acceptance pending |
+| Capacity reserve | 15% |
+| Cash contingency reserve | [CẦN BỔ SUNG] |
 | Management reserve | [CẦN BỔ SUNG] |
-| Baseline owner | [CẦN BỔ SUNG] |
+| Baseline owner | Gia Thành — PM/Scrum Master; Tuấn Anh cung cấp capacity/integration impact |
 | Người phê duyệt | [CẦN BỔ SUNG] |
 
 Baseline chỉ có hiệu lực khi Charter, MVP Scope, WBS cấp deliverable và estimate được phê duyệt.
+
+Capacity bổ sung của Tuấn Anh trước hết được dành cho integration, document/configuration management, CI quality gate, review và defect xuyên module. Việc thêm feature hoặc đổi mốc release vẫn cần change control và PO/Sponsor approval.
 
 ## 3. Phân bổ thời gian
 

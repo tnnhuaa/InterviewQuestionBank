@@ -4,12 +4,13 @@
 
 | Thuộc tính | Giá trị |
 |---|---|
-| Sponsor | [CẦN BỔ SUNG] |
-| Product Owner | [CẦN BỔ SUNG] |
-| Project Manager/Scrum Master | [CẦN BỔ SUNG] |
-| Nhóm thực hiện | [CẦN BỔ SUNG] |
-| Phiên bản | 0.1 |
-| Ngày | 12/08/2026 |
+| Sponsor | Giảng viên — xác nhận danh tính/acceptance record còn thiếu |
+| Product Owner | Hưng |
+| Project Manager/Scrum Master | Gia Thành |
+| Team Lead/Integration Lead | Tuấn Anh |
+| Nhóm thực hiện | Gia Thành, Hùng, Hưng, Trí, Luân, Tuấn Anh |
+| Phiên bản | 0.2-ai-six-member-reference |
+| Ngày | 15/08/2026 |
 | Trạng thái | Draft — chưa phê duyệt baseline |
 
 ## 2. Mục đích dự án
@@ -72,7 +73,7 @@ Mục tiêu số lượng người dùng, mentor và booking tuyệt đối: **[
 | Marketplace complete | 85% | Luồng mentor/booking/feedback end-to-end hoạt động |
 | UAT and release | 100% | Critical tests pass, UAT ký nhận, deployment sẵn sàng |
 
-Ngày cụ thể phụ thuộc thời lượng dự án **[CẦN BỔ SUNG]**.
+Lịch đề xuất là 12 tuần, từ 17/08/2026 đến 08/11/2026; chỉ trở thành baseline sau khi Tuấn Anh xác nhận capacity và Sponsor/team chấp nhận.
 
 ## 7. Stakeholder chính
 
@@ -80,6 +81,7 @@ Ngày cụ thể phụ thuộc thời lượng dự án **[CẦN BỔ SUNG]**.
 |---|---|
 | Sponsor/giảng viên | Phê duyệt charter, baseline và thay đổi lớn |
 | Product Owner | Quyết định ưu tiên, acceptance và release |
+| Team Lead | Điều phối thực thi liên luồng, tích hợp code/tài liệu và release readiness |
 | Nhóm phát triển | Phân tích, thiết kế, xây dựng, kiểm thử và vận hành |
 | Sinh viên/ứng viên | Người dùng/customer chính; cung cấp discovery và UAT |
 | Mentor/HR/người phỏng vấn | Cung cấp dịch vụ, review nội dung và feedback |
@@ -91,6 +93,8 @@ Ngày cụ thể phụ thuộc thời lượng dự án **[CẦN BỔ SUNG]**.
 
 - Product Owner ưu tiên backlog và chấp nhận story dựa trên acceptance criteria.
 - Project Manager/Scrum Master điều phối kế hoạch, risk, dependency và escalation.
+- Team Lead điều phối WIP kỹ thuật, tích hợp giữa các workstream, PR/code review, configuration/document control và readiness trước merge/release.
+- Team Lead không thay Product Owner quyết định scope/acceptance, không thay Project Manager sở hữu lịch/risk và không tự thay đổi ADR do Architecture owner quản lý.
 - Nhóm kỹ thuật quyết định cách triển khai trong giới hạn architecture, security và scope đã duyệt.
 - Admin pilot có quyền duyệt mentor, nội dung và xử lý report theo policy.
 
@@ -108,7 +112,7 @@ Mọi thay đổi ảnh hưởng MVP, lịch, ngân sách hoặc dữ liệu nh�
 
 ## 10. Ràng buộc
 
-- Thời lượng, capacity và ngân sách chưa được xác nhận.
+- Lịch 12 tuần và 816 giờ của năm thành viên ban đầu đang ở trạng thái proposed; capacity Tuấn Anh và ngân sách cần phê duyệt chính thức.
 - Nội dung phải tôn trọng bản quyền và lưu provenance.
 - Dữ liệu hồ sơ, booking, link họp và feedback cần kiểm soát truy cập.
 - Marketplace mới có nguồn cung mentor hạn chế.
@@ -130,6 +134,7 @@ Mọi thay đổi ảnh hưởng MVP, lịch, ngân sách hoặc dữ liệu nh�
 | Vai trò | Họ tên | Quyết định | Ngày/Chữ ký |
 |---|---|---|---|
 | Sponsor | [CẦN BỔ SUNG] | Approve/Reject | [CẦN BỔ SUNG] |
-| Product Owner | [CẦN BỔ SUNG] | Approve/Reject | [CẦN BỔ SUNG] |
-| Project Manager | [CẦN BỔ SUNG] | Accept responsibility | [CẦN BỔ SUNG] |
+| Product Owner | Hưng | Approve/Reject | [CẦN BỔ SUNG] |
+| Project Manager | Gia Thành | Accept responsibility | [CẦN BỔ SUNG] |
+| Team Lead | Tuấn Anh | Accept integration/document-control responsibility | [CẦN BỔ SUNG] |
 
