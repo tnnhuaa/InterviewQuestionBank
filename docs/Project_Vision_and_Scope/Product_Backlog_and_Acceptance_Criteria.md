@@ -8,10 +8,10 @@
 |---|---|
 | Owner/Producer | Hưng — Member 3 / Product Owner |
 | Supporting tool | Codex |
-| Version | 0.7-ai-bootstrap-provenance |
+| Version | 0.8-ai-story-point-proposal |
 | Branch | `feat/member-3-scope-backlog` |
 | Updated | 15/08/2026 |
-| Status | Cross-branch/tree inspection and six-member role reconciliation completed; pending PO/team inspection and Sponsor acceptance |
+| Status | Separate Product Backlog artifact with proposed story points; pending PO/team Planning Poker, inspection and Sponsor acceptance |
 | Reviewer/Approver | Tuấn Anh/Team Lead — integration/document consistency; Hưng/PO, Development Team và Sponsor — acceptance record pending |
 
 The quality criteria in the immutable [`docs/refs/` snapshot at `05ff4b9`](https://github.com/tnnhuaa/InterviewQuestionBank/tree/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs) are the single source of truth for evaluating this artifact. The snapshot is pinned because the final submission tree excludes reference-source files. When project documents disagree, this backlog records the discrepancy and required owner action; it does not silently treat a PoC or an unapproved branch as a new business requirement.
@@ -19,6 +19,8 @@ The quality criteria in the immutable [`docs/refs/` snapshot at `05ff4b9`](https
 ## 1. Purpose, boundary and evidence
 
 This document converts the product vision and business rules into an ordered, verifiable Product Backlog and identifies the Product Backlog Items (PBIs) needed to deliver and validate the release. Each story must be understandable to the customer and team, add explicit business value, and be customer-verifiable ([Software Project Planning, Slide 079](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/06-software-project-planning.md#slide-079--sales-tip-5-real-business-requirements)).
+
+**Artifact boundary:** this file owns backlog order, priority, dependencies, Story Points, acceptance criteria and release readiness. It does not replace or contain the product vision/scope narrative, which remains in the separate `Project_Vision_and_Scope.md` required by `Task_W10.pdf`; `Future_State_Workflow.md` also remains a separate workflow artifact.
 
 ### 1.1 Release boundary
 
@@ -84,35 +86,49 @@ UI labels may be localized, but contracts, tests and documents must map to these
 
 ## 3. Ordered Product Backlog
 
-The order below is a single value/dependency order, not a promise that ID order equals delivery order. R1 contains exactly 20 proposed Must user stories, consistent with EV-01. US-21–US-23 remain outside that 20-story count. Story-level estimates are still missing; therefore `R1 Must` is a proposed Release Backlog, not a final will-have commitment.
+The order below is a single value/dependency order, not a promise that ID order equals delivery order. R1 contains exactly 20 proposed Must user stories, consistent with EV-01. US-21–US-23 remain outside that 20-story count. Story Points are a Codex-assisted relative-size proposal, not hours or a team commitment; the Development Team must confirm them through Planning Poker.
 
-| Order | ID | Epic | User story | Value / objective | Release | Dependencies | Trace | Estimate status |
-|---:|---|---|---|---|---|---|---|---|
-| 1 | US-01 | Identity | As a user, I want to register and sign in so my personal data is protected. | Foundation/privacy | R1 Must* | — | RQ-01; BR-04/11; FS-01 | In 20-story count; team sizing pending |
-| 2 | US-02 | Identity | As an Admin, I want Student/Mentor/Admin roles enforced so functions and data are appropriately restricted. | Security invariant | R1 Must* | US-01 | RQ-01; BR-04 | In count; sizing pending |
-| 3 | US-18 | Content admin | As an Admin, I want to manage/moderate Questions and taxonomy so only governed content is published. | Question supply prerequisite | R1 Must* | US-02 | RQ-03/10; BR-07/08; A03 | In count; sizing pending |
-| 4 | US-03 | Student | As a Student, I want to save my target position and interview goal so practice and booking use the same context. | OBJ-02/03; activation | R1 Must* | US-01 | RQ-02; BR-03; FS-01/S01 | In count; sizing pending |
-| 5 | US-04 | Questions | As a Student, I want to browse/search/filter governed Questions so I can find relevant practice content quickly. | OBJ-02; acquisition | R1 Must* | US-02, US-18 | RQ-03; BR-07; FS-02/S02 | In count; sizing pending |
-| 6 | US-05 | Questions | As a Student, I want Question detail and answer criteria so I know what a good response should cover. | OBJ-02; self-practice | R1 Must* | US-04 | RQ-03; BR-07; FS-02/S03 | In count; sizing pending |
-| 7 | US-06 | Practice | As a Student, I want to bookmark and track practice state so I can resume and act on feedback. | OBJ-02/06; retention | R1 Must* | US-04 | RQ-03; BR-04; FS-03/11 | In count; sizing pending |
-| 8 | US-07 | Mentor | As a Mentor, I want to create a profile and submit verification so I can offer a trusted service. | OBJ-03; supply | R1 Must* | US-01 | RQ-04; BR-01/11; FS-04/M01-M03 | In count; sizing pending |
-| 9 | US-08 | Mentor admin | As an Admin, I want to approve/reject Mentor verification with a reason so public supply is governed. | Trust/supply gate | R1 Must* | US-02, US-07 | RQ-04; BR-01/08; A02 | In count; sizing pending |
-| 10 | US-09 | Availability | As an Approved Mentor, I want to manage future slots so Students see valid availability. | OBJ-03/04; booking enablement | R1 Must* | US-08 | RQ-05; BR-01/02; M04 | In count; sizing pending |
-| 11 | US-10 | Marketplace | As a Student, I want to find Approved Mentors by expertise and availability so I can choose a suitable session. | OBJ-03; discovery | R1 Must* | US-08, US-09 | RQ-05; BR-01; S04-S05 | In count; sizing pending |
-| 12 | US-11 | Booking | As a Student, I want to send a booking with my goal so the Mentor has enough context to decide. | OBJ-03; conversion | R1 Must* | US-03, US-10 | RQ-06; BR-02/03/10; FS-05/S06 | In count; sizing pending |
-| 13 | US-12 | Booking | As the owning Mentor, I want to accept, reject or propose a new time so a booking reaches a valid next state. | OBJ-04; lifecycle | R1 Must* | US-11 | RQ-06; BR-02/08/10; FS-06 | In count; sizing pending; DEC-03 affects reschedule |
-| 14 | US-13 | Booking | As a booking party, I want to cancel or resolve a reschedule under a clear policy so exceptions do not require hidden coordination. | OBJ-04; operations | R1 Must* | US-12 | RQ-06; BR-02/08/10; FS-06 | In count; blocked by DEC-03 |
-| 15 | US-14 | Session | As a booking party, I want authorized access to the external meeting link when Confirmed so I can attend safely. | OBJ-04; session handoff | R1 Must* | US-12 | RQ-07; BR-04/11; FS-07/08 | In count; DEC-07 affects authority |
-| 16 | US-19 | Notification | As a user, I want reliable booking-event notifications so I know the next action even when the provider temporarily fails. | OBJ-04; coordination | R1 Must* | US-11 plus each event-producing story | RQ-09; BR-09/10; FS-07 | In count; sizing pending |
-| 17 | US-15 | Feedback | As the owning Mentor, I want to submit structured feedback after completion so the Student receives actionable guidance. | OBJ-05/06; core value | R1 Must* | US-14, completion transition | RQ-08; BR-04/05/08; FS-09/M08 | In count; blocked by DEC-03 |
-| 18 | US-16 | Feedback | As the booking Student, I want to view feedback and next actions so I can return to relevant practice. | OBJ-05/06; learning loop | R1 Must* | US-15 | RQ-08; BR-04/11; FS-11/S09 | In count; sizing pending |
-| 19 | US-17 | Review | As the booking Student, I want to review the Mentor after completion so future Students receive trust signals. | Marketplace trust | R1 Must* | US-15 | RQ-08; BR-06; FS-10/S10 | In count; inclusion proposed by DEC-08 |
-| 20 | US-20 | Operations | As an authorized Admin, I want to resolve reports and booking exceptions so the pilot can operate safely. | Trust/operability | R1 Must* | US-02, US-13, US-17 | RQ-10; BR-01/07/08/11; A01-A05 | In count; minimal slice proposed by DEC-08 |
-| 21 | US-21 | Progress | As a Student, I want a basic progress dashboard so I can see what to practice next. | OBJ-06; retention | R1 Stretch | US-06, US-16 | RQ-03; S01 | Excluded from 20-story estimate |
-| 22 | US-22 | Reminder | As a booking party, I want a scheduled reminder so I am less likely to miss a session. | OBJ-04; completion rate | R1 Stretch | US-19 | RQ-09; BR-09; FS-07 | Excluded; blocked by DEC-09 |
-| 23 | US-23 | Import | As an Admin, I want governed bulk Question import so content operations can scale without bypassing moderation. | Content efficiency | Future/Could | US-18 | RQ-03/10; BR-07/08 | Excluded from R1 estimate |
+| Order | ID | Epic | User story | Value / objective | Release | Dependencies | Trace | SP | Readiness/status |
+|---:|---|---|---|---|---|---|---|---:|---|
+| 1 | US-01 | Identity | As a user, I want to register and sign in so my personal data is protected. | Foundation/privacy | R1 Must* | — | RQ-01; BR-04/11; FS-01 | 8 | High-risk session/verification slice; team confirmation pending |
+| 2 | US-02 | Identity | As an Admin, I want Student/Mentor/Admin roles enforced so functions and data are appropriately restricted. | Security invariant | R1 Must* | US-01 | RQ-01; BR-04 | 3 | Role matrix on established auth foundation; team confirmation pending |
+| 3 | US-18 | Content admin | As an Admin, I want to manage/moderate Questions and taxonomy so only governed content is published. | Question supply prerequisite | R1 Must* | US-02 | RQ-03/10; BR-07/08; A03 | 5 | Multi-state admin CRUD/moderation; team confirmation pending |
+| 4 | US-03 | Student | As a Student, I want to save my target position and interview goal so practice and booking use the same context. | OBJ-02/03; activation | R1 Must* | US-01 | RQ-02; BR-03; FS-01/S01 | 2 | Small profile persistence slice; team confirmation pending |
+| 5 | US-04 | Questions | As a Student, I want to browse/search/filter governed Questions so I can find relevant practice content quickly. | OBJ-02; acquisition | R1 Must* | US-02, US-18 | RQ-03; BR-07; FS-02/S02 | 5 | Combined filter/pagination/visibility rules; team confirmation pending |
+| 6 | US-05 | Questions | As a Student, I want Question detail and answer criteria so I know what a good response should cover. | OBJ-02; self-practice | R1 Must* | US-04 | RQ-03; BR-07; FS-02/S03 | 2 | Read-only detail on existing Question model; team confirmation pending |
+| 7 | US-06 | Practice | As a Student, I want to bookmark and track practice state so I can resume and act on feedback. | OBJ-02/06; retention | R1 Must* | US-04 | RQ-03; BR-04; FS-03/11 | 3 | Per-user state and authorization; team confirmation pending |
+| 8 | US-07 | Mentor | As a Mentor, I want to create a profile and submit verification so I can offer a trusted service. | OBJ-03; supply | R1 Must* | US-01 | RQ-04; BR-01/11; FS-04/M01-M03 | 5 | Profile plus verification lifecycle; team confirmation pending |
+| 9 | US-08 | Mentor admin | As an Admin, I want to approve/reject Mentor verification with a reason so public supply is governed. | Trust/supply gate | R1 Must* | US-02, US-07 | RQ-04; BR-01/08; A02 | 3 | Bounded approval transition/audit; team confirmation pending |
+| 10 | US-09 | Availability | As an Approved Mentor, I want to manage future slots so Students see valid availability. | OBJ-03/04; booking enablement | R1 Must* | US-08 | RQ-05; BR-01/02; M04 | 5 | Time validation and occupied-slot constraints; team confirmation pending |
+| 11 | US-10 | Marketplace | As a Student, I want to find Approved Mentors by expertise and availability so I can choose a suitable session. | OBJ-03; discovery | R1 Must* | US-08, US-09 | RQ-05; BR-01; S04-S05 | 3 | Discovery query on approved profiles/slots; team confirmation pending |
+| 12 | US-11 | Booking | As a Student, I want to send a booking with my goal so the Mentor has enough context to decide. | OBJ-03; conversion | R1 Must* | US-03, US-10 | RQ-06; BR-02/03/10; FS-05/S06 | 5 | Booking creation with concurrency/idempotency contract; team confirmation pending |
+| 13 | US-12 | Booking | As the owning Mentor, I want to accept, reject or propose a new time so a booking reaches a valid next state. | OBJ-04; lifecycle | R1 Must* | US-11 | RQ-06; BR-02/08/10; FS-06 | 8 | Complex transition/concurrency slice; DEC-03 and team confirmation pending |
+| 14 | US-13 | Booking | As a booking party, I want to cancel or resolve a reschedule under a clear policy so exceptions do not require hidden coordination. | OBJ-04; operations | R1 Must* | US-12 | RQ-06; BR-02/08/10; FS-06 | 8 | Exception/state-policy slice; blocked by DEC-03 and requires split review |
+| 15 | US-14 | Session | As a booking party, I want authorized access to the external meeting link when Confirmed so I can attend safely. | OBJ-04; session handoff | R1 Must* | US-12 | RQ-07; BR-04/11; FS-07/08 | 3 | Bounded secure handoff; DEC-07 and team confirmation pending |
+| 16 | US-19 | Notification | As a user, I want reliable booking-event notifications so I know the next action even when the provider temporarily fails. | OBJ-04; coordination | R1 Must* | US-11 plus each event-producing story | RQ-09; BR-09/10; FS-07 | 8 | Outbox/retry/deduplication cross-cutting risk; team confirmation pending |
+| 17 | US-15 | Feedback | As the owning Mentor, I want to submit structured feedback after completion so the Student receives actionable guidance. | OBJ-05/06; core value | R1 Must* | US-14, completion transition | RQ-08; BR-04/05/08; FS-09/M08 | 5 | Rubric, completion gate and ownership; DEC-03 pending |
+| 18 | US-16 | Feedback | As the booking Student, I want to view feedback and next actions so I can return to relevant practice. | OBJ-05/06; learning loop | R1 Must* | US-15 | RQ-08; BR-04/11; FS-11/S09 | 3 | Authorized feedback view/next action; team confirmation pending |
+| 19 | US-17 | Review | As the booking Student, I want to review the Mentor after completion so future Students receive trust signals. | Marketplace trust | R1 Must* | US-15 | RQ-08; BR-06; FS-10/S10 | 3 | One-review constraint; inclusion still proposed by DEC-08 |
+| 20 | US-20 | Operations | As an authorized Admin, I want to resolve reports and booking exceptions so the pilot can operate safely. | Trust/operability | R1 Must* | US-02, US-13, US-17 | RQ-10; BR-01/07/08/11; A01-A05 | 5 | Minimal governed operations slice; DEC-08 and team confirmation pending |
+| 21 | US-21 | Progress | As a Student, I want a basic progress dashboard so I can see what to practice next. | OBJ-06; retention | R1 Stretch | US-06, US-16 | RQ-03; S01 | 5 | Aggregation/dashboard slice; outside proposed Must commitment |
+| 22 | US-22 | Reminder | As a booking party, I want a scheduled reminder so I am less likely to miss a session. | OBJ-04; completion rate | R1 Stretch | US-19 | RQ-09; BR-09; FS-07 | 3 | Reuses notification foundation; blocked by DEC-09 |
+| 23 | US-23 | Import | As an Admin, I want governed bulk Question import so content operations can scale without bypassing moderation. | Content efficiency | Future/Could | US-18 | RQ-03/10; BR-07/08 | 8 | Validation, partial-failure and audit complexity; Future split candidate |
 
-`Must*` is the AI-reconciled proposal supported by the Proposal, Charter and 20-story estimate. It becomes a commitment only after PO inspection and team sizing/velocity review.
+`Must*` is the AI-reconciled proposal supported by the Proposal, Charter and 20-story estimate. It becomes a commitment only after PO inspection, Development Team Planning Poker and velocity review.
+
+### 3.1 Story-point method and totals
+
+- Story Points express relative overall size; they are deliberately not converted to hours ([Agile Estimation, Slide 005](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/05-3-agile-estimation.md#slide-005--estimating-size-with-story-points-1)).
+- The proposal uses the ref-supported Fibonacci scale `1, 2, 3, 5, 8`, whose widening gaps represent greater uncertainty ([Agile Estimation, Slide 008](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/05-3-agile-estimation.md#slide-008--the-estimation-scale)). Estimates were derived by analogy and disaggregation; the team must replace/confirm them through Planning Poker ([Slides 009–012](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/05-3-agile-estimation.md#slide-009--deriving-an-estimate-analogy-1-2)).
+- Each SP covers a complete vertical story through code, test, documentation and acceptance evidence. EN-01–EN-08 are traced quality/delivery gates and are not added again; if the team schedules an enabler as an independent PBI, it must estimate that PBI and recheck affected story points to avoid double counting.
+- `US-03 = 2 SP` is the small persistence anchor; typical bounded end-to-end work is `3–5 SP`; `8 SP` identifies high uncertainty or a split candidate. Before sprint commitment, the team should disaggregate US-01, US-12, US-13, US-19 and US-23 if any cannot satisfy Done within one sprint.
+
+| Backlog bucket | Stories | Proposed SP | Planning interpretation |
+|---|---:|---:|---|
+| R1 Must* | 20 | 92 | Requires average `92 / 6 = 15.3 SP/sprint` across six sprints; feasibility awaits team velocity |
+| R1 Stretch | 2 | 8 | US-21 = 5, US-22 = 3; consume only after Must work and reserves are safe |
+| Future/Could | 1 | 8 | US-23; excluded from R1 |
+| Entire Product Backlog | 23 | 108 | Relative-size proposal pending Planning Poker |
 
 ## 4. Cross-cutting and delivery PBIs
 
@@ -250,15 +266,16 @@ Release R1 is a fixed-date proposal of six two-week sprints from 17/08/2026 thro
 
 | Item | Reconciled value | Limitation |
 |---|---|---|
-| Proposed MRF / Release Backlog | US-01–US-20 plus EN-01–EN-08 | PO/Sponsor approval and story sizing pending |
-| Stretch/Future | US-21–US-22 / US-23 | Must work and reserves cannot be consumed silently |
+| Proposed MRF / Release Backlog | US-01–US-20 = **92 proposed SP** plus EN-01–EN-08 as traced gates | PO/Sponsor approval and Development Team Planning Poker confirmation pending |
+| Stretch/Future | US-21–US-22 = **8 SP** / US-23 = **8 SP** | Must work and reserves cannot be consumed silently |
 | Committed capacity proposal | `816 + 12 × h_TA × 0.85` hours after 15% reserve | 816 hours is the original five-member proposal; Tuấn Anh must confirm weekly hours before team/PM/Sponsor rebaseline |
 | Working estimate | 688 hours bottom-up + three-point | Work-package estimate, not a sum of story estimates |
 | Independent guardrail | 756 hours top-down count/compute | Based on 20 Must stories and judgment; recalibrate after PoC/sprint actuals |
 | Planning buffer | 128 hours versus 688-hour forecast | Reserve is for uncertainty/quality, not added scope |
-| Will-have/might-have line | **Not computable yet** | No story estimates or measured velocity range; PB-G05 remains Conditional |
+| Required average velocity for all Must* | `92 / 6 = 15.3 SP/sprint` | A requirement of the proposal, not evidence that the team can achieve it |
+| Will-have/might-have line | **Not computable yet** | Proposed SP now exist, but no Planning-Poker-confirmed estimates or measured velocity range; PB-G05 remains Conditional |
 
-Milestone alignment is Discovery/Charter → Requirements/Prototype → Foundation → Question Bank → Marketplace/Feedback → UAT/Release. It is not a per-story sprint commitment until the Development Team supplies story estimates and velocity.
+Milestone alignment is Discovery/Charter → Requirements/Prototype → Foundation → Question Bank → Marketplace/Feedback → UAT/Release. It is not a per-story sprint commitment until the Development Team confirms the proposed estimates and supplies a velocity range.
 
 ## 11. Canonical decision register
 
@@ -269,7 +286,7 @@ Milestone alignment is Discovery/Charter → Requirements/Prototype → Foundati
 | DEC-03 | Cancel/reschedule/no-show/completion authority, cutoff and evidence policy | PO/Operations | Open; blocks readiness of US-12/13/15/20 and reschedule occupancy design |
 | DEC-04 | Free/manual payment or credit treatment during pilot | PO/Sponsor | Open; payment automation remains out of scope, but terms/operations need a decision |
 | DEC-05 | Retention, deletion, privacy notice and consent policy | PO/Privacy owner | Open; blocks final privacy acceptance/NFR evidence |
-| DEC-06 | Date, capacity, budget and estimate baseline | Team/PM/Sponsor | **Partially resolved:** 12 weeks, original five-member 816 hours, 688-hour working estimate, 756-hour guardrail and 1,125,000 VND cash ceiling; revised six-member capacity awaits Tuấn Anh's `h_TA` and formal acceptance |
+| DEC-06 | Date, capacity, budget and estimate baseline | Team/PM/Sponsor | **Partially resolved:** 12 weeks, original five-member 816 hours, 688-hour working estimate, 756-hour guardrail, 1,125,000 VND cash ceiling and 92 proposed R1 Must SP; Planning Poker, velocity, Tuấn Anh's `h_TA` and formal acceptance remain pending |
 | DEC-07 | Meeting-link creation/update authority and provider-outage fallback | PO/Technical | Open; affects US-14/AC-14-02 |
 | DEC-08 | US-17 review and minimal US-20 operations in the MRF | PO | **AI proposal: include as Must** to match Proposal/Charter/20-story estimate; PO inspection pending |
 | DEC-09 | Reminder cadence, timezone, suppression and fallback | PO/Operations | Open; US-22 remains Stretch/not Ready |
@@ -281,7 +298,7 @@ These IDs are canonical across Vision, Workflow and Backlog; DEC-04 and DEC-05 a
 After approval, a change to order, release class, BR, AC, dependency, NFR or decision must record origin/evidence, impacted stories/deliverables, value, estimate/cost/schedule/risk and verification. Scope acceptance is performed by stakeholder inspection, not by an AI status label ([Monitoring, Slides 039–040](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/09-software-project-monitoring-and-control.md#slide-039--9-validate-scope)).
 
 - [ ] PO confirms Order 1–23, R1 Must*/Stretch/Future boundary and DEC-08.
-- [ ] Team estimates R1 stories/enablers and supplies a velocity range; PM draws will-have/might-have lines.
+- [ ] Development Team confirms/revises the 108-SP proposal through Planning Poker, estimates any independently scheduled enabler, and supplies a velocity range; PM then draws will-have/might-have lines.
 - [ ] PO/Operations closes DEC-03/07/09; PO/Privacy closes DEC-05.
 - [ ] Member 2 supplies clickable prototype, handoff and observed usability evidence.
 - [ ] Member 4 replaces self-declared PoC results with assertions/evidence for EN-03–EN-07 and removes repository hygiene/security gaps.
@@ -298,7 +315,7 @@ After approval, a change to order, release class, BR, AC, dependency, NFR or dec
 | Highest-value-first PO ordering | [Scrum, Slide 015](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-015--the-product-owner-2) | Section 3; **Conditional on PO audit** |
 | Release stories/object mapping | [Scrum, Slide 019](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-019--release-backlog) | Sections 3, 9–10; **Pass structurally** |
 | MRF/story map/replanning | [Agile Planning, Slides 011, 014–016](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/06-1-agile-planning.md#slide-011--2-create-a-product-roadmap) | Sections 3 and 10; **Conditional** |
-| Created/estimated/prioritized PBIs and velocity range | [Agile Planning, Slides 021–025](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/06-1-agile-planning.md#slide-021--7-create-a-fixed-date-release-plan-i) | Section 10; **Gap: story estimates/velocity absent** |
+| Created/estimated/prioritized PBIs and velocity range | [Agile Planning, Slides 021–025](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/06-1-agile-planning.md#slide-021--7-create-a-fixed-date-release-plan-i) | Sections 3.1 and 10; **Conditional: 108 proposed SP exist, but team confirmation and velocity range are absent** |
 | Understandable/value/verifiable | [Planning, Slide 079](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/06-software-project-planning.md#slide-079--sales-tip-5-real-business-requirements) | Sections 3, 5 and 9; **Conditional on human walkthrough** |
 | DoD and production-ready evidence | [Scrum, Slides 035–036](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-035--example-dod-1) | Sections 4 and 8; **Definition passes; implementation evidence fails/pending** |
 | RTM and inspection | [Monitoring, Slides 039–042](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/09-software-project-monitoring-and-control.md#slide-039--9-validate-scope) | Sections 9 and 12; **RTM passes; acceptance pending** |
@@ -325,14 +342,14 @@ This appendix preserves cross-branch inspection evidence inside the required Pro
 | CONS-11 | Critical | Notification test increments its pass count without an assertion; worker lacks deduplication, safe claim, backoff and Dead/manual state. | EN-07 fails until deterministic fake-provider and competing-worker database assertions pass. |
 | CONS-12 | Critical | The remote PoC tree tracks `poc/.env` and generated dependencies. No secret value was read in this audit. | Remove tracked generated/secret files, rotate any real credential, add ignore/secret checks and retain evidence. |
 | CONS-13 | High | The PoC UI is a narrow demo, not the complete S/M/A prototype specification or usability result. | Treat it as partial implementation; EN-01 remains open. |
-| CONS-14 | High | EV-01’s 688/756-hour values are whole-release forecasts for the original five-member plan, not story estimates, measured velocity or a six-member rebaseline. | Team sizes stories/enablers; Tuấn Anh confirms `h_TA`; PM records revised capacity, velocity range and will-have/might-have lines before commitment. |
+| CONS-14 | High | EV-01’s 688/756-hour values are whole-release forecasts for the original five-member plan, not measured velocity or a six-member rebaseline; this document adds a separate 92-SP R1 proposal. | Team validates SP through Planning Poker; Tuấn Anh confirms `h_TA`; PM records revised capacity, velocity range and will-have/might-have lines before commitment. |
 | CONS-15 | Medium | EV-01 counts 20 Must stories while US-17/20 minimality previously remained open. | DEC-08 proposes both as Must to match Proposal/Charter/estimate; PO confirms or rebaselines explicitly. |
 
 ### 14.1 Static validation retained with this artifact
 
 | Check | Result |
 |---|---|
-| Product model | 6 OBJ, 23 US, exactly 20 proposed R1 Must, 11 BR, 31 AC, 10 RQ, 8 EN, 8 NFR, 9 DEC, 10 TC, 8 PB gates, 12 FS and 15 CONS |
+| Product model | 6 OBJ, 23 US, exactly 20 proposed R1 Must = 92 SP, 108 SP across all stories, 11 BR, 31 AC, 10 RQ, 8 EN, 8 NFR, 9 DEC, 10 TC, 8 PB gates, 12 FS and 15 CONS |
 | Acceptance coverage | Every US-01..US-23 has at least one AC |
 | ID/dependency integrity | Zero undefined ID, invalid dependency, duplicate order or cycle node |
 | Markdown quality | PASS after final tree cleanup: 5 local links, 0 missing target, 0 odd fence, 0 trailing-whitespace line and 0 table-column error across the retained Markdown set |
