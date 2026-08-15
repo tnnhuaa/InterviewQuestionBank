@@ -2,23 +2,29 @@
 
 ## 1. Mục đích
 
-Prototype kiểm chứng ba luồng: Student đi từ Question Bank đến feedback; Mentor đi từ onboarding đến gửi feedback; Admin duyệt và xử lý ngoại lệ. Prototype ưu tiên logic, trạng thái, nội dung và usability; không dùng như bằng chứng rằng backend, security hoặc concurrency đã hoàn thành.
+Prototype kiểm chứng ba luồng persona: Student đi từ một Job Description (JD) thực tế đến bộ câu hỏi phù hợp, luyện tập và nhận feedback; Mentor đi từ onboarding đến gửi feedback; Admin duyệt và xử lý ngoại lệ. Trọng tâm Proof of Concept (PoC) là kiểm chứng giả thuyết: hệ thống có thể giúp ứng viên chưa biết ôn gì chuyển từ ảnh JD sang một kế hoạch luyện tập có giải thích. Prototype ưu tiên logic, trạng thái, nội dung và usability; không dùng như bằng chứng rằng OCR, backend, security hoặc concurrency đã hoàn thành ở mức production.
 
 ## 2. Prototype narrative
 
 ### Current-state story
 
-An tìm câu hỏi Front-end từ nhiều nguồn, tự ghi chú, nhắn nhiều người để tìm mentor và nhận feedback rời rạc. An mất thời gian điều phối và không biết nên luyện gì tiếp.
+An chuẩn bị ứng tuyển nhưng không biết nên ôn nội dung nào trong JD. An tìm câu hỏi Front-end từ nhiều nguồn, tự ghi chú, nhắn nhiều người để tìm mentor và nhận feedback rời rạc. An mất thời gian chọn tài liệu, điều phối và không biết nên ưu tiên luyện gì tiếp.
 
 ### Future-state story
 
-An chọn Front-end Intern, luyện câu hỏi JavaScript, tìm mentor đã xác minh và chọn slot. Booking được xác nhận, An tham gia bằng link họp ngoài, nhận rubric và mở lại nhóm câu hỏi được mentor gợi ý.
+An chụp JD Front-end Intern và gửi cho hệ thống. Sau khi kiểm tra nội dung OCR, An thấy các yêu cầu chính được mapping sang taxonomy và nhận bộ câu hỏi JavaScript/Front-end được xếp theo mức độ liên quan. An bắt đầu luyện, tìm mentor đã xác minh và chọn slot. Booking được xác nhận, An tham gia bằng link họp ngoài, nhận rubric và mở lại nhóm câu hỏi được mentor gợi ý.
 
 ## 3. Student prototype flow
 
 ```mermaid
 flowchart LR
     S01["S01 Dashboard"] --> S02["S02 Question Bank"]
+    S01 --> S11["S11 Capture/Upload JD"]
+    S11 --> S12["S12 OCR Review"]
+    S12 --> S13["S13 JD Mapping"]
+    S13 --> S14["S14 Recommended Set"]
+    S14 --> S03
+    S14 --> S02
     S02 --> S03["S03 Question Detail"]
     S03 --> S04["S04 Mentor Search"]
     S04 --> S05["S05 Mentor Profile"]
@@ -35,14 +41,68 @@ flowchart LR
 **Mục tiêu:** giúp Student chọn vị trí và thấy hành động tiếp theo.
 
 - Target role, interview date optional, progress summary.
-- CTA “Luyện câu hỏi” và “Tìm mentor”.
+- CTA chính “Quét JD để biết cần ôn gì”; CTA phụ “Luyện câu hỏi” và “Tìm mentor”.
 - Trạng thái rỗng giải thích cách bắt đầu.
 - Không hiển thị score giả khi chưa có dữ liệu.
+
+### Core PoC flow — JD to recommended questions
+
+```mermaid
+flowchart LR
+    I["Chụp hoặc tải ảnh JD"] --> O["OCR trích xuất nội dung"]
+    O --> V{"Student xác nhận nội dung?"}
+    V -- "Chỉnh sửa / quét lại" --> O
+    V -- "Xác nhận" --> M["Mapping yêu cầu JD với taxonomy"]
+    M --> R["Đề xuất bộ câu hỏi có lý do"]
+    R --> P["Chọn câu hỏi và bắt đầu luyện"]
+```
+
+### Screen S11 — Capture / Upload JD
+
+**Mục tiêu:** giảm rào cản bắt đầu cho Student chưa biết nên ôn nội dung nào.
+
+- Cho phép chụp ảnh hoặc tải ảnh JD; hỗ trợ một hoặc nhiều ảnh trong giới hạn PoC.
+- Hướng dẫn ảnh rõ, đủ sáng, không bị cắt; hiển thị preview và cho phép thay/xóa ảnh trước khi gửi.
+- Nêu rõ định dạng, dung lượng và số trang được hỗ trợ; validation cụ thể khi file không hợp lệ.
+- Privacy notice trước khi gửi: khuyến nghị che email, số điện thoại và dữ liệu cá nhân không cần thiết.
+- CTA “Trích xuất nội dung”; có progress và chống submit lặp.
+
+### Screen S12 — OCR Review
+
+**Mục tiêu:** để Student kiểm soát đầu vào trước khi hệ thống đưa ra đề xuất.
+
+- Hiển thị ảnh gốc cạnh nội dung OCR; text có thể chỉnh sửa.
+- Đánh dấu đoạn có độ tin cậy thấp hoặc không đọc được, không âm thầm tự điền.
+- CTA “Quét lại” và “Xác nhận nội dung”; không cho mapping khi nội dung rỗng hoặc quá ít thông tin.
+- Nếu JD gồm nhiều ảnh, giữ đúng thứ tự và cảnh báo nội dung có thể bị trùng.
+- Cho phép bỏ qua/xóa dữ liệu ảnh theo chính sách lưu trữ của PoC.
+
+### Screen S13 — JD Mapping
+
+**Mục tiêu:** giải thích hệ thống hiểu JD như thế nào trước khi tạo bộ câu hỏi.
+
+- Tách các yêu cầu chính như position, seniority, skills, topics và interview context.
+- Mỗi yêu cầu được mapping sang taxonomy hiện có; hiển thị đoạn JD nguồn để Student kiểm tra.
+- Phân biệt “được mapping”, “cần xác nhận” và “chưa hỗ trợ”; Student có thể sửa hoặc bỏ mapping sai.
+- Không suy diễn kỹ năng không có căn cứ trong JD; không dùng tên công ty hay thuộc tính nhạy cảm để xếp hạng.
+- CTA “Tạo bộ câu hỏi” chỉ enable khi có ít nhất một mapping hợp lệ.
+
+### Screen S14 — Recommended Question Set
+
+**Mục tiêu:** biến JD thành một điểm bắt đầu luyện tập cụ thể và có thể giải thích.
+
+- Hiển thị bộ câu hỏi theo nhóm Must practice/Should practice/Optional, kèm topic, difficulty và thời lượng ước tính.
+- Mỗi câu hỏi có lý do đề xuất, liên kết tới yêu cầu hoặc đoạn JD đã mapping.
+- Student có thể bỏ câu không phù hợp, thêm câu từ Question Bank và lưu bộ câu hỏi.
+- CTA “Bắt đầu luyện” mở Question Detail; CTA “Xem toàn bộ Question Bank” giữ các filter từ mapping.
+- Empty state nêu rõ không tìm thấy câu hỏi phù hợp, cho phép sửa mapping hoặc chuyển sang tìm thủ công.
+- Với PoC, thứ tự đề xuất có thể dùng rule/weight minh bạch dựa trên taxonomy; không tuyên bố là ML recommendation hay đánh giá năng lực ứng viên.
 
 ### Screen S02 — Question Bank
 
 - Search; filter Position, Topic, Interview Type, Difficulty.
 - Result item có title, tag, difficulty, practice status.
+- Khi đi từ S14, hiển thị filter/chip bắt nguồn từ JD và cho phép xóa từng mapping.
 - Zero-result state cho phép bỏ từng filter.
 - Pagination/load-more và sort rõ.
 - Test case: một question có nhiều tag không xuất hiện trùng.
@@ -214,11 +274,19 @@ flowchart LR
 | Conflict | Slot vừa bị giữ/xác nhận; CTA chọn slot khác |
 | Provider failure | Booking vẫn thành công; notification/link action có hướng xử lý |
 | Offline/timeout | Retry an toàn, tránh tạo booking/review trùng |
+| OCR low confidence | Đánh dấu đoạn cần kiểm tra; cho sửa hoặc quét lại trước mapping |
+| Unsupported/poor image | Nêu nguyên nhân và hướng dẫn chụp/tải lại, không làm mất các ảnh hợp lệ |
+| No taxonomy match | Hiển thị phần chưa hỗ trợ; cho sửa mapping hoặc tìm Question Bank thủ công |
+| No recommended question | Giữ kết quả OCR/mapping và cung cấp CTA thay đổi mapping/thêm câu thủ công |
+| Sensitive data in JD | Nhắc Student che dữ liệu cá nhân và hỗ trợ xóa ảnh/dữ liệu theo policy PoC |
 
 ## 7. Prototype test plan
 
 | Task | Persona | Success |
 |---|---|---|
+| Chụp/tải JD và xác nhận OCR | Student | Hoàn tất không trợ giúp; phát hiện và sửa được lỗi OCR quan trọng |
+| Mapping JD thành chủ đề ôn tập | Student | Hiểu yêu cầu nào đã/chưa được mapping và sửa được mapping sai |
+| Nhận bộ câu hỏi từ JD | Student | Chọn được câu để bắt đầu luyện và giải thích được vì sao câu đó được đề xuất |
 | Tìm câu hỏi Front-end/JavaScript | Student | Đúng result trong ≤2 phút, không trợ giúp |
 | Bookmark và đổi trạng thái | Student | Thấy state được lưu và hiểu ý nghĩa |
 | Tìm mentor có slot phù hợp | Student | Chọn đúng timezone/chuyên môn |
@@ -227,18 +295,18 @@ flowchart LR
 | Gửi feedback rubric | Mentor | Đủ strength/weakness/next action |
 | Duyệt mentor | Admin | Quyết định có reason và audit |
 
-Thu completion rate, time-on-task, error, confidence và qualitative evidence. Mục tiêu Student task completion: ≥80%.
+Thu completion rate, time-on-task, error, confidence và qualitative evidence. Mục tiêu Student task completion: ≥80%. Với core PoC, đo thêm tỷ lệ OCR cần sửa, tỷ lệ mapping được Student chấp nhận và mức độ hữu ích của bộ câu hỏi (target khảo sát đề xuất: ≥4/5).
 
 ## 8. Prototype handoff và traceability
 
 | Screen group | Stories |
 |---|---|
 | S01–S03 | US-03–06 |
+| S11–S14 | PoC-JD-01 (cần bổ sung vào Product Backlog); liên quan US-03–05 |
 | S04–S08 | US-10–14,19 |
 | S09–S10 | US-16–17 |
 | M01–M04 | US-07–09 |
 | M05–M08 | US-12–15 |
 | A01–A05 | US-08,18,20 |
 
-Mỗi frame trong công cụ thiết kế phải dùng screen ID trên, có link đến story/acceptance criteria và ghi rõ dữ liệu giả. Ảnh prototype chưa được tạo trong đợt tài liệu này; thư mục `img/` chỉ nên được thêm khi có artifact thật.
-
+Mỗi frame trong công cụ thiết kế phải dùng screen ID trên, có link đến story/acceptance criteria và ghi rõ dữ liệu giả. `PoC-JD-01` cần được Product Owner formalize thành user story và acceptance criteria trước khi đưa vào release backlog. Việc đề xuất trong prototype là mapping dựa trên taxonomy/rule có thể giải thích; nếu dùng OCR service hoặc ML ở implementation thật thì cần change-scope, privacy và quality review riêng. Ảnh prototype chưa được tạo trong đợt tài liệu này; thư mục `img/` chỉ nên được thêm khi có artifact thật.
