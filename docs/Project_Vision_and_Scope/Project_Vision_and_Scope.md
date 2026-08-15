@@ -8,14 +8,14 @@
 |---|---|
 | Owner/Producer | Hưng — Thành viên 3 |
 | Công cụ hỗ trợ | Codex |
-| Phiên bản | 0.4-ai-tree-compliant-reference |
-| Trạng thái | Cross-branch AI reconciliation and `Task_W10.pdf` tree consolidation completed; pending Hưng/PO audit và Sponsor acceptance |
+| Phiên bản | 0.5-ai-final-tree-reference |
+| Trạng thái | Cross-branch AI reconciliation and final repository-tree cleanup completed; pending Hưng/PO audit và Sponsor acceptance |
 | Branch | `feat/member-3-scope-backlog` |
 | Ngày cập nhật | 15/08/2026 |
 | Reviewer/Approver | Hưng/Product Owner; Sponsor/giảng viên — review record pending |
 | Điều kiện phê duyệt | Evidence được kiểm chứng; scope/policy được chốt; backlog/workflow/RTM nhất quán; review record hoàn tất |
 
-Theo định nghĩa baseline, tài liệu chỉ trở thành baseline sau formal review/agreement và sau đó chỉ thay đổi qua change control ([Software Configuration Management, Slide 017](../refs/07-software-configuration-management.md#slide-017--baseline-3)).
+Theo định nghĩa baseline, tài liệu chỉ trở thành baseline sau formal review/agreement và sau đó chỉ thay đổi qua change control ([Software Configuration Management, Slide 017](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/07-software-configuration-management.md#slide-017--baseline-3)).
 
 ## 1. Mục đích tài liệu
 
@@ -25,14 +25,14 @@ Tài liệu xác định product vision, người dùng, mục tiêu và ranh gi
 
 | ID | Nguồn | Loại | Cách sử dụng | Trạng thái |
 |---|---|---|---|---|
-| E-01 | [Project Proposal Draft](../Project_Proposal/Project_Proposal_Draft.md) | Tài liệu dự án | Problem, solution concept, MVP boundary | Internal source; chưa phải discovery evidence |
+| E-01 | [Project Proposal Draft — archived snapshot](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/Project_Proposal/Project_Proposal_Draft.md) | Tài liệu dự án | Problem, solution concept, MVP boundary | Internal source; chưa phải discovery evidence |
 | E-02 | [Project Charter](../Project_Governance%20%26%20Stakeholder/Project_Charter.md) | Tài liệu governance | Goal, success criteria, deliverable, risk | Draft; còn trường cần bổ sung |
 | E-03 | [Stakeholder Analysis](../Project_Governance%20%26%20Stakeholder/Stakeholder_Analysis.md) | Tài liệu dự án | Stakeholder/authority/decision owner | Draft; còn owner cần bổ sung |
 | E-04 | [Current-state summary in sections 6 and 10.4](#6-problem-statement) | Baseline giả thuyết | Current process và pain point cần kiểm chứng | Hypothesis, chưa được discovery xác nhận |
-| E-05 | [Feasibility Study](../Project_Feasibility/feasibility.md) | Phân tích dự án | Điều kiện kỹ thuật/vận hành và Go/No-Go gate | Conditional |
+| E-05 | [Feasibility Study — archived snapshot](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/Project_Feasibility/feasibility.md) | Phân tích dự án | Điều kiện kỹ thuật/vận hành và Go/No-Go gate | Conditional |
 | E-06 | Interview/research notes | Primary evidence | Xác nhận problem, user, priority và policy | **Chưa có trong repository** |
 
-Quy tắc evidence: nội dung chưa được E-06 xác nhận phải được hiểu là **hypothesis**, không phải finding thực tế. Không tạo tỷ lệ, trích dẫn người tham gia hoặc conclusion phỏng vấn khi chưa có source. Cách tiếp cận bắt đầu từ user/problem/need/goal theo [User Requirements, Slide 005](../refs/03-2-user-requirements.md#slide-005--discovering-user-requirements); customer discovery phải ghi rõ ai, ở đâu, thu gì và bằng cách nào theo [Business Requirements, Slide 049](../refs/03-1-business-requirements.md#slide-049--customer-discovery-for-a-product).
+Quy tắc evidence: nội dung chưa được E-06 xác nhận phải được hiểu là **hypothesis**, không phải finding thực tế. Không tạo tỷ lệ, trích dẫn người tham gia hoặc conclusion phỏng vấn khi chưa có source. Cách tiếp cận bắt đầu từ user/problem/need/goal theo [User Requirements, Slide 005](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-005--discovering-user-requirements); customer discovery phải ghi rõ ai, ở đâu, thu gì và bằng cách nào theo [Business Requirements, Slide 049](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-1-business-requirements.md#slide-049--customer-discovery-for-a-product).
 
 ## 2. Tổng quan sản phẩm
 
@@ -77,7 +77,7 @@ Sau khi chứng minh demand/supply và unit economics, sản phẩm có thể b�
 
 Sinh viên thiếu một workflow đơn giản và đáng tin cậy để chuyển từ chuẩn bị kiến thức sang mock interview với mentor và nhận feedback có cấu trúc.
 
-**Evidence status:** Hypothesis tổng hợp từ E-01 và E-04; cần E-06 xác nhận. Problem được mô tả như khoảng cách giữa current state và goal state, phù hợp [Business Requirements, Slide 019](../refs/03-1-business-requirements.md#slide-019--problem-definition-2).
+**Evidence status:** Hypothesis tổng hợp từ E-01 và E-04; cần E-06 xác nhận. Problem được mô tả như khoảng cách giữa current state và goal state, phù hợp [Business Requirements, Slide 019](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-1-business-requirements.md#slide-019--problem-definition-2).
 
 ### 6.2 Pain point hiện tại
 
@@ -119,7 +119,7 @@ Cần duyệt mentor/câu hỏi, theo dõi booking, xử lý report và giữ au
 
 ## 8. Product goals and measures
 
-Các goal là requirement cấp cao; requirement chi tiết phải đóng góp tích cực vào goal ([Business Requirements, Slides 044-046](../refs/03-1-business-requirements.md#slide-044--goals)). Target dưới đây là **proposed threshold** từ E-02/E-05, chưa phải observed result.
+Các goal là requirement cấp cao; requirement chi tiết phải đóng góp tích cực vào goal ([Business Requirements, Slides 044-046](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-1-business-requirements.md#slide-044--goals)). Target dưới đây là **proposed threshold** từ E-02/E-05, chưa phải observed result.
 
 | ID | Goal | Measure/công thức | Baseline | Target đề xuất | Nguồn đo/time window | Owner | Status |
 |---|---|---|---|---:|---|---|---|
@@ -176,7 +176,7 @@ Các goal là requirement cấp cao; requirement chi tiết phải đóng góp t
 
 ### 10.1 Product scope và project scope
 
-Product scope là features/functions của sản phẩm; project scope là work để tạo ra sản phẩm với các feature đó ([Software Project, Slide 009](../refs/02-software-project.md#slide-009--product-scope-vs-project-scope)).
+Product scope là features/functions của sản phẩm; project scope là work để tạo ra sản phẩm với các feature đó ([Software Project, Slide 009](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/02-software-project.md#slide-009--product-scope-vs-project-scope)).
 
 | Loại | Trong phạm vi | Ngoài phạm vi |
 |---|---|---|
@@ -185,7 +185,7 @@ Product scope là features/functions của sản phẩm; project scope là work 
 
 ### 10.2 Project deliverables và acceptance cấp dự án
 
-Scope statement cần product scope, exclusions, deliverables, acceptance criteria, constraints và assumptions theo [User Requirements, Slide 018](../refs/03-2-user-requirements.md#slide-018--project-scope-statement-5).
+Scope statement cần product scope, exclusions, deliverables, acceptance criteria, constraints và assumptions theo [User Requirements, Slide 018](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-018--project-scope-statement-5).
 
 | ID | Deliverable | Acceptance cấp dự án | Approver/verification |
 |---|---|---|---|
@@ -277,7 +277,7 @@ Decision IDs use the same meaning in Vision, Backlog and Workflow. The evidence/
 
 ## 16. Kết luận và baseline readiness
 
-Vision đề xuất giữ Question Bank -> Mentor -> Booking -> External Session -> Feedback làm core loop và loại AI/video/payment automation khỏi MVP. Bản này đáp ứng cấu trúc tham chiếu về context, current/future use case, problem/objective, inclusion/exclusion, assumption/risk và conclusion ([User Requirements, Slide 017](../refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4)).
+Vision đề xuất giữ Question Bank -> Mentor -> Booking -> External Session -> Feedback làm core loop và loại AI/video/payment automation khỏi MVP. Bản này đáp ứng cấu trúc tham chiếu về context, current/future use case, problem/objective, inclusion/exclusion, assumption/risk và conclusion ([User Requirements, Slide 017](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4)).
 
 **Readiness:** `Reviewed — conditionally ready for human audit`, chưa phải `Approved baseline`. Điều kiện nâng trạng thái: bổ sung/kiểm chứng E-06; chốt các DEC-02/03/04/05/07/08/09 cần cho R1; ghi acceptance cho DEC-01/06; xử lý discrepancy trong cross-branch audit; inspection và PO/Sponsor approval được ghi nhận.
 
@@ -285,9 +285,9 @@ Vision đề xuất giữ Question Bank -> Mentor -> Booking -> External Session
 
 | Tiêu chí | Ref | Vị trí đáp ứng |
 |---|---|---|
-| Product/project scope | [02, Slide 009](../refs/02-software-project.md#slide-009--product-scope-vs-project-scope) | 10.1 |
-| Problem, goal, discovery | [03.1, Slides 019, 044-050](../refs/03-1-business-requirements.md#slide-019--problem-definition-2) | 1.1, 6, 8 |
-| Context/scope/deliverable | [03.1, Slides 053, 055-060](../refs/03-1-business-requirements.md#slide-053--2-identify-high-level-features) | 8.1, 10.2-10.3 |
-| Vision & Scope contents | [03.2, Slides 017-018](../refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4) | 1-16 |
-| Baseline/approval | [07, Slides 017, 032](../refs/07-software-configuration-management.md#slide-017--baseline-3) | 0, 16 |
+| Product/project scope | [02, Slide 009](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/02-software-project.md#slide-009--product-scope-vs-project-scope) | 10.1 |
+| Problem, goal, discovery | [03.1, Slides 019, 044-050](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-1-business-requirements.md#slide-019--problem-definition-2) | 1.1, 6, 8 |
+| Context/scope/deliverable | [03.1, Slides 053, 055-060](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-1-business-requirements.md#slide-053--2-identify-high-level-features) | 8.1, 10.2-10.3 |
+| Vision & Scope contents | [03.2, Slides 017-018](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4) | 1-16 |
+| Baseline/approval | [07, Slides 017, 032](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/07-software-configuration-management.md#slide-017--baseline-3) | 0, 16 |
 

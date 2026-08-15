@@ -8,13 +8,13 @@
 |---|---|
 | Owner/Producer | Hưng — Thành viên 3 |
 | Công cụ hỗ trợ | Codex |
-| Phiên bản | 0.3-ai-cross-branch-reference |
-| Trạng thái | Cross-branch AI reconciliation completed; pending human walkthrough/PO approval |
+| Phiên bản | 0.4-ai-final-tree-reference |
+| Trạng thái | Cross-branch AI reconciliation and final repository-tree cleanup completed; pending human walkthrough/PO approval |
 | Branch | `feat/member-3-scope-backlog` |
-| Ngày cập nhật | 14/08/2026 |
+| Ngày cập nhật | 15/08/2026 |
 | Reviewer/Approver | `[CẦN BỔ SUNG — Hùng/Trí/PO]` |
 
-Future workflow là black-box view của solution, không phải bằng chứng backend/concurrency/security đã hoàn thành. Vision & Scope cần future business use case/domain view theo [User Requirements, Slide 017](../refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4).
+Future workflow là black-box view của solution, không phải bằng chứng backend/concurrency/security đã hoàn thành. Vision & Scope cần future business use case/domain view theo [User Requirements, Slide 017](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4).
 
 ## 1. Định nghĩa workflow
 
@@ -254,7 +254,7 @@ erDiagram
 | WV-07 | No-show/report/admin resolution | Authority/policy/audit rõ hoặc đánh dấu blocked bởi DEC-03 |
 | WV-08 | Feedback-to-question loop | Student thấy next action và quay về taxonomy/topic phù hợp |
 
-Prototype/workflow cần exploratory test với input xấu/đối nghịch theo [Software Quality Management, Slide 007](../refs/11-software-quality-management.md#slide-007--how-to-meet-user-requirements). Bản AI reference chỉ định nghĩa scenario, không tuyên bố đã test.
+Prototype/workflow cần exploratory test với input xấu/đối nghịch theo [Software Quality Management, Slide 007](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-software-quality-management.md#slide-007--how-to-meet-user-requirements). Bản AI reference chỉ định nghĩa scenario, không tuyên bố đã test.
 
 ## 12. Open decisions
 
@@ -275,8 +275,8 @@ Workflow thành công khi Student hoàn thành vòng lặp từ câu hỏi đế
 
 | Tiêu chí | Ref | Vị trí |
 |---|---|---|
-| User/problem/feature/prototype | [03.2, Slides 005, 014-015](../refs/03-2-user-requirements.md#slide-005--discovering-user-requirements) | 2-4, 11 |
-| Future use case/domain/risk/conclusion | [03.2, Slide 017](../refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4) | 3-14 |
-| Traceability/inspection | [09, Slides 039-042](../refs/09-software-project-monitoring-and-control.md#slide-039--9-validate-scope) | 10-13 |
-| Negative/exploratory workflow | [11, Slide 007](../refs/11-software-quality-management.md#slide-007--how-to-meet-user-requirements) | 7, 11 |
+| User/problem/feature/prototype | [03.2, Slides 005, 014-015](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-005--discovering-user-requirements) | 2-4, 11 |
+| Future use case/domain/risk/conclusion | [03.2, Slide 017](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4) | 3-14 |
+| Traceability/inspection | [09, Slides 039-042](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/09-software-project-monitoring-and-control.md#slide-039--9-validate-scope) | 10-13 |
+| Negative/exploratory workflow | [11, Slide 007](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-software-quality-management.md#slide-007--how-to-meet-user-requirements) | 7, 11 |
 

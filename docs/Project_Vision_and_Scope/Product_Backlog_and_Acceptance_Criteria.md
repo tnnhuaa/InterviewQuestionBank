@@ -8,17 +8,17 @@
 |---|---|
 | Owner/Producer | Hưng — Member 3 / Product Owner |
 | Supporting tool | Codex |
-| Version | 0.4-ai-tree-compliant-reference |
+| Version | 0.5-ai-final-tree-reference |
 | Branch | `feat/member-3-scope-backlog` |
 | Updated | 15/08/2026 |
-| Status | Cross-branch AI inspection and `Task_W10.pdf` tree consolidation completed; pending PO/team inspection and Sponsor acceptance |
+| Status | Cross-branch AI inspection and final repository-tree cleanup completed; pending PO/team inspection and Sponsor acceptance |
 | Reviewer/Approver | Hưng/Development Team/Sponsor — signatures or review record pending |
 
-The quality criteria in `docs/refs/` are the single source of truth for evaluating this artifact. When project documents disagree, this backlog records the discrepancy and required owner action; it does not silently treat a PoC or an unapproved branch as a new business requirement.
+The quality criteria in the immutable [`docs/refs/` snapshot at `05ff4b9`](https://github.com/tnnhuaa/InterviewQuestionBank/tree/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs) are the single source of truth for evaluating this artifact. The snapshot is pinned because the final submission tree excludes reference-source files. When project documents disagree, this backlog records the discrepancy and required owner action; it does not silently treat a PoC or an unapproved branch as a new business requirement.
 
 ## 1. Purpose, boundary and evidence
 
-This document converts the product vision and business rules into an ordered, verifiable Product Backlog and identifies the Product Backlog Items (PBIs) needed to deliver and validate the release. Each story must be understandable to the customer and team, add explicit business value, and be customer-verifiable ([Software Project Planning, Slide 079](../refs/06-software-project-planning.md#slide-079--sales-tip-5-real-business-requirements)).
+This document converts the product vision and business rules into an ordered, verifiable Product Backlog and identifies the Product Backlog Items (PBIs) needed to deliver and validate the release. Each story must be understandable to the customer and team, add explicit business value, and be customer-verifiable ([Software Project Planning, Slide 079](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/06-software-project-planning.md#slide-079--sales-tip-5-real-business-requirements)).
 
 ### 1.1 Release boundary
 
@@ -40,18 +40,18 @@ Cross-branch discrepancies and their required owner actions are retained in sect
 
 | Gate | Criterion from refs | Evidence required here |
 |---|---|---|
-| PB-G01 | Product Backlog is comprehensive ([Scrum, Slide 014](../refs/04-02-scrum-development-process.md#slide-014--the-product-backlog)) | Product stories, delivery enablers, decisions, dependencies and verification are visible |
-| PB-G02 | PO represents stakeholder interests and orders highest value first ([Scrum, Slide 015](../refs/04-02-scrum-development-process.md#slide-015--the-product-owner-2)) | One explicit order, value basis, PO audit record |
-| PB-G03 | Every feature is understandable, valuable and verifiable ([Planning, Slide 079](../refs/06-software-project-planning.md#slide-079--sales-tip-5-real-business-requirements)) | Actor/value statement plus acceptance criteria and trace |
-| PB-G04 | Release Backlog contains selected next-release stories and object mapping ([Scrum, Slide 019](../refs/04-02-scrum-development-process.md#slide-019--release-backlog)) | R1/Stretch/Future boundary and domain/workflow mapping |
-| PB-G05 | Release PBIs are created, estimated and prioritized; velocity yields will-have/might-have lines ([Agile Planning, Slides 021–025](../refs/06-1-agile-planning.md#slide-021--7-create-a-fixed-date-release-plan-i)) | Team story estimates and velocity range; otherwise commitment remains conditional |
-| PB-G06 | Done means reviewed, tested, integrated, deployed, documented and PO-accepted ([Scrum, Slides 035–036](../refs/04-02-scrum-development-process.md#slide-035--example-dod-1)) | Definition of Done and real evidence, not self-declared pass |
-| PB-G07 | RTM links origin to deliverable/value; stakeholders inspect acceptance ([Monitoring, Slides 039–042](../refs/09-software-project-monitoring-and-control.md#slide-039--9-validate-scope)) | RTM, inspection checklist and acceptance/change record |
-| PB-G08 | Decomposition covers 100% of in-scope work and no out-of-scope work ([WBS, Slides 007, 019, 033](../refs/05-1-work-breakdown-structure.md#slide-007--how-to-create-wbs-round-1)) | Stories plus cross-cutting/release PBIs reconcile with the estimate work packages |
+| PB-G01 | Product Backlog is comprehensive ([Scrum, Slide 014](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-014--the-product-backlog)) | Product stories, delivery enablers, decisions, dependencies and verification are visible |
+| PB-G02 | PO represents stakeholder interests and orders highest value first ([Scrum, Slide 015](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-015--the-product-owner-2)) | One explicit order, value basis, PO audit record |
+| PB-G03 | Every feature is understandable, valuable and verifiable ([Planning, Slide 079](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/06-software-project-planning.md#slide-079--sales-tip-5-real-business-requirements)) | Actor/value statement plus acceptance criteria and trace |
+| PB-G04 | Release Backlog contains selected next-release stories and object mapping ([Scrum, Slide 019](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-019--release-backlog)) | R1/Stretch/Future boundary and domain/workflow mapping |
+| PB-G05 | Release PBIs are created, estimated and prioritized; velocity yields will-have/might-have lines ([Agile Planning, Slides 021–025](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/06-1-agile-planning.md#slide-021--7-create-a-fixed-date-release-plan-i)) | Team story estimates and velocity range; otherwise commitment remains conditional |
+| PB-G06 | Done means reviewed, tested, integrated, deployed, documented and PO-accepted ([Scrum, Slides 035–036](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-035--example-dod-1)) | Definition of Done and real evidence, not self-declared pass |
+| PB-G07 | RTM links origin to deliverable/value; stakeholders inspect acceptance ([Monitoring, Slides 039–042](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/09-software-project-monitoring-and-control.md#slide-039--9-validate-scope)) | RTM, inspection checklist and acceptance/change record |
+| PB-G08 | Decomposition covers 100% of in-scope work and no out-of-scope work ([WBS, Slides 007, 019, 033](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/05-1-work-breakdown-structure.md#slide-007--how-to-create-wbs-round-1)) | Stories plus cross-cutting/release PBIs reconcile with the estimate work packages |
 
 ## 2. Canonical business rules and semantics
 
-Business rules carry ID, changeability and source as required by [User Requirements, Slide 007](../refs/03-2-user-requirements.md#slide-007--business-rules).
+Business rules carry ID, changeability and source as required by [User Requirements, Slide 007](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-007--business-rules).
 
 | ID | Rule | Source | Changeability | Owner/status |
 |---|---|---|---|---|
@@ -130,7 +130,7 @@ These PBIs make the backlog comprehensive without changing the count of 20 R1 us
 
 ## 5. Acceptance criteria
 
-Acceptance criteria are verification contracts, not claims that a feature is implemented. Risky flows include happy, negative, boundary, authorization, concurrency or provider-failure paths as required by [Software Quality Management, Slide 007](../refs/11-software-quality-management.md#slide-007--how-to-meet-user-requirements).
+Acceptance criteria are verification contracts, not claims that a feature is implemented. Risky flows include happy, negative, boundary, authorization, concurrency or provider-failure paths as required by [Software Quality Management, Slide 007](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-software-quality-management.md#slide-007--how-to-meet-user-requirements).
 
 | AC ID | Story | Type | Given / When / Then acceptance criterion |
 |---|---|---|---|
@@ -168,7 +168,7 @@ Acceptance criteria are verification contracts, not claims that a feature is imp
 
 ## 6. Quality requirements
 
-Quality requirements are part of the specification because quality cannot be evaluated without a baseline ([Software Quality Management, Slides 024–025](../refs/11-software-quality-management.md#slide-024--6-define-quality-requirements)).
+Quality requirements are part of the specification because quality cannot be evaluated without a baseline ([Software Quality Management, Slides 024–025](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-software-quality-management.md#slide-024--6-define-quality-requirements)).
 
 | ID | Requirement | Story/PBI trace | Verification |
 |---|---|---|---|
@@ -226,7 +226,7 @@ A story is Ready only when actor/value, acceptance criteria, dependencies, desig
 - Integrated build is deployed to the target environment, smoke-tested by another member and has no open Critical/High defect.
 - Release Backlog, plan/schedule, user/deployment guidance and evidence links are updated.
 
-This operationalizes [Scrum, Slides 035–036](../refs/04-02-scrum-development-process.md#slide-035--example-dod-1) and “production-ready” from [Agile Quality, Slide 016](../refs/11-1-agile-quality-management.md#slide-016--9-create-definition-of-done).
+This operationalizes [Scrum, Slides 035–036](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-035--example-dod-1) and “production-ready” from [Agile Quality, Slide 016](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-1-agile-quality-management.md#slide-016--9-create-definition-of-done).
 
 ## 9. Requirements Traceability Matrix
 
@@ -245,7 +245,7 @@ This operationalizes [Scrum, Slides 035–036](../refs/04-02-scrum-development-p
 
 ## 10. Release and estimate reconciliation
 
-Release R1 is a fixed-date proposal of six two-week sprints from 17/08/2026 through 08/11/2026. A release should focus on a small set of minimum releasable features with stakeholder consensus and be replanned every sprint ([Agile Planning, Slides 011 and 014–016](../refs/06-1-agile-planning.md#slide-011--2-create-a-product-roadmap)).
+Release R1 is a fixed-date proposal of six two-week sprints from 17/08/2026 through 08/11/2026. A release should focus on a small set of minimum releasable features with stakeholder consensus and be replanned every sprint ([Agile Planning, Slides 011 and 014–016](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/06-1-agile-planning.md#slide-011--2-create-a-product-roadmap)).
 
 | Item | Reconciled value | Limitation |
 |---|---|---|
@@ -277,7 +277,7 @@ These IDs are canonical across Vision, Workflow and Backlog; DEC-04 and DEC-05 a
 
 ## 12. Change control and human inspection
 
-After approval, a change to order, release class, BR, AC, dependency, NFR or decision must record origin/evidence, impacted stories/deliverables, value, estimate/cost/schedule/risk and verification. Scope acceptance is performed by stakeholder inspection, not by an AI status label ([Monitoring, Slides 039–040](../refs/09-software-project-monitoring-and-control.md#slide-039--9-validate-scope)).
+After approval, a change to order, release class, BR, AC, dependency, NFR or decision must record origin/evidence, impacted stories/deliverables, value, estimate/cost/schedule/risk and verification. Scope acceptance is performed by stakeholder inspection, not by an AI status label ([Monitoring, Slides 039–040](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/09-software-project-monitoring-and-control.md#slide-039--9-validate-scope)).
 
 - [ ] PO confirms Order 1–23, R1 Must*/Stretch/Future boundary and DEC-08.
 - [ ] Team estimates R1 stories/enablers and supplies a velocity range; PM draws will-have/might-have lines.
@@ -292,15 +292,15 @@ After approval, a change to order, release class, BR, AC, dependency, NFR or dec
 
 | Criterion | Ref | Location/result |
 |---|---|---|
-| Comprehensive backlog | [Scrum, Slide 014](../refs/04-02-scrum-development-process.md#slide-014--the-product-backlog) | Sections 2–12; **Pass structurally** |
-| Highest-value-first PO ordering | [Scrum, Slide 015](../refs/04-02-scrum-development-process.md#slide-015--the-product-owner-2) | Section 3; **Conditional on PO audit** |
-| Release stories/object mapping | [Scrum, Slide 019](../refs/04-02-scrum-development-process.md#slide-019--release-backlog) | Sections 3, 9–10; **Pass structurally** |
-| MRF/story map/replanning | [Agile Planning, Slides 011, 014–016](../refs/06-1-agile-planning.md#slide-011--2-create-a-product-roadmap) | Sections 3 and 10; **Conditional** |
-| Created/estimated/prioritized PBIs and velocity range | [Agile Planning, Slides 021–025](../refs/06-1-agile-planning.md#slide-021--7-create-a-fixed-date-release-plan-i) | Section 10; **Gap: story estimates/velocity absent** |
-| Understandable/value/verifiable | [Planning, Slide 079](../refs/06-software-project-planning.md#slide-079--sales-tip-5-real-business-requirements) | Sections 3, 5 and 9; **Conditional on human walkthrough** |
-| DoD and production-ready evidence | [Scrum, Slides 035–036](../refs/04-02-scrum-development-process.md#slide-035--example-dod-1) | Sections 4 and 8; **Definition passes; implementation evidence fails/pending** |
-| RTM and inspection | [Monitoring, Slides 039–042](../refs/09-software-project-monitoring-and-control.md#slide-039--9-validate-scope) | Sections 9 and 12; **RTM passes; acceptance pending** |
-| 100% in-scope work | [WBS, Slide 033](../refs/05-1-work-breakdown-structure.md#slide-033--the-100-rule) | Sections 3–4 and 10; **Pass structurally; estimate reconciliation pending team** |
+| Comprehensive backlog | [Scrum, Slide 014](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-014--the-product-backlog) | Sections 2–12; **Pass structurally** |
+| Highest-value-first PO ordering | [Scrum, Slide 015](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-015--the-product-owner-2) | Section 3; **Conditional on PO audit** |
+| Release stories/object mapping | [Scrum, Slide 019](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-019--release-backlog) | Sections 3, 9–10; **Pass structurally** |
+| MRF/story map/replanning | [Agile Planning, Slides 011, 014–016](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/06-1-agile-planning.md#slide-011--2-create-a-product-roadmap) | Sections 3 and 10; **Conditional** |
+| Created/estimated/prioritized PBIs and velocity range | [Agile Planning, Slides 021–025](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/06-1-agile-planning.md#slide-021--7-create-a-fixed-date-release-plan-i) | Section 10; **Gap: story estimates/velocity absent** |
+| Understandable/value/verifiable | [Planning, Slide 079](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/06-software-project-planning.md#slide-079--sales-tip-5-real-business-requirements) | Sections 3, 5 and 9; **Conditional on human walkthrough** |
+| DoD and production-ready evidence | [Scrum, Slides 035–036](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-035--example-dod-1) | Sections 4 and 8; **Definition passes; implementation evidence fails/pending** |
+| RTM and inspection | [Monitoring, Slides 039–042](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/09-software-project-monitoring-and-control.md#slide-039--9-validate-scope) | Sections 9 and 12; **RTM passes; acceptance pending** |
+| 100% in-scope work | [WBS, Slide 033](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/05-1-work-breakdown-structure.md#slide-033--the-100-rule) | Sections 3–4 and 10; **Pass structurally; estimate reconciliation pending team** |
 
 **Readiness:** `Conditionally ready for Hưng’s human audit; not an Approved Product/Release Backlog.` The document is complete enough to review, but PB-G02, PB-G03, PB-G05, PB-G06 and PB-G07 cannot pass until the named humans produce decisions, estimates, test evidence and acceptance records.
 
@@ -333,5 +333,5 @@ This appendix preserves the remote-branch audit inside the required Product Back
 | Product model | 6 OBJ, 23 US, exactly 20 proposed R1 Must, 11 BR, 31 AC, 10 RQ, 8 EN, 8 NFR, 9 DEC, 10 TC, 8 PB gates, 12 FS and 15 CONS |
 | Acceptance coverage | Every US-01..US-23 has at least one AC |
 | ID/dependency integrity | Zero undefined ID, invalid dependency, duplicate order or cycle node |
-| Markdown quality | PASS after tree cleanup: 64 local links, 0 missing target, 0 odd fence, 0 trailing-whitespace line and 0 table-column error across the three required Member 3 files plus `docs/README.md` |
+| Markdown quality | PASS after final tree cleanup: 5 local links, 0 missing target, 0 odd fence, 0 trailing-whitespace line and 0 table-column error across the retained Markdown set |
 | Evidence limitation | Static documentation checks do not execute the PoC, application build, UAT or observed KPI |
