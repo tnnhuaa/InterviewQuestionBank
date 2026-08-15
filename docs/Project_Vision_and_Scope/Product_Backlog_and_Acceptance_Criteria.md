@@ -8,10 +8,10 @@
 |---|---|
 | Owner/Producer | Hưng — Member 3 / Product Owner |
 | Supporting tool | Codex |
-| Version | 0.3-ai-cross-branch-reference |
+| Version | 0.4-ai-tree-compliant-reference |
 | Branch | `feat/member-3-scope-backlog` |
-| Updated | 14/08/2026 |
-| Status | Cross-branch AI inspection completed; pending PO/team inspection and Sponsor acceptance |
+| Updated | 15/08/2026 |
+| Status | Cross-branch AI inspection and `Task_W10.pdf` tree consolidation completed; pending PO/team inspection and Sponsor acceptance |
 | Reviewer/Approver | Hưng/Development Team/Sponsor — signatures or review record pending |
 
 The quality criteria in `docs/refs/` are the single source of truth for evaluating this artifact. When project documents disagree, this backlog records the discrepancy and required owner action; it does not silently treat a PoC or an unapproved branch as a new business requirement.
@@ -34,7 +34,7 @@ Release R1 is a responsive web MVP for Student, Mentor and Administrator. It inc
 | EV-04 — Prototype specification on remote `main` | [`6548e12`](https://github.com/tnnhuaa/InterviewQuestionBank/blob/6548e129d702facf741641dbfb2e38ddf392d310/docs/Project_Prototype/Prototype_Workflow.md) | Screen IDs, user flows, states and prototype test tasks | Requirement/prototype specification; no dedicated Member 2 branch, clickable frames, handoff or usability result found |
 | EV-05 — Member 3 prior scope baseline | [`dca6a09`](https://github.com/tnnhuaa/InterviewQuestionBank/tree/dca6a09998f2082880525e41bb4899fa069278f6/docs/Project_Vision_and_Scope) | Vision, backlog, future-state workflow and AI validation | Input superseded by this 0.3 reconciliation for backlog semantics |
 
-The detailed discrepancy and ref evaluation is in [Product Backlog Cross-Branch Consistency Audit](Product_Backlog_Cross_Branch_Consistency_Audit.md).
+Cross-branch discrepancies and their required owner actions are retained in section 14 of this document so the submission tree contains only the three Member 3 deliverables required by `Task_W10.pdf`.
 
 ### 1.3 Ref-derived evaluation gates
 
@@ -303,3 +303,35 @@ After approval, a change to order, release class, BR, AC, dependency, NFR or dec
 | 100% in-scope work | [WBS, Slide 033](../refs/05-1-work-breakdown-structure.md#slide-033--the-100-rule) | Sections 3–4 and 10; **Pass structurally; estimate reconciliation pending team** |
 
 **Readiness:** `Conditionally ready for Hưng’s human audit; not an Approved Product/Release Backlog.` The document is complete enough to review, but PB-G02, PB-G03, PB-G05, PB-G06 and PB-G07 cannot pass until the named humans produce decisions, estimates, test evidence and acceptance records.
+
+## 14. Cross-branch consistency appendix
+
+This appendix preserves the remote-branch audit inside the required Product Backlog artifact. A specification, proposed planning baseline, implementation artifact and verified result are different evidence classes; no implementation is marked Pass without an asserted result.
+
+| ID | Severity | Cross-document discrepancy | Canonical response / exit evidence |
+|---|---|---|---|
+| CONS-01 | High | No Member 2 remote branch, clickable frames, handoff or observed usability result was found. | EN-01 remains Gap until Hùng publishes immutable prototype and observed task evidence mapped to stories/ACs. |
+| CONS-02 | Medium | Feasibility on remote `main` says schedule/resources are unresolved while EV-01 proposes concrete values. | DEC-06 records a proposed baseline only; PM updates Feasibility after Sponsor acceptance. |
+| CONS-03 | High | Earlier documents reused DEC-04/05 for different topics. | Canonical DEC-01..09 meanings in section 11 and synchronized Vision/Workflow supersede the collision. |
+| CONS-04 | High | A confirmed-source reschedule may release the old slot if implementation replaces `CONFIRMED` with an index-excluded state. | BR-02 and AC-12-03 require old-slot protection; PO/Architecture must select and test the mechanism under DEC-03. |
+| CONS-05 | Medium | Feasibility names five product-risk PoCs while ADR-001 adds build and deployed-session checks. | EN-03..07 are the five product-risk gates; EN-02 owns the two delivery/stack gates. |
+| CONS-06 | High | Architecture expects `poc/mentor-booking-feedback/README.md`, `POC_Result.md`, migrations/tests/contracts; the inspected PoC uses another root and lacks those results. | Trí publishes the required structure, commands, asserted Pass/Fail evidence and limitations. |
+| CONS-07 | Critical | The 100-request script targets a nonexistent route; the runner tests two calls against one booking instead of at least 20 competing bookings for one slot. | EN-03 fails until AC-12-01 is proven on real PostgreSQL with invariant, transition and event assertions. |
+| CONS-08 | Critical | The PoC trusts caller-controlled `X-User-Id` and lacks owning-Mentor/role checks on critical mutations. | EN-02/04 fail until the accepted session topology and negative role/relationship matrix pass. |
+| CONS-09 | High | The PoC index covers only `Confirmed`; audit lacks actor/reason; idempotency is absent; lock order differs from ADR-002. | Align migration/service with BR-02/08/10 and ADR, or revise ADR through recorded design review and tests. |
+| CONS-10 | High | Question evidence proves one tag-intersection example but not lifecycle/provenance, zero/one/many, pagination or deterministic sort. | EN-06 remains Partial until TC-Q passes completely. |
+| CONS-11 | Critical | Notification test increments its pass count without an assertion; worker lacks deduplication, safe claim, backoff and Dead/manual state. | EN-07 fails until deterministic fake-provider and competing-worker database assertions pass. |
+| CONS-12 | Critical | The remote PoC tree tracks `poc/.env` and generated dependencies. No secret value was read in this audit. | Remove tracked generated/secret files, rotate any real credential, add ignore/secret checks and retain evidence. |
+| CONS-13 | High | The PoC UI is a narrow demo, not the complete S/M/A prototype specification or usability result. | Treat it as partial implementation; EN-01 remains open. |
+| CONS-14 | High | EV-01’s 688/756-hour values are whole-release forecasts, not story estimates or measured velocity. | Team sizes stories/enablers; PM records velocity range and will-have/might-have lines before commitment. |
+| CONS-15 | Medium | EV-01 counts 20 Must stories while US-17/20 minimality previously remained open. | DEC-08 proposes both as Must to match Proposal/Charter/estimate; PO confirms or rebaselines explicitly. |
+
+### 14.1 Static validation retained with this artifact
+
+| Check | Result |
+|---|---|
+| Product model | 6 OBJ, 23 US, exactly 20 proposed R1 Must, 11 BR, 31 AC, 10 RQ, 8 EN, 8 NFR, 9 DEC, 10 TC, 8 PB gates, 12 FS and 15 CONS |
+| Acceptance coverage | Every US-01..US-23 has at least one AC |
+| ID/dependency integrity | Zero undefined ID, invalid dependency, duplicate order or cycle node |
+| Markdown quality | PASS after tree cleanup: 64 local links, 0 missing target, 0 odd fence, 0 trailing-whitespace line and 0 table-column error across the three required Member 3 files plus `docs/README.md` |
+| Evidence limitation | Static documentation checks do not execute the PoC, application build, UAT or observed KPI |

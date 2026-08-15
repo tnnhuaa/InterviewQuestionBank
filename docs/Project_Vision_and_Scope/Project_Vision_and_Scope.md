@@ -8,10 +8,10 @@
 |---|---|
 | Owner/Producer | Hưng — Thành viên 3 |
 | Công cụ hỗ trợ | Codex |
-| Phiên bản | 0.3-ai-cross-branch-reference |
-| Trạng thái | Cross-branch AI reconciliation completed; pending Hưng/PO audit và Sponsor acceptance |
+| Phiên bản | 0.4-ai-tree-compliant-reference |
+| Trạng thái | Cross-branch AI reconciliation and `Task_W10.pdf` tree consolidation completed; pending Hưng/PO audit và Sponsor acceptance |
 | Branch | `feat/member-3-scope-backlog` |
-| Ngày cập nhật | 14/08/2026 |
+| Ngày cập nhật | 15/08/2026 |
 | Reviewer/Approver | Hưng/Product Owner; Sponsor/giảng viên — review record pending |
 | Điều kiện phê duyệt | Evidence được kiểm chứng; scope/policy được chốt; backlog/workflow/RTM nhất quán; review record hoàn tất |
 
@@ -28,7 +28,7 @@ Tài liệu xác định product vision, người dùng, mục tiêu và ranh gi
 | E-01 | [Project Proposal Draft](../Project_Proposal/Project_Proposal_Draft.md) | Tài liệu dự án | Problem, solution concept, MVP boundary | Internal source; chưa phải discovery evidence |
 | E-02 | [Project Charter](../Project_Governance%20%26%20Stakeholder/Project_Charter.md) | Tài liệu governance | Goal, success criteria, deliverable, risk | Draft; còn trường cần bổ sung |
 | E-03 | [Stakeholder Analysis](../Project_Governance%20%26%20Stakeholder/Stakeholder_Analysis.md) | Tài liệu dự án | Stakeholder/authority/decision owner | Draft; còn owner cần bổ sung |
-| E-04 | [Current-State Workflow](Current_State_Workflow.md) | Baseline giả thuyết | Current process và pain point cần kiểm chứng | Hypothesis, chưa được discovery xác nhận |
+| E-04 | [Current-state summary in sections 6 and 10.4](#6-problem-statement) | Baseline giả thuyết | Current process và pain point cần kiểm chứng | Hypothesis, chưa được discovery xác nhận |
 | E-05 | [Feasibility Study](../Project_Feasibility/feasibility.md) | Phân tích dự án | Điều kiện kỹ thuật/vận hành và Go/No-Go gate | Conditional |
 | E-06 | Interview/research notes | Primary evidence | Xác nhận problem, user, priority và policy | **Chưa có trong repository** |
 
@@ -217,7 +217,7 @@ flowchart LR
 
 | Required view | Source/reference | Status |
 |---|---|---|
-| Current business use case | [Current-State Workflow](Current_State_Workflow.md) | Hypothesis; cần discovery validation |
+| Current business use case | Chọn vị trí/JD → tìm câu hỏi nhiều nguồn → tự lưu/luyện → tìm mentor qua mạng lưới → điều phối bằng tin nhắn/lịch → họp ngoài → feedback tự do | Hypothesis; cần discovery validation |
 | Future business use case | [Future-State Workflow](Future_State_Workflow.md) | AI-assisted reference; pending human walkthrough |
 | Current domain | JD/source/question notes, contact/message, calendar/meeting link, free-form feedback | Conceptual; cần interview validation |
 | Future domain | User/Role, StudentGoal, Question/Taxonomy/Progress, Mentor/Verification/Slot, Booking/Transition, SessionLink, Feedback/Review/Report/Notification | Conceptual mapping; technical data model thuộc Architecture |
@@ -261,7 +261,7 @@ flowchart LR
 
 ## 15. Canonical decision register
 
-Decision IDs use the same meaning in Vision, Backlog and Workflow. The evidence/status rationale is detailed in the [Product Backlog Cross-Branch Consistency Audit](Product_Backlog_Cross_Branch_Consistency_Audit.md).
+Decision IDs use the same meaning in Vision, Backlog and Workflow. The evidence/status rationale and cross-branch discrepancies are retained in [Product Backlog, sections 11 and 14](Product_Backlog_and_Acceptance_Criteria.md#11-canonical-decision-register).
 
 | ID | Decision cần chốt | Owner | Trạng thái / ảnh hưởng |
 |---|---|---|---|

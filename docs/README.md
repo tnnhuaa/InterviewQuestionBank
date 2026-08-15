@@ -16,7 +16,7 @@ Thư mục này chứa bộ tài liệu khởi tạo cho **Interview Practice Pl
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Project Proposal         | [Project Proposal Draft](Project_Proposal/Project_Proposal_Draft.md), [Existing Tools Analysis](Project_Proposal/Existing_Tools_Analysis.md), [Competitor Analysis](Project_Proposal/Competitor_Analysis.md)                                                                                                                                               |
 | Governance & Stakeholder | [Project Charter](Project_Governance%20%26%20Stakeholder/Project_Charter.md), [Stakeholder Analysis](Project_Governance%20%26%20Stakeholder/Stakeholder_Analysis.md)                                                                                                                                                                                       |
-| Vision and Scope         | [Project Vision and Scope](Project_Vision_and_Scope/Project_Vision_and_Scope.md), [Current-State Workflow](Project_Vision_and_Scope/Current_State_Workflow.md), [Future-State Workflow](Project_Vision_and_Scope/Future_State_Workflow.md), [Product Backlog and Acceptance Criteria](Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md), [Cross-Branch Consistency Audit](Project_Vision_and_Scope/Product_Backlog_Cross_Branch_Consistency_Audit.md) |
+| Vision and Scope         | [Project Vision and Scope](Project_Vision_and_Scope/Project_Vision_and_Scope.md), [Product Backlog and Acceptance Criteria](Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md), [Future-State Workflow](Project_Vision_and_Scope/Future_State_Workflow.md) |
 | Resource Plan            | [Resource Plan](Project_Resource_Plan/ResourcePlan.md), [Cost, Time, and Resources](Project_Resource_Plan/Cost_Time_Resources.md)                                                                                                                                                                                                                          |
 | Feasibility              | [Feasibility Study](Project_Feasibility/feasibility.md)                                                                                                                                                                                                                                                                                                    |
 | Architecture             | [Software Architecture](Project_Architecture/software_architecture.md)                                                                                                                                                                                                                                                                                     |
@@ -27,9 +27,9 @@ Thư mục này chứa bộ tài liệu khởi tạo cho **Interview Practice Pl
 1. Project Proposal Draft.
 2. Project Charter.
 3. Project Vision and Scope.
-4. Current-State và Future-State Workflow.
-5. Product Backlog and Acceptance Criteria.
-6. Resource Plan và Feasibility Study.
+4. Product Backlog and Acceptance Criteria.
+5. Future-State Workflow.
+6. Prototype Workflow.
 7. Software Architecture.
-8. Prototype Workflow.
+8. Resource Plan và Feasibility Study.
 
