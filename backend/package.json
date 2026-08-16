@@ -8,7 +8,12 @@
     "start": "node src/server.js",
     "lint": "eslint .",
     "test": "vitest run",
-    "build": "node scripts/build.js"
+    "build": "node scripts/build.js",
+    "db:start": "echo 'Neon DB is cloud-hosted. No local start needed.'",
+    "db:reset": "node scripts/db.js reset",
+    "db:push": "node scripts/db.js push",
+    "db:seed": "node scripts/db.js seed",
+    "db:status": "node scripts/db.js status"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
