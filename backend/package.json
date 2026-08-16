@@ -9,19 +9,34 @@
     "lint": "eslint .",
     "test": "vitest run",
     "build": "node scripts/build.js",
-    "db:start": "echo 'Neon DB is cloud-hosted. No local start needed.'",
+    "worker": "node src/worker/index.js",
+    "db:migrate": "node scripts/db.js migrate",
+    "db:seed:reference": "node scripts/db.js seed reference",
+    "db:seed:demo": "node scripts/db.js seed demo",
+    "db:seed:load": "node scripts/db.js seed load",
+    "db:seed:verify": "node scripts/db.js verify",
     "db:reset": "node scripts/db.js reset",
-    "db:push": "node scripts/db.js push",
-    "db:seed": "node scripts/db.js seed",
-    "db:status": "node scripts/db.js status"
+    "db:status": "node scripts/db.js status",
+    "admin:invite": "node scripts/admin-invite.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1111.0",
+    "@napi-rs/canvas": "^1.0.6",
+    "argon2": "^0.45.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "express-openapi-validator": "^5.6.2",
+    "express-rate-limit": "^8.6.2",
+    "file-type": "^22.0.2",
     "helmet": "^8.1.0",
-    "pg": "^8.16.3"
+    "multer": "^2.2.0",
+    "nodemailer": "^9.0.5",
+    "pdfjs-dist": "^6.2.108",
+    "pg": "^8.16.3",
+    "tesseract.js": "^7.0.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
@@ -32,6 +47,6 @@
     "vitest": "^3.2.4"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   }
 }

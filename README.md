@@ -1,74 +1,85 @@
-# Interview Question Bank
+# PrepVI — Interview Question Bank R1
 
-Foundation codebase for the Interview Practice Platform. The application is a modular monolith with a React SPA, an Express API, and PostgreSQL hosted by Supabase.
+PrepVI R1 is a modular monolith: React/TypeScript SPA, Express/JavaScript API and worker, and portable PostgreSQL through `pg`. The browser calls relative `/api/v1`; it never connects directly to PostgreSQL or object storage.
 
 ```text
-Browser -> /api/v1 -> Express -> pg -> Supabase PostgreSQL
+Browser -> same-origin /api/v1 -> Express -> application/domain services -> PostgreSQL
+                                      \-> outbox -> worker -> SMTP
+                                      \-> private local/S3-compatible storage
 ```
 
-The browser never connects to PostgreSQL or the Supabase Data API directly.
+The implementation covers mandatory R1 stories `US-01–20` and `US-24–30`. Advanced dashboard, scheduled reminders, bulk import, AI/semantic matching, integrated video, and payment are deliberately out of scope.
 
-## Requirements
+## Local setup
 
-- Node.js 22 or newer
-- npm 11 or newer
-- Docker Desktop only when running Supabase locally
-
-## Setup
+Requirements: Node.js 24 LTS, npm 11+, and Docker Desktop (or another PostgreSQL 15+ instance).
 
 ```bash
 cp .env.example .env
 npm install
+npm run db:start
+npm run db:migrate
+npm run db:seed:reference
 npm run dev
 ```
 
+Set strong local `SESSION_SECRET` and `CSRF_SECRET` values in `.env`. Local endpoints:
+
 - Frontend: `http://localhost:5173`
-- Backend: `http://localhost:3000`
-- Health: `http://localhost:3000/api/v1/health`
+- API health: `http://localhost:3000/api/v1/health`
+- API readiness: `http://localhost:3000/api/v1/readiness`
+- Mailpit: `http://localhost:8025`
 
-Each workspace can also run independently:
+Run the API and worker separately when validating extraction/notifications:
 
 ```bash
-npm run dev --workspace frontend
 npm run dev --workspace backend
+npm run worker --workspace backend
+npm run dev --workspace frontend
 ```
 
-The Vite development server proxies the relative `/api/v1` path to `VITE_DEV_API_TARGET`. Application code never contains a deployment hostname.
+## Database and seed workflow
 
-## Quality checks
+Migrations are forward-only and checksum protected. Never edit an applied migration or seed version; create a new version.
 
 ```bash
-npm run lint
-npm test
-npm run build
-```
-
-The same checks run in GitHub Actions for pushes and pull requests.
-
-## API status endpoints
-
-`GET /api/v1/health` confirms that the API process is running:
-
-```json
-{ "status": "ok", "service": "interview-question-bank-api" }
-```
-
-`GET /api/v1/ready` confirms that required dependencies are available. Before the database adapter exists it intentionally returns HTTP `503`:
-
-```json
-{ "status": "not_ready", "database": "disconnected" }
-```
-
-When `backend/src/platform/db/check-connection.js` is added, export `checkConnection` (or a default function). It should resolve to `true` after a successful database check and throw or resolve to `false` on failure. The API discovers this adapter during startup without requiring frontend changes.
-
-## Database workflow
-
-Database migrations and seed data are owned by the Supabase foundation task. Do not edit a migration after it has been pushed.
-
-```bash
-npm run db:start
-npm run db:reset
+npm run db:migrate
+npm run db:seed:reference
+npm run db:seed:demo
+npm run db:seed:load
+npm run db:seed:verify
 npm run db:status
 ```
 
-Only the database owner should run `npm run db:push` against the shared project. Never run `supabase db reset --linked`. Secrets and real connection strings belong in `.env` or the deployment platform, never in Git.
+- `reference`: stable pilot-safe taxonomy, aliases, curated published questions, provenance, classifications, and matching rules.
+- `demo`: local/staging personas and representative workflow/error states. Requires `ALLOW_NON_PRODUCTION_SEED=true` and `DEMO_SEED_PASSWORD`; the password is never logged.
+- `load`: staging-only 1,000 questions, 100 mentors, 1,000 future slots, and 500 bookings under a distinct `load-*` namespace.
+
+`demo` and `load` fail closed in `APP_ENV=pilot|production`. Pilot bootstrap is exactly: migrate → reference seed → `npm run admin:invite --workspace backend -- admin@example.com`. Invitation tokens and passwords are delivered/entered out-of-band and never accepted as CLI arguments.
+
+`npm run db:reset` is allowed only for `APP_ENV=local|test` and a local database URL. It is not a pilot operation.
+
+## Contracts and quality
+
+OpenAPI 3.1 is at `backend/openapi/openapi.yaml`. Generate the frontend contract with:
+
+```bash
+npm run api:types
+npm run api:types:check
+npm run typecheck
+npm run lint
+npm run build
+```
+
+Automated-test implementation is not part of the R1 release/validation scope. Release acceptance uses the manual/UAT evidence process in `docs/Implementation/Manual_Validation_and_Operations.md`. CI still validates lint, TypeScript, OpenAPI drift, migration replay, reference seed integrity, build, and secret scanning.
+
+## Runtime safety
+
+- Passwords use Argon2id. Sessions store only SHA-256 token hashes; cookies are `__Host-`, `Secure`, `HttpOnly`, `SameSite=Lax` in secure environments.
+- State-changing authenticated requests require same-origin and CSRF validation.
+- Booking/moderation operations use version checks and idempotency keys. Slot confirmation is serialized with row locks.
+- JD files and verification evidence are private. Meeting links are AES-256-GCM encrypted at rest.
+- API errors contain a safe correlation ID and recovery action; logs omit request bodies, tokens, JD text, credentials, meeting links, and evidence.
+- Failed providers do not roll back committed business state. The outbox retries at minute 1 and 5, then creates an auditable operation case.
+
+When local PostgreSQL or Mailpit cannot start, follow the manual-recovery table in the implementation runbook instead of changing production data directly.

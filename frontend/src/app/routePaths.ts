@@ -1,6 +1,11 @@
 export const routes = {
   home: "/homepage",
   login: "/login",
+  register: "/register",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
+  verifyEmail: "/verify-email",
+  acceptAdminInvite: "/accept-admin-invite",
   studentDashboard: "/student/dashboard",
   questions: "/questions",
   question: (questionId = ":questionId") => `/questions/${questionId}`,
@@ -16,6 +21,8 @@ export const routes = {
     `/job-descriptions/${jobDescriptionId}/review`,
   jobDescriptionMapping: (jobDescriptionId = ":jobDescriptionId") =>
     `/job-descriptions/${jobDescriptionId}/mapping`,
+  jobDescriptionRecommendations: (jobDescriptionId = ":jobDescriptionId") =>
+    `/job-descriptions/${jobDescriptionId}/recommendations`,
   preparationPlan: (planId = ":planId") => `/preparation-plans/${planId}`,
   mentorOnboarding: "/mentor/onboarding",
   mentorVerification: "/mentor/verification",

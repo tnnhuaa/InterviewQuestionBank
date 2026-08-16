@@ -1,1 +1,1 @@
-export const questionsModule = { name: "questions" };
+export { createQuestionsRouter } from "./routes.js";

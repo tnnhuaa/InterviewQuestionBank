@@ -10,4 +10,5 @@ coverage/
 .idea/
 .vscode/
 .supabase/
+.local/
 

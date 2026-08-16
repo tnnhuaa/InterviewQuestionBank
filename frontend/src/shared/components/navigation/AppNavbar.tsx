@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Bell, CaretDown, List, X } from "@phosphor-icons/react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApp, type Role } from "@/app/AppContext";
+import { notificationsApi } from "@/shared/api/resources";
 import { routes } from "@/app/routePaths";
 import { cn } from "@/shared/utils/cn";
 import { Button } from "@/shared/components/ui/Button";
@@ -17,8 +19,8 @@ const roleNavigation: Record<Exclude<Role, "public">, NavLink[]> = {
     { to: routes.studentDashboard, label: "Trang chủ" },
     { to: routes.questions, label: "Câu hỏi" },
     { to: routes.mentors, label: "Mentor" },
-    { to: routes.booking("BK-2024-001"), label: "Lịch phỏng vấn" },
-    { to: routes.preparationPlan("demo-plan"), label: "JD của tôi" },
+    { to: `${routes.studentDashboard}#bookings`, label: "Lịch phỏng vấn" },
+    { to: routes.jobDescriptionNew, label: "JD của tôi" },
   ],
   mentor: [
     { to: routes.mentorBookings, label: "Lịch đặt" },
@@ -38,12 +40,6 @@ const publicNavigation: NavLink[] = [
   { to: `${routes.home}#how`, label: "Cách hoạt động" },
 ];
 
-const identities: Record<Exclude<Role, "public">, { name: string; initials: string }> = {
-  student: { name: "An", initials: "A" },
-  mentor: { name: "Minh Tuấn", initials: "MT" },
-  admin: { name: "Admin", initials: "AD" },
-};
-
 function homeForRole(role: Role) {
   if (role === "student") return routes.studentDashboard;
   if (role === "mentor") return routes.mentorBookings;
@@ -52,7 +48,8 @@ function homeForRole(role: Role) {
 }
 
 export function AppNavbar({ publicMode = false }: { publicMode?: boolean }) {
-  const { role, setRole } = useApp();
+  const { role, user, logout } = useApp();
+  const queryClient = useQueryClient();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -61,7 +58,9 @@ export function AppNavbar({ publicMode = false }: { publicMode?: boolean }) {
 
   const authenticatedRole = role === "public" ? "student" : role;
   const links = publicMode ? publicNavigation : roleNavigation[authenticatedRole];
-  const identity = identities[authenticatedRole];
+  const identity = { name: user?.displayName ?? authenticatedRole, initials: (user?.displayName ?? authenticatedRole).split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase() };
+  const notifications = useQuery({ queryKey: ["notifications"], queryFn: notificationsApi.list, enabled: notificationsOpen && !publicMode });
+  const markRead = useMutation({ mutationFn: notificationsApi.read, onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }) });
 
   useEffect(() => {
     setMobileOpen(false);
@@ -70,8 +69,7 @@ export function AppNavbar({ publicMode = false }: { publicMode?: boolean }) {
   }, [pathname]);
 
   function startPractice() {
-    setRole("student");
-    navigate(routes.studentDashboard);
+    navigate(routes.login);
   }
 
   return (
@@ -121,12 +119,12 @@ export function AppNavbar({ publicMode = false }: { publicMode?: boolean }) {
                 className="relative rounded-lg p-2 text-ink-muted transition-colors hover:bg-canvas hover:text-ink"
               >
                 <Bell aria-hidden size={20} />
-                <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-panel bg-accent" />
+                {(notifications.data?.unread ?? 0) > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full border-2 border-panel bg-accent" />}
               </button>
               {notificationsOpen && (
                 <div className="absolute right-0 top-full mt-2 w-72 rounded-xl border border-edge bg-panel p-4 shadow-lg">
                   <p className="text-sm font-semibold text-ink">Thông báo</p>
-                  <p className="mt-1 text-xs leading-5 text-ink-muted">Bạn không có thông báo mới cần xử lý.</p>
+                  <div className="mt-2 max-h-72 space-y-2 overflow-auto">{notifications.isLoading && <p className="text-xs text-ink-muted">Đang tải…</p>}{notifications.data?.items.map((item) => <button key={item.id} onClick={() => markRead.mutate(item.id)} className="w-full rounded-md bg-canvas p-2 text-left"><span className="block text-xs font-medium text-ink">{item.title}</span><span className="mt-0.5 block text-[11px] text-ink-muted">{item.body}</span></button>)}{notifications.data?.items.length === 0 && <p className="text-xs text-ink-muted">Không có thông báo.</p>}</div>
                 </div>
               )}
             </div>
@@ -145,9 +143,8 @@ export function AppNavbar({ publicMode = false }: { publicMode?: boolean }) {
               </button>
               {profileOpen && (
                 <div className="absolute right-0 top-full mt-2 w-48 overflow-hidden rounded-xl border border-edge bg-panel py-1 shadow-lg">
-                  {["Hồ sơ của tôi", "Cài đặt", "Đăng xuất"].map((label) => (
-                    <button
-                      key={label}
+                  {["Hồ sơ của tôi", "Cài đặt"].map((label) => (
+                    <button key={label}
                       type="button"
                       onClick={() => setProfileOpen(false)}
                       className="w-full px-4 py-2.5 text-left text-sm text-ink-secondary transition-colors hover:bg-canvas hover:text-ink"
@@ -155,6 +152,7 @@ export function AppNavbar({ publicMode = false }: { publicMode?: boolean }) {
                       {label}
                     </button>
                   ))}
+                  <button type="button" onClick={async () => { setProfileOpen(false); await logout(); navigate(routes.login); }} className="w-full px-4 py-2.5 text-left text-sm text-danger transition-colors hover:bg-danger-soft">Đăng xuất</button>
                 </div>
               )}
             </div>

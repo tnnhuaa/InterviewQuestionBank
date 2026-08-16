@@ -1,0 +1,123 @@
+import { Router } from "express";
+import multer from "multer";
+import { z } from "zod";
+import { requireRole } from "../../middleware/auth.js";
+import { asyncHandler } from "../../shared/async-handler.js";
+import { parse } from "../../shared/validation.js";
+import { createJdService } from "./service.js";
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { files: 1, fileSize: 10 * 1024 * 1024 } });
+
+export function createJdRouter({ pool, storage }) {
+  const router = Router();
+  const service = createJdService({ pool, storage });
+
+  router.post("/job-descriptions", requireRole("STUDENT"), upload.single("file"), asyncHandler(async (request, response) => {
+    const result = request.file
+      ? await service.createFromFile(request.auth.user.id, request.file)
+      : await service.createFromText(
+        request.auth.user.id,
+        parse(z.object({ text: z.string().min(1).max(50000) }), request.body).text,
+      );
+    response.status(201).json(result);
+  }));
+
+  router.get("/job-descriptions", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    response.json(await service.list(request.auth.user.id));
+  }));
+
+  router.get("/job-descriptions/:jobDescriptionId", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    response.json(await service.get(request.auth.user.id, request.params.jobDescriptionId));
+  }));
+
+  router.post("/job-descriptions/:jobDescriptionId/extract", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const result = await service.startExtraction(
+      request.auth.user.id,
+      request.params.jobDescriptionId,
+      request.get("Idempotency-Key"),
+    );
+    response.status(202).json(result);
+  }));
+
+  router.post("/job-descriptions/:jobDescriptionId/extraction-retries", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    response.status(202).json(await service.retryExtraction(
+      request.auth.user.id,
+      request.params.jobDescriptionId,
+      request.get("Idempotency-Key"),
+    ));
+  }));
+
+  router.patch("/job-descriptions/:jobDescriptionId/text", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const input = parse(z.object({ correctedText: z.string().min(1).max(50000), version: z.number().int().min(0) }), request.body);
+    response.json(await service.saveCorrectedText(request.auth.user.id, request.params.jobDescriptionId, input));
+  }));
+
+  router.post("/job-descriptions/:jobDescriptionId/confirm", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const { version } = parse(z.object({ version: z.number().int().positive() }), request.body);
+    response.json(await service.confirmText(request.auth.user.id, request.params.jobDescriptionId, version));
+  }));
+
+  router.post("/job-descriptions/:jobDescriptionId/analyze", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const { correctedTextVersion } = parse(z.object({ correctedTextVersion: z.number().int().positive() }), request.body);
+    response.json(await service.analyze(
+      request.auth.user.id,
+      request.params.jobDescriptionId,
+      correctedTextVersion,
+      request.correlationId,
+      request.get("Idempotency-Key"),
+    ));
+  }));
+
+  router.get("/job-descriptions/:jobDescriptionId/analysis", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const query = parse(z.object({ analysisVersion: z.coerce.number().int().positive().optional() }), request.query);
+    response.json(await service.getAnalysis(request.auth.user.id, request.params.jobDescriptionId, query.analysisVersion));
+  }));
+
+  router.put("/job-descriptions/:jobDescriptionId/requirement-normalizations", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const input = parse(z.object({
+      analysisVersion: z.number().int().positive(),
+      mappingInputVersion: z.number().int().positive(),
+      items: z.array(z.object({
+        requirementId: z.uuid(),
+        topicId: z.uuid().nullable(),
+        reason: z.string().trim().min(2).max(500),
+      })).max(100),
+    }), request.body);
+    response.json(await service.saveNormalizations(request.auth.user.id, request.params.jobDescriptionId, input));
+  }));
+
+  router.post("/job-descriptions/:jobDescriptionId/matches", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const { analysisVersion } = parse(z.object({ analysisVersion: z.number().int().positive() }), request.body);
+    response.json(await service.match(
+      request.auth.user.id,
+      request.params.jobDescriptionId,
+      analysisVersion,
+      request.correlationId,
+      request.get("Idempotency-Key"),
+    ));
+  }));
+
+  router.get("/job-descriptions/:jobDescriptionId/matches", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const query = parse(z.object({ analysisVersion: z.coerce.number().int().positive().optional() }), request.query);
+    response.json(await service.getMatches(request.auth.user.id, request.params.jobDescriptionId, query.analysisVersion));
+  }));
+
+  router.post("/preparation-plans", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const input = parse(z.object({
+      jobDescriptionId: z.uuid(),
+      matchingVersion: z.string().min(1).max(100),
+      matchIds: z.array(z.uuid()).min(1).max(10),
+    }), request.body);
+    response.status(201).json(await service.createPlan(request.auth.user.id, input, request.correlationId));
+  }));
+
+  router.get("/preparation-plans/:planId", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    response.json(await service.getPlan(request.auth.user.id, request.params.planId));
+  }));
+
+  router.get("/preparation-plans", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    response.json(await service.listPlans(request.auth.user.id));
+  }));
+
+  return router;
+}

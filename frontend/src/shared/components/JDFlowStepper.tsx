@@ -2,14 +2,14 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Check } from '@phosphor-icons/react'
 
 const STEPS = [
-  { label: 'Tải JD', path: '/job-descriptions/new' },
-  { label: 'Kiểm tra', path: '/job-descriptions/demo-jd/review' },
-  { label: 'Mapping', path: '/job-descriptions/demo-jd/mapping' },
-  { label: 'Bộ câu hỏi', path: '/preparation-plans/demo-plan' },
+  { label: 'Tải JD' },
+  { label: 'Kiểm tra' },
+  { label: 'Mapping' },
+  { label: 'Bộ câu hỏi' },
 ]
 
 interface JDFlowStepperProps {
-  currentStep: 0 | 1 | 2 | 3
+  currentStep: 1 | 2 | 3 | 4
 }
 
 export default function JDFlowStepper({ currentStep }: JDFlowStepperProps) {
@@ -21,22 +21,21 @@ export default function JDFlowStepper({ currentStep }: JDFlowStepperProps) {
         {/* Mobile: compact label */}
         <div className="sm:hidden flex items-center gap-2 text-xs text-ink-muted">
           <span className="w-5 h-5 rounded-full bg-primary text-on-primary text-[10px] font-bold flex items-center justify-center shrink-0">
-            {currentStep + 1}
+            {currentStep}
           </span>
-          <span className="text-ink font-medium">{STEPS[currentStep].label}</span>
+          <span className="text-ink font-medium">{STEPS[currentStep - 1].label}</span>
           <span className="text-ink-muted">/ {STEPS.length} bước</span>
         </div>
 
         {/* Desktop: full stepper */}
         <div className="hidden sm:flex items-center gap-0 flex-1">
           {STEPS.map((step, i) => {
-            const done = i < currentStep
-            const current = i === currentStep
+            const done = i < currentStep - 1
+            const current = i === currentStep - 1
             return (
               <div key={step.label} className="flex items-center gap-0">
                 <button
-                  onClick={() => done && navigate(step.path)}
-                  className={`flex items-center gap-2 px-1 ${done ? 'cursor-pointer' : 'cursor-default'}`}
+                  className="flex cursor-default items-center gap-2 px-1"
                 >
                   <span
                     className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 transition-colors ${
@@ -64,7 +63,7 @@ export default function JDFlowStepper({ currentStep }: JDFlowStepperProps) {
 
                 {i < STEPS.length - 1 && (
                   <div className="flex items-center mx-3">
-                    <div className={`h-px w-8 transition-colors ${i < currentStep ? 'bg-ok' : 'bg-edge'}`} />
+                    <div className={`h-px w-8 transition-colors ${i < currentStep - 1 ? 'bg-ok' : 'bg-edge'}`} />
                   </div>
                 )}
               </div>

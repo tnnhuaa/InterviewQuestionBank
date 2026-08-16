@@ -1,6 +1,9 @@
 export function notFoundHandler(request, response) {
   response.status(404).json({
-    error: "not_found",
-    message: `Route ${request.method} ${request.originalUrl} was not found`,
+    code: "ROUTE_NOT_FOUND",
+    message: "Không tìm thấy chức năng được yêu cầu.",
+    correlationId: request.correlationId,
+    fieldErrors: {},
+    recovery: { kind: "NONE", retryable: false, retryAfterSeconds: null },
   });
 }

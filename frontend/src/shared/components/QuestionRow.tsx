@@ -1,60 +1,35 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { BookmarkSimple, CaretRight } from '@phosphor-icons/react'
-import type { Question } from '@/shared/data/mock'
-import StatusBadge from './StatusBadge'
+import { BookmarkSimple, CaretRight } from "@phosphor-icons/react";
+import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useApp } from "@/app/AppContext";
+import { questionsApi, type Question } from "@/shared/api/resources";
 
-const DIFFICULTY_CONFIG = {
-  easy: { label: 'Dễ', className: 'text-ok font-medium' },
-  medium: { label: 'Trung bình', className: 'text-notice-ink font-medium' },
-  hard: { label: 'Khó', className: 'text-danger font-medium' },
-}
+const difficulty = {
+  EASY: { label: "Dễ", className: "text-ok" },
+  MEDIUM: { label: "Trung bình", className: "text-notice-ink" },
+  HARD: { label: "Khó", className: "text-danger" },
+};
 
-interface QuestionRowProps {
-  question: Question
-  showStatus?: boolean
-}
-
-export default function QuestionRow({ question, showStatus = true }: QuestionRowProps) {
-  const [bookmarked, setBookmarked] = useState(question.bookmarked)
-  const navigate = useNavigate()
-  const diff = DIFFICULTY_CONFIG[question.difficulty]
-
-  return (
-    <div
-      className="group flex items-start gap-4 py-4 px-4 -mx-4 rounded-lg hover:bg-primary-soft/40 transition-colors cursor-pointer"
-      onClick={() => navigate(`/questions/${question.id}`)}
-    >
-      <div className="flex-1 min-w-0">
-        {question.source && (
-          <p className="text-[11px] text-ink-muted mb-1">
-            Hỏi tại {question.source} · {question.interviewType}
-          </p>
-        )}
-        <p className="text-sm font-medium text-ink leading-[22px] mb-2">{question.titleVi}</p>
-        <div className="flex items-center flex-wrap gap-1.5">
-          {question.tags.map(tag => (
-            <span key={tag} className="text-[11px] px-2 py-0.5 rounded-full bg-canvas-subtle text-ink-secondary border border-edge font-medium">
-              {tag}
-            </span>
-          ))}
-          <span className={`text-[11px] ${diff.className}`}>· {diff.label}</span>
-          {showStatus && question.status !== 'not-started' && (
-            <StatusBadge status={question.status} size="sm" />
-          )}
-        </div>
-      </div>
-      <div className="flex items-center gap-2 shrink-0 pt-0.5">
-        <span className="text-[11px] text-ink-muted hidden sm:block">{question.practiceCount} lượt luyện</span>
-        <button
-          className={`p-1.5 rounded hover:bg-canvas transition-colors ${bookmarked ? 'text-primary' : 'text-ink-muted group-hover:text-ink-secondary'}`}
-          onClick={e => { e.stopPropagation(); setBookmarked(!bookmarked) }}
-          aria-label={bookmarked ? 'Bỏ đánh dấu' : 'Đánh dấu'}
-        >
-          <BookmarkSimple aria-hidden size={16} weight={bookmarked ? 'fill' : 'regular'} />
-        </button>
-        <CaretRight aria-hidden size={16} className="text-ink-muted group-hover:text-primary transition-colors" />
-      </div>
+export default function QuestionRow({ question, showStatus = true }: { question: Question; showStatus?: boolean }) {
+  const navigate = useNavigate();
+  const { role } = useApp();
+  const [bookmarked, setBookmarked] = useState(question.bookmarked);
+  const mutation = useMutation({
+    mutationFn: (next: boolean) => questionsApi.progress(question.id, { bookmarked: next, status: question.practiceStatus }),
+    onMutate: (next) => { const previous = bookmarked; setBookmarked(next); return { previous }; },
+    onError: (_error, _next, context) => setBookmarked(context?.previous ?? question.bookmarked),
+  });
+  const config = difficulty[question.difficulty];
+  return <article className="group flex items-start gap-4 rounded-lg px-4 py-4 hover:bg-primary-soft/40">
+    <button type="button" className="min-w-0 flex-1 text-left" onClick={() => navigate(`/questions/${question.slug || question.id}`)}>
+      {question.source?.name && <p className="mb-1 text-[11px] text-ink-muted">Nguồn: {question.source.name}</p>}
+      <h2 className="mb-2 text-sm font-medium leading-[22px] text-ink">{question.title}</h2>
+      <div className="flex flex-wrap items-center gap-1.5">{question.topics.map((topic) => <span key={topic} className="rounded-full border border-edge bg-canvas-subtle px-2 py-0.5 text-[11px] text-ink-secondary">{topic}</span>)}<span className={`text-[11px] font-medium ${config.className}`}>· {config.label}</span>{showStatus && question.practiceStatus !== "NOT_STARTED" && <span className="rounded-full bg-ok-soft px-2 py-0.5 text-[11px] text-ok">{question.practiceStatus}</span>}</div>
+    </button>
+    <div className="flex shrink-0 items-center gap-2">
+      {role !== "public" && <button type="button" disabled={mutation.isPending} onClick={() => mutation.mutate(!bookmarked)} aria-label={bookmarked ? "Bỏ đánh dấu" : "Đánh dấu"} className={bookmarked ? "rounded p-1.5 text-primary" : "rounded p-1.5 text-ink-muted"}><BookmarkSimple aria-hidden size={16} weight={bookmarked ? "fill" : "regular"} /></button>}
+      <CaretRight aria-hidden size={16} className="text-ink-muted" />
     </div>
-  )
+  </article>;
 }

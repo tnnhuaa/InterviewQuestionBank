@@ -1,43 +1,23 @@
-import { useEffect, type ReactNode } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { AppProvider, useApp, type Role } from "@/app/AppContext";
 import DemoBar from "@/shared/components/DemoBar";
 
-function inferRole(pathname: string): Role | null {
+function requiredRole(pathname: string): Exclude<Role, "public"> | null {
   if (pathname.startsWith("/admin")) return "admin";
   if (pathname.startsWith("/mentor/")) return "mentor";
-  if (
-    pathname.startsWith("/student") ||
-    pathname.startsWith("/job-descriptions") ||
-    pathname.startsWith("/preparation-plans") ||
-    pathname.startsWith("/bookings") ||
-    pathname.startsWith("/sessions")
-  ) {
-    return "student";
-  }
-  if (pathname === "/homepage" || pathname === "/login") return "public";
+  if (pathname.startsWith("/student") || pathname.startsWith("/job-descriptions") || pathname.startsWith("/preparation-plans") || pathname.startsWith("/bookings") || pathname.startsWith("/sessions")) return "student";
   return null;
 }
 
-function RouteRoleSync({ children }: { children: ReactNode }) {
+function RouteAccess() {
   const { pathname } = useLocation();
-  const { role, setRole } = useApp();
-
-  useEffect(() => {
-    const routeRole = inferRole(pathname);
-    if (routeRole && routeRole !== role) setRole(routeRole);
-  }, [pathname, role, setRole]);
-
-  return children;
+  const { role, sessionLoading } = useApp();
+  const required = requiredRole(pathname);
+  if (sessionLoading) return <div className="grid min-h-screen place-items-center bg-canvas text-sm text-ink-secondary">Đang kiểm tra phiên đăng nhập…</div>;
+  if (required && role !== required && import.meta.env.VITE_ENABLE_DEMO_TOOLS !== "true") return <Navigate to="/login" replace state={{ returnTo: pathname }} />;
+  return <Outlet />;
 }
 
 export default function Root() {
-  return (
-    <AppProvider>
-      <RouteRoleSync>
-        {(import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEMO_TOOLS === "true") && <DemoBar />}
-        <Outlet />
-      </RouteRoleSync>
-    </AppProvider>
-  );
+  return <AppProvider>{import.meta.env.VITE_ENABLE_DEMO_TOOLS === "true" && <DemoBar />}<RouteAccess /></AppProvider>;
 }
