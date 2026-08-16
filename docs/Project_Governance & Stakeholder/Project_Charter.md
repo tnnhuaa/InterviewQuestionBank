@@ -4,7 +4,7 @@
 
 | Thuộc tính | Giá trị |
 | --- | --- |
-| Sponsor | Giảng viên phụ trách môn học (phê duyệt ở mốc Go/No-Go) |
+| Sponsor | Giảng viên Ngô Huy Biên và Ngô Ngọc Đăng Khoa (phê duyệt ở mốc Go/No-Go) |
 | Product Owner | Hưng - Vision, scope và backlog |
 | Project Manager / Scrum Master | Gia Thành - điều phối baseline, nguồn lực, tiến độ và rủi ro |
 | Nhóm thực hiện | Gia Thành, Hùng, Hưng, Trí, Luân, Tuấn Anh |

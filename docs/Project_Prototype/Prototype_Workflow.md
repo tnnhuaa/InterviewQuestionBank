@@ -2,7 +2,7 @@
 
 ## 1. Mục đích
 
-Prototype kiểm chứng ba luồng persona: Student đi từ một Job Description (JD) thực tế đến bộ câu hỏi phù hợp, luyện tập và nhận feedback; Mentor đi từ onboarding đến gửi feedback; Admin duyệt và xử lý ngoại lệ. Trọng tâm Proof of Concept (PoC) là kiểm chứng giả thuyết: hệ thống có thể giúp ứng viên chưa biết ôn gì chuyển từ ảnh JD sang một kế hoạch luyện tập có giải thích. Prototype ưu tiên logic, trạng thái, nội dung và usability; không dùng như bằng chứng rằng OCR, backend, security hoặc concurrency đã hoàn thành ở mức production.
+Prototype kiểm chứng ba luồng persona: Student đi từ một Job Description (JD) thực tế đến bộ câu hỏi phù hợp, luyện tập và nhận feedback; Mentor đi từ onboarding đến gửi feedback; Admin duyệt và xử lý ngoại lệ. Trọng tâm Proof of Concept (PoC) là kiểm chứng giả thuyết: hệ thống có thể giúp ứng viên chưa biết ôn gì chuyển từ một JD sang kế hoạch luyện tập có giải thích. Prototype ưu tiên logic, trạng thái, nội dung và usability; không dùng như bằng chứng rằng extraction/OCR, backend, security hoặc concurrency đã hoàn thành ở mức production.
 
 ## 2. Prototype narrative
 
@@ -12,7 +12,7 @@ An chuẩn bị ứng tuyển nhưng không biết nên ôn nội dung nào tron
 
 ### Future-state story
 
-An chụp JD Front-end Intern và gửi cho hệ thống. Sau khi kiểm tra nội dung OCR, An thấy các yêu cầu chính được mapping sang taxonomy và nhận bộ câu hỏi JavaScript/Front-end được xếp theo mức độ liên quan. An bắt đầu luyện, tìm mentor đã xác minh và chọn slot. Booking được xác nhận, An tham gia bằng link họp ngoài, nhận rubric và mở lại nhóm câu hỏi được mentor gợi ý.
+An dán hoặc tải lên một JD Front-end Intern. Sau khi kiểm tra nội dung được trích xuất trực tiếp hoặc qua OCR khi cần, An thấy các yêu cầu chính được mapping sang taxonomy và nhận bộ câu hỏi JavaScript/Front-end được xếp theo mức độ liên quan. An bắt đầu luyện, tìm mentor đã xác minh và chọn slot. Booking được xác nhận, An tham gia bằng link họp ngoài, nhận rubric và mở lại nhóm câu hỏi được mentor gợi ý.
 
 ### Màn hình đầu vào dùng chung
 
@@ -58,7 +58,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    I["Chụp hoặc tải ảnh JD"] --> O["OCR trích xuất nội dung"]
+    I["Dán JD hoặc tải một PDF/PNG/JPEG"] --> O["Trích xuất trực tiếp; OCR khi cần"]
     O --> V{"Student xác nhận nội dung?"}
     V -- "Chỉnh sửa / quét lại" --> O
     V -- "Xác nhận" --> M["Mapping yêu cầu JD với taxonomy"]
@@ -72,7 +72,7 @@ flowchart LR
 
 **Mục tiêu:** giảm rào cản bắt đầu cho Student chưa biết nên ôn nội dung nào.
 
-- Cho phép chụp ảnh hoặc tải ảnh JD; hỗ trợ một hoặc nhiều ảnh trong giới hạn PoC.
+- Cho phép dán tối đa 50.000 ký tự hoặc tải một PDF/PNG/JPEG tối đa 10 MB; PDF tối đa 5 trang.
 - Hướng dẫn ảnh rõ, đủ sáng, không bị cắt; hiển thị preview và cho phép thay/xóa ảnh trước khi gửi.
 - Nêu rõ định dạng, dung lượng và số trang được hỗ trợ; validation cụ thể khi file không hợp lệ.
 - Privacy notice trước khi gửi: khuyến nghị che email, số điện thoại và dữ liệu cá nhân không cần thiết.
@@ -84,10 +84,10 @@ flowchart LR
 
 **Mục tiêu:** để Student kiểm soát đầu vào trước khi hệ thống đưa ra đề xuất.
 
-- Hiển thị ảnh gốc cạnh nội dung OCR; text có thể chỉnh sửa.
+- Hiển thị nguồn JD cạnh nội dung được trích xuất; văn bản có thể chỉnh sửa và đoạn OCR có độ tin cậy thấp phải được đánh dấu.
 - Đánh dấu đoạn có độ tin cậy thấp hoặc không đọc được, không âm thầm tự điền.
 - CTA “Quét lại” và “Xác nhận nội dung”; không cho mapping khi nội dung rỗng hoặc quá ít thông tin.
-- Nếu JD gồm nhiều ảnh, giữ đúng thứ tự và cảnh báo nội dung có thể bị trùng.
+- Với PDF nhiều trang trong giới hạn hỗ trợ, giữ đúng thứ tự trang và cảnh báo nội dung có thể bị trùng.
 - Cho phép bỏ qua/xóa dữ liệu ảnh theo chính sách lưu trữ của PoC.
 
 ### Screen S13 — Mapping yêu cầu JD
@@ -327,7 +327,7 @@ flowchart LR
 
 | Task | Persona | Success |
 |---|---|---|
-| Chụp/tải JD và xác nhận OCR | Student | Hoàn tất không trợ giúp; phát hiện và sửa được lỗi OCR quan trọng |
+| Nhập JD và xác nhận văn bản trích xuất | Student | Hoàn tất không trợ giúp; phát hiện và sửa được lỗi trích xuất/OCR quan trọng |
 | Mapping JD thành chủ đề ôn tập | Student | Hiểu yêu cầu nào đã/chưa được mapping và sửa được mapping sai |
 | Nhận bộ câu hỏi từ JD | Student | Chọn được câu để bắt đầu luyện và giải thích được vì sao câu đó được đề xuất |
 | Tìm câu hỏi Front-end/JavaScript | Student | Đúng result trong ≤2 phút, không trợ giúp |
@@ -338,14 +338,14 @@ flowchart LR
 | Gửi feedback rubric | Mentor | Đủ strength/weakness/next action |
 | Duyệt mentor | Admin | Quyết định có reason và audit |
 
-Thu completion rate, time-on-task, error, confidence và qualitative evidence. Mục tiêu Student task completion: ≥80%. Với core PoC, đo thêm tỷ lệ OCR cần sửa, tỷ lệ mapping được Student chấp nhận và mức độ hữu ích của bộ câu hỏi (target khảo sát đề xuất: ≥4/5).
+Thu completion rate, time-on-task, error, confidence và qualitative evidence. Mục tiêu Student task completion: ≥80%. Với core PoC, đo thêm tỷ lệ trích xuất/OCR cần sửa, tỷ lệ mapping được Student chấp nhận và mức độ hữu ích của bộ câu hỏi (target khảo sát đề xuất: ≥4/5).
 
 ## 8. Prototype handoff và traceability
 
 | Screen group | Stories |
 |---|---|
 | S01–S03 | US-03–06 |
-| S11–S14 | PoC-JD-01 (cần bổ sung vào Product Backlog); liên quan US-03–05 |
+| S11–S14 | US-24–US-29; BR-12–BR-17; AC-24–AC-29 |
 | S04–S08 | US-10–14,19 |
 | S09–S10 | US-16–17 |
 | M01–M04 | US-07–09 |
@@ -354,4 +354,4 @@ Thu completion rate, time-on-task, error, confidence và qualitative evidence. M
 
 Mỗi frame trong công cụ thiết kế và tên file trong `img/` dùng cùng screen ID, theo dạng `<SCREEN-ID>-<screen-name>.png`. Hai frame dùng chung S14 là hai trạng thái truy cập của cùng màn hình: kết quả vừa được tạo và bộ câu hỏi đã lưu trong “JD của tôi”. Hai màn hình dùng chung trước khi vào flow persona được đặt tên `G01-homepage.png` và `G02-login.png`.
 
-`PoC-JD-01` cần được Product Owner formalize thành user story và acceptance criteria trước khi đưa vào release backlog. Việc đề xuất trong prototype là mapping dựa trên taxonomy/rule có thể giải thích; nếu dùng OCR service hoặc ML ở implementation thật thì cần change-scope, privacy và quality review riêng.
+Luồng S11–S14 đã được Product Owner formalize trong US-24–US-29 và AC-24–AC-29. Việc đề xuất trong prototype là mapping dựa trên taxonomy/rule có thể giải thích; nếu dùng OCR service ngoài hoặc ML ở implementation thật thì cần change-scope, privacy và quality review riêng.

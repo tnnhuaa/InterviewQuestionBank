@@ -20,12 +20,12 @@ Reserve bảo vệ discovery, review, test, defect, tài liệu, học công ngh
 
 | Thành viên | Capacity danh nghĩa | Ownership chính | Hỗ trợ / kiểm tra chéo |
 | --- | ---: | --- | --- |
-| Gia Thành | 128 giờ | PM, plan, risk, cost/time/resource, release coordination | Review requirement, UAT, documentation |
-| Tuấn Anh | 128 giờ | Trưởng nhóm, governance, scope review, stakeholder alignment | Review chất lượng delivery, issue escalation và priority quyết định |
-| Hùng | 128 giờ | UX research, workflow, clickable prototype, usability evidence | UI acceptance và accessibility |
-| Hưng | 128 giờ | PO/BA, scope, backlog, acceptance criteria, content/business rule | Discovery và UAT acceptance |
-| Trí | 128 giờ | E2E PoC, seed data, integration tests, technical risk evidence | Core flow implementation |
-| Luân | 128 giờ | Architecture, ADR, stack, security/consistency/reliability design | PoC technical review |
+| Gia Thành | 128 giờ | PM/Scrum Master, initiation & estimation; plan, risk, cost/time/resource, release coordination | Review requirement, UAT, documentation |
+| Tuấn Anh | 128 giờ | Trưởng nhóm / leadership & governance; scope review, stakeholder alignment | Review chất lượng delivery, issue escalation và priority quyết định |
+| Hùng | 128 giờ | UI/UX; research, workflow, clickable prototype, usability evidence | UI acceptance và accessibility |
+| Hưng | 128 giờ | Product Owner/BA; scope, backlog, acceptance criteria, content/business rule | Discovery và UAT acceptance |
+| Trí | 128 giờ | PoC/E2E; seed data, integration tests, technical risk evidence | Core flow implementation |
+| Luân | 128 giờ | Architecture/technical lead; ADR, stack, security/consistency/reliability design | PoC technical review |
 
 Mỗi người chịu trách nhiệm deliverable được giao trong WBS/backlog; ownership của Product, Architecture, Quality, Security/Privacy và Release không được để trống. Khi bắt đầu build MVP, các vai trò front-end, back-end, QA, DevOps và content được phân bổ theo work package thay vì giả định một người cho một chức danh cố định.
 

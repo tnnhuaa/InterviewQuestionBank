@@ -6,7 +6,7 @@
 | Ngày quyết định | 15/08/2026 |
 | Người chịu trách nhiệm | Luân — Architecture/Technology Stack |
 | Người cần xác nhận bằng PoC | Trí — End-to-End PoC |
-| Liên quan | US-24–30 dự kiến; JD intake, analysis, matching, preparation plan |
+| Liên quan | US-24–US-30; JD intake, analysis, matching, preparation plan |
 
 ## 1. Bối cảnh
 
@@ -47,7 +47,7 @@ Các constraint của PoC:
 - MVP/pilot dùng private object storage sau cùng adapter; PostgreSQL chỉ giữ private reference và metadata cần thiết.
 - File extraction dùng PostgreSQL-backed job với trạng thái `PENDING`, `PROCESSING`, `SUCCEEDED`, `FAILED`, attempt/error class và `extraction_version`. Pasted text không tạo extraction job. PoC một instance có thể chạy worker cùng backend process.
 - Kết quả luôn đi qua manual correction. `analyze` chỉ nhận `corrected_text` đã xác nhận và expected text version.
-- Supported PoC input: pasted text, PDF, PNG, JPEG; tối đa 10 MB/file. Giới hạn page, language pack và timeout phải được chốt trong PoC README theo corpus pilot.
+- Đầu vào PoC nhận tối đa 50.000 ký tự văn bản dán hoặc một PDF/PNG/JPEG tối đa 10 MB; PDF tối đa 5 trang, PNG/JPEG là một ảnh. OCR nội bộ hỗ trợ tiếng Việt/Anh, tối đa 2 tác vụ đồng thời/tiến trình, hết hạn 60 giây và tối đa 2 lần chạy tự động; luôn có dán/sửa thủ công làm dự phòng.
 
 ## 4. Các phương án question matching
 
@@ -62,7 +62,7 @@ Các constraint của PoC:
 1. JD Analysis đọc `corrected_text`, phát hiện role, seniority, skill, technology và requirement bằng dictionary/rule set có version.
 2. Alias được canonicalize về active taxonomy, ví dụ `ReactJS → React`; alias không biết được ghi nhận là unmapped thay vì tự tạo topic.
 3. Candidate Question chỉ lấy từ Question `PUBLISHED` và topic/position active.
-4. Rule score 0–100 gồm các tín hiệu có cấu hình/version: exact topic/alias match, requirement keyword coverage, role/seniority fit và difficulty fit. Trọng số cụ thể là configuration item được review cùng golden dataset.
+4. Rule score 0–100 gồm exact topic/alias match 40 điểm, requirement keyword coverage 30 điểm, role fit 15 điểm và seniority/difficulty fit 15 điểm. Chỉ Question đạt ít nhất 60 điểm được chọn; trả tối đa 10 câu/JD và 3 câu/yêu cầu. Các trọng số, ngưỡng và giới hạn là configuration item có version và được review cùng golden dataset.
 5. Tie được sort deterministic theo score, taxonomy priority và question ID.
 6. Mỗi `JDQuestionMatch` lưu requirement/source span, normalized topic, question, score, reason template và `matching_version`. Reason được dựng từ rule evidence, không sinh tự do bằng AI.
 7. `matching_version` định danh tối thiểu taxonomy version, alias version và scoring-rule version. Rerun với version mới tạo snapshot mới; plan/booking cũ vẫn truy được version đã dùng.

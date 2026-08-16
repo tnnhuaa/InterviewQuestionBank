@@ -405,7 +405,7 @@ Một slot có thể có nhiều booking `PENDING`, nhưng partial unique index 
 - Private: email/contact, JD text/file, requirements, preparation plan, meeting link, booking goal, feedback và progress.
 - Restricted: verification evidence, moderation note, security audit.
 - Không log credential, token, raw JD text, original filename, meeting secret hoặc feedback text đầy đủ.
-- PoC chỉ nhận pasted text, PDF, PNG và JPEG; tối đa 10 MB/file, giới hạn số trang và thời gian xử lý bằng cấu hình. Kiểm tra magic bytes/MIME, không tin extension và không thực thi macro/script/embedded attachment.
+- PoC chỉ nhận tối đa 50.000 ký tự văn bản dán hoặc một PDF/PNG/JPEG tối đa 10 MB; PDF tối đa 5 trang, PNG/JPEG là một ảnh. OCR nội bộ hỗ trợ tiếng Việt/Anh, tối đa 2 tác vụ đồng thời/tiến trình, hết hạn 60 giây và tối đa 2 lần chạy tự động. Kiểm tra magic bytes/MIME, không tin extension và không thực thi macro/script/embedded attachment.
 - Trong PoC, original JD file nằm trong temporary private storage sau adapter và được xóa khi extraction hoàn tất hoặc chậm nhất 24 giờ. Trong MVP/pilot, adapter dùng private object storage với opaque ID; chỉ ingestion/worker có quyền đọc. Student không nhận durable file URL và Mentor không được xem original file mặc định.
 - Extracted/corrected text, requirement, match và plan thuộc Student. Draft không hoạt động quá 90 ngày được đưa vào cleanup; xóa JD/account phải cascade hoặc anonymize artefact liên quan theo policy đã kiểm thử. Các mốc này là baseline PoC và cần privacy/legal review trước pilot thật.
 - Mentor chỉ xem corrected text, topic/question và mục tiêu tối thiểu qua booking mình tham gia; không nhận original file hoặc metadata không cần thiết. Unrelated user bị default-deny.

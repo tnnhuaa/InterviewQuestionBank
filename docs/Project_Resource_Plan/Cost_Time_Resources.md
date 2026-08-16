@@ -7,8 +7,8 @@
 | Start / finish | 29/06/2026-23/08/2026 |
 | Thời lượng | 8 tuần, 6 giai đoạn theo Project Charter |
 | Team / capacity | 6 người x 16 giờ/tuần x 8 tuần = 768 giờ danh nghĩa; khoảng 653 giờ cam kết sau reserve 15% |
-| Estimate điều hành | Bottom-up + Three-point: 527 giờ expected, 606 giờ sau contingency 15% (baseline 8 tuần) |
-| Cross-check | Top-down parametric Count-Compute + structured expert judgment: 565 giờ, 650 giờ sau contingency 15% (dùng làm guardrail; không phải analogous vì chưa có comparable-project actuals) |
+| Estimate điều hành | Bottom-up + Three-point: 527 giờ expected, 606 giờ sau contingency 15%; đang dựa trên 20 Must story cũ và phải cập nhật cho 27 story/134 SP |
+| Cross-check | Top-down parametric Count-Compute + structured expert judgment: 565 giờ, 650 giờ sau contingency 15%; đang dựa trên 20 Must story cũ và phải cập nhật cho 27 story/134 SP |
 | Cash budget ceiling | **1.125.000 VND** |
 | Labor value tham chiếu | 606 giờ x 50.000 VND/giờ = **30.300.000 VND** |
 | Total economic planning value | **31.425.000 VND** (= cash + labor value) |
@@ -16,6 +16,8 @@
 Labor value chỉ dùng để so sánh phương án và không phải khoản nhóm phải chi. Đơn giá 50.000 VND/giờ là **giả định học thuật thống nhất của nhóm**, không phải báo giá thị trường hay lương thực tế; phải thay bằng báo giá/đơn giá được Sponsor chấp nhận nếu dự án chuyển thành triển khai thương mại.
 
 Để giữ cửa sổ 8 tuần, baseline chỉ bao gồm core loop JD intake, extraction/OCR, requirement analysis, question mapping, preparation plan, self-practice hoặc booking mentor, feedback và các kiểm soát kỹ thuật bắt buộc. PM/PO phải dời Should/Could và mọi hạng mục ngoài core loop; thay đổi làm forecast vượt 653 giờ phải được Sponsor/PO phê duyệt.
+
+Backlog hiện có 27 story R1 Bắt buộc với 134 SP. Capacity 653 giờ vẫn là ràng buộc kế hoạch, nhưng 606/650 giờ chưa phải cam kết cho backlog hiện tại cho đến khi Nhóm phát triển hoàn tất Planning Poker, truy vết từng story vào WBS/PERT và cập nhật cả hai estimate độc lập.
 
 ## 2. Lịch và tolerance
 

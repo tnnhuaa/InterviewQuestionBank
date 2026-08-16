@@ -6,6 +6,8 @@ Tài liệu so sánh hai estimate độc lập cho **baseline 8 tuần**: core l
 
 Để giữ deadline 8 tuần, baseline chỉ nhận các Must story phục vụ core loop; Should/Could và hạng mục không cần cho pilot phải được dời sau release. PM/PO phải re-estimate và rebaseline nếu có thay đổi scope.
 
+**Trạng thái đồng bộ backlog:** các phép tính dưới đây dùng 20 Must story tại thời điểm inception. Product Backlog hiện có 27 story R1 Bắt buộc với 134 SP; vì vậy 606/650 giờ chỉ là working forecast lịch sử và phải được cập nhật bằng Planning Poker, truy vết WBS/PERT và hai phép ước lượng độc lập trước khi cam kết phát hành.
+
 ## 2. Dữ liệu đầu vào và giả định chung
 
 | Dữ liệu / giả định | Giá trị | Nguồn |
@@ -73,7 +75,7 @@ Các dòng PERT được làm tròn đến giờ gần nhất để review; tổ
 
 Chênh lệch planning estimate là **44 giờ (7,3% so với bottom-up)**. Top-down cao hơn vì rate theo story và complexity factor rộng cho booking/security/reliability tạo guardrail bảo thủ; bottom-up tách work package nên bỏ bớt double counting, nhưng còn rủi ro omission và phụ thuộc độ trưởng thành của backlog/architecture.
 
-**Quyết định:** dùng **606 giờ Bottom-up + Three-point** làm working baseline cho core loop 8 tuần vì có traceability đến epic/work package. Dùng **650 giờ Top-down parametric** làm guardrail độc lập. Không được suy diễn 47 giờ buffer là capacity cho scope mới; thay đổi phải cập nhật WBS/PERT, top-down count và được PO/Sponsor phê duyệt trước Go.
+**Quyết định tại thời điểm inception:** dùng **606 giờ Bottom-up + Three-point** làm working forecast cho core loop 8 tuần vì có traceability đến epic/work package; dùng **650 giờ Top-down parametric** làm guardrail độc lập. Hai số này chưa phải baseline cam kết cho backlog 27 story/134 SP. Không được suy diễn 47 giờ buffer là capacity cho scope mới; lần re-estimate phải cập nhật WBS/PERT, top-down count và được PO/Sponsor phê duyệt trước Go.
 
 ## 6. Kế hoạch giảm bất định
 
