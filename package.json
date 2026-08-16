@@ -1,0 +1,29 @@
+{
+  "name": "interview-question-bank",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail --names api,web \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "format": "prettier --write package.json README.md .github frontend backend",
+    "format:check": "prettier --check package.json README.md .github frontend backend",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset",
+    "db:push": "supabase db push",
+    "db:status": "supabase migration list"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "prettier": "^3.6.2",
+    "supabase": "^2.39.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
