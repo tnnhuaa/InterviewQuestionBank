@@ -31,17 +31,17 @@ flowchart LR
 **Mục tiêu:** bắt đầu bằng JD cụ thể thay vì yêu cầu người dùng tự chọn topic.
 
 - Tab/choice cho paste text và upload file.
-- Hiển thị baseline PoC: PDF/PNG/JPEG, tối đa 10 MB/file; số trang, language pack và timeout lấy từ cấu hình đã được phê duyệt.
+- Hiển thị: paste tối đa 50.000 ký tự hoặc một PDF/PNG/JPEG tối đa 10 MB; PDF tối đa 5 trang; OCR hỗ trợ tiếng Việt/Anh.
 - Privacy notice: mục đích xử lý, ai có thể xem, retention/deletion link.
 - File/text summary trước submit; chống submit lặp.
 - State: idle, selected, validating, uploading, rejected và processing.
-- Error riêng cho empty, unsupported, corrupt/encrypted, over-limit hoặc processing failure.
+- Error riêng cho empty, multi-file, unsupported, corrupt/encrypted, >10 MB, PDF >5 trang hoặc processing failure.
 
 ### P02 — Kiểm tra và xác nhận text
 
 **Mục tiêu:** Student kiểm soát input được dùng cho analysis.
 
-- Nêu extraction method/status: pasted/direct extraction/OCR; OCR không được mô tả như toàn bộ analysis.
+- Nêu extraction method/status: pasted/direct extraction/internal OCR VI/EN; job có timeout 60 giây và OCR không được mô tả như toàn bộ analysis.
 - Editable text area, original-file reference và cảnh báo đoạn nghi ngờ nếu có evidence.
 - CTA “Xác nhận và phân tích”; analysis bị chặn khi text chưa xác nhận.
 - Khi sửa một confirmed version, giải thích requirement/match/plan cũ cần regenerate.
@@ -53,7 +53,7 @@ flowchart LR
 
 - Summary position, seniority và requirement được phát hiện.
 - Mỗi requirement giữ raw evidence và normalized topic; item unmapped hiển thị coverage gap thay vì gán topic giả.
-- Mỗi Question đề xuất hiển thị title, topic, difficulty, requirement nguồn và match reason; không hứa chắc xuất hiện trong phỏng vấn.
+- Mỗi Question score ≥60 hiển thị title, topic, difficulty, requirement nguồn, match reason và version; tối đa 10/JD và 3/requirement, không hứa chắc xuất hiện trong phỏng vấn.
 - Chỉ Question Published; có empty state khi không đủ Question relevant.
 - Student chọn/bỏ item, bookmark, đặt trạng thái Not started/Practicing/Confident và tạo/cập nhật preparation plan.
 - CTA trên cùng plan: “Tự luyện” hoặc “Luyện với mentor”.
@@ -67,7 +67,7 @@ flowchart LR
 - Mentor detail và slot có timezone; empty state phân biệt không có mentor với không có slot phù hợp.
 - Booking form giữ mentor/slot, JD/preparation-plan reference, selected topic/question và goal.
 - Chỉ chia sẻ context tối thiểu; original file không tự động chia sẻ với Mentor.
-- Hiển thị policy hủy/reschedule/no-show trước submit; giá/payment không thuộc MVP.
+- Hiển thị cutoff hủy/reschedule 12 giờ, tối đa 2 proposal và no-show grace 15 phút trước submit; giá/payment không thuộc MVP.
 - Booking state nằm trong cùng view bằng timeline/tab: Pending, Confirmed, Reschedule proposed, Rejected, Cancelled.
 - Validation và retry không được tạo booking trùng.
 
@@ -76,8 +76,9 @@ flowchart LR
 **Mục tiêu:** hoàn thành buổi luyện và đóng vòng lặp về plan.
 
 - Booking summary, local time, Mentor, topic và goal.
-- Meeting link chỉ hiện khi Confirmed và đúng actor; provider failure có fallback rõ.
-- Completion/no-show action chỉ cho actor được policy cho phép.
+- Mentor tạo meeting link; link chỉ hiện cho hai bên khi Confirmed đến 24 giờ sau session và chỉ sửa thông thường trước 2 giờ. Khi provider lỗi, Mentor có tối đa 15 phút để đưa alternate link; nếu vẫn không có link dùng được thì phải reschedule rõ ràng.
+- Khi R1 Stretch US-22 được chọn, reminder 24 giờ và 1 giờ hiển thị theo timezone người dùng; reschedule/cancel xóa reminder cũ.
+- Mentor mark Completed sau end time; Student có 24 giờ dispute. Dispute giữ review ở trạng thái chưa công bố cho đến khi Admin giải quyết và ghi audit. No-show cần report sau 15 phút và Admin/counterpart confirmation.
 - Feedback view: rubric, strength, weakness, evidence và next action.
 - CTA áp dụng next action vào preparation plan hoặc mở Question liên quan.
 - Review Mentor chỉ sau Completed và chỉ một lần.
@@ -152,13 +153,13 @@ flowchart LR
 
 | Task | Persona | Success signal |
 |---|---|---|
-| Dán hoặc upload JD và hiểu privacy/validation | Student | Chọn đúng input và biết file nào được chấp nhận |
+| Dán hoặc upload JD và hiểu privacy/validation | Student | Biết giới hạn 50k/PDF-PNG-JPEG/10 MB/5 trang và original file xóa sau 24 giờ |
 | Kiểm tra/sửa/confirm text | Student | Hiểu đây là text dùng cho analysis và biết cách sửa lỗi |
 | Giải thích một Question được đề xuất | Student | Chỉ ra được requirement nguồn, topic và match reason |
 | Xử lý requirement không map/không có Question | Student | Hiểu coverage gap, không tưởng hệ thống đã bao phủ đầy đủ |
 | Tạo plan và bắt đầu tự luyện | Student | Chọn item và mở đúng Question |
 | Chuyển plan sang Mentor booking | Student | Booking đúng Mentor/slot và có context phù hợp |
-| Hiểu Pending/Confirmed/Reschedule | Student/Mentor | Chọn đúng hành động/next state |
+| Hiểu Pending/Confirmed/Reschedule | Student/Mentor | Chọn đúng hành động theo cutoff 12 giờ, tối đa 2 proposal và no-show grace 15 phút |
 | Xem booking context và gửi feedback | Mentor | Chỉ thấy dữ liệu cần thiết; feedback đủ ba phần |
 | Áp dụng feedback vào plan | Student | Next action quay về đúng plan/topic/Question |
 | Duyệt taxonomy/Question/Mentor | Admin | Quyết định có reason và không lộ JD private content |

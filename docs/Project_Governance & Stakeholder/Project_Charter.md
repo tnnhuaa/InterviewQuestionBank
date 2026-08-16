@@ -4,14 +4,17 @@
 
 | Thuộc tính | Giá trị |
 |---|---|
-| Sponsor | Giảng viên — xác nhận danh tính/acceptance record còn thiếu |
-| Product Owner | Hưng |
-| Project Manager/Scrum Master | Gia Thành |
-| Team Lead/Integration Lead | Tuấn Anh |
+| Sponsor | Giảng viên Ngô Huy Biên và Ngô Ngọc Đăng Khoa |
+| PM/Scrum Master, initiation & estimation | Gia Thành — charter, nguồn lực, ước lượng, tiến độ và rủi ro |
+| Trưởng nhóm / leadership & governance | Tuấn Anh — điều phối nhóm, phê duyệt phạm vi/ưu tiên, hỗ trợ escalation và theo dõi độ sẵn sàng delivery |
+| UI/UX | Hùng — clickable prototype, workflow và bằng chứng usability |
+| Product Owner/BA | Hưng — Vision & Scope, Product Backlog, acceptance criteria và Future-State Workflow |
+| PoC/E2E | Trí — PoC core flow, dữ liệu seed, test và bằng chứng rủi ro kỹ thuật |
+| Architecture/technical lead | Luân — technology stack, ADR, architecture và hỗ trợ kỹ thuật cho PoC |
 | Nhóm thực hiện | Gia Thành, Hùng, Hưng, Trí, Luân, Tuấn Anh |
-| Phiên bản | 0.4 |
+| Phiên bản | 1.0 — planning baseline |
 | Ngày | 15/08/2026 |
-| Trạng thái | Draft — chưa phê duyệt baseline |
+| Trạng thái | Planning baseline đã chốt; formal signatures pending |
 
 ## 2. Mục đích dự án
 
@@ -34,7 +37,7 @@ Interview Practice Platform giúp ứng viên chuyển một Job Description (JD
 | Feedback có giá trị | Ít nhất 90% booking hoàn thành có điểm mạnh, điểm yếu và hành động tiếp theo |
 | Chất lượng kỹ thuật | 100% critical workflow pass; không còn defect Critical/High trước UAT |
 
-Mục tiêu số lượng người dùng, mentor và booking tuyệt đối chưa được baseline; Product Owner/Research phải chốt trong PD-01 trước khi tuyển mẫu pilot.
+Pilot dùng 20 JD Front-end Intern/Junior (12 calibration, 8 blind), 12 Student, 4 Mentor Approved với ít nhất 3 slot/người và 12 booking hợp lệ; mục tiêu tối thiểu 10 Confirmed và 8 Completed.
 
 ## 5. Phạm vi cấp cao
 
@@ -78,7 +81,7 @@ Mục tiêu số lượng người dùng, mentor và booking tuyệt đối chư
 | Marketplace complete | 85% | Luồng mentor/booking/feedback end-to-end hoạt động |
 | UAT and release | 100% | Critical tests pass, UAT ký nhận, deployment sẵn sàng |
 
-Lịch đề xuất là 12 tuần, từ 17/08/2026 đến 08/11/2026. Capacity planning dùng 6 thành viên × 16 giờ/tuần = 1.152 giờ danh nghĩa, khoảng 979 giờ sau reserve 15%; lịch chỉ trở thành commitment sau khi scope JD-first được re-estimate và Sponsor/team chấp nhận.
+Planning baseline là 8 tuần, từ 29/06/2026 đến 23/08/2026, với 6 thành viên × 16 giờ/tuần = 768 giờ danh nghĩa và khoảng 653 giờ sau reserve 15%. Sprint commitment vẫn chỉ được lập sau Planning Poker, cập nhật hai estimate độc lập theo 27 câu chuyện Bắt buộc và velocity-range review.
 
 ## 7. Stakeholder chính
 
@@ -86,20 +89,32 @@ Lịch đề xuất là 12 tuần, từ 17/08/2026 đến 08/11/2026. Capacity p
 |---|---|
 | Sponsor/giảng viên | Phê duyệt charter, baseline và thay đổi lớn |
 | Product Owner | Quyết định ưu tiên, acceptance và release |
-| Team Lead | Điều phối thực thi liên luồng, tích hợp code/tài liệu và release readiness |
+| PM/Scrum Master | Điều phối kế hoạch, ước lượng, tiến độ, rủi ro và Scrum events |
+| Trưởng nhóm / leadership & governance | Điều phối thực thi liên luồng, phê duyệt phạm vi/ưu tiên, tích hợp code/tài liệu và release readiness |
 | Nhóm phát triển | Phân tích, thiết kế, xây dựng, kiểm thử và vận hành |
 | Sinh viên/ứng viên | Người dùng/customer chính; cung cấp discovery và UAT |
 | Mentor/HR/người phỏng vấn | Cung cấp dịch vụ, review nội dung và feedback |
 | Nhà cung cấp ngoài | Hosting, database/storage, email, công cụ họp và OCR adapter nếu được chọn |
+
+### 7.1 Phân công theo Charter
+
+| Thành viên | Vai trò chính | Trách nhiệm / đầu ra |
+|---|---|---|
+| Gia Thành | PM/Scrum Master, initiation & estimation | Charter, Resource Plan, Cost-Time-Resources, hai estimate độc lập và theo dõi baseline |
+| Hùng | UI/UX | Clickable prototype, workflow và bằng chứng usability |
+| Hưng | Product Owner/BA | Vision & Scope, Product Backlog, acceptance criteria và Future-State Workflow |
+| Trí | PoC/E2E | PoC core flow, dữ liệu seed, test và bằng chứng rủi ro kỹ thuật |
+| Luân | Architecture/technical lead | Technology stack, ADR, architecture và hỗ trợ kỹ thuật cho PoC |
+| Tuấn Anh | Trưởng nhóm / leadership & governance | Điều phối nhóm, phê duyệt scope/priority, hỗ trợ escalation, theo dõi delivery readiness; đồng thời hỗ trợ repository skeleton, tích hợp và kiểm soát tài liệu |
 
 ## 8. Thẩm quyền và governance
 
 ### 8.1 Thẩm quyền
 
 - Product Owner ưu tiên backlog và chấp nhận story dựa trên acceptance criteria.
-- Project Manager/Scrum Master điều phối kế hoạch, risk, dependency và escalation.
-- Team Lead điều phối WIP kỹ thuật, tích hợp giữa các workstream, PR/code review, configuration/document control và readiness trước merge/release.
-- Team Lead không thay Product Owner quyết định scope/acceptance, không thay Project Manager sở hữu lịch/risk và không tự thay đổi ADR do Architecture owner quản lý.
+- PM/Scrum Master điều phối kế hoạch, risk, dependency và escalation.
+- Trưởng nhóm điều phối nhóm và WIP kỹ thuật, phê duyệt scope/priority ở cấp leadership & governance, hỗ trợ escalation, tích hợp giữa các workstream, PR/code review, configuration/document control và readiness trước merge/release.
+- Product Owner vẫn sắp thứ tự Product Backlog và chấp nhận story; PM/Scrum Master sở hữu lịch/risk; Architecture/technical lead sở hữu ADR. Phê duyệt scope/priority của Trưởng nhóm phải được ghi cùng quyết định PO/PM tương ứng, không thay thế các quyền chuyên môn này.
 - Nhóm kỹ thuật quyết định cách triển khai trong giới hạn architecture, security và scope đã duyệt.
 - Admin pilot có quyền duyệt mentor, nội dung và xử lý report theo policy.
 
@@ -119,7 +134,7 @@ Mọi thay đổi ảnh hưởng MVP, lịch, ngân sách hoặc dữ liệu nh�
 
 ## 10. Ràng buộc
 
-- Lịch 12 tuần và khoảng 979 giờ capacity của sáu thành viên đang ở trạng thái proposed; backlog JD-first 134 initial SP phải được re-estimate/rebaseline và ngân sách cần Sponsor phê duyệt chính thức.
+- Lịch 8 tuần, khoảng 653 giờ capacity và cash ceiling 1.125.000 VNĐ là planning baseline đã chốt; backlog JD-first 134 initial SP vẫn phải được Development Team re-estimate trước sprint commitment.
 - Nội dung phải tôn trọng bản quyền và lưu provenance.
 - File/text JD, requirement/mapping/plan, hồ sơ, booking, link họp và feedback cần kiểm soát truy cập, retention và deletion.
 - OCR phụ thuộc chất lượng file; mapping chỉ được đánh giá trong taxonomy và bộ JD pilot đã xác định.
@@ -143,8 +158,8 @@ Mọi thay đổi ảnh hưởng MVP, lịch, ngân sách hoặc dữ liệu nh�
 
 | Vai trò | Họ tên | Quyết định | Ngày/Chữ ký |
 |---|---|---|---|
-| Sponsor | Giảng viên phụ trách môn học | Approve/Reject — pending | Pending signature |
-| Product Owner | Hưng | Approve/Reject — pending | Pending signature |
+| Sponsor | Ngô Huy Biên; Ngô Ngọc Đăng Khoa | Formal approval pending | Pending signature |
+| Product Owner | Hưng | Planning baseline recorded | Pending signature |
 | Project Manager | Gia Thành | Accept responsibility — pending | Pending signature |
-| Team Lead | Tuấn Anh | Accept integration/document-control responsibility — pending | Pending signature |
+| Trưởng nhóm / leadership & governance | Tuấn Anh | Accept leadership/governance, integration và document-control responsibility — pending | Pending signature |
 

@@ -52,7 +52,7 @@ Kiến trúc MVP dùng **React SPA/Vite/Tailwind**, **Node.js/Express REST API**
 | ADR-001 | React/Vite/Tailwind + Node.js/Express + PostgreSQL modular monolith | Baseline của Architecture owner, khớp năng lực nhóm | Accepted for PoC |
 | ADR-002 | PostgreSQL transaction/lock/constraint cho booking | Chống double booking tại source of truth | Pending PoC evidence |
 | ADR-003 | Transactional outbox + worker | Provider failure không làm mất booking | Pending PoC evidence |
-| [ADR-004](https://github.com/tnnhuaa/InterviewQuestionBank/blob/54e1113113f6ada9c0ecec565eb8f883966d18f9/docs/Project_Architecture/ADR/ADR-004-JD-Processing-and-Question-Matching.md) | Direct extraction trước; internal OCR fallback; versioned rule-based matching | Ít hạ tầng, giải thích và kiểm thử được | Accepted for PoC; Proposed for MVP |
+| [ADR-004](https://github.com/tnnhuaa/InterviewQuestionBank/blob/54e1113113f6ada9c0ecec565eb8f883966d18f9/docs/Project_Architecture/ADR/ADR-004-JD-Processing-and-Question-Matching.md) | Direct extraction trước; internal VI/EN OCR fallback; versioned 40/30/15/15 rule matching | Ít hạ tầng, giải thích và kiểm thử được | Accepted pilot baseline |
 | Scope decision | External meeting link | Giảm scope/security cost của video | Accepted by MVP scope |
 | Security decision | Server-side RBAC + object ownership | Không tin role/ownership từ client | Accepted for PoC |
 
@@ -64,11 +64,11 @@ Kiến trúc MVP dùng **React SPA/Vite/Tailwind**, **Node.js/Express REST API**
 | API | Node.js, Express, REST/JSON `/api/v1` | Modular monolith; validate tại boundary |
 | Data | PostgreSQL + versioned migration | ACID, constraint, lock, audit và backup |
 | Job/queue | PostgreSQL processing job/outbox + worker | At-least-once, idempotent, retry và operable failure state |
-| JD processing | Direct text extraction + internal OCR adapter | PoC: paste/PDF/PNG/JPEG, tối đa 10 MB/file; OCR chỉ cho ảnh/PDF scan; manual correction gate |
-| Matching | Taxonomy/alias + versioned rule-based scorer | Published-only, deterministic, lưu score/reason |
+| JD processing | Direct extraction + internal VI/EN OCR adapter | Paste ≤50k hoặc một PDF/PNG/JPEG ≤10 MB; PDF ≤5 trang; 60s timeout, ≤2 attempt, ≤2 concurrent jobs/worker |
+| Matching | Taxonomy/alias + versioned rule-based scorer | Weights 40/30/15/15; threshold 60; Published-only top 10/JD, max 3/requirement |
 | Auth | Server-side session và CSRF control | Default deny; role + object ownership |
 | Cache/broker | Không có trong baseline | Chỉ thêm khi measurement/ADR chứng minh cần |
-| Hosting | TLS, private storage, secrets, logs, backup | Provider pending owner decision; phải qua security, backup, quota và cost gate trước pilot |
+| Hosting | Single Linux pilot host với Docker Compose, Caddy/TLS, Node API/worker, PostgreSQL và MinIO private storage | Giảm provider complexity; cần nightly encrypted backup, restore drill và resource monitoring |
 
 ## 4. System context
 
@@ -178,7 +178,7 @@ sequenceDiagram
     W-->>S: Preparation plan candidates
 ```
 
-PoC nhận pasted text hoặc một PDF/PNG/JPEG tối đa 10 MB; page/language/time limit lấy từ cấu hình được duyệt. Direct extraction được ưu tiên cho PDF có text; internal OCR chỉ là fallback cho PNG/JPEG/PDF scan. Analyze bị chặn khi corrected text chưa xác nhận. Chạy lại cùng text/taxonomy/matching version phải ổn định; đổi corrected version làm derived data cũ thành stale.
+Pilot nhận tối đa 50.000 pasted characters hoặc một PDF/PNG/JPEG tối đa 10 MB; PDF tối đa 5 trang. Direct extraction được ưu tiên cho PDF có text; internal OCR tiếng Việt/Anh chỉ là fallback cho PNG/JPEG/PDF scan, timeout 60 giây, tối đa 2 attempt và 2 concurrent jobs/worker. Analyze bị chặn khi corrected text chưa xác nhận. Chạy lại cùng text/taxonomy/matching version phải ổn định; đổi corrected version làm derived data cũ thành stale.
 
 ### 7.2 Tìm câu hỏi và lưu progress
 
@@ -257,7 +257,7 @@ Mentor/Admin hợp lệ chuyển booking sang Completed theo policy. Feedback se
 - Corrected text có optimistic version; analysis/mapping tạo snapshot theo analysis/matching version thay vì sửa lịch sử.
 - Mapping unique theo JD/requirement/Question/version, chỉ join taxonomy active và Question Published, có deterministic tie-break.
 - Booking context phải thuộc đúng Student; service/constraint ngăn tham chiếu chéo owner.
-- Soft-delete chỉ khi có lý do vận hành; privacy deletion phải có policy riêng.
+- User deletion soft-hides ngay và purge active private data trong 7 ngày; backup copy hết hạn trong 30 ngày.
 - Migration có version và test rollback/forward phù hợp.
 
 ## 9. Dữ liệu nhạy cảm và lifecycle
@@ -266,15 +266,16 @@ Mentor/Admin hợp lệ chuyển booking sang Completed theo policy. Feedback se
 - Private: email/contact, JD file/text, requirement/match/plan, meeting link, booking goal, feedback và progress.
 - Restricted: verification evidence, moderation note, security audit.
 - Không log credential, token, raw JD/corrected text, original filename, meeting secret hoặc feedback text đầy đủ.
-- Baseline PoC xóa original JD file chậm nhất 24 giờ sau extraction terminal state; abandoned draft cleanup sau 90 ngày. Privacy/PO phải ratify hoặc thay đổi các mốc này trước pilot thật.
+- Original JD file tự xóa chậm nhất 24 giờ sau extraction terminal state; extracted/corrected text, requirement, match và plan hết hạn sau 90 ngày không hoạt động.
+- Booking, transition, feedback và review hết hạn sau 180 ngày; user deletion purge active private data ≤7 ngày và backup expiry ≤30 ngày.
 - Nếu dùng object storage cho verification/JD, bucket private, opaque object key và signed URL ngắn hạn; original JD không chia sẻ mặc định với Mentor.
 
 ## 10. External integration contracts và fallback
 
 | Integration | Contract | Failure handling |
 |---|---|---|
-| Email | Template + recipient + idempotency key | Retry; in-app status; manual resend |
-| Meeting | URL do mentor/admin cung cấp hoặc adapter | Cho sửa trước cutoff; không mất booking |
+| Email | Immediate confirmation; optional US-22 reminders 24h/1h; recipient timezone; idempotency key | Một attempt + retry phút 1/5; in-app/manual status; không rollback booking |
+| Meeting | URL do owning Mentor tạo; sửa thông thường trước 2h; chỉ parties xem đến 24h sau session | Alternate link trong 15 phút; nếu không thì explicit reschedule; không mất booking |
 | Text extraction | Direct parser adapter cho pasted text/PDF có text | Nếu không có usable text và policy cho phép thì chuyển OCR; luôn cho sửa |
 | Internal OCR | Adapter cho PNG/JPEG/PDF scan, không outbound network mặc định | Timeout/unsupported/failure có trạng thái; không tự analysis/mapping; external provider cần ADR mới |
 | Calendar — future/optional | Export/link, không phải source of truth | Manual schedule vẫn hoạt động |
@@ -296,7 +297,7 @@ Các nhóm route đề xuất:
 - `/api/v1/bookings`, `/api/v1/bookings/{id}/transitions`, `/api/v1/bookings/{id}/feedback`, `/api/v1/reviews`.
 - `/api/v1/admin/questions`, `/api/v1/admin/mentors`, `/api/v1/admin/reports`, `/api/v1/admin/audit`.
 
-Các route JD là baseline thảo luận, chưa phải contract đã phê duyệt. OpenAPI/design review phải chốt upload flow, status/error code, payload và version field trước implementation.
+Các route JD là đường cơ sở để thảo luận, chưa phải hợp đồng API đã phê duyệt. OpenAPI/design review phải chốt giới hạn tải lên, trạng thái/mã lỗi xử lý, phiên bản văn bản hiệu chỉnh và phiên bản ánh xạ trước khi tích hợp; thay đổi hợp đồng cần Kiến trúc/PO rà soát.
 
 ### Contract conventions
 
@@ -304,7 +305,7 @@ Các route JD là baseline thảo luận, chưa phải contract đã phê duyệ
 - Cursor/page pagination và deterministic sort.
 - Idempotency key cho create booking/critical transition khi phù hợp.
 - Idempotency key cho extraction/analyze retry; analyze mang corrected-text version.
-- Upload dùng allowlist media type/signature và giới hạn size/page/time được phê duyệt; server không tin filename/extension.
+- Upload chỉ nhận một PDF/PNG/JPEG ≤10 MB (PDF ≤5 trang), kiểm tra magic byte/MIME, reject encrypted/embedded/multi-file; server không tin filename/extension.
 - Optimistic version hoặc ETag cho update dễ xung đột.
 - Không nhận `userId/role` từ client làm nguồn authorization.
 - API version/change policy được ghi bằng OpenAPI hoặc contract tương đương.
@@ -333,7 +334,7 @@ JD upload/read/delete, extraction retry, corrected-text update, analyze/matches,
 ### Application và infrastructure
 
 - Validate length/type/enum; encode output; parameterized query/ORM an toàn.
-- Upload kiểm tra media type/signature, configured size/page/time limit, filename safety và parser timeout; corrected text luôn được render như untrusted input.
+- Upload kiểm tra media type/signature, 10 MB/5-page boundary, encrypted/embedded content, filename safety và parser timeout 60 giây; corrected text luôn được render như untrusted input.
 - TLS, secret manager/environment secret, dependency scan và patching.
 - Rate limit với auth, upload/extraction/analyze, search, booking và review/report.
 - Backup có kiểm tra restore; least-privilege DB/service account.
@@ -347,8 +348,9 @@ JD upload/read/delete, extraction retry, corrected-text update, analyze/matches,
 |---|---:|
 | Common API response | ≤ 3 giây trong điều kiện test |
 | JD-to-plan task completion | ≥80% trong usability test theo approved profile |
-| Requirement detection/mapping | Báo recall/relevance trên labeled JD set; ngưỡng do PO phê duyệt |
-| Matching stability | 100% cùng corrected text + taxonomy + version cho cùng ordered result |
+| Extraction/OCR | Supported-input success ≥90%; direct accuracy ≥95%; OCR accuracy ≥85%; p95 ≤45 giây |
+| Requirement detection/mapping | Requirement recall ≥80% và precision@10 ≥80% trên 8 blind JD |
+| Matching stability/explainability | 100% cùng corrected text + taxonomy/alias/rule version cho cùng ordered hash; 100% result có source/topic/reason/version |
 | Critical workflow test pass | 100% |
 | Critical/High open defect trước UAT | 0 |
 | Notification | Retry được; không mất business transaction |
@@ -380,7 +382,7 @@ JD upload/read/delete, extraction retry, corrected-text update, analyze/matches,
 
 ### POC-0: JD extraction, mapping và plan handoff
 
-Dùng JD test đã khử dữ liệu nhạy cảm và expected text/requirements. Pass khi paste/file tạo editable text hoặc failure rõ; direct extraction được ưu tiên, OCR chỉ dùng khi cần; alias chuẩn hóa đúng; mapping không trả Draft, có source/topic/score/reason/version và ổn định với cùng input/version; Student tạo plan/booking context và unrelated actor bị chặn.
+Dùng 20 JD Front-end Intern/Junior đã khử dữ liệu nhạy cảm: 12 calibration và 8 blind, có expected text/requirements/relevant Questions từ hai reviewer. Pass khi input hợp lệ tạo editable text hoặc failure rõ; supported-input success ≥90%, direct accuracy ≥95%, OCR accuracy ≥85%, p95 ≤45 giây; requirement recall và precision@10 ≥80%; mapping chỉ trả Published score ≥60, top 10/JD, max 3/requirement, có source/topic/reason/version và repeatability 100%; unrelated actor bị chặn.
 
 ### POC-1: Booking consistency — acceptance gate
 
@@ -413,10 +415,10 @@ Giả lập provider timeout/duplicate delivery. Pass khi booking vẫn commit m
 
 | Risk | Mitigation |
 |---|---|
-| OCR/extraction sai | Direct extraction trước; supported limits; correction gate; known-output test và safe failure |
-| Taxonomy/alias thiếu | Giới hạn pilot segment; labeled dataset; versioned governance; unknown term remains unmapped |
-| Mapping không relevant/ổn định | Published-only rule-based scorer; score/reason/version; relevance và repeatability tests |
-| JD chứa dữ liệu nhạy cảm | Private storage, least privilege, log redaction và approved retention/deletion |
+| OCR/extraction sai | Direct extraction trước; VI/EN corpus; 10 MB/5-page/60s limits; correction gate; accuracy benchmark và safe failure |
+| Taxonomy/alias thiếu | Giới hạn Front-end Intern/Junior; 12 calibration + 8 blind; double review; unknown term remains unmapped |
+| Mapping không relevant/ổn định | Published-only 40/30/15/15 scorer; threshold 60; precision@10/recall/repeatability tests |
+| JD chứa dữ liệu nhạy cảm | MinIO private storage, least privilege, log redaction và 24h/90d/7d/30d retention/deletion jobs |
 | Double booking | DB constraint, transaction, lock và concurrency test |
 | Broken object authorization | Central policy, default deny, matrix integration tests |
 | Provider outage | Outbox/retry, fallback và source of truth nội bộ |
