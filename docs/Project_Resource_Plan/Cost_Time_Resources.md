@@ -4,31 +4,31 @@
 
 | Hạng mục | Baseline planning |
 |---|---|
-| Start / finish | 17/08/2026-08/11/2026 |
-| Thời lượng | 12 tuần, 6 giai đoạn theo Project Charter |
-| Team / capacity | 6 người x 16 giờ/tuần x 12 tuần = 1.152 giờ danh nghĩa; khoảng 979 giờ cam kết sau reserve 15% |
-| Estimate điều hành hiện hữu | Bottom-up + Three-point: 598 giờ expected, 688 giờ sau contingency 15% (chỉ là mốc tham chiếu trước khi rebaseline scope JD) |
-| Cross-check hiện hữu | Top-down parametric Count-Compute + structured expert judgment: 657 giờ, 756 giờ sau contingency 15% (không phải analogous vì chưa có comparable-project actuals; cần rebaseline cho scope JD) |
+| Start / finish | 29/06/2026-23/08/2026 |
+| Thời lượng | 8 tuần, 6 giai đoạn theo Project Charter |
+| Team / capacity | 6 người x 16 giờ/tuần x 8 tuần = 768 giờ danh nghĩa; khoảng 653 giờ cam kết sau reserve 15% |
+| Estimate điều hành | Bottom-up + Three-point: 527 giờ expected, 606 giờ sau contingency 15% (baseline 8 tuần) |
+| Cross-check | Top-down parametric Count-Compute + structured expert judgment: 565 giờ, 650 giờ sau contingency 15% (dùng làm guardrail; không phải analogous vì chưa có comparable-project actuals) |
 | Cash budget ceiling | **1.125.000 VND** |
-| Labor value tham chiếu | 688 giờ x 50.000 VND/giờ = **34.400.000 VND** |
-| Total economic planning value | **35.525.000 VND** (= cash + labor value) |
+| Labor value tham chiếu | 606 giờ x 50.000 VND/giờ = **30.300.000 VND** |
+| Total economic planning value | **31.425.000 VND** (= cash + labor value) |
 
 Labor value chỉ dùng để so sánh phương án và không phải khoản nhóm phải chi. Đơn giá 50.000 VND/giờ là **giả định học thuật thống nhất của nhóm**, không phải báo giá thị trường hay lương thực tế; phải thay bằng báo giá/đơn giá được Sponsor chấp nhận nếu dự án chuyển thành triển khai thương mại.
 
-JD intake, extraction/OCR, requirement analysis, question mapping và preparation plan là scope mới. Các con số 598/688/657/756 ở trên chưa bao gồm các story JD dự kiến bổ sung, nên không được dùng làm commitment cho scope mới; PM/PO phải re-estimate và rebaseline sau khi backlog được cập nhật/phê duyệt.
+Để giữ cửa sổ 8 tuần, baseline chỉ bao gồm core loop JD intake, extraction/OCR, requirement analysis, question mapping, preparation plan, self-practice hoặc booking mentor, feedback và các kiểm soát kỹ thuật bắt buộc. PM/PO phải dời Should/Could và mọi hạng mục ngoài core loop; thay đổi làm forecast vượt 653 giờ phải được Sponsor/PO phê duyệt.
 
 ## 2. Lịch và tolerance
 
 | Giai đoạn | Thời gian | Exit criteria |
 |---|---|---|
-| Discovery/charter | 17/08-30/08 | Problem evidence, charter, resource baseline |
-| Prototype/requirements | 31/08-13/09 | Workflow, backlog, prototype được chấp nhận |
-| Foundation | 14/09-27/09 | Architecture, auth, CI/CD, data foundation |
-| JD intake & analysis | 28/09-11/10 | Nhập JD, extract/OCR, xác nhận text, taxonomy mapping và preparation plan pass |
-| Marketplace | 12/10-01/11 | Booking-to-feedback E2E pass |
-| UAT/release | 02/11-08/11 | UAT evidence, zero Critical/High defect |
+| Discovery/charter | 29/06-05/07 | Problem evidence, charter, resource baseline |
+| Prototype/requirements | 06/07-12/07 | Workflow, backlog, prototype được chấp nhận |
+| Foundation | 13/07-19/07 | Architecture, auth, CI/CD, data foundation |
+| JD intake & analysis | 20/07-26/07 | Nhập JD, extract/OCR, xác nhận text, taxonomy mapping và preparation plan pass |
+| Marketplace core loop | 27/07-09/08 | Booking-to-feedback E2E pass |
+| UAT/release | 10/08-23/08 | UAT evidence, zero Critical/High defect và pilot sẵn sàng |
 
-Reforecast và escalation khi forecast vượt 12 tuần, vượt khoảng 979 giờ, vượt cash ceiling, hoặc bất kỳ PoC critical nào chưa pass. Estimate là dự báo, không phải cam kết; baseline chỉ thành commitment sau khi Sponsor/PO phê duyệt scope, capacity và budget. Scope mới bổ sung JD intake, extraction/OCR, requirement analysis và preparation plan đã được phản ánh trong charter; backlog và estimate phải được rebaseline trước khi Go.
+Reforecast và escalation khi forecast vượt 8 tuần, vượt khoảng 653 giờ, vượt cash ceiling, hoặc bất kỳ PoC critical nào chưa pass. Estimate là dự báo, không phải cam kết; baseline chỉ thành commitment sau khi Sponsor/PO phê duyệt scope, capacity và budget.
 
 ## 3. Direct cash cost
 
@@ -49,17 +49,17 @@ Reforecast và escalation khi forecast vượt 12 tuần, vượt khoảng 979 g
 
 | Nhóm công việc | Expected effort (giờ) | Labor value (VND) |
 |---|---:|---:|
-| Product/PM/discovery | 78 | 3.900.000 |
-| UX/prototype | 54 | 2.700.000 |
-| Architecture/DevOps | 58 | 2.900.000 |
-| Front-end | 126 | 6.300.000 |
-| Back-end/integration | 142 | 7.100.000 |
-| QA/UAT | 70 | 3.500.000 |
-| Content/operations | 56 | 2.800.000 |
-| Management/documentation | 14 | 700.000 |
-| **Expected effort** | **598** | **29.900.000** |
-| Contingency 15% | 90 | 4.500.000 |
-| **Baseline labor value** | **688** | **34.400.000** |
+| Product/PM/discovery | 70 | 3.500.000 |
+| UX/prototype | 42 | 2.100.000 |
+| Architecture/DevOps | 52 | 2.600.000 |
+| Front-end | 112 | 5.600.000 |
+| Back-end/integration | 124 | 6.200.000 |
+| QA/UAT | 65 | 3.250.000 |
+| Content/operations | 52 | 2.600.000 |
+| Management/documentation | 10 | 500.000 |
+| **Expected effort** | **527** | **26.350.000** |
+| Contingency 15% | 79 | 3.950.000 |
+| **Baseline labor value** | **606** | **30.300.000** |
 
 ## 5. Contingency và kiểm soát
 
