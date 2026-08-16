@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 
@@ -14,6 +14,8 @@ const people = {
   1: { name: 'Trần Minh Khoa', role: 'Mentor', initials: 'MK' },
   2: { name: 'Nguyễn An', role: 'Student', initials: 'NA' },
   3: { name: 'Lê Thu Hà', role: 'Student', initials: 'TH' },
+  4: { name: 'Phạm Hoàng', role: 'Mentor', initials: 'PH' },
+  5: { name: 'Đỗ Văn Cường', role: 'Student', initials: 'DC' },
 }
 
 function ArrowIcon() {
@@ -53,15 +55,24 @@ function App() {
   const appRef = useRef(null)
   const [activeView, setActiveView] = useState('discover')
   const [currentUser, setCurrentUser] = useState('2')
+  
   const [tags, setTags] = useState([])
   const [questions, setQuestions] = useState(null)
+  
+  // Discover Data
+  const [mentors, setMentors] = useState([])
+  const [selectedMentor, setSelectedMentor] = useState(null)
+  const [slots, setSlots] = useState([])
+  const [selectedSlot, setSelectedSlot] = useState(null)
   const [bookingRes, setBookingRes] = useState('')
-  const [bookingStage, setBookingStage] = useState('Chưa tạo')
-  const [mentorInputId, setMentorInputId] = useState('')
-  const [mentorRes, setMentorRes] = useState('')
-  const [authInputId, setAuthInputId] = useState('')
-  const [linkRes, setLinkRes] = useState('')
+
+  // Booking Data
+  const [bookings, setBookings] = useState([])
+  const [selectedBooking, setSelectedBooking] = useState(null)
+  const [actionRes, setActionRes] = useState('')
   const [meetingLink, setMeetingLink] = useState('')
+
+  // Feedback Data
   const [feedback, setFeedback] = useState('')
   const [feedbackRes, setFeedbackRes] = useState('')
 
@@ -100,6 +111,43 @@ function App() {
     }
   }
 
+  const fetchBookings = async () => {
+    const { status, data } = await fetchAPI('/bookings')
+    if (status === 200) {
+      setBookings(data);
+    }
+  }
+
+  useEffect(() => {
+    if (activeView === 'discover') {
+      fetchAPI('/mentors').then(({ status, data }) => {
+        if (status === 200) {
+          setMentors(data)
+          if (data.length > 0 && !selectedMentor) setSelectedMentor(data[0])
+        }
+      })
+    }
+    if (activeView === 'booking' || activeView === 'feedback') {
+      fetchBookings();
+      setSelectedBooking(null);
+      setActionRes('');
+      setMeetingLink('');
+      setFeedbackRes('');
+      setFeedback('');
+    }
+  }, [activeView, currentUser])
+
+  useEffect(() => {
+      if (selectedMentor) {
+          fetchAPI(`/mentors/${selectedMentor.id}/slots`).then(({ status, data }) => {
+              if (status === 200) {
+                setSlots(data)
+                setSelectedSlot(null)
+              }
+          })
+      }
+  }, [selectedMentor])
+
   const toggleTag = (value, checked) => {
     setTags((current) => checked ? [...current, value] : current.filter((tag) => tag !== value))
   }
@@ -112,56 +160,58 @@ function App() {
   }
 
   const handleBookSlot = async () => {
+    if (!selectedSlot) return setBookingRes('Vui lòng chọn thời gian')
     setBookingRes('Đang xử lý yêu cầu đặt lịch...')
     const { status, data } = await fetchAPI('/bookings', {
       method: 'POST',
-      body: JSON.stringify({ slot_id: 1 }),
+      body: JSON.stringify({ slot_id: selectedSlot.id }),
     })
 
     if (status === 201) {
       const id = String(data.booking_id)
-      setBookingRes(`Đã gửi yêu cầu BK-${id.padStart(4, '0')}. Mentor sẽ xác nhận lịch.`)
-      setMentorInputId(id)
-      setAuthInputId(id)
-      setBookingStage('Chờ xác nhận')
+      setBookingRes(`Đã gửi yêu cầu đặt lịch thành công (Mã BK-${id.padStart(4, '0')}).`)
+      // Refresh slots
+      fetchAPI(`/mentors/${selectedMentor.id}/slots`).then((res) => {
+          if (res.status === 200) setSlots(res.data)
+      })
+      setSelectedSlot(null)
     } else {
       setBookingRes(`Lỗi: ${data.message || data.error}`)
     }
   }
 
   const handleMentorAction = async (action) => {
-    if (!mentorInputId) return setMentorRes('Vui lòng nhập Booking ID')
-    setMentorRes('Đang xử lý cập nhật trạng thái...')
-    const { status, data } = await fetchAPI(`/bookings/${mentorInputId}/${action}`, { method: 'POST' })
+    if (!selectedBooking) return setActionRes('Vui lòng chọn yêu cầu')
+    setActionRes('Đang xử lý...')
+    const { status, data } = await fetchAPI(`/bookings/${selectedBooking.id}/${action}`, { method: 'POST' })
 
     if (status === 200) {
-      const nextStage = action === 'accept' ? 'Đã xác nhận' : 'Hoàn thành'
-      setMentorRes(data.message || `Đã chuyển trạng thái sang ${nextStage}.`)
-      setBookingStage(nextStage)
-      setAuthInputId(mentorInputId)
+      setActionRes(data.message || `Thao tác thành công.`)
+      fetchBookings() // Refresh danh sách
+      setSelectedBooking({...selectedBooking, status: action === 'accept' ? 'Confirmed' : 'Completed'})
     } else {
-      setMentorRes(`Lỗi: ${data.message || data.error}`)
+      setActionRes(`Lỗi: ${data.message || data.error}`)
     }
   }
 
   const handleViewLink = async () => {
-    if (!authInputId) return setLinkRes('Vui lòng nhập Booking ID')
-    setLinkRes('Đang xử lý quyền truy cập...')
-    const { status, data } = await fetchAPI(`/bookings/${authInputId}/meeting-link`)
+    if (!selectedBooking) return setActionRes('Vui lòng chọn lịch để xem')
+    setActionRes('Đang xử lý quyền truy cập...')
+    const { status, data } = await fetchAPI(`/bookings/${selectedBooking.id}/meeting-link`)
 
     if (status === 200) {
       setMeetingLink(data.meeting_link)
-      setLinkRes('Đã xác thực quyền truy cập. Link chỉ hiển thị cho hai bên tham gia.')
+      setActionRes('Đã lấy meeting link thành công.')
     } else {
       setMeetingLink('')
-      setLinkRes(`Lỗi: ${data.message || data.error}`)
+      setActionRes(`Lỗi: ${data.message || data.error}`)
     }
   }
 
   const handleSubmitFeedback = async () => {
-    if (!authInputId || !feedback.trim()) return setFeedbackRes('Vui lòng nhập Booking ID và nội dung phản hồi')
+    if (!selectedBooking || !feedback.trim()) return setFeedbackRes('Vui lòng chọn lịch và nhập phản hồi')
     setFeedbackRes('Đang xử lý phản hồi...')
-    const { status, data } = await fetchAPI(`/bookings/${authInputId}/feedback`, {
+    const { status, data } = await fetchAPI(`/bookings/${selectedBooking.id}/feedback`, {
       method: 'POST',
       body: JSON.stringify({ content: feedback.trim() }),
     })
@@ -173,6 +223,11 @@ function App() {
   const navigate = (view) => {
     setActiveView(view)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    return date.toLocaleString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
   }
 
   return (
@@ -202,9 +257,9 @@ function App() {
         <div className="identity-control">
           <label htmlFor="demo-user">Chế độ xem</label>
           <select id="demo-user" value={currentUser} onChange={(event) => setCurrentUser(event.target.value)}>
-            <option value="2">Student · Nguyễn An</option>
-            <option value="3">Student · Thu Hà</option>
-            <option value="1">Mentor · Minh Khoa</option>
+            {Object.entries(people).map(([id, p]) => (
+                <option key={id} value={id}>{p.role} · {p.name}</option>
+            ))}
           </select>
           <span className="avatar" aria-hidden="true">{activePerson.initials}</span>
         </div>
@@ -220,27 +275,35 @@ function App() {
             <div className="mentor-column">
               <div className="section-heading">
                 <div>
-                  <p className="context-line">Một mentor phù hợp</p>
-                  <h2>Trần Minh Khoa</h2>
-                </div>
-                <span className="verified-badge"><CheckIcon /> Đã xác minh</span>
-              </div>
-
-              <div className="mentor-summary">
-                <div className="mentor-avatar">MK</div>
-                <div>
-                  <p className="mentor-role">Senior Front-end Engineer</p>
-                  <p>6 năm kinh nghiệm · Tiếng Việt / English</p>
+                  <p className="context-line">Danh sách Mentor</p>
+                  <h2>Chọn một mentor</h2>
                 </div>
               </div>
-
-              <p className="mentor-bio">Tập trung vào phỏng vấn Front-end entry-level, cách trình bày quyết định kỹ thuật và phản hồi có dẫn chứng.</p>
-
-              <div className="expertise-list" aria-label="Chuyên môn">
-                <span>React</span>
-                <span>JavaScript</span>
-                <span>Behavioral interview</span>
+              
+              <div className="mentor-list" style={{display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px'}}>
+                {mentors.map(m => (
+                    <button 
+                        key={m.id} 
+                        className={`secondary-button ${selectedMentor?.id === m.id ? 'is-selected' : ''}`}
+                        onClick={() => setSelectedMentor(m)}
+                        style={selectedMentor?.id === m.id ? {background: 'var(--forest)', color: 'white'} : {}}
+                    >
+                        {m.name}
+                    </button>
+                ))}
               </div>
+
+              {selectedMentor && (
+                  <div className="mentor-summary">
+                    <div className="mentor-avatar">{people[selectedMentor.id]?.initials || 'M'}</div>
+                    <div>
+                      <p className="mentor-role">Chuyên gia / Mentor</p>
+                      <p>{selectedMentor.name}</p>
+                    </div>
+                  </div>
+              )}
+
+              <p className="mentor-bio">Tập trung vào phỏng vấn, cách trình bày quyết định kỹ thuật và phản hồi có dẫn chứng.</p>
 
               <div className="question-tool">
                 <div className="tool-heading">
@@ -279,33 +342,32 @@ function App() {
             <aside className="booking-composer">
               <div className="section-heading">
                 <div>
-                  <p className="context-line">Lịch gần nhất</p>
+                  <p className="context-line">Lịch gần nhất của {selectedMentor?.name || 'Mentor'}</p>
                   <h2>Chọn thời gian luyện</h2>
                 </div>
                 <span className="availability">Còn chỗ</span>
               </div>
 
               <div className="slot-picker" role="radiogroup" aria-label="Chọn thời gian">
-                <button className="slot is-selected" role="radio" aria-checked="true">
-                  <strong>Thứ Ba, 01/09</strong>
-                  <span>10:00-11:00 · GMT+7</span>
-                </button>
-                <button className="slot" role="radio" aria-checked="false">
-                  <strong>Thứ Tư, 02/09</strong>
-                  <span>10:00-11:00 · GMT+7</span>
-                </button>
-              </div>
-
-              <div className="booking-details">
-                <div><span>Vị trí mục tiêu</span><strong>Front-end Intern</strong></div>
-                <div><span>Thời lượng</span><strong>60 phút</strong></div>
-                <div><span>Hình thức</span><strong>Google Meet</strong></div>
+                {slots.length === 0 && <p className="empty-copy">Mentor này chưa có lịch trống.</p>}
+                {slots.map(slot => (
+                    <button 
+                        key={slot.id}
+                        className={`slot ${selectedSlot?.id === slot.id ? 'is-selected' : ''}`} 
+                        role="radio" 
+                        aria-checked={selectedSlot?.id === slot.id}
+                        onClick={() => setSelectedSlot(slot)}
+                    >
+                        <strong>{formatDate(slot.start_time)}</strong>
+                        <span>GMT+7</span>
+                    </button>
+                ))}
               </div>
 
               <label className="field-label" htmlFor="practice-goal">Mục tiêu buổi luyện</label>
-              <textarea id="practice-goal" rows="4" defaultValue="Luyện cách trình bày kiến thức React và xử lý câu hỏi tiếp nối." />
+              <textarea id="practice-goal" rows="4" defaultValue="Luyện cách trình bày kiến thức và xử lý câu hỏi tiếp nối." />
 
-              <button className="primary-button" onClick={handleBookSlot} disabled={isMentor}>
+              <button className="primary-button" onClick={handleBookSlot} disabled={isMentor || !selectedSlot}>
                 <span>{isMentor ? 'Chuyển sang Student để đặt lịch' : 'Gửi yêu cầu đặt lịch'}</span>
                 <span className="button-icon"><ArrowIcon /></span>
               </button>
@@ -322,50 +384,73 @@ function App() {
           </header>
 
           <section className="booking-workspace view-enter">
-            <div className="booking-main">
-              <div className="people-row">
-                <div className="person-card"><span className="avatar avatar-large">NA</span><div><span>Student</span><strong>Nguyễn An</strong></div></div>
-                <div className="connection-line"><span /></div>
-                <div className="person-card"><span className="avatar avatar-large">MK</span><div><span>Mentor</span><strong>Trần Minh Khoa</strong></div></div>
-              </div>
-
-              <div className="session-facts">
-                <div><span>Thời gian</span><strong>10:00, Thứ Ba 01/09/2026</strong></div>
-                <div><span>Mục tiêu</span><strong>Front-end Intern · React</strong></div>
-                <div><span>Thời lượng</span><strong>60 phút · GMT+7</strong></div>
-              </div>
-
-              <div className="timeline-section">
-                <h2>Tiến trình booking</h2>
-                <div className="timeline">
-                  <div className="timeline-item is-done"><span className="timeline-dot"><CheckIcon /></span><div><strong>Yêu cầu được tạo</strong><p>Nguyễn An · vừa xong</p></div></div>
-                  <div className={['Đã xác nhận', 'Hoàn thành'].includes(bookingStage) ? 'timeline-item is-done' : 'timeline-item'}><span className="timeline-dot"><CheckIcon /></span><div><strong>Mentor xác nhận lịch</strong><p>{['Đã xác nhận', 'Hoàn thành'].includes(bookingStage) ? 'Trần Minh Khoa · đã cập nhật' : 'Đang chờ phản hồi'}</p></div></div>
-                  <div className={bookingStage === 'Hoàn thành' ? 'timeline-item is-done' : 'timeline-item'}><span className="timeline-dot"><CheckIcon /></span><div><strong>Buổi luyện hoàn thành</strong><p>{bookingStage === 'Hoàn thành' ? 'Mentor đã xác nhận hoàn thành' : 'Chưa diễn ra'}</p></div></div>
+            <div className="booking-main" style={{flex: 2}}>
+                <h2>Danh sách các buổi phỏng vấn</h2>
+                <div className="question-results" style={{marginTop: '1rem'}}>
+                    {bookings.length === 0 && <p className="empty-copy">Bạn chưa có lịch hẹn nào.</p>}
+                    {bookings.map(b => (
+                        <div 
+                            key={b.id} 
+                            className={`question-row ${selectedBooking?.id === b.id ? 'is-selected' : ''}`}
+                            style={{cursor: 'pointer', border: selectedBooking?.id === b.id ? '1px solid var(--forest)' : '1px solid transparent', background: selectedBooking?.id === b.id ? 'var(--mint)' : '', padding: '10px', borderRadius: '10px'}}
+                            onClick={() => { setSelectedBooking(b); setActionRes(''); setMeetingLink(''); }}
+                        >
+                            <span>BK-{String(b.id).padStart(4, '0')}</span>
+                            <div style={{flex: 1}}>
+                                <p><strong>{formatDate(b.start_time)}</strong> - Trạng thái: <span style={{color: b.status === 'Completed' ? 'green' : b.status === 'Confirmed' ? 'var(--forest)' : 'orange'}}>{b.status}</span></p>
+                                <p style={{fontSize: '0.85rem', color: 'var(--gray-500)'}}>{isMentor ? `Sinh viên: ${b.student_name}` : `Mentor: ${b.mentor_name}`}</p>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-              </div>
             </div>
 
-            <aside className="action-panel">
+            <aside className="action-panel" style={{flex: 1}}>
               <div>
                 <p className="context-line">Thao tác theo vai trò</p>
                 <h2>{isMentor ? 'Xử lý yêu cầu' : 'Truy cập buổi luyện'}</h2>
                 <p className="support-copy">Bạn đang xem với quyền {isMentor ? 'Mentor' : 'Student'}.</p>
               </div>
 
-              <label className="field-label" htmlFor="booking-action-id">Booking ID</label>
-              <input id="booking-action-id" type="number" placeholder="Ví dụ: 12" value={isMentor ? mentorInputId : authInputId} onChange={(event) => isMentor ? setMentorInputId(event.target.value) : setAuthInputId(event.target.value)} />
+              {!selectedBooking && (
+                  <div className="empty-copy">Vui lòng chọn một lịch hẹn từ danh sách bên trái.</div>
+              )}
 
-              {isMentor ? (
+              {selectedBooking && isMentor && (
                 <div className="action-stack">
-                  <button className="primary-button" onClick={() => handleMentorAction('accept')}><span>Xác nhận lịch</span><span className="button-icon"><ArrowIcon /></span></button>
-                  <button className="secondary-button" onClick={() => handleMentorAction('complete')}>Đánh dấu hoàn thành</button>
-                  <Message compact>{mentorRes}</Message>
+                  <div className="booking-details" style={{marginBottom: '1rem'}}>
+                    <div><span>Booking ID</span><strong>BK-{String(selectedBooking.id).padStart(4, '0')}</strong></div>
+                    <div><span>Trạng thái</span><strong>{selectedBooking.status}</strong></div>
+                  </div>
+                  {selectedBooking.status === 'Pending' && (
+                    <button className="primary-button" onClick={() => handleMentorAction('accept')}><span>Xác nhận lịch</span><span className="button-icon"><ArrowIcon /></span></button>
+                  )}
+                  {selectedBooking.status === 'Confirmed' && (
+                    <button className="secondary-button" onClick={() => handleMentorAction('complete')}>Đánh dấu hoàn thành</button>
+                  )}
+                  {selectedBooking.status === 'Completed' && (
+                      <p className="empty-copy">Buổi phỏng vấn này đã hoàn thành.</p>
+                  )}
+                  <Message compact>{actionRes}</Message>
                 </div>
-              ) : (
+              )}
+
+              {selectedBooking && !isMentor && (
                 <div className="action-stack">
-                  <button className="primary-button" onClick={handleViewLink}><span>Kiểm tra meeting link</span><span className="button-icon"><ArrowIcon /></span></button>
-                  {meetingLink && <a className="meeting-link" href={meetingLink} target="_blank" rel="noreferrer">Tham gia qua Google Meet <ArrowIcon /></a>}
-                  <Message compact>{linkRes}</Message>
+                  <div className="booking-details" style={{marginBottom: '1rem'}}>
+                    <div><span>Booking ID</span><strong>BK-{String(selectedBooking.id).padStart(4, '0')}</strong></div>
+                    <div><span>Trạng thái</span><strong>{selectedBooking.status}</strong></div>
+                  </div>
+                  {(selectedBooking.status === 'Confirmed' || selectedBooking.status === 'Completed') && (
+                    <>
+                        <button className="primary-button" onClick={handleViewLink}><span>Lấy meeting link</span><span className="button-icon"><ArrowIcon /></span></button>
+                        {meetingLink && <a className="meeting-link" href={meetingLink} target="_blank" rel="noreferrer">Tham gia qua Google Meet <ArrowIcon /></a>}
+                    </>
+                  )}
+                  {selectedBooking.status === 'Pending' && (
+                      <p className="empty-copy">Đang chờ mentor xác nhận. Chưa có link tham gia.</p>
+                  )}
+                  <Message compact>{actionRes}</Message>
                 </div>
               )}
             </aside>
@@ -381,26 +466,42 @@ function App() {
 
           <section className="feedback-grid view-enter">
             <div className="feedback-context">
-              <div className="section-heading"><div><p className="context-line">Buổi luyện gần nhất</p><h2>Front-end Intern</h2></div><span className="verified-badge">60 phút</span></div>
-              <div className="feedback-person"><span className="avatar avatar-large">MK</span><div><strong>Trần Minh Khoa</strong><p>Senior Front-end Engineer</p></div></div>
-              <dl className="session-metadata">
-                <div><dt>Thời gian</dt><dd>01/09/2026 · 10:00</dd></div>
-                <div><dt>Trọng tâm</dt><dd>React và cách diễn đạt</dd></div>
-                <div><dt>Trạng thái</dt><dd>{bookingStage}</dd></div>
-              </dl>
+              <div className="section-heading">
+                  <div><p className="context-line">Các cuộc phỏng vấn (Đã xác nhận / Hoàn thành)</p><h2>Chọn cuộc phỏng vấn</h2></div>
+              </div>
+              <div className="question-results" style={{marginTop: '1rem'}}>
+                  {bookings.filter(b => ['Confirmed', 'Completed'].includes(b.status)).length === 0 && <p className="empty-copy">Không có cuộc phỏng vấn nào khả dụng.</p>}
+                  {bookings.filter(b => ['Confirmed', 'Completed'].includes(b.status)).map(b => (
+                      <div 
+                          key={b.id} 
+                          className={`question-row ${selectedBooking?.id === b.id ? 'is-selected' : ''}`}
+                          style={{cursor: 'pointer', border: selectedBooking?.id === b.id ? '1px solid var(--forest)' : '1px solid transparent', background: selectedBooking?.id === b.id ? 'var(--mint)' : '', padding: '10px', borderRadius: '10px'}}
+                          onClick={() => { setSelectedBooking(b); setFeedback(''); setFeedbackRes(''); }}
+                      >
+                          <span>BK-{String(b.id).padStart(4, '0')}</span>
+                          <div style={{flex: 1}}>
+                              <p><strong>{formatDate(b.start_time)}</strong></p>
+                              <p style={{fontSize: '0.85rem', color: 'var(--gray-500)'}}>{isMentor ? `Sinh viên: ${b.student_name}` : `Mentor: ${b.mentor_name}`}</p>
+                          </div>
+                      </div>
+                  ))}
+              </div>
             </div>
 
             <div className="feedback-form">
-              <div className="section-heading"><div><p className="context-line">{isMentor ? 'Góc nhìn của mentor' : 'Phản hồi dành cho bạn'}</p><h2>{isMentor ? 'Phản hồi có cấu trúc' : 'Nội dung phản hồi'}</h2></div></div>
+              <div className="section-heading"><div><p className="context-line">{isMentor ? 'Góc nhìn của mentor' : 'Phản hồi dành cho bạn'}</p><h2>{isMentor ? 'Viết phản hồi' : 'Nội dung phản hồi'}</h2></div></div>
 
-              <label className="field-label" htmlFor="feedback-booking-id">Booking ID</label>
-              <input id="feedback-booking-id" type="number" placeholder="Ví dụ: 12" value={authInputId} onChange={(event) => setAuthInputId(event.target.value)} />
+              {!selectedBooking && <div className="empty-copy">Vui lòng chọn một lịch phỏng vấn để tiếp tục.</div>}
 
-              <label className="field-label" htmlFor="feedback-content">Điểm mạnh, điểm cần cải thiện và hành động tiếp theo</label>
-              <textarea id="feedback-content" rows="8" placeholder="Ví dụ: Bạn giải thích component lifecycle rõ ràng. Cần nêu trade-off cụ thể hơn. Bước tiếp theo: luyện hai câu về state management." value={feedback} onChange={(event) => setFeedback(event.target.value)} readOnly={!isMentor && feedbackRes.includes('Đã lưu')} />
+              {selectedBooking && (
+                  <>
+                    <label className="field-label" htmlFor="feedback-content">Điểm mạnh, điểm cần cải thiện và hành động tiếp theo</label>
+                    <textarea id="feedback-content" rows="8" placeholder="Ví dụ: Bạn giải thích component lifecycle rõ ràng. Cần nêu trade-off cụ thể hơn. Bước tiếp theo: luyện hai câu về state management." value={feedback} onChange={(event) => setFeedback(event.target.value)} readOnly={!isMentor && feedbackRes.includes('Đã lưu')} />
 
-              <button className="primary-button" onClick={handleSubmitFeedback} disabled={!isMentor}><span>{isMentor ? 'Gửi phản hồi' : 'Chuyển sang Mentor để gửi'}</span><span className="button-icon"><ArrowIcon /></span></button>
-              <Message>{feedbackRes}</Message>
+                    <button className="primary-button" onClick={handleSubmitFeedback} disabled={!isMentor}><span>{isMentor ? 'Gửi phản hồi' : 'Chuyển sang Mentor để gửi'}</span><span className="button-icon"><ArrowIcon /></span></button>
+                    <Message>{feedbackRes}</Message>
+                  </>
+              )}
             </div>
           </section>
         </div>

@@ -81,16 +81,30 @@ CREATE TABLE notification_jobs (
 
 -- =============== CHÈN DỮ LIỆU MẪU ===============
 INSERT INTO users (id, name, role) VALUES 
-(1, 'Mentor A', 'Mentor'),
-(2, 'Student B', 'Student'),
-(3, 'Student C', 'Student');
+(1, 'Trần Minh Khoa', 'Mentor'),
+(2, 'Nguyễn An', 'Student'),
+(3, 'Lê Thu Hà', 'Student'),
+(4, 'Phạm Hoàng', 'Mentor'),
+(5, 'Đỗ Văn Cường', 'Student');
 -- Sửa sequence của users (Do insert ID thủ công)
-SELECT setval('users_id_seq', 3);
+SELECT setval('users_id_seq', 5);
 
 INSERT INTO slots (id, mentor_id, start_time, status) VALUES 
 (1, 1, '2026-09-01 10:00:00', 'Available'),
-(2, 1, '2026-09-02 10:00:00', 'Available');
-SELECT setval('slots_id_seq', 2);
+(2, 1, '2026-09-02 10:00:00', 'Available'),
+(3, 4, '2026-09-03 14:00:00', 'Available'),
+(4, 4, '2026-09-04 15:00:00', 'Available'),
+(5, 1, '2026-09-05 09:00:00', 'Available');
+SELECT setval('slots_id_seq', 5);
+
+-- Seed some bookings
+INSERT INTO bookings (id, student_id, slot_id, status, meeting_link) VALUES 
+(1, 2, 1, 'Pending', NULL),
+(2, 3, 2, 'Confirmed', 'https://meet.google.com/abc-xyz-123');
+SELECT setval('bookings_id_seq', 2);
+
+-- Cập nhật lại status của slots tương ứng
+UPDATE slots SET status = 'Booked' WHERE id IN (1, 2);
 
 -- Chèn câu hỏi & tags
 INSERT INTO questions (id, content) VALUES 

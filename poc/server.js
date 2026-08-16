@@ -65,8 +65,9 @@ app.post('/api/bookings', authMiddleware, async (req, res) => {
 // 3. MENTOR ACCEPT BOOKING (Double Booking, Transition, Outbox)
 app.post('/api/bookings/:id/accept', authMiddleware, async (req, res) => {
     const bookingId = req.params.id;
-    const client = await pool.connect();
+    let client;
     try {
+        client = await pool.connect();
         await client.query('BEGIN');
 
         // Khóa dòng Booking & Slot liên quan (Pessimistic Locking)
@@ -101,10 +102,10 @@ app.post('/api/bookings/:id/accept', authMiddleware, async (req, res) => {
         await client.query('COMMIT');
         res.json({ message: 'Xác nhận thành công' });
     } catch (error) {
-        await client.query('ROLLBACK');
+        if (client) await client.query('ROLLBACK');
         res.status(500).json({ error: error.message });
     } finally {
-        client.release();
+        if (client) client.release();
     }
 });
 
@@ -136,8 +137,9 @@ app.get('/api/bookings/:id/meeting-link', authMiddleware, async (req, res) => {
 // 5. HOÀN THÀNH BOOKING (Strict Transition)
 app.post('/api/bookings/:id/complete', authMiddleware, async (req, res) => {
     const bookingId = req.params.id;
-    const client = await pool.connect();
+    let client;
     try {
+        client = await pool.connect();
         await client.query('BEGIN');
         const bRes = await client.query('SELECT status FROM bookings WHERE id = $1 FOR UPDATE', [bookingId]);
         if (bRes.rows.length === 0) throw new Error('Not found');
@@ -156,10 +158,10 @@ app.post('/api/bookings/:id/complete', authMiddleware, async (req, res) => {
         await client.query('COMMIT');
         res.json({ message: 'Đã hoàn thành buổi phỏng vấn' });
     } catch (error) {
-        await client.query('ROLLBACK');
+        if (client) await client.query('ROLLBACK');
         res.status(500).json({ error: error.message });
     } finally {
-        client.release();
+        if (client) client.release();
     }
 });
 
@@ -171,9 +173,9 @@ app.post('/api/bookings/:id/feedback', authMiddleware, async (req, res) => {
         const bRes = await pool.query('SELECT status FROM bookings WHERE id = $1', [bookingId]);
         if (bRes.rows.length === 0) return res.status(404).json({ message: 'Not found' });
 
-        // Phải Completed mới được feedback
-        if (bRes.rows[0].status !== 'Completed') {
-            return res.status(400).json({ message: 'Chỉ được gửi feedback khi trạng thái là Completed' });
+        // Phải Confirmed hoặc Completed mới được feedback
+        if (bRes.rows[0].status !== 'Completed' && bRes.rows[0].status !== 'Confirmed') {
+            return res.status(400).json({ message: 'Chỉ được gửi feedback khi trạng thái là Confirmed hoặc Completed' });
         }
 
         await pool.query('INSERT INTO feedbacks (booking_id, content) VALUES ($1, $2)', [bookingId, content]);
@@ -183,6 +185,68 @@ app.post('/api/bookings/:id/feedback', authMiddleware, async (req, res) => {
         if (error.code === '23505') {
             return res.status(409).json({ message: 'Feedback đã tồn tại cho booking này' });
         }
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 7. GET ALL MENTORS
+app.get('/api/mentors', async (req, res) => {
+    try {
+        const result = await pool.query("SELECT id, name FROM users WHERE role = 'Mentor'");
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 8. GET SLOTS FOR A MENTOR
+app.get('/api/mentors/:id/slots', async (req, res) => {
+    const mentorId = req.params.id;
+    try {
+        const result = await pool.query(
+            "SELECT id, start_time FROM slots WHERE mentor_id = $1 AND status = 'Available' ORDER BY start_time ASC",
+            [mentorId]
+        );
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 9. GET BOOKINGS FOR CURRENT USER
+app.get('/api/bookings', authMiddleware, async (req, res) => {
+    try {
+        // Find current user role
+        const userRes = await pool.query('SELECT role FROM users WHERE id = $1', [req.userId]);
+        if (userRes.rows.length === 0) return res.status(404).json({ message: 'User not found' });
+        
+        const role = userRes.rows[0].role;
+        let query = '';
+        let params = [req.userId];
+
+        if (role === 'Student') {
+            query = `
+                SELECT b.id, b.status, b.meeting_link, s.start_time, m.name as mentor_name 
+                FROM bookings b 
+                JOIN slots s ON b.slot_id = s.id 
+                JOIN users m ON s.mentor_id = m.id 
+                WHERE b.student_id = $1
+                ORDER BY s.start_time DESC
+            `;
+        } else if (role === 'Mentor') {
+            query = `
+                SELECT b.id, b.status, b.meeting_link, s.start_time, st.name as student_name 
+                FROM bookings b 
+                JOIN slots s ON b.slot_id = s.id 
+                JOIN users st ON b.student_id = st.id 
+                WHERE s.mentor_id = $1
+                ORDER BY s.start_time DESC
+            `;
+        }
+
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
