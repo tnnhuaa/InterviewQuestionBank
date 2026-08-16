@@ -27,7 +27,7 @@ Reserve bảo vệ discovery, review, test, defect, tài liệu, học công ngh
 | Trí | 128 giờ | E2E PoC, seed data, integration tests, technical risk evidence | Core flow implementation |
 | Luân | 128 giờ | Architecture, ADR, stack, security/consistency/reliability design | PoC technical review |
 
-Mỗi người chịu trách nhiệm deliverable được giao trong `Task_W10.pdf`; ownership của Product, Architecture, Quality, Security/Privacy và Release không được để trống. Khi bắt đầu build MVP, các vai trò front-end, back-end, QA, DevOps và content được phân bổ theo work package thay vì giả định một người cho một chức danh cố định.
+Mỗi người chịu trách nhiệm deliverable được giao trong WBS/backlog; ownership của Product, Architecture, Quality, Security/Privacy và Release không được để trống. Khi bắt đầu build MVP, các vai trò front-end, back-end, QA, DevOps và content được phân bổ theo work package thay vì giả định một người cho một chức danh cố định.
 
 ## 3. Phân bổ effort dự kiến theo giai đoạn
 
@@ -54,7 +54,7 @@ Mỗi người chịu trách nhiệm deliverable được giao trong `Task_W10.p
 | Test | Unit, integration, E2E, UAT checklist | Bao phủ critical workflow và negative authorization test |
 | Documentation | Markdown trong repository | Versioned charter, ADR, plan, test evidence |
 
-Tên nhà cung cấp runtime được chốt ở ADR-001 sau skill matrix/spike; chỉ được chọn free tier nếu vẫn đạt security, backup và reliability yêu cầu.
+Tên nhà cung cấp runtime được chốt ở ADR-001 trong bảng Architecture decisions của `docs/Project_Architecture/software_architecture.md`, sau skill matrix/spike; chỉ được chọn free tier nếu vẫn đạt security, backup và reliability yêu cầu.
 
 ## 5. Quy tắc vận hành nguồn lực
 
