@@ -7,7 +7,7 @@
 
 ## 1. Kết luận điều hành
 
-Thị trường đã chứng minh nhu cầu đối với kho câu hỏi, peer practice và mentor coaching. Khoảng trống cần kiểm chứng là một trải nghiệm giá phù hợp, dùng được bằng tiếng Việt và chuyên biệt cho sinh viên/ứng viên entry-level, trong đó câu hỏi, booking và feedback dùng chung một ngữ cảnh.
+Thị trường đã chứng minh nhu cầu đối với kho câu hỏi, peer practice và mentor coaching. Khoảng trống cần kiểm chứng là trải nghiệm Việt Nam cho ứng viên entry-level, trong đó một JD cụ thể được chuyển thành preparation plan có explainable mapping rồi dùng làm ngữ cảnh chung cho câu hỏi, booking và feedback.
 
 ## 2. Quy ước bằng chứng
 
@@ -25,7 +25,7 @@ Thị trường đã chứng minh nhu cầu đối với kho câu hỏi, peer pr
 | LeetCode Study Plans | Mạnh về coding | Không | Không | Chấm bài kỹ thuật | Luyện thuật toán/coding |
 | Mentori Vietnam | Nội dung nghề nghiệp | Có | Có/tuỳ dịch vụ | Tuỳ mentor | Mentoring rộng tại Việt Nam |
 | Mentora | Nội dung/lộ trình | Có | Có/tuỳ dịch vụ | Tuỳ chương trình | Mentoring và đào tạo |
-| Sản phẩm đề xuất | Có cấu trúc | Mentor đã duyệt | Có | Rubric chung | Entry-level Việt Nam |
+| Sản phẩm đề xuất | Ánh xạ từ JD, có lý do | Mentor đã duyệt | Có, gắn JD/plan | Rubric + next action | JD-first, entry-level Việt Nam |
 
 ## 4. Đánh giá đối thủ
 
@@ -51,13 +51,13 @@ Thị trường đã chứng minh nhu cầu đối với kho câu hỏi, peer pr
 
 **Điểm mạnh:** nội dung coding phong phú, lộ trình rõ và cơ chế chấm tự động.
 
-**Khoảng trống để kiểm chứng:** không cung cấp marketplace mentor hoặc feedback về diễn đạt, hành vi và xử lý câu hỏi tiếp nối.
+**Khoảng trống để kiểm chứng:** không cung cấp vòng JD-to-plan-to-mentor hoặc feedback về diễn đạt, hành vi và xử lý câu hỏi tiếp nối.
 
 ### 4.5 Mentori Vietnam và Mentora
 
 **Điểm mạnh:** hiểu thị trường Việt Nam, có cộng đồng và mô hình kết nối mentor.
 
-**Khoảng trống để kiểm chứng:** phạm vi mentoring/đào tạo rộng; dự án đề xuất chuyên biệt hóa phiên mock interview ngắn, rubric và vòng lặp với Question Bank.
+**Khoảng trống để kiểm chứng:** phạm vi mentoring/đào tạo rộng; dự án đề xuất chuyên biệt hóa JD-to-plan, phiên mock interview ngắn, rubric và vòng lặp với Question Bank.
 
 ## 5. Rủi ro cạnh tranh
 
@@ -68,11 +68,11 @@ Thị trường đã chứng minh nhu cầu đối với kho câu hỏi, peer pr
 
 ## 6. Lợi thế cần chứng minh
 
-1. Người dùng tìm được nội dung phù hợp nhanh hơn cách tự tổng hợp.
-2. Booking với mentor có tỷ lệ hoàn tất đủ cao.
-3. Feedback theo rubric tạo ra hành động cải thiện rõ hơn feedback tự do.
-4. Question-to-mentor loop tăng activation hoặc retention so với hai công cụ rời.
-5. Mức giá phù hợp cho sinh viên và đủ hấp dẫn mentor.
+1. Người dùng chuyển JD thành text hiệu chỉnh và preparation plan dễ hơn cách tự tổng hợp.
+2. Requirement detection và Question mapping đạt ngưỡng trên blind JD, đồng thời giải thích được.
+3. Booking với mentor có tỷ lệ hoàn tất đủ cao khi mang theo JD/plan context.
+4. Feedback theo rubric tạo next action rõ hơn feedback tự do và quay lại đúng plan.
+5. Mức giá phù hợp cho sinh viên và đủ hấp dẫn mentor chỉ được nghiên cứu sau pilot miễn phí.
 
 ## 7. Nguồn
 
@@ -82,4 +82,3 @@ Thị trường đã chứng minh nhu cầu đối với kho câu hỏi, peer pr
 - [LeetCode — Top Interview 150](https://leetcode.com/studyplan/top-interview-150/)
 - [Mentori Vietnam](https://mentori.vn/c/mentori)
 - [Mentora](https://mentora.edu.vn/gioi-thieu/)
-

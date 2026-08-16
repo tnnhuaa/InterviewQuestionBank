@@ -1,76 +1,80 @@
-# Resource Plan — Interview Practice Platform
+# Resource Plan - Interview Practice Platform
 
-## 1. Mục đích và cơ sở lập kế hoạch
+## 1. Capacity baseline
 
-Tài liệu xác định trách nhiệm, capacity, công cụ và lịch sử dụng nguồn lực cho MVP. Vì nhóm, thời lượng và giờ cam kết chưa được xác nhận, kế hoạch dùng vai trò và tỷ lệ; không giả định số người hoặc ngày cụ thể.
-
-## 2. Nhân lực và trách nhiệm
-
-| Vai trò | Trách nhiệm chính | Deliverable | Người phụ trách |
-|---|---|---|---|
-| Sponsor | Phê duyệt charter, baseline, change lớn | Approval/decision | [CẦN BỔ SUNG] |
-| Product Owner/BA | Vision, discovery, backlog, acceptance | Requirements/backlog/UAT | [CẦN BỔ SUNG] |
-| PM/Scrum Master | Kế hoạch, sprint, risk, communication | Plan/status/risk log | [CẦN BỔ SUNG] |
-| UI/UX | Research, workflow, prototype, usability | Prototype/design system | [CẦN BỔ SUNG] |
-| Front-end | Web UI, state, accessibility, test | Student/Mentor/Admin UI | [CẦN BỔ SUNG] |
-| Back-end | API, domain, auth, booking concurrency | Services/API/data | [CẦN BỔ SUNG] |
-| QA | Test strategy, cases, automation, defect/UAT | Test report/quality evidence | [CẦN BỔ SUNG] |
-| DevOps/Security | CI/CD, environment, secret, monitoring | Deployment/observability | [CẦN BỔ SUNG] |
-| Content/Moderator | Taxonomy, question review, mentor/report policy | Pilot content/operations | [CẦN BỔ SUNG] |
-
-Một người có thể giữ nhiều vai trò. Nhóm phải ghi rõ accountable owner cho Product, Architecture, Quality, Security/Privacy và Release.
-
-## 3. Capacity và effort baseline
+Baseline này dùng để kiểm tra tính khả thi của MVP; không phải cam kết làm thêm giờ.
 
 | Thông tin | Giá trị |
-|---|---|
-| Số thành viên | [CẦN BỔ SUNG] |
-| Thời lượng | [CẦN BỔ SUNG] tuần |
-| Giờ/người/tuần | [CẦN BỔ SUNG] |
-| Capacity danh nghĩa | Thành viên × tuần × giờ/người/tuần |
-| Reserve | [CẦN BỔ SUNG]% cho học tập, risk và nghỉ |
-| Capacity commitment | Capacity danh nghĩa × (1 − reserve) |
+| --- | ---: |
+| Số thành viên | 6 |
+| Thời lượng | 8 tuần (29/06/2026-23/08/2026) |
+| Giờ/người/tuần | 16 giờ |
+| Capacity danh nghĩa | 6 x 8 x 16 = 768 giờ |
+| Reserve | 15% = 115 giờ |
+| Capacity cam kết cho scope | **~653 giờ** |
+| Nhịp làm việc | Sprint 2 tuần; review/reforecast ở cuối mỗi sprint |
 
-Quy tắc:
+Reserve bảo vệ discovery, review, test, defect, tài liệu, học công nghệ và rủi ro. Một story chỉ được đưa vào sprint sau khi đạt Definition of Ready và có estimate của người thực hiện.
 
-- Chỉ commit sau khi story đạt Definition of Ready và người thực hiện estimate.
-- Không dùng 100% capacity cho feature; dành chỗ cho discovery, review, test, defect và documentation.
-- Theo dõi actual effort, velocity, carry-over và blocker để reforecast.
-- Không bù lịch bằng overtime kéo dài.
+## 2. Phân công và ownership
 
-## 4. Môi trường và công cụ
+| Thành viên | Capacity danh nghĩa | Ownership chính | Hỗ trợ / kiểm tra chéo |
+| --- | ---: | --- | --- |
+| Gia Thành | 128 giờ | PM/Scrum Master, initiation & estimation; plan, risk, cost/time/resource, release coordination | Review requirement, UAT, documentation |
+| Tuấn Anh | 128 giờ | Trưởng nhóm / leadership & governance; scope review, stakeholder alignment | Review chất lượng delivery, issue escalation và priority quyết định |
+| Hùng | 128 giờ | UI/UX; research, workflow, clickable prototype, usability evidence | UI acceptance và accessibility |
+| Hưng | 128 giờ | Product Owner/BA; scope, backlog, acceptance criteria, content/business rule | Discovery và UAT acceptance |
+| Trí | 128 giờ | PoC/E2E; seed data, integration tests, technical risk evidence | Core flow implementation |
+| Luân | 128 giờ | Architecture/technical lead; ADR, stack, security/consistency/reliability design | PoC technical review |
 
-| Nhóm | Nhu cầu | Lựa chọn/Trạng thái |
-|---|---|---|
-| Backlog | Story, acceptance, sprint, defect | [CẦN CHỌN] |
-| Repository | Source control, PR review | [CẦN CHỌN] |
-| Design | Wireframe/prototype | [CẦN CHỌN] |
-| CI/CD | Build, test, deploy | [CẦN CHỌN] |
-| Web/API | Framework production | Chốt bằng ADR sau spike |
-| Database | Transaction, constraint, backup | Relational DB đề xuất |
-| Email | Booking notification | Provider + retry/fallback |
-| Meeting | External link | Google Meet/Zoom/manual link |
-| Analytics | Funnel/KPI, privacy-aware | [CẦN CHỌN] |
-| Test | Unit, integration, E2E, UAT | [CẦN CHỌN] |
+Mỗi người chịu trách nhiệm deliverable được giao trong WBS/backlog; ownership của Product, Architecture, Quality, Security/Privacy và Release không được để trống. Khi bắt đầu build MVP, các vai trò front-end, back-end, QA, DevOps và content được phân bổ theo work package thay vì giả định một người cho một chức danh cố định.
 
-## 5. Resource schedule
+## 3. Phân bổ effort dự kiến theo giai đoạn
 
-| Giai đoạn | Tỷ lệ | Resource trọng tâm |
-|---|---:|---|
-| Discovery/charter | 15% | Sponsor, PO/BA, UX, Student/Mentor sample |
-| Prototype/requirements | 15% | PO/BA, UX, QA, tech leads |
-| Foundation | 15% | Back-end, Front-end, DevOps, QA |
-| Question Bank | 15% | Content, PO, Front-end, Back-end, QA |
-| Mentor Marketplace | 25% | Full team, mentor reviewers |
-| Integration/UAT/release | 15% | QA, DevOps, PO, pilot users, full team |
+| Giai đoạn | Tuần | Capacity cam kết tham chiếu | Trọng tâm nguồn lực |
+| --- | ---: | ---: | --- |
+| Discovery/charter | 1 | 82 giờ | Gia Thành, Tuấn Anh, Hưng, Hùng; mentor/student sample |
+| Prototype/requirement | 2 | 81 giờ | Hưng, Hùng, Gia Thành, Tuấn Anh; requirement và workflow baseline |
+| Foundation | 3 | 82 giờ | Luân, Trí; auth, schema, CI/CD, test foundation |
+| JD intake & analysis | 4 | 81 giờ | Hưng, Trí, Hùng, Gia Thành; extraction/OCR, taxonomy, matching, prep plan |
+| Marketplace core loop | 5-6 | 163 giờ | Cả nhóm; availability, booking, notification, feedback |
+| UAT/release | 7-8 | 164 giờ | Gia Thành, Tuấn Anh, Hưng, Trí, Luân; pilot users, defect triage và release |
+| **Tổng** | **8** | **~653 giờ** | |
 
-## 6. Resource risks và mitigation
+## 4. Công cụ và cơ sở vật chất
 
-| Risk | Indicator | Mitigation | Contingency |
-|---|---|---|---|
-| Thiếu skill về concurrency/security | Spike thất bại, defect quyền truy cập | Spike/POC sớm, pair review | Thu hẹp workflow và dùng managed service phù hợp |
-| Phụ thuộc một thành viên | Task/blocker chỉ một người xử lý | Pairing, ADR, docs, code review | Reassign và giảm WIP |
-| Thiếu mentor/student test | Không đủ lịch research/UAT | Tuyển từ discovery, đặt lịch sớm | Controlled usability/concierge pilot |
-| Quota/provider | Cảnh báo quota hoặc outage | Monitor, adapter, free-tier review | Fallback/manual notification |
-| Capacity thấp hơn dự kiến | Carry-over hai sprint | Re-estimate và ưu tiên Must | Cắt Should/Could, giữ core loop |
+| Nhu cầu | Lựa chọn baseline | Mục đích / kiểm soát |
+| --- | --- | --- |
+| Backlog và quyết định | GitHub Issues/Projects hoặc công cụ tương đương | Story, acceptance, sprint, defect, decision log |
+| Repository | Git + GitHub, protected main, Pull Request review | Version control, review, traceability |
+| Design | Figma | Prototype, usability evidence, handoff |
+| CI/CD | GitHub Actions hoặc pipeline tương đương | Build, test, deploy; secret không nằm trong repo |
+| Database | Relational DB managed/free tier phù hợp ADR | Transaction, constraint, migration, backup |
+| Notification/meeting | Email provider và Google Meet/Zoom link ngoài | Retry/fallback; meeting provider không là source of truth |
+| Test | Unit, integration, E2E, UAT checklist | Bao phủ critical workflow và negative authorization test |
+| Documentation | Markdown trong repository | Versioned charter, ADR, plan, test evidence |
 
+Tên nhà cung cấp runtime được chốt ở ADR-001 trong bảng Architecture decisions của `docs/Project_Architecture/software_architecture.md`, sau skill matrix/spike; chỉ được chọn free tier nếu vẫn đạt security, backup và reliability yêu cầu.
+
+## 5. Quy tắc vận hành nguồn lực
+
+- Theo dõi actual effort, carry-over, blocker và velocity theo sprint; reforecast khi carry-over hoặc velocity thấp kéo dài hai sprint.
+- Ưu tiên cắt Should/Could trước; không cắt kiểm soát access, consistency, audit, test hay UAT của core loop.
+- Mọi thay đổi làm forecast vượt khoảng 653 giờ hoặc 1.125.000 VND cash budget cần change request và quyết định PO/Sponsor. Trong cửa sổ 8 tuần, chỉ core loop JD-to-feedback và các kiểm soát chất lượng bắt buộc được ưu tiên; Should/Could hoặc hạng mục không cần cho pilot phải được dời sau release.
+- Pair review cho booking concurrency, authorization, notification và deployment; tài liệu/ADR giảm phụ thuộc vào một người.
+
+## 6. Resource risks
+
+| Rủi ro | Dấu hiệu | Phòng ngừa | Contingency |
+| --- | --- | --- | --- |
+| Thiếu skill về concurrency/security | Spike/PoC fail hoặc defect quyền truy cập | Spike sớm, ADR, pair review, negative tests | Thu hẹp workflow, dùng managed service phù hợp |
+| Phụ thuộc một thành viên | Chỉ một người xử lý blocker/domain | PR review, docs, pairing, WIP limit | Reassign và giảm scope không cốt lõi |
+| Thiếu mentor/student thử nghiệm | Không có lịch discovery/UAT | Tuyển và đặt lịch từ tuần 1 | Concierge pilot có kiểm soát |
+| Provider/quota lỗi | Alert quota/outage | Adapter, retry, monitor | In-app/manual notification |
+| Capacity thấp hơn forecast | Carry-over hai sprint | Re-estimate, bảo vệ reserve | Cắt Should/Could, xin quyết định Go/No-Go |
+
+## 7. Tham chiếu
+
+- `docs/refs/03-software-project-initiation.md`, slide 008-009: charter cần governance/resources; RAM/RACI làm rõ trách nhiệm.
+- `docs/refs/05-1-work-breakdown-structure.md`, slide 025 và 033: WBS giúp estimate/control; chỉ gồm 100% công việc trong scope.
+- `docs/Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md`: 20 Must stories, dependency và Definition of Ready.
