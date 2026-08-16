@@ -4,7 +4,7 @@
 |---|---|
 | Trạng thái | Accepted, pending PoC evidence |
 | Ngày quyết định | 14/08/2026 |
-| Liên quan | BR-02, BR-08; US-11, US-12, US-13; POC-1 |
+| Liên quan | BR-02, BR-08; US-11, US-12, US-13; architecture validation scenario: Booking consistency |
 
 ## 1. Bối cảnh
 

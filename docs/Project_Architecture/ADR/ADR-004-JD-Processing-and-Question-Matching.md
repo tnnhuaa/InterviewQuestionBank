@@ -43,8 +43,9 @@ Các constraint của PoC:
 - Pasted text đi thẳng vào `extracted_text` nhưng vẫn cần màn hình xác nhận.
 - PDF được direct-extract trước. Nếu không có usable text hoặc text density dưới ngưỡng cấu hình, document được phân loại là scan và chuyển qua OCR adapter.
 - PNG/JPEG đi qua internal OCR adapter. OCR implementation nằm sau interface để PoC có thể thay library mà không đổi module contract.
-- Original file được lưu tạm trong private object storage bằng opaque key; PostgreSQL chỉ giữ private reference và metadata cần thiết.
-- Processing dùng PostgreSQL-backed job với trạng thái `PENDING`, `PROCESSING`, `SUCCEEDED`, `FAILED`, attempt/error class và `extraction_version`. PoC một instance có thể chạy worker cùng backend process.
+- PoC lưu original file tạm thời sau `PrivateFileStorage` adapter, dùng opaque key và xóa sau extraction hoặc chậm nhất 24 giờ; PoC không bắt buộc triển khai durable object storage.
+- MVP/pilot dùng private object storage sau cùng adapter; PostgreSQL chỉ giữ private reference và metadata cần thiết.
+- File extraction dùng PostgreSQL-backed job với trạng thái `PENDING`, `PROCESSING`, `SUCCEEDED`, `FAILED`, attempt/error class và `extraction_version`. Pasted text không tạo extraction job. PoC một instance có thể chạy worker cùng backend process.
 - Kết quả luôn đi qua manual correction. `analyze` chỉ nhận `corrected_text` đã xác nhận và expected text version.
 - Supported PoC input: pasted text, PDF, PNG, JPEG; tối đa 10 MB/file. Giới hạn page, language pack và timeout phải được chốt trong PoC README theo corpus pilot.
 
@@ -80,7 +81,7 @@ Các constraint của PoC:
 
 ### Tích cực
 
-- Luồng có thể chạy end-to-end mà không cần AI hoặc hạ tầng mới ngoài private storage.
+- Luồng có thể chạy end-to-end mà không cần AI, external OCR hoặc durable object storage trong PoC.
 - Kết quả có nguồn và version nên debug, review relevance và regression test được.
 - Manual correction tạo control point ngăn extraction error lan truyền âm thầm.
 - Adapter boundary cho phép thay parser/OCR hoặc thêm semantic matcher sau này bằng ADR mới.
