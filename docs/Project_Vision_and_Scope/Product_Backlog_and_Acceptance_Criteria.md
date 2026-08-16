@@ -2,7 +2,7 @@
 
 ## 1. Mục đích
 
-Tài liệu chuyển phạm vi sản phẩm lấy JD làm điểm bắt đầu và quy trình mục tiêu đã phê duyệt thành Product Backlog có thứ tự và có thể kiểm thử. Theo Project Charter trên `main`, **Hưng là Product Owner/BA**, chịu trách nhiệm Vision & Scope, Product Backlog, acceptance criteria và Future-State Workflow; Product Owner sắp thứ tự backlog và chấp nhận story. Tài liệu xác định câu chuyện người dùng, độ ưu tiên, phụ thuộc, Điểm câu chuyện (Story Point), tiêu chí chấp nhận, yêu cầu chất lượng, truy vết và kiểm soát phát hành. Backlog phải đầy đủ và Product Owner phải sắp thứ tự ưu tiên theo giá trị như yêu cầu tại [Scrum, Slides 014–015](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-014--the-product-backlog).
+Tài liệu chuyển phạm vi sản phẩm lấy JD làm điểm bắt đầu và quy trình mục tiêu đã phê duyệt thành Product Backlog có thứ tự và có thể kiểm thử. Theo Project Charter trên `main`, **Hưng là Product Owner/BA**, chịu trách nhiệm Vision & Scope, Product Backlog, acceptance criteria và Future-State Workflow; Product Owner sắp thứ tự backlog và chấp nhận story. Tài liệu xác định câu chuyện người dùng, độ ưu tiên, phụ thuộc, Điểm câu chuyện (Story Point), tiêu chí chấp nhận, yêu cầu chất lượng, truy vết và kiểm soát phát hành. Backlog phải đầy đủ và Product Owner phải sắp thứ tự ưu tiên theo giá trị.
 
 ### 1.1 Vai trò áp dụng cho backlog
 
@@ -27,7 +27,7 @@ Bảng này áp dụng phân công từ Charter, không tạo vai trò mới và
 
 ### 1.3 Quy tắc nghiệp vụ
 
-Quy tắc nghiệp vụ dùng mã ổn định, ghi rõ nguồn/chủ sở hữu và mức độ có thể thay đổi theo [User Requirements, Slide 007](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-007--business-rules).
+Quy tắc nghiệp vụ dùng mã ổn định, ghi rõ nguồn/chủ sở hữu và mức độ có thể thay đổi.
 
 | Mã | Quy tắc | Nguồn/chủ sở hữu | Khả năng thay đổi |
 |---|---|---|---|
@@ -108,8 +108,8 @@ Lựa chọn R1 chỉ trở thành cam kết bàn giao sau khi Product Owner ph�
 
 ### 2.1 Phương pháp và tổng Điểm câu chuyện
 
-- Điểm câu chuyện biểu thị kích thước tổng thể tương đối, không phải số giờ ([Agile Estimation, Slide 005](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/05-3-agile-estimation.md#slide-005--estimating-size-with-story-points-1)).
-- Ước lượng dùng dãy Fibonacci `1, 2, 3, 5, 8`; khoảng cách lớn hơn thể hiện độ bất định cao hơn ([Slide 008](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/05-3-agile-estimation.md#slide-008--the-estimation-scale)). Đây là ước lượng ban đầu bằng so sánh/phân rã và cần xác nhận bằng Planning Poker ([Slides 009–013](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/05-3-agile-estimation.md#slide-009--deriving-an-estimate-analogy-1-2)).
+- Điểm câu chuyện biểu thị kích thước tổng thể tương đối, không phải số giờ.
+- Ước lượng dùng dãy Fibonacci `1, 2, 3, 5, 8`; khoảng cách lớn hơn thể hiện độ bất định cao hơn. Đây là ước lượng ban đầu bằng so sánh/phân rã và cần xác nhận bằng Planning Poker.
 - Mỗi SP bao phủ một câu chuyện dọc hoàn chỉnh, gồm hiện thực, kiểm thử, tài liệu và bằng chứng chấp nhận. EN-01–EN-09 là cổng chất lượng/bàn giao đã nằm trong các câu chuyện liên quan; nếu lập lịch riêng cho một công việc hỗ trợ thì phải ước lượng riêng và kiểm tra lại để tránh tính hai lần.
 - `US-03 = 2 SP` là mốc cho phần lưu dữ liệu nhỏ; công việc đầu-cuối có giới hạn thường là `3–5 SP`; `8 SP` biểu thị độ bất định hoặc cần tách. US-01, US-12, US-13, US-19, US-23, US-25, US-27 và US-28 phải được xem xét tách trước khi cam kết sprint.
 
@@ -136,7 +136,7 @@ Lựa chọn R1 chỉ trở thành cam kết bàn giao sau khi Product Owner ph�
 
 ## 4. Tiêu chí chấp nhận
 
-Tiêu chí chấp nhận là hợp đồng kiểm chứng, không phải tuyên bố tính năng đã hiện thực. Luồng rủi ro phải gồm ca thành công, âm, biên, độc hại, phân quyền, đồng thời và lỗi nhà cung cấp theo [Software Quality Management, Slide 007](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-software-quality-management.md#slide-007--how-to-meet-user-requirements).
+Tiêu chí chấp nhận là hợp đồng kiểm chứng, không phải tuyên bố tính năng đã hiện thực. Luồng rủi ro phải gồm ca thành công, âm, biên, độc hại, phân quyền, đồng thời và lỗi nhà cung cấp.
 
 | Mã AC | Câu chuyện | Loại | Tiêu chí chấp nhận theo Điều kiện / Khi / Kết quả |
 |---|---|---|---|
@@ -184,7 +184,7 @@ Tiêu chí chấp nhận là hợp đồng kiểm chứng, không phải tuyên 
 
 ## 5. Yêu cầu chất lượng
 
-Yêu cầu chất lượng là đường cơ sở đặc tả có thể đo vì không thể đánh giá chất lượng nếu thiếu yêu cầu và tiêu chí so sánh ([Software Quality Management, Slides 024–027](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-software-quality-management.md#slide-024--6-define-quality-requirements)).
+Yêu cầu chất lượng là đường cơ sở đặc tả có thể đo vì không thể đánh giá chất lượng nếu thiếu yêu cầu và tiêu chí so sánh.
 
 | Mã | Yêu cầu | Truy vết câu chuyện/PBI | Cách kiểm chứng |
 |---|---|---|---|
@@ -253,7 +253,7 @@ Một câu chuyện chỉ Sẵn sàng khi có tác nhân/giá trị, tiêu chí 
 - Bản dựng tích hợp được triển khai lên môi trường mục tiêu, được thành viên khác kiểm tra nhanh và không còn lỗi Mức nghiêm trọng/Cao đang mở.
 - Backlog phát hành, kế hoạch/lịch, hướng dẫn người dùng/triển khai và liên kết bằng chứng được cập nhật.
 
-Các điều kiện này hiện thực hóa [Scrum, Slides 035–036](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-035--example-dod-1) và yêu cầu “sẵn sàng cho môi trường thật” tại [Agile Quality, Slide 016](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-1-agile-quality-management.md#slide-016--9-create-definition-of-done).
+Các điều kiện này bảo đảm hạng mục chỉ được xem là hoàn thành khi đã sẵn sàng cho môi trường mục tiêu và có đủ bằng chứng kiểm chứng.
 
 ## 8. Ma trận truy vết yêu cầu
 
@@ -275,7 +275,7 @@ Các điều kiện này hiện thực hóa [Scrum, Slides 035–036](https://gi
 
 ## 9. Kế hoạch phát hành
 
-R1 dự kiến gồm bốn sprint, mỗi sprint hai tuần, từ 29/06/2026 đến 23/08/2026. Kế hoạch theo ngày cố định phải dùng PBI đã ước lượng/ưu tiên và khoảng vận tốc của nhóm theo [Agile Planning, Slides 021–023](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/06-1-agile-planning.md#slide-021--7-create-a-fixed-date-release-plan-i).
+R1 dự kiến gồm bốn sprint, mỗi sprint hai tuần, từ 29/06/2026 đến 23/08/2026. Kế hoạch theo ngày cố định phải dùng PBI đã ước lượng/ưu tiên và khoảng vận tốc của nhóm.
 
 | Nhóm backlog | Câu chuyện | SP ban đầu | Ràng buộc kế hoạch |
 |---|---:|---:|---|

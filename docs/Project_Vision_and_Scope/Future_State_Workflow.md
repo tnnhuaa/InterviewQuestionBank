@@ -2,7 +2,7 @@
 
 ## 1. Định nghĩa quy trình
 
-Trạng thái tương lai mô tả quy trình nghiệp vụ hộp đen của MVP: Sinh viên đưa một Mô tả công việc (JD) vào hệ thống, kiểm tra văn bản, nhận kế hoạch chuẩn bị có ánh xạ câu hỏi, rồi tự luyện hoặc đặt Cố vấn và dùng phản hồi để cập nhật kế hoạch. Trường/lược đồ/ràng buộc kỹ thuật thuộc tài liệu Kiến trúc. Cách mô tả ca sử dụng và miền hiện tại/tương lai nằm trong cấu trúc Tầm nhìn & Phạm vi của [User Requirements, Slide 017](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4).
+Trạng thái tương lai mô tả quy trình nghiệp vụ hộp đen của MVP: Sinh viên đưa một Mô tả công việc (JD) vào hệ thống, kiểm tra văn bản, nhận kế hoạch chuẩn bị có ánh xạ câu hỏi, rồi tự luyện hoặc đặt Cố vấn và dùng phản hồi để cập nhật kế hoạch. Trường/lược đồ/ràng buộc kỹ thuật thuộc tài liệu Kiến trúc.
 
 Theo phân công trong Project Charter, Hưng (Product Owner/BA) chịu trách nhiệm quy trình nghiệp vụ; Hùng (UI/UX) kiểm tra tính nhất quán trải nghiệm/nguyên mẫu; Trí (PoC/E2E) kiểm chứng khả thi đầu-cuối; Luân (Architecture/technical lead) kiểm tra ràng buộc kiến trúc; Tuấn Anh (Trưởng nhóm / leadership & governance) điều phối tích hợp/readiness; Gia Thành (PM/Scrum Master, initiation & estimation) theo dõi tác động đến baseline/lịch/rủi ro.
 
@@ -229,7 +229,7 @@ erDiagram
 
 ## 11. Kịch bản kiểm chứng quy trình
 
-Các kịch bản dưới đây là điều kiện cần kiểm thử, không phải tuyên bố đã đạt. Việc dùng ca thành công, âm, biên, độc hại và kiểm thử quy trình bám theo [Software Quality Management, Slide 007](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-software-quality-management.md#slide-007--how-to-meet-user-requirements).
+Các kịch bản dưới đây là điều kiện cần kiểm thử, không phải tuyên bố đã đạt. Phạm vi kiểm thử bao gồm ca thành công, âm, biên, độc hại và kiểm thử quy trình.
 
 | Mã | Kịch bản | Kết quả mong đợi |
 |---|---|---|

@@ -2,7 +2,7 @@
 
 ## 1. Mục đích tài liệu
 
-Tài liệu xác định tầm nhìn sản phẩm, người dùng mục tiêu, vấn đề cần giải quyết, mục tiêu sản phẩm, ranh giới MVP, giả định, ràng buộc và hướng phát triển tương lai. Đây là đầu vào cho Danh sách công việc sản phẩm (Product Backlog), Quy trình Tương lai, nguyên mẫu, kiến trúc, PoC và UAT. Cấu trúc bám theo nội dung Tầm nhìn & Phạm vi trong [User Requirements, Slides 017–018](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-017--project-vision-and-scope-4).
+Tài liệu xác định tầm nhìn sản phẩm, người dùng mục tiêu, vấn đề cần giải quyết, mục tiêu sản phẩm, ranh giới MVP, giả định, ràng buộc và hướng phát triển tương lai. Đây là đầu vào cho Danh sách công việc sản phẩm (Product Backlog), Quy trình Tương lai, nguyên mẫu, kiến trúc, PoC và UAT.
 
 Theo Project Charter, Hưng là Product Owner/BA và chịu trách nhiệm tài liệu này. Hùng (UI/UX) được tham vấn về trải nghiệm/nghiên cứu; Trí (PoC/E2E) về kiểm chứng khả thi; Luân (Architecture/technical lead) về kiến trúc; Tuấn Anh (Trưởng nhóm / leadership & governance) về quản trị, tích hợp và readiness; Gia Thành (PM/Scrum Master, initiation & estimation) về baseline, ước lượng, lịch và rủi ro. Việc tham vấn không thay quyền sở hữu phạm vi và backlog của Product Owner.
 
@@ -49,7 +49,7 @@ Sau khi chứng minh chất lượng trích xuất/ánh xạ và khả năng v�
 
 ### 6.1 Vấn đề chính
 
-Ứng viên đọc một JD cụ thể nhưng không biết cần ôn kiến thức, kỹ năng và câu hỏi nào để chuẩn bị phỏng vấn. Đây là giả thuyết sản phẩm cần được kiểm chứng bằng phỏng vấn khám phá; chưa được xem là kết quả nghiên cứu đã xác nhận. Cách mô tả khoảng cách giữa trạng thái hiện tại và trạng thái mục tiêu dựa trên [Business Requirements, Slide 019](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-1-business-requirements.md#slide-019--problem-definition-2).
+Ứng viên đọc một JD cụ thể nhưng không biết cần ôn kiến thức, kỹ năng và câu hỏi nào để chuẩn bị phỏng vấn. Đây là giả thuyết sản phẩm cần được kiểm chứng bằng phỏng vấn khám phá; chưa được xem là kết quả nghiên cứu đã xác nhận.
 
 ### 6.2 Điểm khó khăn hiện tại
 
@@ -92,7 +92,7 @@ Cần quản lý bộ phân loại/tên đồng nghĩa, câu hỏi, Cố vấn, 
 
 ## 8. Mục tiêu sản phẩm và cách đo
 
-Mục tiêu là yêu cầu cấp cao và yêu cầu chi tiết phải đóng góp trực tiếp vào mục tiêu theo [Business Requirements, Slides 044–046](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-1-business-requirements.md#slide-044--goals). Các ngưỡng dưới đây là đề xuất; đường cơ sở phải được đo bằng khám phá, bộ JD thử nghiệm, kiểm thử khả dụng hoặc dữ liệu thử nghiệm trước khi dùng để kết luận.
+Mục tiêu cấp cao và yêu cầu chi tiết phải đóng góp trực tiếp vào mục tiêu sản phẩm. Các ngưỡng dưới đây là đề xuất; đường cơ sở phải được đo bằng khám phá, bộ JD thử nghiệm, kiểm thử khả dụng hoặc dữ liệu thử nghiệm trước khi dùng để kết luận.
 
 | Mã | Mục tiêu | Số đo/công thức | Đường cơ sở | Ngưỡng đề xuất | Nguồn đo | Chủ sở hữu |
 |---|---|---|---|---:|---|---|
@@ -120,7 +120,7 @@ Mục tiêu là yêu cầu cấp cao và yêu cầu chi tiết phải đóng gó
 
 ## 9. Phạm vi MVP
 
-Phát biểu phạm vi nêu rõ phần bao gồm, loại trừ, sản phẩm bàn giao, ràng buộc và giả định theo [User Requirements, Slide 018](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-018--project-scope-statement-5).
+Phát biểu phạm vi nêu rõ phần bao gồm, loại trừ, sản phẩm bàn giao, ràng buộc và giả định.
 
 ### 9.1 Trong phạm vi
 

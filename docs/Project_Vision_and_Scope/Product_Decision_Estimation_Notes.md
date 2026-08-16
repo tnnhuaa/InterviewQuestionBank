@@ -114,10 +114,10 @@ Năng lực không tự chứng minh backlog khả thi. Điểm câu chuyện l�
 - Bản ghi Planning Poker, khoảng vận tốc sprint, công sức/chi phí thực tế và dự báo lại.
 - Bản ghi phê duyệt tương ứng của PO, Kiến trúc, Quyền riêng tư/Vận hành và Nhà tài trợ.
 
-## 8. Tài liệu tham chiếu
+## 8. Nguyên tắc áp dụng
 
-- Quy tắc nghiệp vụ phải có mã, nguồn và khả năng thay đổi: [User Requirements, Slide 007](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/03-2-user-requirements.md#slide-007--business-rules).
-- Backlog phải đầy đủ và PO ưu tiên giá trị trước: [Scrum, Slides 014–015](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/04-02-scrum-development-process.md#slide-014--the-product-backlog).
-- Điểm câu chuyện là kích thước tương đối và dùng Fibonacci/Planning Poker: [Agile Estimation, Slides 005–013](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/05-3-agile-estimation.md#slide-005--estimating-size-with-story-points-1).
-- Kế hoạch theo ngày cố định cần khoảng vận tốc và đường “chắc chắn có/có thể có”: [Agile Planning, Slides 021–023](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/06-1-agile-planning.md#slide-021--7-create-a-fixed-date-release-plan-i).
-- Chất lượng phải có số đo, phương pháp đánh giá và chuẩn so sánh: [Software Quality Management, Slides 024–027](https://github.com/tnnhuaa/InterviewQuestionBank/blob/05ff4b99ae133de9b0f7c2f0de3585390b933718/docs/refs/11-software-quality-management.md#slide-024--6-define-quality-requirements).
+- Quy tắc nghiệp vụ phải có mã, nguồn và khả năng thay đổi.
+- Backlog phải đầy đủ và Product Owner ưu tiên giá trị trước.
+- Điểm câu chuyện là kích thước tương đối và dùng Fibonacci/Planning Poker.
+- Kế hoạch theo ngày cố định cần khoảng vận tốc và đường “chắc chắn có/có thể có”.
+- Chất lượng phải có số đo, phương pháp đánh giá và chuẩn so sánh.
