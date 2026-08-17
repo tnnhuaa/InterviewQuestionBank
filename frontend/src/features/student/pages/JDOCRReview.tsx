@@ -21,7 +21,7 @@ function ReviewEditor({ jd }: { jd: JobDescription }) {
       const job = await jobDescriptionsApi.startAiAnalysis(jd.id, confirmed.correctedVersion);
       return { confirmed, aiJobId: job.id };
     } catch (error) {
-      const fallbackCodes = new Set(["AI_DISABLED", "AI_PROVIDER_UNAVAILABLE", "AI_DAILY_BUDGET_REACHED"]);
+      const fallbackCodes = new Set(["AI_DISABLED", "AI_DISABLED_BY_OPERATIONS", "AI_PROVIDER_UNAVAILABLE", "AI_DAILY_BUDGET_REACHED"]);
       if (!(error instanceof ApiError) || !fallbackCodes.has(error.code)) throw error;
       await jobDescriptionsApi.analyze(jd.id, confirmed.correctedVersion);
       return { confirmed, aiJobId: null };

@@ -3,6 +3,7 @@ import { withTransaction } from "../../platform/db/transaction.js";
 import { writeAudit } from "../../platform/audit.js";
 import { findIdempotentResult, saveIdempotentResult } from "../../platform/idempotency.js";
 import { enqueueNotification } from "../../platform/outbox.js";
+import { featureByJobKind } from "../ai/jobs.js";
 
 const actionsByType = {
   MENTOR_VERIFICATION: ["RESOLVE", "DISMISS", "ASSIGN"],
@@ -14,6 +15,7 @@ const actionsByType = {
   NO_SHOW: ["CONFIRM_NO_SHOW", "DISMISS", "ASSIGN"],
   COMPLETION_DISPUTE: ["UPHOLD_DISPUTE", "DISMISS_DISPUTE", "ASSIGN"],
   REVIEW_MODERATION: ["PUBLISH_REVIEW", "HIDE_REVIEW", "DISMISS", "ASSIGN"],
+  AI_JOB_FAILED: ["RETRY_AI_JOB", "DISABLE_FEATURE", "DISMISS", "ASSIGN"],
 };
 
 async function cancelReminders(client, bookingId) {
@@ -62,10 +64,19 @@ function caseDto(row) {
     updatedAt: row.updated_at,
     version: row.version,
     allowedActions: actionsByType[row.case_type] ?? [],
+    aiJob: row.ai_kind ? {
+      id: row.target_id,
+      kind: row.ai_kind,
+      status: row.ai_status,
+      errorCode: row.ai_error_code,
+      attemptCount: row.ai_attempt_count,
+      maxAttempts: row.ai_max_attempts,
+      model: row.ai_model,
+    } : undefined,
   };
 }
 
-export function createOperationsService({ pool }) {
+export function createOperationsService({ pool, environment }) {
   async function listCases({ status, type, page, pageSize }) {
     const values = [];
     const clauses = [];
@@ -82,7 +93,14 @@ export function createOperationsService({ pool }) {
   }
 
   async function getCase(id) {
-    const result = await pool.query("SELECT * FROM operation_cases WHERE id = $1", [id]);
+    const result = await pool.query(
+      `SELECT oc.*, aj.kind AS ai_kind, aj.status AS ai_status, aj.error_code AS ai_error_code,
+              aj.attempt_count AS ai_attempt_count, aj.max_attempts AS ai_max_attempts, aj.model AS ai_model
+       FROM operation_cases oc LEFT JOIN ai_jobs aj
+         ON oc.case_type = 'AI_JOB_FAILED' AND oc.target_type = 'AI_JOB' AND aj.id = oc.target_id
+       WHERE oc.id = $1`,
+      [id],
+    );
     if (!result.rowCount) throw notFoundError();
     return caseDto(result.rows[0]);
   }
@@ -130,6 +148,44 @@ export function createOperationsService({ pool }) {
           `UPDATE notification_outbox SET status = 'RETRY', attempt_count = 0,
              available_at = now(), last_error_class = NULL WHERE id = $1 AND status = 'DEAD'`,
           [row.target_id],
+        );
+      } else if (input.action === "RETRY_AI_JOB") {
+        const job = await client.query("SELECT * FROM ai_jobs WHERE id = $1 AND status = 'FAILED' FOR UPDATE", [row.target_id]);
+        if (!job.rowCount) throw notFoundError();
+        const feature = featureByJobKind[job.rows[0].kind];
+        const control = await client.query("SELECT enabled FROM ai_feature_controls WHERE feature = $1", [feature]);
+        if (!environment.ai.enabled || !environment.ai.features[feature] || (control.rowCount && !control.rows[0].enabled)) {
+          throw new AppError({
+            status: 409,
+            code: "AI_FEATURE_DISABLED",
+            message: "Tính năng AI đang tắt. Hãy bật cấu hình triển khai trước khi đưa job lại vào hàng đợi.",
+            recovery: { kind: "CONTACT_SUPPORT", retryable: false, retryAfterSeconds: null },
+          });
+        }
+        await client.query(
+          `UPDATE ai_jobs SET status = 'PENDING', attempt_count = 0, error_code = NULL,
+             available_at = now(), started_at = NULL, finished_at = NULL, duration_ms = NULL,
+             locked_at = NULL, locked_until = NULL, updated_at = now()
+           WHERE id = $1`,
+          [row.target_id],
+        );
+      } else if (input.action === "DISABLE_FEATURE") {
+        const job = await client.query("SELECT kind FROM ai_jobs WHERE id = $1 FOR UPDATE", [row.target_id]);
+        if (!job.rowCount) throw notFoundError();
+        const feature = featureByJobKind[job.rows[0].kind];
+        if (!feature) throw notFoundError();
+        await client.query(
+          `INSERT INTO ai_feature_controls(feature, enabled, updated_by, reason)
+           VALUES ($1, false, $2, $3)
+           ON CONFLICT (feature) DO UPDATE SET enabled = false, updated_by = EXCLUDED.updated_by,
+             reason = EXCLUDED.reason, updated_at = now(), version = ai_feature_controls.version + 1`,
+          [feature, actorId, input.reason],
+        );
+        await client.query(
+          `UPDATE ai_jobs SET status = 'CANCELLED', error_code = 'AI_DISABLED_BY_OPERATIONS',
+             finished_at = now(), updated_at = now()
+           WHERE kind = $1 AND status = 'PENDING'`,
+          [job.rows[0].kind],
         );
       } else if (input.action === "APPROVE_LATE_CHANGE") {
         const booking = await client.query(
@@ -256,6 +312,7 @@ export function createOperationsService({ pool }) {
       EXTRACTION_FAILED: ["Job được đưa lại vào queue với bộ đếm retry mới."],
       NOTIFICATION_DEAD: ["Email được thử gửi lại; trạng thái booking không thay đổi."],
       REVIEW_MODERATION: ["Quyết định ảnh hưởng khả năng hiển thị công khai của review."],
+      AI_JOB_FAILED: ["Retry đưa job về queue với bộ đếm mới; không thay đổi business state.", "Disable feature chặn job mới và hủy các job cùng loại còn đang chờ.", "Luồng deterministic/manual vẫn tiếp tục hoạt động."],
     };
     return { caseId, version: row.version, caseType: row.case_type, effects: effects[row.case_type] ?? ["Case được đóng với reason và audit bất biến."] };
   }

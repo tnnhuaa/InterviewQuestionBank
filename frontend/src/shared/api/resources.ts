@@ -39,7 +39,7 @@ export interface AiJob {
   status: "PENDING" | "PROCESSING" | "SUCCEEDED" | "SUCCEEDED_WITH_FALLBACK" | "FAILED" | "CANCELLED";
   provider: string; model: string; promptVersion: string; schemaVersion: string;
   attemptCount: number; maxAttempts: number; fallbackUsed: boolean; result?: Record<string, unknown>;
-  errorCode?: string; correlationId?: string; createdAt: string; updatedAt: string;
+  errorCode?: string; correlationId?: string; operationCaseId?: string; createdAt: string; updatedAt: string;
 }
 export interface Match { id: string; requirementId: string; requirement: string; topic?: string; question: { id: string; title: string; difficulty: Difficulty }; score: number; reason: string; rank: number }
 export interface PreparationPlan { id: string; jobDescriptionId: string; matchingVersion: string; status: string; version: number; items: Array<{ id: string; priority: "MUST" | "SHOULD" | "OPTIONAL"; requirement?: string; topic?: string; topicId?: string; score?: number; reason?: string; aiExplanation?: string; practiceStatus: PracticeStatus; mentorNextAction?: string; version: number; question: { id?: string; title?: string; difficulty?: Difficulty } }> }
@@ -66,7 +66,7 @@ export interface Booking {
   operationCase?: { id: string; status: string; version: number };
   pendingProposal?: { id: string; proposed_slot_id: string; proposed_by: string; reason: string; starts_at: string; ends_at: string; source_timezone: string };
 }
-export interface OperationCase { id: string; type: string; targetType: string; targetId: string; status: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "DISMISSED"; summary: string; assignedTo?: string; createdAt: string; updatedAt: string; version: number; allowedActions: string[] }
+export interface OperationCase { id: string; type: string; targetType: string; targetId: string; status: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "DISMISSED"; summary: string; assignedTo?: string; createdAt: string; updatedAt: string; version: number; allowedActions: string[]; aiJob?: { id: string; kind: string; status: string; errorCode?: string; attemptCount: number; maxAttempts: number; model: string } }
 export interface OperationReport { id: string; reporterId: string; targetType: string; targetId: string; reasonCode: string; description: string; status: "OPEN" | "IN_REVIEW" | "RESOLVED" | "DISMISSED"; createdAt: string; resolvedAt?: string; version: number }
 export interface AuditEntry { id: string; actorId?: string; action: string; targetType: string; targetId?: string; reason?: string; metadata: Record<string, unknown>; correlationId?: string; occurredAt: string }
 export interface MentorVerification { verification_id: string; status: string; created_at: string; version: number; mentor_id: string; headline: string; bio: string; display_name: string; email: string }

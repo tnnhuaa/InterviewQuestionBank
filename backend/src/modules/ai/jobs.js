@@ -4,7 +4,7 @@ import { findIdempotentResult, saveIdempotentResult } from "../../platform/idemp
 import { createOperationCase } from "../../platform/operations.js";
 import { hashAiValue } from "./provider.js";
 
-const featureByJobKind = {
+export const featureByJobKind = {
   JD_ANALYSIS: "jdAnalysis",
   RECOMMENDATION_EXPLANATION: "recommendationExplanation",
   INTERVIEW_AGENDA: "agendaDraft",
@@ -28,6 +28,7 @@ export function aiJobDto(row) {
     result: row.result ?? null,
     errorCode: row.error_code,
     correlationId: row.correlation_id,
+    operationCaseId: row.operation_case_id ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -71,6 +72,11 @@ export async function createAiJob(client, {
 }) {
   const feature = featureByJobKind[kind];
   if (!environment.ai.enabled || !feature || !environment.ai.features[feature]) throw aiUnavailable();
+  const control = await client.query(
+    "SELECT enabled FROM ai_feature_controls WHERE feature = $1",
+    [feature],
+  );
+  if (control.rowCount && !control.rows[0].enabled) throw aiUnavailable("AI_DISABLED_BY_OPERATIONS");
   await enforceBudget(client, actorId, environment);
   const inputHash = hashAiValue(input);
   const result = await client.query(
@@ -88,9 +94,27 @@ export async function createAiJob(client, {
 }
 
 export function createAiJobsService({ pool, environment, provider }) {
+  async function capabilities() {
+    const base = provider.capabilities();
+    const controls = await pool.query("SELECT feature, enabled FROM ai_feature_controls");
+    const enabledByFeature = new Map(controls.rows.map((row) => [row.feature, row.enabled]));
+    return {
+      ...base,
+      features: Object.fromEntries(Object.entries(base.features).map(([feature, enabled]) => [
+        feature,
+        Boolean(enabled && (enabledByFeature.get(feature) ?? true)),
+      ])),
+    };
+  }
+
   async function get(actor, id) {
     const result = await pool.query(
-      `SELECT * FROM ai_jobs WHERE id = $1 AND (actor_id = $2 OR $3::boolean)`,
+      `SELECT aj.*, oc.id AS operation_case_id
+       FROM ai_jobs aj
+       LEFT JOIN operation_cases oc ON oc.case_type = 'AI_JOB_FAILED'
+         AND oc.target_type = 'AI_JOB' AND oc.target_id = aj.id
+         AND oc.status IN ('OPEN','IN_PROGRESS')
+       WHERE aj.id = $1 AND (aj.actor_id = $2 OR $3::boolean)`,
       [id, actor.id, actor.roles.includes("ADMIN")],
     );
     if (!result.rowCount) throw notFoundError();
@@ -112,7 +136,13 @@ export function createAiJobsService({ pool, environment, provider }) {
         input: { id, attemptCount: job.attempt_count },
       });
       if (idempotency.cached?.response_body) return idempotency.cached.response_body;
-      if (!environment.ai.enabled || !provider.available()) throw aiUnavailable("AI_PROVIDER_UNAVAILABLE");
+      const feature = featureByJobKind[job.kind];
+      const control = await client.query("SELECT enabled FROM ai_feature_controls WHERE feature = $1", [feature]);
+      if (!environment.ai.enabled || !environment.ai.features[feature]
+          || (control.rowCount && !control.rows[0].enabled)) {
+        throw aiUnavailable("AI_DISABLED_BY_OPERATIONS");
+      }
+      if (!provider.available()) throw aiUnavailable("AI_PROVIDER_UNAVAILABLE");
       if (job.status !== "FAILED" || job.attempt_count >= job.max_attempts) {
         throw new AppError({
           status: 409,
@@ -141,7 +171,7 @@ export function createAiJobsService({ pool, environment, provider }) {
     });
   }
 
-  return { capabilities: () => provider.capabilities(), get, retry };
+  return { capabilities, get, retry };
 }
 
 export async function claimAiJob(pool) {

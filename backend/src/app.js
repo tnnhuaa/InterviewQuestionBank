@@ -96,7 +96,7 @@ export function createApp({
   app.use("/api/v1", createJdRouter({ pool, storage, environment }));
   app.use("/api/v1", createMentorsRouter({ pool, storage, environment }));
   app.use("/api/v1", createBookingsRouter({ pool, environment }));
-  app.use("/api/v1", createOperationsRouter({ pool }));
+  app.use("/api/v1", createOperationsRouter({ pool, environment }));
   app.use("/api/v1", createDashboardRouter({ pool }));
   app.use("/api/v1", createQuestionImportsRouter({ pool }));
   app.use("/api/v1", createAiRouter({ pool, environment, provider: aiProvider }));

@@ -8,7 +8,7 @@ export function createAiRouter({ pool, environment, provider }) {
   const service = createAiJobsService({ pool, environment, provider });
 
   router.get("/ai/capabilities", requireAuth, asyncHandler(async (request, response) => {
-    response.json(service.capabilities());
+    response.json(await service.capabilities());
   }));
 
   router.get("/ai-jobs/:jobId", requireAuth, asyncHandler(async (request, response) => {
