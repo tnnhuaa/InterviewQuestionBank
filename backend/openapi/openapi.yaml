@@ -18,6 +18,20 @@ paths:
       security: []
       operationId: readiness
       responses: { "200": { $ref: "#/components/responses/Success" }, "503": { $ref: "#/components/responses/Error" } }
+  /ai/capabilities:
+    get:
+      operationId: getAiCapabilities
+      responses: { "200": { $ref: "#/components/responses/AiCapabilities" } }
+  /ai-jobs/{jobId}:
+    parameters: [ { $ref: "#/components/parameters/AiJobId" } ]
+    get:
+      operationId: getAiJob
+      responses: { "200": { $ref: "#/components/responses/AiJob" }, "404": { $ref: "#/components/responses/Error" } }
+  /ai-jobs/{jobId}/retry:
+    parameters: [ { $ref: "#/components/parameters/AiJobId" }, { $ref: "#/components/parameters/IdempotencyKey" } ]
+    post:
+      operationId: retryAiJob
+      responses: { "202": { $ref: "#/components/responses/AiJob" }, "409": { $ref: "#/components/responses/Error" } }
   /auth/register:
     post:
       security: []
@@ -219,6 +233,12 @@ paths:
       operationId: analyzeJobDescription
       requestBody: { $ref: "#/components/requestBodies/JsonInput" }
       responses: { "200": { $ref: "#/components/responses/Success" } }
+  /job-descriptions/{jobDescriptionId}/analysis-jobs:
+    parameters: [ { $ref: "#/components/parameters/JobDescriptionId" }, { $ref: "#/components/parameters/IdempotencyKey" } ]
+    post:
+      operationId: startAiJobDescriptionAnalysis
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "202": { $ref: "#/components/responses/AiJob" }, "409": { $ref: "#/components/responses/Error" }, "503": { $ref: "#/components/responses/Error" } }
   /job-descriptions/{jobDescriptionId}/analysis:
     parameters: [ { $ref: "#/components/parameters/JobDescriptionId" } ]
     get:
@@ -231,6 +251,14 @@ paths:
       operationId: saveRequirementNormalizations
       requestBody: { $ref: "#/components/requestBodies/JsonInput" }
       responses: { "200": { $ref: "#/components/responses/Success" } }
+  /job-descriptions/{jobDescriptionId}/requirements/{requirementId}:
+    parameters:
+      - { $ref: "#/components/parameters/JobDescriptionId" }
+      - { name: requirementId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      operationId: decideAiRequirement
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" }, "422": { $ref: "#/components/responses/Error" } }
   /job-descriptions/{jobDescriptionId}/matches:
     parameters: [ { $ref: "#/components/parameters/JobDescriptionId" } ]
     get:
@@ -273,6 +301,11 @@ paths:
     get:
       operationId: listPreparationPlanMentorCandidates
       responses: { "200": { $ref: "#/components/responses/Page" } }
+  /preparation-plans/{planId}/recommendation-explanation-jobs:
+    parameters: [ { $ref: "#/components/parameters/PlanId" }, { $ref: "#/components/parameters/IdempotencyKey" } ]
+    post:
+      operationId: startRecommendationExplanationJob
+      responses: { "202": { $ref: "#/components/responses/AiJob" }, "409": { $ref: "#/components/responses/Error" }, "503": { $ref: "#/components/responses/Error" } }
   /mentors:
     get:
       security: []
@@ -390,6 +423,37 @@ paths:
       operationId: reportMeetingLinkFailure
       requestBody: { $ref: "#/components/requestBodies/JsonInput" }
       responses: { "202": { $ref: "#/components/responses/Success" } }
+  /bookings/{bookingId}/agenda-drafts:
+    parameters: [ { $ref: "#/components/parameters/BookingId" } ]
+    get:
+      operationId: getInterviewAgendaDraft
+      responses: { "200": { $ref: "#/components/responses/AgendaDraft" }, "404": { $ref: "#/components/responses/Error" } }
+    post:
+      operationId: startInterviewAgendaDraft
+      parameters: [ { $ref: "#/components/parameters/IdempotencyKey" } ]
+      responses: { "202": { $ref: "#/components/responses/AiJob" }, "409": { $ref: "#/components/responses/Error" }, "503": { $ref: "#/components/responses/Error" } }
+  /bookings/{bookingId}/agenda-drafts/{draftId}:
+    parameters: [ { $ref: "#/components/parameters/BookingId" }, { $ref: "#/components/parameters/DraftId" } ]
+    patch:
+      operationId: updateInterviewAgendaDraft
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/AgendaDraft" }, "409": { $ref: "#/components/responses/Error" } }
+  /bookings/{bookingId}/feedback-drafts:
+    parameters: [ { $ref: "#/components/parameters/BookingId" } ]
+    get:
+      operationId: getFeedbackDraft
+      responses: { "200": { $ref: "#/components/responses/FeedbackDraft" }, "404": { $ref: "#/components/responses/Error" } }
+    post:
+      operationId: startFeedbackDraft
+      parameters: [ { $ref: "#/components/parameters/IdempotencyKey" } ]
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "202": { $ref: "#/components/responses/AiJob" }, "409": { $ref: "#/components/responses/Error" }, "503": { $ref: "#/components/responses/Error" } }
+  /bookings/{bookingId}/feedback-drafts/{draftId}:
+    parameters: [ { $ref: "#/components/parameters/BookingId" }, { $ref: "#/components/parameters/DraftId" } ]
+    patch:
+      operationId: updateFeedbackDraft
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/FeedbackDraft" }, "409": { $ref: "#/components/responses/Error" } }
   /bookings/{bookingId}/feedback:
     parameters: [ { $ref: "#/components/parameters/BookingId" } ]
     get:
@@ -529,6 +593,8 @@ components:
     MentorId: { name: mentorId, in: path, required: true, schema: { type: string, format: uuid } }
     BookingId: { name: bookingId, in: path, required: true, schema: { type: string, format: uuid } }
     CaseId: { name: caseId, in: path, required: true, schema: { type: string, format: uuid } }
+    AiJobId: { name: jobId, in: path, required: true, schema: { type: string, format: uuid } }
+    DraftId: { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
   requestBodies:
     JsonInput:
       required: true
@@ -611,6 +677,69 @@ components:
         startsAt: { type: string, format: date-time }
         endsAt: { type: string, format: date-time }
         version: { type: integer }
+    AiJob:
+      type: object
+      required: [id, kind, resourceType, resourceId, status, provider, model, promptVersion, schemaVersion, attemptCount, maxAttempts, fallbackUsed, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string, enum: [JD_ANALYSIS, RECOMMENDATION_EXPLANATION, INTERVIEW_AGENDA, FEEDBACK_DRAFT] }
+        resourceType: { type: string, enum: [JOB_DESCRIPTION, PREPARATION_PLAN, BOOKING] }
+        resourceId: { type: string, format: uuid }
+        status: { type: string, enum: [PENDING, PROCESSING, SUCCEEDED, SUCCEEDED_WITH_FALLBACK, FAILED, CANCELLED] }
+        provider: { type: string }
+        model: { type: string }
+        promptVersion: { type: string }
+        schemaVersion: { type: string }
+        attemptCount: { type: integer, minimum: 0 }
+        maxAttempts: { type: integer, minimum: 1 }
+        fallbackUsed: { type: boolean }
+        result: { type: [object, "null"], additionalProperties: true }
+        errorCode: { type: [string, "null"] }
+        correlationId: { type: [string, "null"], format: uuid }
+        operationCaseId: { type: [string, "null"], format: uuid }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AiCapabilities:
+      type: object
+      required: [provider, model, enabled, available, features]
+      properties:
+        provider: { type: string }
+        model: { type: string }
+        enabled: { type: boolean }
+        available: { type: boolean }
+        features:
+          type: object
+          required: [jdAnalysis, recommendationExplanation, agendaDraft, feedbackDraft]
+          properties:
+            jdAnalysis: { type: boolean }
+            recommendationExplanation: { type: boolean }
+            agendaDraft: { type: boolean }
+            feedbackDraft: { type: boolean }
+    AgendaDraft:
+      type: object
+      additionalProperties: true
+      required: [id, bookingId, jobId, agenda, status, version]
+      properties:
+        id: { type: string, format: uuid }
+        bookingId: { type: string, format: uuid }
+        jobId: { type: string, format: uuid }
+        agenda: { type: array, items: { type: object, additionalProperties: true } }
+        status: { type: string, enum: [DRAFT, USED, DISCARDED] }
+        version: { type: integer, minimum: 1 }
+    FeedbackDraft:
+      type: object
+      additionalProperties: true
+      required: [id, bookingId, jobId, rubricScores, strengths, weaknesses, nextActions, status, version]
+      properties:
+        id: { type: string, format: uuid }
+        bookingId: { type: string, format: uuid }
+        jobId: { type: string, format: uuid }
+        rubricScores: { type: object, additionalProperties: { type: number } }
+        strengths: { type: string }
+        weaknesses: { type: string }
+        nextActions: { type: array, items: { type: object, additionalProperties: true } }
+        status: { type: string, enum: [DRAFT, USED, DISCARDED] }
+        version: { type: integer, minimum: 1 }
     PageInfo:
       type: object
       required: [page, pageSize, total]
@@ -625,3 +754,7 @@ components:
     QuestionPage: { description: Question page, content: { application/json: { schema: { type: object, required: [items, pageInfo], properties: { items: { type: array, items: { $ref: "#/components/schemas/Question" } }, pageInfo: { $ref: "#/components/schemas/PageInfo" } } } } } }
     JobDescription: { description: Private job description projection, content: { application/json: { schema: { $ref: "#/components/schemas/JobDescription" } } } }
     Booking: { description: Booking projection, content: { application/json: { schema: { $ref: "#/components/schemas/Booking" } } } }
+    AiJob: { description: Safe asynchronous AI job projection, content: { application/json: { schema: { $ref: "#/components/schemas/AiJob" } } } }
+    AiCapabilities: { description: Effective environment and operations feature flags, content: { application/json: { schema: { $ref: "#/components/schemas/AiCapabilities" } } } }
+    AgendaDraft: { description: Mentor-owned editable interview agenda draft, content: { application/json: { schema: { $ref: "#/components/schemas/AgendaDraft" } } } }
+    FeedbackDraft: { description: Mentor-owned editable feedback draft, content: { application/json: { schema: { $ref: "#/components/schemas/FeedbackDraft" } } } }

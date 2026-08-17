@@ -296,7 +296,23 @@ async function verify(client) {
       (SELECT count(*)::int FROM (
          SELECT taxonomy_version_id, normalized_alias
          FROM topic_aliases GROUP BY taxonomy_version_id, normalized_alias HAVING count(*) > 1
-       ) duplicates) AS duplicate_aliases
+       ) duplicates) AS duplicate_aliases,
+      (SELECT count(*)::int FROM (VALUES
+         ('jdAnalysis'), ('recommendationExplanation'), ('agendaDraft'), ('feedbackDraft')
+       ) expected(feature)
+       LEFT JOIN ai_feature_controls c ON c.feature = expected.feature
+       WHERE c.feature IS NULL) AS missing_ai_feature_controls,
+      (SELECT count(*)::int FROM ai_job_private_inputs WHERE expires_at <= now()) AS expired_ai_private_inputs,
+      (SELECT count(*)::int FROM ai_recommendation_explanations e
+       WHERE (e.candidate_type = 'QUESTION' AND NOT EXISTS (
+                SELECT 1 FROM preparation_plan_items pi
+                WHERE pi.plan_id = e.preparation_plan_id AND pi.question_id = e.candidate_id))
+          OR (e.candidate_type = 'MENTOR' AND NOT EXISTS (
+                SELECT 1 FROM mentor_profiles mp WHERE mp.id = e.candidate_id))) AS invalid_ai_explanations,
+      (SELECT count(*)::int FROM interview_agenda_drafts d JOIN ai_jobs j ON j.id = d.job_id
+       WHERE j.kind <> 'INTERVIEW_AGENDA' OR j.resource_id <> d.booking_id) +
+      (SELECT count(*)::int FROM feedback_drafts d JOIN ai_jobs j ON j.id = d.job_id
+       WHERE j.kind <> 'FEEDBACK_DRAFT' OR j.resource_id <> d.booking_id) AS invalid_ai_drafts
   `);
   const rows = await client.query(
     "SELECT dataset, version, checksum, applied_at FROM seed_runs ORDER BY applied_at",
@@ -307,7 +323,9 @@ async function verify(client) {
       || result.rows[0].missing_published_question_hashes || result.rows[0].duplicate_question_content
       || result.rows[0].orphan_question_topics || result.rows[0].orphan_question_positions
       || result.rows[0].invalid_booking_context_topics || result.rows[0].invalid_feedback_applications
-      || result.rows[0].duplicate_reminders || result.rows[0].invalid_import_summaries) {
+      || result.rows[0].duplicate_reminders || result.rows[0].invalid_import_summaries
+      || result.rows[0].missing_ai_feature_controls || result.rows[0].expired_ai_private_inputs
+      || result.rows[0].invalid_ai_explanations || result.rows[0].invalid_ai_drafts) {
     process.exitCode = 2;
   }
 }

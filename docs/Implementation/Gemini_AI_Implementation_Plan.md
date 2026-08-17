@@ -51,15 +51,15 @@ AI_RESULT_RETENTION_DAYS=30
 
 `GEMINI_API_KEY` chỉ tồn tại ở backend/secret manager. Không tạo biến `VITE_GEMINI_*` và không gọi Gemini trực tiếp từ frontend.
 
-### Các quyết định còn cần làm rõ
+### Các quyết định đã hiện thực hóa
 
-- Confidence threshold nào yêu cầu Student xác nhận?
-- Có gửi toàn bộ corrected text hay chia section?
-- Giới hạn token/ngày và chi phí/tháng cho local, staging và pilot?
-- Thời hạn giữ metadata AI và normalized result?
-- Có bật agenda/feedback draft trong cùng release với JD analysis không?
-- Rubric feedback theo role/seniority có cần version riêng không?
-- Ai có quyền bật/tắt feature flag khẩn cấp?
+- Requirement có confidence dưới `0.75` bắt buộc Student accept/edit/unmapped trước matching.
+- JD analysis gửi corrected text đã xác nhận; original file không được gửi cho Gemini.
+- Budget ứng dụng mặc định thấp hơn Free tier và có giới hạn riêng theo Student; có thể điều chỉnh bằng biến môi trường.
+- Ghi chú feedback draft được mã hóa, xóa sau xử lý hoặc tối đa 24 giờ; metadata/result AI dùng retention theo cấu hình.
+- Cả bốn feature được triển khai nhưng mặc định tắt độc lập.
+- Feedback giữ rubric cố định `technical/communication/structure` 0–5 trong increment này.
+- Admin chỉ có thể tắt khẩn cấp feature qua Operations Queue; việc bật ở deployment vẫn do biến môi trường/secret manager kiểm soát.
 
 ## 3. Hiện trạng UI và khoảng trống
 
@@ -97,8 +97,11 @@ AI route/controller
 
 ## 5. Migration và dữ liệu
 
-Thêm `005_gemini_ai_assistance.sql`:
+Thêm chuỗi migration AI:
 
+- `005_gemini_ai_assistance.sql`: `ai_jobs`, `ai_runs`, requirement decisions, explanation và draft tables.
+- `006_ai_private_draft_inputs.sql`: input ghi chú Mentor được mã hóa và có thời hạn tối đa 24 giờ.
+- `007_ai_operations.sql`: feature control có version cho thao tác tắt khẩn cấp được audit.
 - `ai_jobs`: kind, resource, status, attempt, processing lease, available time và safe error code.
 - `ai_runs`: provider, model, prompt/schema version, input/output hash, latency, token/cost metadata và correlation ID.
 - `ai_requirement_decisions`: Student accept/edit/unmapped cho requirement.

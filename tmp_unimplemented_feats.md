@@ -2,7 +2,7 @@
 
 ## Trạng thái triển khai ngày 17/08/2026
 
-Các hạng mục code trong checklist này đã được triển khai trên `feat/r1-completion`: plan item versioning, plan-based Mentor discovery xếp hạng deterministic theo topic overlap → position fit → future slot → rating → Mentor ID, server-side expertise/ownership checks, immutable booking context, external meeting-link recovery, structured feedback/action application, completion dispute và review moderation. Các luồng đã được wiring bằng ID thật ở frontend và được bổ sung migration/seed tương ứng.
+Các hạng mục code trong checklist này đã được triển khai trên `feat/r1-completion`: plan item versioning, plan-based Mentor discovery xếp hạng deterministic theo topic overlap → position fit → future slot → rating → Mentor ID, server-side expertise/ownership checks, immutable booking context, external meeting-link recovery, structured feedback/action application, completion dispute và review moderation. Luồng Gemini hybrid cũng đã được bổ sung sau ADR-005: AI-assisted JD analysis, explanation, agenda/feedback draft, fallback và Operations recovery; scorer/ranking cùng mutation nghiệp vụ vẫn deterministic hoặc cần người dùng xác nhận. Các luồng đã được wiring bằng ID thật ở frontend và được bổ sung migration/seed tương ứng.
 
 Trạng thái còn lại trước khi Product Owner đóng checklist là **manual/UAT evidence**: chạy walkthrough ba persona, lưu screenshot/correlation ID và đối chiếu database, audit, outbox. Vì vậy file này vẫn được giữ làm checklist E2E; “đã triển khai” không tự động đồng nghĩa “đã được PO chấp nhận”.
 
@@ -14,6 +14,9 @@ Trạng thái còn lại trước khi Product Owner đóng checklist là **manua
 | External meeting link + recovery | Đã triển khai | Đã triển khai | Chờ happy/failure evidence |
 | Structured feedback + action application | Đã triển khai | Đã triển khai | Chờ duplicate/permission evidence |
 | Review + completion dispute | Đã triển khai | Đã triển khai | Chờ publication-window evidence |
+| Gemini JD analysis + human review | Đã triển khai | Đã triển khai | Chờ corpus/fallback evidence |
+| AI explanation + Mentor drafts | Đã triển khai | Đã triển khai | Chờ candidate/privacy evidence |
+| AI Operations recovery | Đã triển khai | Đã triển khai | Chờ retry/disable/audit evidence |
 
 > **Mục đích:** Danh sách tạm thời các tính năng còn thiếu hoặc chưa hoàn chỉnh end-to-end nhưng thuộc phạm vi MVP/R1 hiện tại.  
 > **Nguồn phạm vi:** Architecture, Future State Workflow và Product Backlog (`US-10`, `US-14–17`, `US-30`).  
@@ -194,6 +197,8 @@ Student nhập JD
 → Student review Mentor
 ```
 
+Khi kiểm tra increment Gemini, chạy cùng hành trình một lần với toàn bộ AI flag tắt và một lần với feature tương ứng bật. Xác nhận low-confidence requirement cần Student quyết định; Mentor phải chỉnh/xác nhận agenda và feedback draft; mọi provider failure vẫn quay về rule-based/manual flow.
+
 Phải kiểm tra thêm permission denied, plan version conflict, Mentor expertise thay đổi, slot conflict, link lỗi, provider failure, submit feedback/review trùng và dispute window.
 
 ## 10. Ngoài điều kiện hoàn thành MVP/R1 hiện tại
@@ -201,7 +206,7 @@ Phải kiểm tra thêm permission denied, plan version conflict, Mentor experti
 Các hạng mục sau không được dùng để chặn hoàn thành các tính năng bắt buộc phía trên:
 
 - Bắt buộc Question và Mentor phải được trình bày trên cùng một trang “Smart Preparation Plan”. Đây là lựa chọn UX; nhiều màn hình vẫn hợp lệ nếu luồng end-to-end rõ ràng.
-- Gemini phân tích JD, tạo explanation hoặc rerank Question/Mentor. `ADR-004` hiện vẫn xác định LLM ngoài baseline; muốn triển khai phải có change request/ADR và feature flag riêng.
-- Gemini hỗ trợ soạn feedback hoặc tự đánh giá Student.
+- Gemini rerank Question/Mentor hoặc thay thế rule `40/30/15/15`; ADR-005 chỉ cho phép explanation trên candidate set đã hợp lệ.
+- AI tự phỏng vấn, tự chấm Student hoặc gửi feedback chính thức không qua Mentor xác nhận.
 - Video meeting tích hợp, recording hoặc transcript.
 - AI tự thay đổi Question, Mentor, booking state, feedback hoặc Preparation Plan.

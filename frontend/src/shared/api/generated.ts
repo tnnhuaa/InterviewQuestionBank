@@ -36,6 +36,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ai/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAiCapabilities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai-jobs/{jobId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jobId: components["parameters"]["AiJobId"];
+            };
+            cookie?: never;
+        };
+        get: operations["getAiJob"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai-jobs/{jobId}/retry": {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                jobId: components["parameters"]["AiJobId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["retryAiJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/register": {
         parameters: {
             query?: never;
@@ -598,6 +652,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/job-descriptions/{jobDescriptionId}/analysis-jobs": {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                jobDescriptionId: components["parameters"]["JobDescriptionId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startAiJobDescriptionAnalysis"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/job-descriptions/{jobDescriptionId}/analysis": {
         parameters: {
             query?: never;
@@ -632,6 +706,25 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/job-descriptions/{jobDescriptionId}/requirements/{requirementId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jobDescriptionId: components["parameters"]["JobDescriptionId"];
+                requirementId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["decideAiRequirement"];
         trace?: never;
     };
     "/job-descriptions/{jobDescriptionId}/matches": {
@@ -722,6 +815,26 @@ export interface paths {
         get: operations["listPreparationPlanMentorCandidates"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/preparation-plans/{planId}/recommendation-explanation-jobs": {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                planId: components["parameters"]["PlanId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["startRecommendationExplanationJob"];
         delete?: never;
         options?: never;
         head?: never;
@@ -986,6 +1099,80 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/bookings/{bookingId}/agenda-drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookingId: components["parameters"]["BookingId"];
+            };
+            cookie?: never;
+        };
+        get: operations["getInterviewAgendaDraft"];
+        put?: never;
+        post: operations["startInterviewAgendaDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{bookingId}/agenda-drafts/{draftId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookingId: components["parameters"]["BookingId"];
+                draftId: components["parameters"]["DraftId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateInterviewAgendaDraft"];
+        trace?: never;
+    };
+    "/bookings/{bookingId}/feedback-drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookingId: components["parameters"]["BookingId"];
+            };
+            cookie?: never;
+        };
+        get: operations["getFeedbackDraft"];
+        put?: never;
+        post: operations["startFeedbackDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{bookingId}/feedback-drafts/{draftId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookingId: components["parameters"]["BookingId"];
+                draftId: components["parameters"]["DraftId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateFeedbackDraft"];
         trace?: never;
     };
     "/bookings/{bookingId}/feedback": {
@@ -1393,6 +1580,86 @@ export interface components {
             endsAt: string;
             version: number;
         };
+        AiJob: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "JD_ANALYSIS" | "RECOMMENDATION_EXPLANATION" | "INTERVIEW_AGENDA" | "FEEDBACK_DRAFT";
+            /** @enum {string} */
+            resourceType: "JOB_DESCRIPTION" | "PREPARATION_PLAN" | "BOOKING";
+            /** Format: uuid */
+            resourceId: string;
+            /** @enum {string} */
+            status: "PENDING" | "PROCESSING" | "SUCCEEDED" | "SUCCEEDED_WITH_FALLBACK" | "FAILED" | "CANCELLED";
+            provider: string;
+            model: string;
+            promptVersion: string;
+            schemaVersion: string;
+            attemptCount: number;
+            maxAttempts: number;
+            fallbackUsed: boolean;
+            result?: {
+                [key: string]: unknown;
+            } | null;
+            errorCode?: string | null;
+            /** Format: uuid */
+            correlationId?: string | null;
+            /** Format: uuid */
+            operationCaseId?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AiCapabilities: {
+            provider: string;
+            model: string;
+            enabled: boolean;
+            available: boolean;
+            features: {
+                jdAnalysis: boolean;
+                recommendationExplanation: boolean;
+                agendaDraft: boolean;
+                feedbackDraft: boolean;
+            };
+        };
+        AgendaDraft: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            bookingId: string;
+            /** Format: uuid */
+            jobId: string;
+            agenda: {
+                [key: string]: unknown;
+            }[];
+            /** @enum {string} */
+            status: "DRAFT" | "USED" | "DISCARDED";
+            version: number;
+        } & {
+            [key: string]: unknown;
+        };
+        FeedbackDraft: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            bookingId: string;
+            /** Format: uuid */
+            jobId: string;
+            rubricScores: {
+                [key: string]: number;
+            };
+            strengths: string;
+            weaknesses: string;
+            nextActions: {
+                [key: string]: unknown;
+            }[];
+            /** @enum {string} */
+            status: "DRAFT" | "USED" | "DISCARDED";
+            version: number;
+        } & {
+            [key: string]: unknown;
+        };
         PageInfo: {
             page: number;
             pageSize: number;
@@ -1494,6 +1761,42 @@ export interface components {
                 "application/json": components["schemas"]["Booking"];
             };
         };
+        /** @description Safe asynchronous AI job projection */
+        AiJob: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["AiJob"];
+            };
+        };
+        /** @description Effective environment and operations feature flags */
+        AiCapabilities: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["AiCapabilities"];
+            };
+        };
+        /** @description Mentor-owned editable interview agenda draft */
+        AgendaDraft: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["AgendaDraft"];
+            };
+        };
+        /** @description Mentor-owned editable feedback draft */
+        FeedbackDraft: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["FeedbackDraft"];
+            };
+        };
     };
     parameters: {
         IdempotencyKey: string;
@@ -1503,6 +1806,8 @@ export interface components {
         MentorId: string;
         BookingId: string;
         CaseId: string;
+        AiJobId: string;
+        DraftId: string;
     };
     requestBodies: {
         JsonInput: {
@@ -1541,6 +1846,50 @@ export interface operations {
         responses: {
             200: components["responses"]["Success"];
             503: components["responses"]["Error"];
+        };
+    };
+    getAiCapabilities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["AiCapabilities"];
+        };
+    };
+    getAiJob: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jobId: components["parameters"]["AiJobId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["AiJob"];
+            404: components["responses"]["Error"];
+        };
+    };
+    retryAiJob: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                jobId: components["parameters"]["AiJobId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: components["responses"]["AiJob"];
+            409: components["responses"]["Error"];
         };
     };
     register: {
@@ -2080,6 +2429,24 @@ export interface operations {
             200: components["responses"]["Success"];
         };
     };
+    startAiJobDescriptionAnalysis: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                jobDescriptionId: components["parameters"]["JobDescriptionId"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            202: components["responses"]["AiJob"];
+            409: components["responses"]["Error"];
+            503: components["responses"]["Error"];
+        };
+    };
     getJobDescriptionAnalysis: {
         parameters: {
             query?: {
@@ -2108,6 +2475,23 @@ export interface operations {
         requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["Success"];
+        };
+    };
+    decideAiRequirement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jobDescriptionId: components["parameters"]["JobDescriptionId"];
+                requirementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            200: components["responses"]["Success"];
+            409: components["responses"]["Error"];
+            422: components["responses"]["Error"];
         };
     };
     getMatches: {
@@ -2214,6 +2598,24 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["Page"];
+        };
+    };
+    startRecommendationExplanationJob: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                planId: components["parameters"]["PlanId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: components["responses"]["AiJob"];
+            409: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     listMentors: {
@@ -2511,6 +2913,104 @@ export interface operations {
         requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             202: components["responses"]["Success"];
+        };
+    };
+    getInterviewAgendaDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookingId: components["parameters"]["BookingId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["AgendaDraft"];
+            404: components["responses"]["Error"];
+        };
+    };
+    startInterviewAgendaDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                bookingId: components["parameters"]["BookingId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: components["responses"]["AiJob"];
+            409: components["responses"]["Error"];
+            503: components["responses"]["Error"];
+        };
+    };
+    updateInterviewAgendaDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookingId: components["parameters"]["BookingId"];
+                draftId: components["parameters"]["DraftId"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            200: components["responses"]["AgendaDraft"];
+            409: components["responses"]["Error"];
+        };
+    };
+    getFeedbackDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookingId: components["parameters"]["BookingId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["FeedbackDraft"];
+            404: components["responses"]["Error"];
+        };
+    };
+    startFeedbackDraft: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                bookingId: components["parameters"]["BookingId"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            202: components["responses"]["AiJob"];
+            409: components["responses"]["Error"];
+            503: components["responses"]["Error"];
+        };
+    };
+    updateFeedbackDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookingId: components["parameters"]["BookingId"];
+                draftId: components["parameters"]["DraftId"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            200: components["responses"]["FeedbackDraft"];
+            409: components["responses"]["Error"];
         };
     };
     getFeedback: {

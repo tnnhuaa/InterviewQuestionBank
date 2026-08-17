@@ -8,7 +8,7 @@ Trình duyệt -> /api/v1 cùng origin -> Express -> dịch vụ ứng dụng/mi
                                              \-> kho riêng tư local/tương thích S3
 ```
 
-Hệ thống đã triển khai toàn bộ backlog sản phẩm `US-01–30`, bao gồm bảng điều khiển Student, lời nhắc trước 24 giờ/1 giờ và quy trình nhập Ngân hàng câu hỏi bằng CSV có kiểm soát. AI/đối sánh ngữ nghĩa, video tích hợp, ghi hình, bản ghi lời thoại và thanh toán vẫn chủ động nằm ngoài phạm vi; buổi phỏng vấn thử sử dụng liên kết họp HTTPS bên ngoài.
+Hệ thống đã triển khai toàn bộ backlog sản phẩm `US-01–30`, bao gồm bảng điều khiển Student, lời nhắc trước 24 giờ/1 giờ và quy trình nhập Ngân hàng câu hỏi bằng CSV có kiểm soát. Gemini được tích hợp theo mô hình hybrid để hỗ trợ phân tích JD, giải thích đề xuất, soạn agenda và feedback draft; scorer/ranking, eligibility, booking và feedback chính thức vẫn deterministic hoặc do người dùng xác nhận. AI reranking, video tích hợp, ghi hình, bản ghi lời thoại và thanh toán vẫn nằm ngoài phạm vi; buổi phỏng vấn thử sử dụng liên kết họp HTTPS bên ngoài.
 
 ## Thiết lập môi trường local
 
@@ -39,6 +39,26 @@ npm run dev --workspace backend
 npm run worker --workspace backend
 npm run dev --workspace frontend
 ```
+
+## Cấu hình Gemini tùy chọn
+
+Mọi feature AI mặc định tắt. API key chỉ được cấu hình ở backend/secret manager; không tạo biến `VITE_GEMINI_*` và không gọi Gemini trực tiếp từ trình duyệt.
+
+```dotenv
+AI_PROVIDER=gemini
+AI_ENABLED=true
+AI_JD_ANALYSIS_ENABLED=true
+AI_RECOMMENDATION_EXPLANATION_ENABLED=true
+AI_AGENDA_DRAFT_ENABLED=true
+AI_FEEDBACK_DRAFT_ENABLED=true
+GEMINI_API_KEY=your-secret-key
+GEMINI_MODEL=gemini-3.5-flash-lite
+GEMINI_API_VERSION=v1
+```
+
+Các giới hạn timeout, retry, concurrency, token và budget đầy đủ có trong `.env.example`. Khi AI tắt, hết quota hoặc provider lỗi, phân tích JD chuyển sang rule-based và các luồng còn lại tiếp tục bằng lý do/form thủ công. Ghi chú dùng để tạo feedback draft được mã hóa tạm thời và xóa sau xử lý hoặc tối đa 24 giờ.
+
+Để kích hoạt AI local, cả API và worker phải cùng đọc một `.env` và worker phải đang chạy. Kiểm tra capability hiệu lực tại `GET /api/v1/ai/capabilities`; Admin có thể tắt khẩn cấp từng feature qua Operations Queue mà không sửa dữ liệu nghiệp vụ.
 
 ## Quy trình database và seed
 
@@ -84,7 +104,7 @@ Việc triển khai kiểm thử tự động không thuộc phạm vi phát hà
 - Mật khẩu sử dụng Argon2id. Session chỉ lưu hash SHA-256 của token; cookie sử dụng `__Host-`, `Secure`, `HttpOnly` và `SameSite=Lax` trong môi trường bảo mật.
 - Request đã xác thực và có thay đổi trạng thái phải vượt qua kiểm tra same-origin và CSRF.
 - Các thao tác booking/moderation sử dụng version check và idempotency key. Việc xác nhận slot được tuần tự hóa bằng row lock.
-- File JD và bằng chứng xác minh là dữ liệu riêng tư. Meeting link được mã hóa AES-256-GCM khi lưu trữ.
+- File JD, ghi chú feedback draft và bằng chứng xác minh là dữ liệu riêng tư. Meeting link và input AI tạm thời được mã hóa AES-256-GCM khi lưu trữ.
 - Lỗi API chứa correlation ID an toàn và hướng khắc phục; log không chứa request body, token, nội dung JD, credential, meeting link hoặc bằng chứng xác minh.
 - Lỗi nhà cung cấp không hoàn tác trạng thái nghiệp vụ đã được ghi nhận. Outbox thử gửi lại tại phút thứ 1 và 5, sau đó tạo hồ sơ vận hành có thể truy vết.
 

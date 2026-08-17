@@ -9,7 +9,7 @@ Automated-test implementation is intentionally outside this R1 release scope. Ev
 3. Start API, worker, and frontend as separate processes. Confirm `/api/v1/health`, `/api/v1/readiness`, and Mailpit.
 4. Use the three demo personas. Retrieve the password from the operator who set `DEMO_SEED_PASSWORD`; never copy it into evidence.
 
-The expected migration chain for a new database is `001_r1_foundation → 002_complete_r1_flows → 003_dashboard_and_reminders → 004_question_bulk_import`. Keep `OPENAPI_VALIDATION=true` so the walkthrough covers both request and response contract enforcement.
+The expected migration chain for a new database is `001_r1_foundation → 002_complete_r1_flows → 003_dashboard_and_reminders → 004_question_bulk_import → 005_gemini_ai_assistance → 006_ai_private_draft_inputs → 007_ai_operations`. Keep `OPENAPI_VALIDATION=true` so the walkthrough covers both request and response contract enforcement.
 
 If Docker Desktop is stopped, start it manually and rerun `npm run db:start`. If port 5432/1025/8025 is occupied, identify the owning local process and either stop it or change the local-only port mapping plus connection variables. Do not point `db:reset` at Neon.
 
@@ -34,6 +34,7 @@ If Docker Desktop is stopped, start it manually and rerun `npm run db:start`. If
 4. Confirm one of two competing requests for one slot; only one transaction may win. Exercise reject/reschedule and verify the old slot remains held until the proposal resolves.
 5. Create/update an HTTPS meeting link before the two-hour cutoff. Resolve a broken-link report within 15 minutes or leave it for operations/reschedule.
 6. Complete only after the end time and submit exactly one structured feedback.
+7. With Gemini flags enabled, create an agenda draft from a confirmed booking, edit it, and explicitly mark it used. After completion, enter non-sensitive session notes, generate a feedback draft, apply it only to untouched fields, edit/save it, then submit the official feedback once.
 
 ### Admin
 
@@ -43,6 +44,20 @@ If Docker Desktop is stopped, start it manually and rerun `npm run db:start`. If
 4. Before every action, inspect impact preview. Verify only allowlisted actions appear, reason/idempotency/version are required, and no arbitrary state setter exists.
 5. Inspect audit records. Confirm password/token/JD text/meeting link/evidence never appears in errors, support details, logs, or audit metadata.
 6. Preview a mixed valid/invalid RFC 4180 CSV, filter row errors, download the error CSV, then commit only valid rows into `DRAFT`.
+7. Process an `AI_JOB_FAILED` case. Verify impact preview and safe job metadata, retry without changing business state, then create another case and disable only its feature. Confirm pending jobs of the same kind are cancelled, new jobs are blocked, and deterministic/manual flows remain available.
+
+## Gemini hybrid walkthrough
+
+Run the following once with every AI flag `false`, then again with the intended feature enabled and `GEMINI_MODEL=gemini-3.5-flash-lite`. Never paste an API key into screenshots, logs or evidence.
+
+1. Submit Vietnamese, English and mixed-language JDs. Confirm every Gemini requirement includes an exact evidence span and only an active taxonomy topic.
+2. Embed prompt-injection text in the JD and Mentor session notes. Confirm it is treated as untrusted data and does not add unknown topic, Question or Mentor IDs.
+3. Confirm requirements below confidence `0.75` block matching until Student selects accept, edit or unmapped. Matching remains `40/30/15/15`, threshold `60`, with deterministic tie-break.
+4. Generate Question/Mentor explanations. Confirm all candidate IDs already belong to the hard-filtered set, score/order are unchanged, and UI labels deterministic reason separately from Gemini explanation.
+5. Simulate timeout, `429`, provider `503`, invalid JSON/schema and invalid evidence/candidate references. Confirm retry is bounded, final failure uses fallback or creates an operation case, and support details contain no raw input.
+6. Confirm feedback session notes exist only as encrypted `ai_job_private_inputs`, are deleted after success/final fallback, and are removed by the 24-hour retention cleanup if abandoned.
+7. Confirm another Student/Mentor cannot read an AI job or draft outside their owned JD/plan/booking.
+8. Record prompt/schema/model version, latency, token counts, fallback status, correlation ID and safe operation reference. Do not record raw prompt/response.
 
 ## Failure and recovery matrix
 
@@ -56,12 +71,16 @@ If Docker Desktop is stopped, start it manually and rerun `npm run db:start`. If
 | Meeting link failure | Mentor replaces within 15 minutes, otherwise reschedule/case | Case reference; never record the link |
 | Late cancel/reschedule/no-show | Wait for audited Admin decision | Impact preview, required reason, transition and audit |
 | Offline | Reconnect and explicitly retry idempotent requests | No duplicate mutation/resource |
+| Gemini unavailable/invalid output | Continue through rule-based analysis, deterministic reasons or manual form | AI job attempts, safe error code, fallback flag and operation case reference |
+| AI draft input expires | Re-enter non-sensitive session notes or continue manually | Encrypted input deletion; no notes in log/support details |
+| AI feature disabled by Admin | Continue deterministic/manual flow | Impact preview, required reason, feature control version and immutable audit |
 
 ## Seed and release gates
 
 - Run reference seed twice and confirm checksum/counts do not change.
 - Confirm demo/load fail with `NODE_ENV=production` and without `ALLOW_NON_PRODUCTION_SEED=true`.
 - Confirm `db:seed:verify` reports zero invalid published questions, duplicate aliases, and orphan classifications.
+- Confirm `db:seed:verify` also reports four AI feature controls, zero expired private AI inputs, invalid AI explanations and invalid AI draft/job relations.
 - On staging, load seed must report exactly 1,000 load questions, 100 load mentors, 1,000 load slots, and 500 load bookings.
 - Capture JD corpus recall ≥80%, precision@10 ≥80%, deterministic result hash, non-OCR p95 ≤3s, and OCR p95 ≤45s.
 - Before pilot migration: backup, dry-run on a copy, document forward-fix, and perform restore drill. Pilot runs reference seed only.
