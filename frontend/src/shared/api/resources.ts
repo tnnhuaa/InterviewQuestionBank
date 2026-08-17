@@ -42,7 +42,7 @@ export interface AiJob {
   errorCode?: string; correlationId?: string; createdAt: string; updatedAt: string;
 }
 export interface Match { id: string; requirementId: string; requirement: string; topic?: string; question: { id: string; title: string; difficulty: Difficulty }; score: number; reason: string; rank: number }
-export interface PreparationPlan { id: string; jobDescriptionId: string; matchingVersion: string; status: string; version: number; items: Array<{ id: string; priority: "MUST" | "SHOULD" | "OPTIONAL"; requirement?: string; topic?: string; topicId?: string; score?: number; reason?: string; practiceStatus: PracticeStatus; mentorNextAction?: string; version: number; question: { id?: string; title?: string; difficulty?: Difficulty } }> }
+export interface PreparationPlan { id: string; jobDescriptionId: string; matchingVersion: string; status: string; version: number; items: Array<{ id: string; priority: "MUST" | "SHOULD" | "OPTIONAL"; requirement?: string; topic?: string; topicId?: string; score?: number; reason?: string; aiExplanation?: string; practiceStatus: PracticeStatus; mentorNextAction?: string; version: number; question: { id?: string; title?: string; difficulty?: Difficulty } }> }
 
   export interface Mentor {
     id: string; userId: string; displayName: string; headline: string; bio: string; timezone: string;
@@ -50,7 +50,7 @@ export interface PreparationPlan { id: string; jobDescriptionId: string; matchin
     positionExpertise?: string[]; topicIds?: string[]; positionIds?: string[];
     nextSlots: Array<{ id: string; startsAt: string; endsAt: string; timezone: string }>; version: number;
     reviews?: Array<{ id: string; rating: number; comment?: string; studentName: string; createdAt: string }>;
-    topicOverlap?: number; positionFit?: number; matchReasons?: string[];
+    topicOverlap?: number; positionFit?: number; matchReasons?: string[]; aiExplanation?: string;
   }
 
 export type BookingStatus = "PENDING" | "CONFIRMED" | "RESCHEDULE_PROPOSED" | "REJECTED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
@@ -143,6 +143,7 @@ export const preparationPlansApi = {
   get: (id: string) => apiFetch<PreparationPlan>(`/preparation-plans/${id}`),
   updateItem: (planId: string, itemId: string, input: { priority?: string; practiceStatus?: PracticeStatus; version: number }) => apiFetch(`/preparation-plans/${planId}/items/${itemId}`, { method: "PATCH", json: input }),
   mentorCandidates: (planId: string, filters: Record<string, string | number | undefined> = {}) => apiFetch<Page<Mentor> & { planId: string; planVersion: number }>(`/preparation-plans/${planId}/mentor-candidates${toQuery(filters)}`),
+  startRecommendationExplanations: (planId: string) => apiFetch<AiJob>(`/preparation-plans/${planId}/recommendation-explanation-jobs`, { method: "POST", headers: { "Idempotency-Key": createIdempotencyKey() } }),
 };
 
 export const aiApi = {

@@ -880,7 +880,12 @@ export function createJdService({ pool, storage, environment }) {
     const items = await pool.query(
       `SELECT pi.id, pi.priority, pi.practice_status, pi.mentor_next_action, pi.version,
               q.id AS question_id, q.title, q.difficulty,
-              r.raw_text AS requirement, t.id AS topic_id, t.name AS topic, m.score, m.reason
+              r.raw_text AS requirement, t.id AS topic_id, t.name AS topic, m.score, m.reason,
+              (SELECT e.explanation FROM ai_recommendation_explanations e
+               JOIN ai_jobs aj ON aj.id = e.job_id
+               WHERE e.preparation_plan_id = pi.plan_id AND e.candidate_type = 'QUESTION'
+                 AND e.candidate_id = q.id AND aj.status = 'SUCCEEDED'
+               ORDER BY e.created_at DESC LIMIT 1) AS ai_explanation
        FROM preparation_plan_items pi
        LEFT JOIN questions q ON q.id = pi.question_id
        LEFT JOIN jd_requirements r ON r.id = pi.requirement_id
@@ -907,6 +912,7 @@ export function createJdService({ pool, storage, environment }) {
         topicId: row.topic_id,
         score: row.score,
         reason: row.reason,
+        aiExplanation: row.ai_explanation,
         question: { id: row.question_id, title: row.title, difficulty: row.difficulty },
       })),
     };
@@ -1015,7 +1021,12 @@ export function createJdService({ pool, storage, environment }) {
            ) candidate_slots), '[]'::jsonb) AS next_slots,
            (SELECT min(s.starts_at) FROM availability_slots s WHERE s.mentor_id = mp.id
              AND s.status = 'AVAILABLE' AND s.starts_at >= $2::timestamptz
-             AND ($3::timestamptz IS NULL OR s.starts_at < $3::timestamptz)) AS first_slot
+             AND ($3::timestamptz IS NULL OR s.starts_at < $3::timestamptz)) AS first_slot,
+           (SELECT e.explanation FROM ai_recommendation_explanations e
+            JOIN ai_jobs aj ON aj.id = e.job_id
+            WHERE e.preparation_plan_id = $1 AND e.candidate_type = 'MENTOR'
+              AND e.candidate_id = mp.id AND aj.status = 'SUCCEEDED'
+            ORDER BY e.created_at DESC LIMIT 1) AS ai_explanation
          ${base}
          ORDER BY topic_overlap DESC, position_fit DESC, first_slot, mp.public_rating DESC NULLS LAST, mp.id
          LIMIT $4 OFFSET $5`,
@@ -1046,9 +1057,85 @@ export function createJdService({ pool, storage, environment }) {
           "Mentor đã được duyệt",
           "Có lịch trống phù hợp",
         ],
+        aiExplanation: row.ai_explanation,
       })),
       pageInfo: { page, pageSize, total: count.rows[0].total },
     };
+  }
+
+  async function startRecommendationExplanations(studentId, planId, correlationId, key) {
+    return withTransaction(pool, async (client) => {
+      const plan = await client.query(
+        `SELECT id, version FROM preparation_plans
+         WHERE id = $1 AND student_id = $2 AND status = 'ACTIVE' FOR UPDATE`,
+        [planId, studentId],
+      );
+      if (!plan.rowCount) throw notFoundError();
+      const [questions, mentors] = await Promise.all([
+        client.query(
+          `SELECT q.id FROM preparation_plan_items pi JOIN questions q ON q.id = pi.question_id
+           WHERE pi.plan_id = $1 AND q.lifecycle_status = 'PUBLISHED' ORDER BY q.id`,
+          [planId],
+        ),
+        client.query(
+          `SELECT mp.id,
+             (SELECT count(DISTINCT me.topic_id)::int FROM mentor_expertise me
+              JOIN preparation_plan_items pi ON pi.topic_id = me.topic_id
+              WHERE pi.plan_id = $1 AND me.mentor_id = mp.id AND me.status = 'APPROVED') AS topic_overlap,
+             (SELECT min(s.starts_at) FROM availability_slots s
+              WHERE s.mentor_id = mp.id AND s.status = 'AVAILABLE' AND s.starts_at >= now()) AS first_slot
+           FROM mentor_profiles mp
+           WHERE mp.verification_status = 'APPROVED'
+             AND EXISTS (SELECT 1 FROM mentor_expertise me JOIN preparation_plan_items pi ON pi.topic_id = me.topic_id
+                         WHERE pi.plan_id = $1 AND me.mentor_id = mp.id AND me.status = 'APPROVED')
+             AND EXISTS (SELECT 1 FROM availability_slots s WHERE s.mentor_id = mp.id
+                         AND s.status = 'AVAILABLE' AND s.starts_at >= now())
+           ORDER BY topic_overlap DESC, first_slot, mp.public_rating DESC NULLS LAST, mp.id LIMIT 20`,
+          [planId],
+        ),
+      ]);
+      const input = {
+        planVersion: plan.rows[0].version,
+        questionIds: questions.rows.map((row) => row.id),
+        mentorIds: mentors.rows.map((row) => row.id),
+      };
+      const idempotency = await findIdempotentResult(client, {
+        actorId: studentId,
+        operation: "START_RECOMMENDATION_EXPLANATIONS",
+        key,
+        input: { planId, ...input },
+      });
+      if (idempotency.cached?.response_body) return idempotency.cached.response_body;
+      if (!input.questionIds.length && !input.mentorIds.length) {
+        throw new AppError({
+          status: 409,
+          code: "NO_RECOMMENDATION_CANDIDATES",
+          message: "Chưa có câu hỏi hoặc Mentor hợp lệ để tạo giải thích.",
+          recovery: { kind: "NONE", retryable: false, retryAfterSeconds: null },
+        });
+      }
+      const job = await createAiJob(client, {
+        actorId: studentId,
+        kind: "RECOMMENDATION_EXPLANATION",
+        resourceType: "PREPARATION_PLAN",
+        resourceId: planId,
+        input,
+        promptVersion: "recommendation-explanation-v1",
+        schemaVersion: "recommendation-explanation-schema-v1",
+        correlationId,
+        environment,
+      });
+      await saveIdempotentResult(client, {
+        actorId: studentId,
+        operation: "START_RECOMMENDATION_EXPLANATIONS",
+        key,
+        digest: idempotency.digest,
+        status: 202,
+        body: job,
+        resourceId: job.id,
+      });
+      return job;
+    });
   }
 
   async function listPlans(studentId) {
@@ -1081,6 +1168,7 @@ export function createJdService({ pool, storage, environment }) {
     getPlan,
     updatePlanItem,
     listMentorCandidates,
+    startRecommendationExplanations,
     listPlans,
   };
 }

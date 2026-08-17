@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { withTransaction } from "../../platform/db/transaction.js";
 import { createJdService } from "../jd/service.js";
 import { AiProviderError, hashAiValue } from "./provider.js";
 
@@ -32,6 +33,37 @@ const jdAnalysisSchema = {
           },
           topicSlug: { type: ["string", "null"] },
           confidence: { type: "number", minimum: 0, maximum: 1 },
+        },
+      },
+    },
+  },
+};
+
+const explanationOutput = z.object({
+  explanations: z.array(z.object({
+    candidateType: z.enum(["QUESTION", "MENTOR"]),
+    candidateId: z.guid(),
+    explanation: z.string().trim().min(10).max(500),
+  })).min(1).max(30),
+});
+
+const explanationSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["explanations"],
+  properties: {
+    explanations: {
+      type: "array",
+      minItems: 1,
+      maxItems: 30,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["candidateType", "candidateId", "explanation"],
+        properties: {
+          candidateType: { type: "string", enum: ["QUESTION", "MENTOR"] },
+          candidateId: { type: "string" },
+          explanation: { type: "string", minLength: 10, maxLength: 500 },
         },
       },
     },
@@ -145,8 +177,144 @@ function createJdAnalysisHandler({ pool, environment }) {
   };
 }
 
+async function loadRecommendationContext(pool, job) {
+  const planResult = await pool.query(
+    `SELECT p.id, p.version, p.updated_at, sp.interview_goal
+     FROM preparation_plans p
+     LEFT JOIN student_profiles sp ON sp.user_id = p.student_id
+     WHERE p.id = $1 AND p.student_id = $2 AND p.status = 'ACTIVE'`,
+    [job.resource_id, job.actor_id],
+  );
+  if (!planResult.rowCount) {
+    throw Object.assign(new Error("RESOURCE_NOT_FOUND"), { code: "RESOURCE_NOT_FOUND", retryable: false });
+  }
+  if (new Date(planResult.rows[0].updated_at) > new Date(job.created_at)) {
+    throw Object.assign(new Error("AI_INPUT_VERSION_STALE"), { code: "AI_INPUT_VERSION_STALE", retryable: false });
+  }
+  const [questions, mentors] = await Promise.all([
+    pool.query(
+      `SELECT q.id, q.title, q.difficulty, t.name AS topic, m.score, m.reason
+       FROM preparation_plan_items pi
+       JOIN questions q ON q.id = pi.question_id AND q.lifecycle_status = 'PUBLISHED'
+       LEFT JOIN topics t ON t.id = pi.topic_id
+       LEFT JOIN jd_question_matches m ON m.id = pi.match_id
+       WHERE pi.plan_id = $1 ORDER BY q.id`,
+      [job.resource_id],
+    ),
+    pool.query(
+      `SELECT mp.id, u.display_name, mp.headline, mp.public_rating,
+              (SELECT count(DISTINCT me.topic_id)::int FROM mentor_expertise me
+               JOIN preparation_plan_items pi ON pi.topic_id = me.topic_id
+               WHERE pi.plan_id = $1 AND me.mentor_id = mp.id AND me.status = 'APPROVED') AS topic_overlap,
+              (SELECT count(DISTINCT me.position_id)::int FROM mentor_expertise me
+               JOIN question_positions qp ON qp.position_id = me.position_id
+               JOIN preparation_plan_items pi ON pi.question_id = qp.question_id
+               WHERE pi.plan_id = $1 AND me.mentor_id = mp.id AND me.status = 'APPROVED') AS position_fit,
+              coalesce((SELECT array_agg(DISTINCT t.name ORDER BY t.name)
+               FROM mentor_expertise me JOIN preparation_plan_items pi ON pi.topic_id = me.topic_id
+               JOIN topics t ON t.id = me.topic_id
+               WHERE pi.plan_id = $1 AND me.mentor_id = mp.id AND me.status = 'APPROVED'), '{}') AS expertise,
+              (SELECT min(s.starts_at) FROM availability_slots s
+               WHERE s.mentor_id = mp.id AND s.status = 'AVAILABLE' AND s.starts_at >= now()) AS first_slot
+       FROM mentor_profiles mp JOIN users u ON u.id = mp.user_id
+       WHERE mp.verification_status = 'APPROVED'
+         AND EXISTS (SELECT 1 FROM mentor_expertise me JOIN preparation_plan_items pi ON pi.topic_id = me.topic_id
+                     WHERE pi.plan_id = $1 AND me.mentor_id = mp.id AND me.status = 'APPROVED')
+         AND EXISTS (SELECT 1 FROM availability_slots s WHERE s.mentor_id = mp.id
+                     AND s.status = 'AVAILABLE' AND s.starts_at >= now())
+       ORDER BY topic_overlap DESC, position_fit DESC, first_slot,
+                mp.public_rating DESC NULLS LAST, mp.id LIMIT 20`,
+      [job.resource_id],
+    ),
+  ]);
+  return { plan: planResult.rows[0], questions: questions.rows, mentors: mentors.rows };
+}
+
+function validateExplanations(value, context) {
+  let parsed;
+  try {
+    parsed = explanationOutput.parse(value);
+  } catch (error) {
+    throw invalidOutput(error);
+  }
+  const valid = new Set([
+    ...context.questions.map((candidate) => `QUESTION:${candidate.id}`),
+    ...context.mentors.map((candidate) => `MENTOR:${candidate.id}`),
+  ]);
+  const seen = new Set();
+  const explanations = [];
+  for (const explanation of parsed.explanations) {
+    const key = `${explanation.candidateType}:${explanation.candidateId}`;
+    if (!valid.has(key)) throw invalidOutput(new Error("Explanation references an ineligible candidate"));
+    if (seen.has(key)) continue;
+    seen.add(key);
+    explanations.push(explanation);
+  }
+  if (!explanations.length) throw invalidOutput(new Error("No valid explanations"));
+  return explanations;
+}
+
+function createRecommendationExplanationHandler({ pool }) {
+  return async ({ job, provider }) => {
+    let context;
+    let generated;
+    let explanations;
+    try {
+      context = await loadRecommendationContext(pool, job);
+      generated = await provider.generateStructured({
+        systemInstruction: [
+          "Bạn giải thích ngắn gọn vì sao một câu hỏi hoặc Mentor đã được hệ thống chọn phù hợp.",
+          "Bạn không được chấm điểm, xếp hạng lại, thêm ứng viên, hoặc đưa ra cam kết ngoài dữ liệu được cấp.",
+          "Chỉ trả candidateId có trong input. Viết tiếng Việt rõ ràng, nêu đúng topic/điểm phù hợp đã cung cấp.",
+        ].join(" "),
+        prompt: JSON.stringify({
+          task: "Tạo giải thích hỗ trợ cho từng candidate hợp lệ.",
+          studentGoal: context.plan.interview_goal ?? "Luyện phỏng vấn theo preparation plan",
+          deterministicQuestionCandidates: context.questions.map((item) => ({
+            candidateType: "QUESTION", candidateId: item.id, title: item.title,
+            difficulty: item.difficulty, topic: item.topic, score: item.score, deterministicReason: item.reason,
+          })),
+          deterministicMentorCandidates: context.mentors.map((item) => ({
+            candidateType: "MENTOR", candidateId: item.id, displayName: item.display_name,
+            headline: item.headline, expertise: item.expertise, topicOverlap: item.topic_overlap,
+            positionFit: item.position_fit, publicRating: item.public_rating,
+          })),
+        }),
+        schema: explanationSchema,
+      });
+      explanations = validateExplanations(generated.value, context);
+    } catch (error) {
+      const canRetry = error?.retryable !== false && job.attempt_count < job.max_attempts;
+      if (canRetry) throw error;
+      return {
+        result: { preparationPlanId: job.resource_id, explanationCount: 0 },
+        fallbackUsed: true,
+        errorCode: error?.code ?? "AI_PROVIDER_FAILURE",
+      };
+    }
+    await withTransaction(pool, async (client) => {
+      for (const explanation of explanations) {
+        await client.query(
+          `INSERT INTO ai_recommendation_explanations (
+             job_id, preparation_plan_id, candidate_type, candidate_id, explanation
+           ) VALUES ($1,$2,$3,$4,$5)
+           ON CONFLICT (job_id, candidate_type, candidate_id)
+           DO UPDATE SET explanation = EXCLUDED.explanation`,
+          [job.id, job.resource_id, explanation.candidateType,
+            explanation.candidateId, explanation.explanation],
+        );
+      }
+    });
+    return {
+      result: { preparationPlanId: job.resource_id, explanationCount: explanations.length },
+      metadata: generated.metadata,
+    };
+  };
+}
+
 export function createAiJobHandlers({ pool, environment }) {
   return {
     JD_ANALYSIS: createJdAnalysisHandler({ pool, environment }),
+    RECOMMENDATION_EXPLANATION: createRecommendationExplanationHandler({ pool }),
   };
 }

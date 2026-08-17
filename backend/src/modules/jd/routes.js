@@ -177,6 +177,15 @@ export function createJdRouter({ pool, storage, environment }) {
     response.json(await service.listMentorCandidates(request.auth.user.id, request.params.planId, query));
   }));
 
+  router.post("/preparation-plans/:planId/recommendation-explanation-jobs", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    response.status(202).json(await service.startRecommendationExplanations(
+      request.auth.user.id,
+      request.params.planId,
+      request.correlationId,
+      request.get("Idempotency-Key"),
+    ));
+  }));
+
   router.get("/preparation-plans", requireRole("STUDENT"), asyncHandler(async (request, response) => {
     response.json(await service.listPlans(request.auth.user.id));
   }));
