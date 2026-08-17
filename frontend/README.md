@@ -2,14 +2,15 @@
 
 Package này triển khai giao diện React/TypeScript có routing và đã được wiring với API PrepVI qua đường dẫn tương đối `/api/v1`. Server state được quản lý bằng TanStack Query; form, lỗi và recovery dùng các thành phần dùng chung thay vì lặp logic theo từng trang.
 
-## Chạy local
+## Chạy toàn bộ hệ thống local
 
-Từ thư mục gốc của repository:
+Sau khi đã cấu hình `.env`, khởi động/migrate PostgreSQL theo README ở thư mục gốc, chạy:
 
 ```bash
-npm install
-npm run dev --workspace frontend
+npm run dev
 ```
+
+Lệnh root khởi động frontend, API và worker trong cùng terminal. Worker là bắt buộc để xử lý extraction, email và toàn bộ Gemini job. Chỉ dùng `npm run dev:web` nếu đang debug riêng giao diện và API/worker đã chạy ở terminal khác.
 
 Các bước kiểm tra chất lượng không bao gồm triển khai automated tests trong phạm vi R1:
 
@@ -19,7 +20,7 @@ npm run lint --workspace frontend
 npm run build --workspace frontend
 ```
 
-Frontend cần API chạy tại `http://localhost:3000` theo cấu hình Vite proxy hiện tại. Để walkthrough các job trích xuất, email hoặc Gemini, cần chạy thêm backend worker.
+Frontend proxy `/api` tới `http://localhost:3000` theo cấu hình mặc định. API, worker và frontend cùng đọc cấu hình cần thiết từ `.env` tại repository root; Gemini credential không được expose sang Vite.
 
 ## Cấu trúc
 

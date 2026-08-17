@@ -18,8 +18,12 @@ function toNumber(value, fallback) {
 }
 
 export function getEnvironment(source = process.env) {
+  const nodeEnv = source.NODE_ENV ?? "development";
+  const geminiApiKey = source.GEMINI_API_KEY?.trim() || undefined;
+  const enableAiByDefault = nodeEnv === "development" && Boolean(geminiApiKey);
+
   return {
-    nodeEnv: source.NODE_ENV ?? "development",
+    nodeEnv,
     port: toPositiveInteger(source.PORT, 3000),
     frontendOrigin: source.FRONTEND_ORIGIN ?? "http://localhost:5173",
     databaseUrl: source.DATABASE_URL,
@@ -57,14 +61,14 @@ export function getEnvironment(source = process.env) {
     },
     ai: {
       provider: source.AI_PROVIDER ?? "gemini",
-      enabled: toBoolean(source.AI_ENABLED),
+      enabled: toBoolean(source.AI_ENABLED, enableAiByDefault),
       features: {
-        jdAnalysis: toBoolean(source.AI_JD_ANALYSIS_ENABLED),
-        recommendationExplanation: toBoolean(source.AI_RECOMMENDATION_EXPLANATION_ENABLED),
-        agendaDraft: toBoolean(source.AI_AGENDA_DRAFT_ENABLED),
-        feedbackDraft: toBoolean(source.AI_FEEDBACK_DRAFT_ENABLED),
+        jdAnalysis: toBoolean(source.AI_JD_ANALYSIS_ENABLED, enableAiByDefault),
+        recommendationExplanation: toBoolean(source.AI_RECOMMENDATION_EXPLANATION_ENABLED, enableAiByDefault),
+        agendaDraft: toBoolean(source.AI_AGENDA_DRAFT_ENABLED, enableAiByDefault),
+        feedbackDraft: toBoolean(source.AI_FEEDBACK_DRAFT_ENABLED, enableAiByDefault),
       },
-      apiKey: source.GEMINI_API_KEY,
+      apiKey: geminiApiKey,
       model: source.GEMINI_MODEL ?? "gemini-3.5-flash-lite",
       apiVersion: source.GEMINI_API_VERSION ?? "v1",
       timeoutMs: toPositiveInteger(source.GEMINI_TIMEOUT_MS, 15000),

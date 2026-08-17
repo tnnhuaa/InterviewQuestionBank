@@ -14,18 +14,72 @@ Hệ thống đã triển khai toàn bộ backlog sản phẩm `US-01–30`, bao
 
 Yêu cầu: Node.js 24 LTS, npm 11+ và Docker Desktop hoặc một máy chủ PostgreSQL phiên bản 15 trở lên.
 
+### 1. Cài dependency và tạo `.env`
+
+PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+npm install
+```
+
+macOS/Linux:
+
 ```bash
 cp .env.example .env
 npm install
+```
+
+Trong `.env`, bắt buộc thay các giá trị sau trước khi chạy ứng dụng:
+
+```dotenv
+SESSION_SECRET=chuoi-ngau-nhien-toi-thieu-32-ky-tu
+CSRF_SECRET=mot-chuoi-ngau-nhien-khac-toi-thieu-32-ky-tu
+GEMINI_API_KEY=api-key-tao-tu-google-ai-studio
+```
+
+Không commit `.env`. Không đặt API key trong biến có tiền tố `VITE_`, source frontend hoặc ảnh chụp evidence.
+
+### 2. Khởi tạo database và dịch vụ local
+
+```bash
 npm run db:start
 npm run db:migrate
 npm run db:seed:reference
+```
+
+`db:start` khởi động PostgreSQL và Mailpit bằng Docker. Nếu dùng PostgreSQL bên ngoài, cập nhật `DATABASE_URL`/`DATABASE_SSL` rồi chỉ cần chạy migration và seed.
+
+Để có sẵn ba persona cùng dữ liệu cho toàn bộ luồng Student/Mentor/Admin, đặt thêm hai giá trị sau trong `.env`, rồi chạy demo seed một lần:
+
+```dotenv
+ALLOW_NON_PRODUCTION_SEED=true
+DEMO_SEED_PASSWORD=mat-khau-demo-tu-8-ky-tu
+```
+
+```bash
+npm run db:seed:demo
+```
+
+Tài khoản demo: `student.demo@prepvi.local`, `mentor.demo@prepvi.local` và `admin.demo@prepvi.local`; cả ba dùng `DEMO_SEED_PASSWORD` do người chạy seed tự đặt.
+
+### 3. Chạy toàn bộ ứng dụng
+
+Sau khi database đã được migrate, chỉ cần một lệnh tại thư mục gốc:
+
+```bash
 npm run dev
 ```
 
-`npm run dev` khởi động đồng thời API, worker xử lý email/job và frontend. Giữ terminal này hoạt động trong suốt quá trình phát triển.
+Lệnh này khởi động đồng thời và gắn nhãn log cho ba service:
 
-Thiết lập giá trị mạnh cho `SESSION_SECRET` và `CSRF_SECRET` trong `.env`. Các địa chỉ local:
+- `api`: Express API tại `http://localhost:3000`.
+- `worker`: xử lý extraction, Gemini job, email/outbox, reminder và retention.
+- `web`: Vite frontend tại `http://localhost:5173`.
+
+Nếu API, worker hoặc frontend dừng do lỗi, hai process còn lại cũng được dừng để không tạo trạng thái development không đầy đủ. Nhấn `Ctrl+C` để tắt cả ba.
+
+Các địa chỉ kiểm tra:
 
 - Giao diện: `http://localhost:5173`
 - Kiểm tra trạng thái API: `http://localhost:3000/api/v1/health`
@@ -35,14 +89,14 @@ Thiết lập giá trị mạnh cho `SESSION_SECRET` và `CSRF_SECRET` trong `.e
 Khi cần debug từng process riêng biệt, chạy các lệnh sau trong ba terminal:
 
 ```bash
-npm run dev --workspace backend
-npm run worker --workspace backend
-npm run dev --workspace frontend
+npm run dev:api
+npm run dev:worker
+npm run dev:web
 ```
 
-## Cấu hình Gemini tùy chọn
+## Kiểm tra toàn bộ tính năng Gemini trong development
 
-Mọi feature AI mặc định tắt. API key chỉ được cấu hình ở backend/secret manager; không tạo biến `VITE_GEMINI_*` và không gọi Gemini trực tiếp từ trình duyệt.
+`.env.example` bật sẵn cả bốn feature AI cho `NODE_ENV=development`. Nếu các cờ bị bỏ khỏi `.env`, development vẫn tự bật toàn bộ khi có `GEMINI_API_KEY`; production không tự bật. API key chỉ được cấu hình ở backend/secret manager và trình duyệt không gọi Gemini trực tiếp.
 
 ```dotenv
 AI_PROVIDER=gemini
@@ -56,9 +110,20 @@ GEMINI_MODEL=gemini-3.5-flash-lite
 GEMINI_API_VERSION=v1
 ```
 
-Các giới hạn timeout, retry, concurrency, token và budget đầy đủ có trong `.env.example`. Khi AI tắt, hết quota hoặc provider lỗi, phân tích JD chuyển sang rule-based và các luồng còn lại tiếp tục bằng lý do/form thủ công. Ghi chú dùng để tạo feedback draft được mã hóa tạm thời và xóa sau xử lý hoặc tối đa 24 giờ.
+Sau khi đăng nhập, gọi `GET /api/v1/ai/capabilities` qua frontend/API để xác nhận `enabled`, `available` và bốn feature đều là `true`. Nếu `available=false`, kiểm tra API key, model và trạng thái circuit breaker; nếu một feature riêng lẻ là `false`, kiểm tra cờ môi trường và `ai_feature_controls` vì feature có thể đã bị Admin tắt qua Operations Queue.
 
-Để kích hoạt AI local, cả API và worker phải cùng đọc một `.env` và worker phải đang chạy. Kiểm tra capability hiệu lực tại `GET /api/v1/ai/capabilities`; Admin có thể tắt khẩn cấp từng feature qua Operations Queue mà không sửa dữ liệu nghiệp vụ.
+Các điểm vào UI để test:
+
+- Student: upload/dán JD → xác nhận corrected text → trang mapping để tạo AI analysis và xử lý requirement confidence thấp.
+- Student: Preparation Plan → tạo explanation cho Question và Mentor candidate đã qua hard filter.
+- Mentor: Booking Detail của lịch đã xác nhận → tạo, sửa và xác nhận interview agenda draft.
+- Mentor: Booking đã hoàn tất → nhập ghi chú không nhạy cảm, tạo/sửa feedback draft rồi chủ động gửi feedback chính thức.
+
+API chỉ đưa AI job vào hàng đợi; vì vậy `worker` phải chạy. Lệnh root `npm run dev` đã bao gồm worker. Theo dõi log có prefix `[worker]`; trạng thái job có thể được polling qua `GET /api/v1/ai-jobs/{jobId}`.
+
+Các giới hạn timeout, retry, concurrency, token và budget đầy đủ có trong `.env.example`. Khi hết quota hoặc provider lỗi, phân tích JD chuyển sang rule-based và các luồng còn lại tiếp tục bằng lý do/form thủ công. Ghi chú dùng để tạo feedback draft được mã hóa tạm thời và xóa sau xử lý hoặc tối đa 24 giờ. Để kiểm tra fallback có chủ đích, đặt `AI_ENABLED=false` rồi khởi động lại `npm run dev`.
+
+Không cần sao chép `.env` vào `backend` hoặc `frontend`: API, worker và Vite đều đọc file `.env` duy nhất ở repository root.
 
 ## Quy trình database và seed
 

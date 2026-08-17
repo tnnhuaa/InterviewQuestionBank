@@ -7,7 +7,10 @@
     "backend"
   ],
   "scripts": {
-    "dev": "concurrently --kill-others-on-fail --names api,worker,web \"npm run dev --workspace backend\" \"npm run worker:dev --workspace backend\" \"npm run dev --workspace frontend\"",
+    "dev": "concurrently --kill-others --names api,worker,web --prefix-colors blue,magenta,green \"npm run dev:api\" \"npm run dev:worker\" \"npm run dev:web\"",
+    "dev:api": "npm run dev --workspace backend",
+    "dev:worker": "npm run worker:dev --workspace backend",
+    "dev:web": "npm run dev --workspace frontend",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspace frontend",
     "test": "npm run test --workspaces --if-present",
