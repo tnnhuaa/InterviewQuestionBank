@@ -13,15 +13,17 @@ export default function Questions() {
   const [search, setSearch] = useState("");
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState("");
+  const [page, setPage] = useState(1);
   const taxonomy = useQuery({ queryKey: ["taxonomy"], queryFn: questionsApi.taxonomy });
-  const questions = useQuery({ queryKey: ["questions", search, topic, difficulty], queryFn: () => questionsApi.list({ search, topic, difficulty, pageSize: 50 }) });
+  const questions = useQuery({ queryKey: ["questions", search, topic, difficulty, page], queryFn: () => questionsApi.list({ search, topic, difficulty, page, pageSize: 20 }) });
+  const updateFilter = (setter: (value: string) => void, value: string) => { setter(value); setPage(1); };
   return <div className="min-h-screen bg-canvas">{role === "public" ? <PublicNavbar /> : <AuthNavbar />}
     <main className="mx-auto max-w-[1100px] px-6 py-8">
       <h1 className="text-[22px] font-semibold text-ink">Question Bank</h1><p className="mt-1 text-sm text-ink-secondary">Danh sách chỉ gồm câu hỏi đã công bố và có taxonomy/provenance hợp lệ.</p>
       <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_200px_160px]">
-        <label className="relative"><MagnifyingGlass aria-hidden size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted" /><span className="sr-only">Tìm câu hỏi</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm câu hỏi hoặc kỹ năng…" className="w-full rounded-lg border border-edge bg-panel py-2.5 pl-10 pr-4 text-sm outline-none focus:border-primary" /></label>
-        <select aria-label="Chủ đề" value={topic} onChange={(event) => setTopic(event.target.value)} className="rounded-lg border border-edge bg-panel px-3 py-2.5 text-sm"><option value="">Mọi chủ đề</option>{taxonomy.data?.topics.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
-        <select aria-label="Độ khó" value={difficulty} onChange={(event) => setDifficulty(event.target.value)} className="rounded-lg border border-edge bg-panel px-3 py-2.5 text-sm"><option value="">Mọi độ khó</option><option value="EASY">Dễ</option><option value="MEDIUM">Trung bình</option><option value="HARD">Khó</option></select>
+        <label className="relative"><MagnifyingGlass aria-hidden size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted" /><span className="sr-only">Tìm câu hỏi</span><input type="search" value={search} onChange={(event) => updateFilter(setSearch, event.target.value)} placeholder="Tìm câu hỏi hoặc kỹ năng…" className="w-full rounded-lg border border-edge bg-panel py-2.5 pl-10 pr-4 text-sm outline-none focus:border-primary" /></label>
+        <select aria-label="Chủ đề" value={topic} onChange={(event) => updateFilter(setTopic, event.target.value)} className="rounded-lg border border-edge bg-panel px-3 py-2.5 text-sm"><option value="">Mọi chủ đề</option>{taxonomy.data?.topics.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
+        <select aria-label="Độ khó" value={difficulty} onChange={(event) => updateFilter(setDifficulty, event.target.value)} className="rounded-lg border border-edge bg-panel px-3 py-2.5 text-sm"><option value="">Mọi độ khó</option><option value="EASY">Dễ</option><option value="MEDIUM">Trung bình</option><option value="HARD">Khó</option></select>
       </div>
       <section className="mt-5 overflow-hidden rounded-xl border border-edge bg-panel divide-y divide-edge">
         {questions.isLoading && <p className="p-8 text-center text-sm text-ink-muted">Đang tải câu hỏi…</p>}
@@ -29,6 +31,7 @@ export default function Questions() {
         {questions.data?.items.map((question) => <QuestionRow key={question.id} question={question} showStatus={role !== "public"} />)}
         {questions.data?.items.length === 0 && <div className="p-12 text-center"><p className="text-sm font-medium text-ink">Không tìm thấy câu hỏi</p><p className="mt-1 text-xs text-ink-muted">Thử xóa bộ lọc hoặc dùng từ khóa khác.</p></div>}
       </section>
+      {questions.data && questions.data.pageInfo.total > questions.data.pageInfo.pageSize ? <nav aria-label="Phân trang câu hỏi" className="mt-5 flex items-center justify-between"><button disabled={page === 1 || questions.isFetching} onClick={() => setPage((current) => current - 1)} className="rounded-md border border-edge bg-panel px-4 py-2 text-xs font-medium disabled:opacity-40">Trang trước</button><p className="text-xs text-ink-muted">Trang {page} / {Math.ceil(questions.data.pageInfo.total / questions.data.pageInfo.pageSize)} · {questions.data.pageInfo.total} câu</p><button disabled={page * questions.data.pageInfo.pageSize >= questions.data.pageInfo.total || questions.isFetching} onClick={() => setPage((current) => current + 1)} className="rounded-md border border-edge bg-panel px-4 py-2 text-xs font-medium disabled:opacity-40">Trang sau</button></nav> : null}
     </main>
   </div>;
 }

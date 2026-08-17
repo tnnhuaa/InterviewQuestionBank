@@ -280,6 +280,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/questions/{questionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                questionId: components["parameters"]["QuestionId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateQuestion"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/questions/{questionId}/lifecycle": {
         parameters: {
             query?: never;
@@ -296,6 +314,158 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["changeQuestionLifecycle"];
+        trace?: never;
+    };
+    "/admin/taxonomy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminGetTaxonomy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/taxonomy/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createTaxonomyVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/taxonomy/versions/{versionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateTaxonomyVersion"];
+        trace?: never;
+    };
+    "/admin/topics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createTopic"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/topics/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateTopic"];
+        trace?: never;
+    };
+    "/admin/positions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createPosition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/positions/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updatePosition"];
+        trace?: never;
+    };
+    "/admin/topic-aliases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createTopicAlias"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/topic-aliases/{aliasId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                aliasId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteTopicAlias"];
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/job-descriptions": {
@@ -508,6 +678,48 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getPreparationPlan"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/preparation-plans/{planId}/items/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planId: components["parameters"]["PlanId"];
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updatePreparationPlanItem"];
+        trace?: never;
+    };
+    "/preparation-plans/{planId}/mentor-candidates": {
+        parameters: {
+            query?: {
+                availableFrom?: string;
+                availableTo?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                planId: components["parameters"]["PlanId"];
+            };
+            cookie?: never;
+        };
+        get: operations["listPreparationPlanMentorCandidates"];
         put?: never;
         post?: never;
         delete?: never;
@@ -812,6 +1024,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/bookings/{bookingId}/completion-disputes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookingId: components["parameters"]["BookingId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["createCompletionDispute"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/bookings/{bookingId}/operation-cases/{caseId}/actions": {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                bookingId: components["parameters"]["BookingId"];
+                caseId: components["parameters"]["CaseId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resolveParticipantOperationCase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/bookings/{bookingId}/review": {
         parameters: {
             query?: never;
@@ -952,6 +1203,110 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listReports"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/student-dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStudentDashboard"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/question-imports/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["previewQuestionImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/question-imports/{importId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        get: operations["getQuestionImport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/question-imports/{importId}/commit": {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["commitQuestionImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/question-imports/{importId}/errors.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        get: operations["downloadQuestionImportErrors"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -997,6 +1352,8 @@ export interface components {
         };
         /** @enum {string} */
         Difficulty: "EASY" | "MEDIUM" | "HARD";
+        /** @enum {string} */
+        BookingStatus: "PENDING" | "CONFIRMED" | "RESCHEDULE_PROPOSED" | "REJECTED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
         Question: {
             /** Format: uuid */
             id: string;
@@ -1029,8 +1386,7 @@ export interface components {
             mentorId: string;
             /** Format: uuid */
             slotId: string;
-            /** @enum {string} */
-            status: "PENDING" | "CONFIRMED" | "RESCHEDULE_PROPOSED" | "REJECTED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
+            status: components["schemas"]["BookingStatus"];
             /** Format: date-time */
             startsAt: string;
             /** Format: date-time */
@@ -1148,7 +1504,15 @@ export interface components {
         BookingId: string;
         CaseId: string;
     };
-    requestBodies: never;
+    requestBodies: {
+        JsonInput: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+    };
     headers: never;
     pathItems: never;
 }
@@ -1268,7 +1632,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             202: components["responses"]["Success"];
         };
@@ -1280,7 +1644,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             /** @description Password changed */
             204: {
@@ -1299,7 +1663,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["User"];
             400: components["responses"]["Error"];
@@ -1337,7 +1701,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["Success"];
             409: components["responses"]["Error"];
@@ -1397,14 +1761,18 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["Success"];
         };
     };
     adminListQuestions: {
         parameters: {
-            query?: never;
+            query?: {
+                search?: string;
+                page?: number;
+                pageSize?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1421,10 +1789,25 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             201: components["responses"]["Question"];
             422: components["responses"]["Error"];
+        };
+    };
+    updateQuestion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                questionId: components["parameters"]["QuestionId"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            200: components["responses"]["Question"];
+            409: components["responses"]["Error"];
         };
     };
     changeQuestionLifecycle: {
@@ -1436,10 +1819,135 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["Question"];
             409: components["responses"]["Error"];
+        };
+    };
+    adminGetTaxonomy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Success"];
+        };
+    };
+    createTaxonomyVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            201: components["responses"]["Success"];
+        };
+    };
+    updateTaxonomyVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            200: components["responses"]["Success"];
+            409: components["responses"]["Error"];
+        };
+    };
+    createTopic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            201: components["responses"]["Success"];
+        };
+    };
+    updateTopic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            200: components["responses"]["Success"];
+            409: components["responses"]["Error"];
+        };
+    };
+    createPosition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            201: components["responses"]["Success"];
+        };
+    };
+    updatePosition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            200: components["responses"]["Success"];
+            409: components["responses"]["Error"];
+        };
+    };
+    createTopicAlias: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            201: components["responses"]["Success"];
+        };
+    };
+    deleteTopicAlias: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                aliasId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            /** @description Alias deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     listJobDescriptions: {
@@ -1535,7 +2043,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["JobDescription"];
             409: components["responses"]["Error"];
@@ -1550,7 +2058,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["JobDescription"];
             409: components["responses"]["Error"];
@@ -1567,14 +2075,16 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["Success"];
         };
     };
     getJobDescriptionAnalysis: {
         parameters: {
-            query?: never;
+            query?: {
+                analysisVersion?: number;
+            };
             header?: never;
             path: {
                 jobDescriptionId: components["parameters"]["JobDescriptionId"];
@@ -1595,14 +2105,16 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["Success"];
         };
     };
     getMatches: {
         parameters: {
-            query?: never;
+            query?: {
+                analysisVersion?: number;
+            };
             header?: never;
             path: {
                 jobDescriptionId: components["parameters"]["JobDescriptionId"];
@@ -1625,7 +2137,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["Success"];
         };
@@ -1649,7 +2161,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             201: components["responses"]["Success"];
         };
@@ -1669,9 +2181,49 @@ export interface operations {
             404: components["responses"]["Error"];
         };
     };
-    listMentors: {
+    updatePreparationPlanItem: {
         parameters: {
             query?: never;
+            header?: never;
+            path: {
+                planId: components["parameters"]["PlanId"];
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            200: components["responses"]["Success"];
+            409: components["responses"]["Error"];
+        };
+    };
+    listPreparationPlanMentorCandidates: {
+        parameters: {
+            query?: {
+                availableFrom?: string;
+                availableTo?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                planId: components["parameters"]["PlanId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Page"];
+        };
+    };
+    listMentors: {
+        parameters: {
+            query?: {
+                topic?: string;
+                availableFrom?: string;
+                page?: number;
+                pageSize?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1715,7 +2267,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["Success"];
         };
@@ -1727,7 +2279,22 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    headline: string;
+                    bio: string;
+                    timezone: string;
+                    /** @constant */
+                    consent: "true";
+                    topicIds?: string;
+                    positionIds?: string;
+                    expertiseEvidence?: string;
+                    /** Format: binary */
+                    evidence: string;
+                };
+            };
+        };
         responses: {
             201: components["responses"]["Success"];
             415: components["responses"]["Error"];
@@ -1742,7 +2309,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["Page"];
+            200: components["responses"]["Success"];
         };
     };
     createAvailabilitySlot: {
@@ -1752,7 +2319,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             201: components["responses"]["Success"];
             409: components["responses"]["Error"];
@@ -1760,7 +2327,9 @@ export interface operations {
     };
     cancelAvailabilitySlot: {
         parameters: {
-            query?: never;
+            query: {
+                version: number;
+            };
             header?: never;
             path: {
                 slotId: string;
@@ -1793,7 +2362,10 @@ export interface operations {
     };
     getMentorEvidence: {
         parameters: {
-            query?: never;
+            query: {
+                expires: number;
+                signature: string;
+            };
             header?: never;
             path: {
                 verificationId: string;
@@ -1842,7 +2414,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["Success"];
             409: components["responses"]["Error"];
@@ -1850,7 +2422,11 @@ export interface operations {
     };
     listBookings: {
         parameters: {
-            query?: never;
+            query?: {
+                state?: components["schemas"]["BookingStatus"];
+                page?: number;
+                pageSize?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1869,7 +2445,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             201: components["responses"]["Booking"];
             409: components["responses"]["Error"];
@@ -1901,7 +2477,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["Booking"];
             202: components["responses"]["Booking"];
@@ -1917,7 +2493,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["Success"];
             409: components["responses"]["Error"];
@@ -1932,7 +2508,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             202: components["responses"]["Success"];
         };
@@ -1961,7 +2537,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             201: components["responses"]["Success"];
             409: components["responses"]["Error"];
@@ -1976,9 +2552,42 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["Success"];
+        };
+    };
+    createCompletionDispute: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookingId: components["parameters"]["BookingId"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            202: components["responses"]["Success"];
+            409: components["responses"]["Error"];
+        };
+    };
+    resolveParticipantOperationCase: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                bookingId: components["parameters"]["BookingId"];
+                caseId: components["parameters"]["CaseId"];
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            200: components["responses"]["Success"];
+            409: components["responses"]["Error"];
         };
     };
     createReview: {
@@ -1990,7 +2599,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             201: components["responses"]["Success"];
             409: components["responses"]["Error"];
@@ -2024,7 +2633,12 @@ export interface operations {
     };
     listOperationCases: {
         parameters: {
-            query?: never;
+            query?: {
+                status?: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "DISMISSED";
+                type?: string;
+                page?: number;
+                pageSize?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2073,7 +2687,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: components["requestBodies"]["JsonInput"];
         responses: {
             200: components["responses"]["Success"];
             409: components["responses"]["Error"];
@@ -2082,7 +2696,12 @@ export interface operations {
     };
     listAuditLog: {
         parameters: {
-            query?: never;
+            query?: {
+                targetType?: string;
+                targetId?: string;
+                page?: number;
+                pageSize?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2090,6 +2709,111 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["Page"];
+        };
+    };
+    listReports: {
+        parameters: {
+            query?: {
+                status?: "OPEN" | "IN_REVIEW" | "RESOLVED" | "DISMISSED";
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Page"];
+        };
+    };
+    getStudentDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Success"];
+        };
+    };
+    previewQuestionImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            201: components["responses"]["Success"];
+            422: components["responses"]["Error"];
+        };
+    };
+    getQuestionImport: {
+        parameters: {
+            query?: {
+                status?: "VALID" | "INVALID" | "IMPORTED" | "SKIPPED";
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Success"];
+        };
+    };
+    commitQuestionImport: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: components["requestBodies"]["JsonInput"];
+        responses: {
+            200: components["responses"]["Success"];
+            409: components["responses"]["Error"];
+        };
+    };
+    downloadQuestionImportErrors: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CSV containing invalid rows and recovery instructions */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
         };
     };
 }

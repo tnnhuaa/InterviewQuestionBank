@@ -7,7 +7,7 @@ import { authApi } from "@/shared/api/resources";
 import AuthFormLayout from "@/shared/components/AuthFormLayout";
 import ErrorPanel from "@/shared/components/ErrorPanel";
 
-const schema = z.object({ displayName: z.string().trim().min(2, "Tên phải có ít nhất 2 ký tự"), email: z.email("Email không hợp lệ"), password: z.string().min(10, "Mật khẩu phải có ít nhất 10 ký tự") });
+const schema = z.object({ displayName: z.string().trim().min(2, "Tên phải có ít nhất 2 ký tự"), email: z.email("Email không hợp lệ"), password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự") });
 type Values = z.infer<typeof schema>;
 export default function Register() {
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { displayName: "", email: "", password: "" } });

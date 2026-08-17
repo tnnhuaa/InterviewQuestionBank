@@ -6,7 +6,7 @@ import { parse } from "../../shared/validation.js";
 import { requireAuth, requireRole, sessionCookieName, sessionCookieOptions } from "../../middleware/auth.js";
 import { createIdentityService } from "./service.js";
 
-const password = z.string().min(10, "Mật khẩu phải có ít nhất 10 ký tự").max(128);
+const password = z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự").max(128);
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: true, legacyHeaders: false });
 
 export function createIdentityRouter({ pool, environment }) {

@@ -7,7 +7,7 @@ import { parse } from "../../shared/validation.js";
 import { createMentorsService } from "./service.js";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { files: 1, fileSize: 10 * 1024 * 1024 } });
-const topicIdsSchema = z.preprocess((value) => {
+const expertiseIdsSchema = (minimum = 0) => z.preprocess((value) => {
   if (typeof value !== "string") return value;
   try {
     const parsed = JSON.parse(value);
@@ -15,13 +15,14 @@ const topicIdsSchema = z.preprocess((value) => {
   } catch {
     return [value];
   }
-}, z.array(z.uuid()).min(1).max(20).optional());
+}, z.array(z.guid()).min(minimum).max(20).optional());
 
 const profileSchema = z.object({
   headline: z.string().trim().min(5).max(180),
   bio: z.string().trim().min(20).max(4000),
   timezone: z.string().trim().min(1).max(80),
-  topicIds: topicIdsSchema,
+  topicIds: expertiseIdsSchema(1),
+  positionIds: expertiseIdsSchema(),
   expertiseEvidence: z.string().trim().max(1000).optional(),
 });
 
@@ -52,7 +53,9 @@ export function createMentorsRouter({ pool, storage, environment }) {
   }));
 
   router.post("/mentor-verifications", requireAuth, upload.single("evidence"), asyncHandler(async (request, response) => {
-    const input = parse(profileSchema, request.body);
+    const input = parse(profileSchema.extend({
+      consent: z.literal("true", { message: "Cần xác nhận đồng ý xử lý bằng chứng xác minh" }),
+    }), request.body);
     response.status(201).json(await service.submitVerification(
       request.auth.user.id, input, request.file, request.correlationId,
     ));

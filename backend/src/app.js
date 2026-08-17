@@ -19,6 +19,8 @@ import { createJdRouter } from "./modules/jd/index.js";
 import { createMentorsRouter } from "./modules/mentors/index.js";
 import { createBookingsRouter } from "./modules/bookings/index.js";
 import { createOperationsRouter } from "./modules/operations/index.js";
+import { createDashboardRouter } from "./modules/dashboard/index.js";
+import { createQuestionImportsRouter } from "./modules/question-imports/index.js";
 import { AppError } from "./shared/errors.js";
 import { createStatusRouter } from "./modules/system/status.routes.js";
 
@@ -52,10 +54,10 @@ export function createApp({
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
-  if (environment.openApiResponseValidation) {
+  if (environment.openApiValidation) {
     app.use(openApiMiddleware({
       apiSpec: fileURLToPath(new URL("../openapi/openapi.yaml", import.meta.url)),
-      validateRequests: false,
+      validateRequests: true,
       validateSecurity: false,
       validateResponses: {
         onError: (error, body, request) => {
@@ -93,6 +95,8 @@ export function createApp({
   app.use("/api/v1", createMentorsRouter({ pool, storage, environment }));
   app.use("/api/v1", createBookingsRouter({ pool, environment }));
   app.use("/api/v1", createOperationsRouter({ pool }));
+  app.use("/api/v1", createDashboardRouter({ pool }));
+  app.use("/api/v1", createQuestionImportsRouter({ pool }));
   app.use(notFoundHandler);
   app.use(errorHandler);
 

@@ -32,14 +32,22 @@ export function createOperationsRouter({ pool }) {
   }));
   router.post("/admin/operation-cases/:caseId/actions", requireRole("ADMIN"), asyncHandler(async (request, response) => {
     const input = parse(z.object({
-      action: z.enum(["RESOLVE", "DISMISS", "ASSIGN", "RETRY", "APPROVE_LATE_CHANGE", "CONFIRM_NO_SHOW", "PUBLISH_REVIEW", "HIDE_REVIEW"]),
-      reason: z.string().trim().min(5).max(2000), version: z.number().int().positive(), assigneeId: z.uuid().optional(),
+      action: z.enum(["RESOLVE", "DISMISS", "ASSIGN", "RETRY", "APPROVE_LATE_CHANGE", "CONFIRM_NO_SHOW", "PUBLISH_REVIEW", "HIDE_REVIEW", "UPHOLD_DISPUTE", "DISMISS_DISPUTE"]),
+      reason: z.string().trim().min(5).max(2000), version: z.number().int().positive(), assigneeId: z.guid().optional(),
     }), request.body);
     response.json(await service.act(request.auth.user.id, request.params.caseId, input, request.get("Idempotency-Key"), request.correlationId));
   }));
   router.get("/admin/audit", requireRole("ADMIN"), asyncHandler(async (request, response) => {
-    const query = parse(z.object({ targetType: z.string().max(80).optional(), targetId: z.uuid().optional(), page: z.coerce.number().int().positive().default(1), pageSize: z.coerce.number().int().min(1).max(100).default(50) }), request.query);
+    const query = parse(z.object({ targetType: z.string().max(80).optional(), targetId: z.guid().optional(), page: z.coerce.number().int().positive().default(1), pageSize: z.coerce.number().int().min(1).max(100).default(50) }), request.query);
     response.json(await service.listAudit(query));
+  }));
+  router.get("/admin/reports", requireRole("ADMIN"), asyncHandler(async (request, response) => {
+    const query = parse(z.object({
+      status: z.enum(["OPEN", "IN_REVIEW", "RESOLVED", "DISMISSED"]).optional(),
+      page: z.coerce.number().int().positive().default(1),
+      pageSize: z.coerce.number().int().min(1).max(100).default(50),
+    }), request.query);
+    response.json(await service.listReports(query));
   }));
   return router;
 }

@@ -1,18 +1,18 @@
-# PrepVI — Interview Question Bank R1
+# PrepVI — Ngân hàng câu hỏi phỏng vấn R1
 
-PrepVI R1 is a modular monolith: React/TypeScript SPA, Express/JavaScript API and worker, and portable PostgreSQL through `pg`. The browser calls relative `/api/v1`; it never connects directly to PostgreSQL or object storage.
+PrepVI R1 được xây dựng theo kiến trúc monolith mô-đun, gồm SPA React/TypeScript, API và worker Express/JavaScript, cùng PostgreSQL có tính di động thông qua `pg`. Trình duyệt gọi đường dẫn tương đối `/api/v1`; trình duyệt không bao giờ kết nối trực tiếp đến PostgreSQL hoặc kho lưu trữ đối tượng.
 
 ```text
-Browser -> same-origin /api/v1 -> Express -> application/domain services -> PostgreSQL
-                                      \-> outbox -> worker -> SMTP
-                                      \-> private local/S3-compatible storage
+Trình duyệt -> /api/v1 cùng origin -> Express -> dịch vụ ứng dụng/miền -> PostgreSQL
+                                             \-> outbox -> worker -> SMTP
+                                             \-> kho riêng tư local/tương thích S3
 ```
 
-The implementation covers mandatory R1 stories `US-01–20` and `US-24–30`. Advanced dashboard, scheduled reminders, bulk import, AI/semantic matching, integrated video, and payment are deliberately out of scope.
+Hệ thống đã triển khai toàn bộ backlog sản phẩm `US-01–30`, bao gồm bảng điều khiển Student, lời nhắc trước 24 giờ/1 giờ và quy trình nhập Ngân hàng câu hỏi bằng CSV có kiểm soát. AI/đối sánh ngữ nghĩa, video tích hợp, ghi hình, bản ghi lời thoại và thanh toán vẫn chủ động nằm ngoài phạm vi; buổi phỏng vấn thử sử dụng liên kết họp HTTPS bên ngoài.
 
-## Local setup
+## Thiết lập môi trường local
 
-Requirements: Node.js 24 LTS, npm 11+, and Docker Desktop (or another PostgreSQL 15+ instance).
+Yêu cầu: Node.js 24 LTS, npm 11+ và Docker Desktop hoặc một máy chủ PostgreSQL phiên bản 15 trở lên.
 
 ```bash
 cp .env.example .env
@@ -23,14 +23,16 @@ npm run db:seed:reference
 npm run dev
 ```
 
-Set strong local `SESSION_SECRET` and `CSRF_SECRET` values in `.env`. Local endpoints:
+`npm run dev` khởi động đồng thời API, worker xử lý email/job và frontend. Giữ terminal này hoạt động trong suốt quá trình phát triển.
 
-- Frontend: `http://localhost:5173`
-- API health: `http://localhost:3000/api/v1/health`
-- API readiness: `http://localhost:3000/api/v1/readiness`
+Thiết lập giá trị mạnh cho `SESSION_SECRET` và `CSRF_SECRET` trong `.env`. Các địa chỉ local:
+
+- Giao diện: `http://localhost:5173`
+- Kiểm tra trạng thái API: `http://localhost:3000/api/v1/health`
+- Kiểm tra mức sẵn sàng của API: `http://localhost:3000/api/v1/readiness`
 - Mailpit: `http://localhost:8025`
 
-Run the API and worker separately when validating extraction/notifications:
+Khi cần debug từng process riêng biệt, chạy các lệnh sau trong ba terminal:
 
 ```bash
 npm run dev --workspace backend
@@ -38,9 +40,9 @@ npm run worker --workspace backend
 npm run dev --workspace frontend
 ```
 
-## Database and seed workflow
+## Quy trình database và seed
 
-Migrations are forward-only and checksum protected. Never edit an applied migration or seed version; create a new version.
+Migration chỉ được phép tiến lên phiên bản mới và được bảo vệ bằng checksum. Không chỉnh sửa migration hoặc phiên bản seed đã được áp dụng; hãy tạo phiên bản mới.
 
 ```bash
 npm run db:migrate
@@ -51,17 +53,19 @@ npm run db:seed:verify
 npm run db:status
 ```
 
-- `reference`: stable pilot-safe taxonomy, aliases, curated published questions, provenance, classifications, and matching rules.
-- `demo`: local/staging personas and representative workflow/error states. Requires `ALLOW_NON_PRODUCTION_SEED=true` and `DEMO_SEED_PASSWORD`; the password is never logged.
-- `load`: staging-only 1,000 questions, 100 mentors, 1,000 future slots, and 500 bookings under a distinct `load-*` namespace.
+- `reference`: taxonomy, alias, câu hỏi đã xuất bản và tuyển chọn, provenance, classification cùng matching rule ổn định, an toàn để dùng cho pilot.
+- `demo`: các nhóm người dùng mẫu và trạng thái luồng/lỗi đại diện cho local hoặc staging. Yêu cầu `ALLOW_NON_PRODUCTION_SEED=true` và `DEMO_SEED_PASSWORD`; mật khẩu không bao giờ được ghi vào log.
+- `load`: dữ liệu chỉ dành cho staging, gồm 1.000 câu hỏi, 100 Mentor, 1.000 slot tương lai và 500 booking trong namespace `load-*` riêng biệt.
 
-`demo` and `load` fail closed in `APP_ENV=pilot|production`. Pilot bootstrap is exactly: migrate → reference seed → `npm run admin:invite --workspace backend -- admin@example.com`. Invitation tokens and passwords are delivered/entered out-of-band and never accepted as CLI arguments.
+Chỉ được chạy seed `demo` và `load` khi `NODE_ENV=development` và `ALLOW_NON_PRODUCTION_SEED=true`. Quy trình khởi tạo production bắt buộc là: migrate → reference seed → `npm run admin:invite --workspace backend -- admin@example.com`. Token mời và mật khẩu phải được chuyển giao hoặc nhập qua kênh riêng, không bao giờ được nhận dưới dạng tham số dòng lệnh.
 
-`npm run db:reset` is allowed only for `APP_ENV=local|test` and a local database URL. It is not a pilot operation.
+Khi dùng Neon cho production, đặt `NODE_ENV=production`, `DATABASE_SSL=true` và sử dụng `sslmode=verify-full` trong `DATABASE_URL`; ứng dụng không bao giờ tắt bước xác minh chứng chỉ.
 
-## Contracts and quality
+Chỉ được chạy `npm run db:reset` khi `NODE_ENV=development` và host trong database URL được xác định rõ là local. Mọi URL Neon đều bị từ chối.
 
-OpenAPI 3.1 is at `backend/openapi/openapi.yaml`. Generate the frontend contract with:
+## Hợp đồng API và chất lượng mã nguồn
+
+OpenAPI 3.1 nằm tại `backend/openapi/openapi.yaml`. Sinh kiểu dữ liệu hợp đồng cho frontend bằng các lệnh:
 
 ```bash
 npm run api:types
@@ -71,15 +75,17 @@ npm run lint
 npm run build
 ```
 
-Automated-test implementation is not part of the R1 release/validation scope. Release acceptance uses the manual/UAT evidence process in `docs/Implementation/Manual_Validation_and_Operations.md`. CI still validates lint, TypeScript, OpenAPI drift, migration replay, reference seed integrity, build, and secret scanning.
+`OPENAPI_VALIDATION=true` bật kiểm tra hợp đồng cho cả request và response. Nên giữ tùy chọn này ở trạng thái bật trong development và production; request không hợp lệ sẽ nhận lỗi an toàn `API_CONTRACT_VALIDATION_ERROR` kèm hướng dẫn khắc phục theo từng trường dữ liệu.
 
-## Runtime safety
+Việc triển khai kiểm thử tự động không thuộc phạm vi phát hành hoặc kiểm chứng R1. Quá trình nghiệm thu sử dụng bằng chứng kiểm tra thủ công/UAT được mô tả trong `docs/Implementation/Manual_Validation_and_Operations.md`. CI vẫn kiểm tra lint, TypeScript, sai lệch OpenAPI, khả năng chạy lại migration, tính toàn vẹn của reference seed, build và quét dữ liệu bí mật.
 
-- Passwords use Argon2id. Sessions store only SHA-256 token hashes; cookies are `__Host-`, `Secure`, `HttpOnly`, `SameSite=Lax` in secure environments.
-- State-changing authenticated requests require same-origin and CSRF validation.
-- Booking/moderation operations use version checks and idempotency keys. Slot confirmation is serialized with row locks.
-- JD files and verification evidence are private. Meeting links are AES-256-GCM encrypted at rest.
-- API errors contain a safe correlation ID and recovery action; logs omit request bodies, tokens, JD text, credentials, meeting links, and evidence.
-- Failed providers do not roll back committed business state. The outbox retries at minute 1 and 5, then creates an auditable operation case.
+## An toàn khi vận hành
 
-When local PostgreSQL or Mailpit cannot start, follow the manual-recovery table in the implementation runbook instead of changing production data directly.
+- Mật khẩu sử dụng Argon2id. Session chỉ lưu hash SHA-256 của token; cookie sử dụng `__Host-`, `Secure`, `HttpOnly` và `SameSite=Lax` trong môi trường bảo mật.
+- Request đã xác thực và có thay đổi trạng thái phải vượt qua kiểm tra same-origin và CSRF.
+- Các thao tác booking/moderation sử dụng version check và idempotency key. Việc xác nhận slot được tuần tự hóa bằng row lock.
+- File JD và bằng chứng xác minh là dữ liệu riêng tư. Meeting link được mã hóa AES-256-GCM khi lưu trữ.
+- Lỗi API chứa correlation ID an toàn và hướng khắc phục; log không chứa request body, token, nội dung JD, credential, meeting link hoặc bằng chứng xác minh.
+- Lỗi nhà cung cấp không hoàn tác trạng thái nghiệp vụ đã được ghi nhận. Outbox thử gửi lại tại phút thứ 1 và 5, sau đó tạo hồ sơ vận hành có thể truy vết.
+
+Khi PostgreSQL hoặc Mailpit local không thể khởi động, hãy làm theo bảng khắc phục thủ công trong tài liệu hướng dẫn triển khai thay vì thay đổi trực tiếp dữ liệu production.

@@ -9,6 +9,8 @@ Automated-test implementation is intentionally outside this R1 release scope. Ev
 3. Start API, worker, and frontend as separate processes. Confirm `/api/v1/health`, `/api/v1/readiness`, and Mailpit.
 4. Use the three demo personas. Retrieve the password from the operator who set `DEMO_SEED_PASSWORD`; never copy it into evidence.
 
+The expected migration chain for a new database is `001_r1_foundation → 002_complete_r1_flows → 003_dashboard_and_reminders → 004_question_bulk_import`. Keep `OPENAPI_VALIDATION=true` so the walkthrough covers both request and response contract enforcement.
+
 If Docker Desktop is stopped, start it manually and rerun `npm run db:start`. If port 5432/1025/8025 is occupied, identify the owning local process and either stop it or change the local-only port mapping plus connection variables. Do not point `db:reset` at Neon.
 
 ## Persona walkthroughs
@@ -22,6 +24,7 @@ If Docker Desktop is stopped, start it manually and rerun `npm run db:start`. If
 5. Observe polling and duplicate-submit protection. Retry failed extraction or paste text manually; verify the original private object is removed after success or by retention.
 6. Edit and confirm corrected text. Analyze, map an unmapped requirement, inspect evidence and `analysisVersion`, match, select up to ten questions, and create a real-ID plan.
 7. Select an approved Mentor slot. Confirm the booking references the Student-owned JD/plan, then exercise pending, confirmed, reschedule, cancel, link failure, completed, feedback apply, and review.
+8. Inspect the real Student dashboard aggregates, then confirm 24-hour/1-hour reminders are deduplicated, cancelled on schedule change, and skipped when their milestone has already passed.
 
 ### Mentor
 
@@ -39,6 +42,7 @@ If Docker Desktop is stopped, start it manually and rerun `npm run db:start`. If
 3. Process failed extraction/notification, link failure, late change, no-show, dispute, and review moderation cases.
 4. Before every action, inspect impact preview. Verify only allowlisted actions appear, reason/idempotency/version are required, and no arbitrary state setter exists.
 5. Inspect audit records. Confirm password/token/JD text/meeting link/evidence never appears in errors, support details, logs, or audit metadata.
+6. Preview a mixed valid/invalid RFC 4180 CSV, filter row errors, download the error CSV, then commit only valid rows into `DRAFT`.
 
 ## Failure and recovery matrix
 
@@ -56,11 +60,11 @@ If Docker Desktop is stopped, start it manually and rerun `npm run db:start`. If
 ## Seed and release gates
 
 - Run reference seed twice and confirm checksum/counts do not change.
-- Confirm demo/load fail with `APP_ENV=pilot` and without `ALLOW_NON_PRODUCTION_SEED=true`.
+- Confirm demo/load fail with `NODE_ENV=production` and without `ALLOW_NON_PRODUCTION_SEED=true`.
 - Confirm `db:seed:verify` reports zero invalid published questions, duplicate aliases, and orphan classifications.
 - On staging, load seed must report exactly 1,000 load questions, 100 load mentors, 1,000 load slots, and 500 load bookings.
 - Capture JD corpus recall ≥80%, precision@10 ≥80%, deterministic result hash, non-OCR p95 ≤3s, and OCR p95 ≤45s.
 - Before pilot migration: backup, dry-run on a copy, document forward-fix, and perform restore drill. Pilot runs reference seed only.
-- Product Owner accepts all 27 story AC; no Critical/High defect; concurrency, RPO ≤24h, and RTO ≤4h evidence is attached.
+- Product Owner accepts all 30 story AC; no Critical/High defect; concurrency, RPO ≤24h, and RTO ≤4h evidence is attached.
 
 Operational dashboards should monitor latency/error rate, extraction queue depth, empty mapping rate, booking conflicts, outbox `DEAD`, unauthorized access, and retention cleanup. Direct database edits are not an operational action.

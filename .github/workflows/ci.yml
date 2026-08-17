@@ -31,13 +31,13 @@ jobs:
       - name: Migration replay
         env:
           DATABASE_URL: postgresql://prepvi:prepvi@localhost:5432/prepvi
-          APP_ENV: test
+          NODE_ENV: test
           SESSION_SECRET: ci-only-session-secret-not-for-deployment
         run: npm run db:migrate && npm run db:migrate
       - name: Reference seed verification
         env:
           DATABASE_URL: postgresql://prepvi:prepvi@localhost:5432/prepvi
-          APP_ENV: test
+          NODE_ENV: test
         run: npm run db:seed:reference && npm run db:seed:reference && npm run db:seed:verify
       - name: Build
         run: npm run build

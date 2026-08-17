@@ -29,6 +29,7 @@ export default function ErrorPanel({ error, onRetry }: { error: unknown; onRetry
         <div className="min-w-0 flex-1">
           <p className="font-semibold">{apiError?.message ?? "Đã có lỗi không mong đợi."}</p>
           <p className="mt-1 text-xs text-ink-secondary">{RECOVERY_LABELS[apiError?.recovery.kind ?? "NONE"]}</p>
+          {apiError && Object.keys(apiError.fieldErrors).length > 0 ? <ul className="mt-3 space-y-1 rounded-md border border-danger/15 bg-panel/70 p-3">{Object.entries(apiError.fieldErrors).map(([field, message]) => <li key={field} className="text-xs text-ink-secondary"><span className="font-semibold text-danger">{field}:</span> {message}</li>)}</ul> : null}
           {apiError?.status === 429 && apiError.recovery.retryAfterSeconds && <p className="mt-1 text-xs text-ink-secondary">Thử lại sau {apiError.recovery.retryAfterSeconds} giây.</p>}
           <div className="mt-3 flex flex-wrap gap-2">
             {onRetry && apiError?.recovery.retryable && <button type="button" onClick={onRetry} className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-on-primary">Thử lại</button>}

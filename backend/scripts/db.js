@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "../src/config/load-dotenv.js";
 import { createHash, randomBytes } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -12,14 +12,37 @@ const repositoryRoot = path.resolve(scriptDirectory, "../..");
 const databaseRoot = path.join(repositoryRoot, "database");
 
 function checksum(value) {
-  return createHash("sha256").update(value).digest("hex");
+  // Git may check SQL files out as CRLF on Windows. Migration identity must not
+  // change solely because of the developer operating system.
+  const normalizedValue = value.replace(/\r\n/g, "\n");
+  return createHash("sha256").update(normalizedValue).digest("hex");
+}
+
+function nodeEnvironment() {
+  const value = process.env.NODE_ENV ?? "development";
+  if (!["development", "test", "production"].includes(value)) {
+    throw new Error("NODE_ENV must be development, test, or production");
+  }
+  return value;
 }
 
 function createClient() {
   if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
+  const databaseUrl = new URL(process.env.DATABASE_URL);
+  const host = databaseUrl.hostname.toLowerCase();
+  const isLocalHost = ["localhost", "127.0.0.1", "::1", "postgres"].includes(host);
+  const sslMode = databaseUrl.searchParams.get("sslmode");
+  const sslRequested = process.env.DATABASE_SSL === "true"
+    || (sslMode !== null && !["disable", "allow"].includes(sslMode));
+  if (isLocalHost && sslRequested) {
+    throw new Error(
+      `PostgreSQL local (${host}) không hỗ trợ cấu hình SSL hiện tại. `
+      + "Hãy đặt DATABASE_SSL=false và xóa sslmode khỏi DATABASE_URL.",
+    );
+  }
   return new Client({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: false } : false,
+    ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: true } : false,
   });
 }
 
@@ -100,7 +123,10 @@ async function migrate(client) {
     );
     if (applied.rowCount) {
       if (applied.rows[0].checksum !== digest) {
-        throw new Error(`Applied migration ${version} was modified`);
+        throw new Error(
+          `Migration ${version} đã được áp dụng nhưng nội dung hiện tại không khớp checksum. `
+          + "Không sửa migration history; hãy khôi phục file đã áp dụng hoặc tạo migration forward-only mới.",
+        );
       }
       console.log(`skip migration ${version}`);
       continue;
@@ -123,9 +149,9 @@ async function migrate(client) {
 
 function assertNonProductionSeedAllowed(dataset) {
   if (dataset === "reference") return;
-  const appEnvironment = process.env.APP_ENV ?? "local";
-  if (["production", "pilot"].includes(appEnvironment)) {
-    throw new Error(`${dataset} seed is forbidden in ${appEnvironment}`);
+  const environment = nodeEnvironment();
+  if (environment !== "development") {
+    throw new Error(`${dataset} seed is allowed only when NODE_ENV=development`);
   }
   if (process.env.ALLOW_NON_PRODUCTION_SEED !== "true") {
     throw new Error("Set ALLOW_NON_PRODUCTION_SEED=true for demo/load seed");
@@ -191,7 +217,10 @@ async function seed(client, dataset) {
     );
     if (applied.rowCount) {
       if (applied.rows[0].checksum !== digest) {
-        throw new Error(`Applied ${dataset} seed ${version} was modified`);
+        throw new Error(
+          `Seed ${dataset}/${version} đã được áp dụng nhưng nội dung hiện tại không khớp checksum. `
+          + "Không sửa seed đã áp dụng; hãy khôi phục file hoặc tạo seed version mới.",
+        );
       }
       console.log(`skip ${dataset} seed ${version}`);
       continue;
@@ -231,6 +260,13 @@ async function verify(client) {
        AND (q.source_name = '' OR q.provenance_note = ''
          OR NOT EXISTS (SELECT 1 FROM question_topics qt WHERE qt.question_id = q.id)
          OR NOT EXISTS (SELECT 1 FROM question_positions qp WHERE qp.question_id = q.id))) AS invalid_published_questions,
+      (SELECT count(*)::int FROM questions q
+       WHERE q.lifecycle_status = 'PUBLISHED' AND q.normalized_content_hash IS NULL) AS missing_published_question_hashes,
+      (SELECT count(*)::int FROM (
+         SELECT normalized_content_hash FROM questions
+         WHERE normalized_content_hash IS NOT NULL
+         GROUP BY normalized_content_hash HAVING count(*) > 1
+       ) duplicates) AS duplicate_question_content,
       (SELECT count(*)::int FROM question_topics qt
        LEFT JOIN questions q ON q.id = qt.question_id LEFT JOIN topics t ON t.id = qt.topic_id
        WHERE q.id IS NULL OR t.id IS NULL) AS orphan_question_topics,
@@ -241,6 +277,22 @@ async function verify(client) {
       (SELECT count(*)::int FROM mentor_profiles mp JOIN users u ON u.id = mp.user_id WHERE u.email LIKE 'load-mentor-%@prepvi.invalid') AS load_mentors,
       (SELECT count(*)::int FROM availability_slots s JOIN mentor_profiles mp ON mp.id = s.mentor_id JOIN users u ON u.id = mp.user_id WHERE u.email LIKE 'load-mentor-%@prepvi.invalid') AS load_slots,
       (SELECT count(*)::int FROM bookings b JOIN users u ON u.id = b.student_id WHERE u.email LIKE 'load-student-%@prepvi.invalid') AS load_bookings,
+      (SELECT count(*)::int FROM booking_context_snapshots bcs
+       CROSS JOIN LATERAL unnest(bcs.topic_ids) AS ids(topic_id)
+       LEFT JOIN topics t ON t.id = ids.topic_id WHERE t.id IS NULL) AS invalid_booking_context_topics,
+      (SELECT count(*)::int FROM feedback_action_applications faa
+       JOIN preparation_plan_items pi ON pi.id = faa.preparation_plan_item_id
+       WHERE pi.plan_id <> faa.preparation_plan_id) AS invalid_feedback_applications,
+      (SELECT count(*)::int FROM (
+         SELECT aggregate_id, schedule_version, recipient_user_id, channel, milestone
+         FROM notification_outbox WHERE milestone IN ('24H','1H')
+         GROUP BY aggregate_id, schedule_version, recipient_user_id, channel, milestone
+         HAVING count(*) > 1
+       ) duplicates) AS duplicate_reminders,
+      (SELECT count(*)::int FROM question_import_batches b
+       WHERE b.total_rows <> (SELECT count(*) FROM question_import_rows r WHERE r.batch_id = b.id)
+          OR b.valid_rows <> (SELECT count(*) FROM question_import_rows r WHERE r.batch_id = b.id AND r.status IN ('VALID','IMPORTED','SKIPPED'))
+      ) AS invalid_import_summaries,
       (SELECT count(*)::int FROM (
          SELECT taxonomy_version_id, normalized_alias
          FROM topic_aliases GROUP BY taxonomy_version_id, normalized_alias HAVING count(*) > 1
@@ -252,17 +304,26 @@ async function verify(client) {
   console.table(result.rows);
   console.table(rows.rows);
   if (result.rows[0].invalid_published_questions || result.rows[0].duplicate_aliases
-      || result.rows[0].orphan_question_topics || result.rows[0].orphan_question_positions) {
+      || result.rows[0].missing_published_question_hashes || result.rows[0].duplicate_question_content
+      || result.rows[0].orphan_question_topics || result.rows[0].orphan_question_positions
+      || result.rows[0].invalid_booking_context_topics || result.rows[0].invalid_feedback_applications
+      || result.rows[0].duplicate_reminders || result.rows[0].invalid_import_summaries) {
     process.exitCode = 2;
   }
 }
 
 function assertResetAllowed() {
-  const appEnvironment = process.env.APP_ENV ?? "local";
+  const environment = nodeEnvironment();
   const databaseUrl = process.env.DATABASE_URL ?? "";
-  const isLocalUrl = /localhost|127\.0\.0\.1|postgres:5432/.test(databaseUrl);
-  if (!["local", "test"].includes(appEnvironment) || !isLocalUrl) {
-    throw new Error("db:reset is restricted to an explicitly local/test database");
+  let isLocalUrl = false;
+  try {
+    const host = new URL(databaseUrl).hostname.toLowerCase();
+    isLocalUrl = ["localhost", "127.0.0.1", "::1", "postgres"].includes(host);
+  } catch {
+    isLocalUrl = false;
+  }
+  if (environment !== "development" || !isLocalUrl) {
+    throw new Error("db:reset requires NODE_ENV=development and an explicitly local database URL");
   }
 }
 
@@ -283,6 +344,7 @@ async function status(client) {
 
 async function main() {
   const [command, option] = process.argv.slice(2);
+  if (command === "reset") assertResetAllowed();
   const client = createClient();
   await client.connect();
   try {
@@ -292,7 +354,6 @@ async function main() {
     else if (command === "verify") await verify(client);
     else if (command === "status") await status(client);
     else if (command === "reset") {
-      assertResetAllowed();
       await client.query("DROP SCHEMA public CASCADE; CREATE SCHEMA public");
       await ensureTrackingTables(client);
       await migrate(client);

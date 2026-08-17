@@ -18,6 +18,9 @@ function profileDto(row) {
     verificationStatus: row.verification_status,
     publicRating: row.public_rating,
     expertise: row.expertise ?? [],
+    positionExpertise: row.position_expertise ?? [],
+    topicIds: row.topic_ids ?? [],
+    positionIds: row.position_ids ?? [],
     nextSlots: row.next_slots ?? [],
     reviews: row.reviews ?? [],
     version: row.version,
@@ -71,17 +74,32 @@ export function createMentorsService({ pool, storage, environment }) {
   async function saveProfile(userId, input) {
     return withTransaction(pool, async (client) => {
       const profile = await ensureProfile(userId, input, client);
-      if (input.topicIds) {
+      if (input.topicIds || input.positionIds) {
         await client.query("DELETE FROM mentor_expertise WHERE mentor_id = $1", [profile.id]);
-        for (const topicId of input.topicIds) {
+        for (const topicId of input.topicIds ?? []) {
           await client.query(
             `INSERT INTO mentor_expertise (mentor_id, topic_id, evidence_note, status)
              VALUES ($1, $2, $3, 'PENDING')`,
             [profile.id, topicId, input.expertiseEvidence ?? null],
           );
         }
+        for (const positionId of input.positionIds ?? []) {
+          await client.query(
+            `INSERT INTO mentor_expertise (mentor_id, position_id, evidence_note, status)
+             VALUES ($1, $2, $3, 'PENDING')`,
+            [profile.id, positionId, input.expertiseEvidence ?? null],
+          );
+        }
       }
-      return profileDto({ ...profile, display_name: null, expertise: [], next_slots: [] });
+      return profileDto({
+        ...profile,
+        display_name: null,
+        expertise: [],
+        position_expertise: [],
+        topic_ids: input.topicIds ?? [],
+        position_ids: input.positionIds ?? [],
+        next_slots: [],
+      });
     });
   }
 
@@ -143,10 +161,14 @@ export function createMentorsService({ pool, storage, environment }) {
     const result = await pool.query(
       `SELECT mp.*, u.display_name,
         coalesce(array_agg(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL), '{}') AS expertise,
+        coalesce(array_agg(DISTINCT p.name) FILTER (WHERE p.id IS NOT NULL), '{}') AS position_expertise,
+        coalesce(array_agg(DISTINCT t.id) FILTER (WHERE t.id IS NOT NULL), '{}') AS topic_ids,
+        coalesce(array_agg(DISTINCT p.id) FILTER (WHERE p.id IS NOT NULL), '{}') AS position_ids,
         '[]'::jsonb AS next_slots
        FROM mentor_profiles mp JOIN users u ON u.id = mp.user_id
        LEFT JOIN mentor_expertise me ON me.mentor_id = mp.id
        LEFT JOIN topics t ON t.id = me.topic_id
+       LEFT JOIN positions p ON p.id = me.position_id
        WHERE mp.user_id = $1 GROUP BY mp.id, u.display_name`,
       [userId],
     );
@@ -176,6 +198,7 @@ export function createMentorsService({ pool, storage, environment }) {
     const result = await pool.query(
       `SELECT mp.*, u.display_name,
         coalesce(array_agg(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL), '{}') AS expertise,
+        coalesce(array_agg(DISTINCT p.name) FILTER (WHERE p.id IS NOT NULL), '{}') AS position_expertise,
         coalesce((SELECT jsonb_agg(slot ORDER BY slot->>'startsAt') FROM (
           SELECT jsonb_build_object('id', s.id, 'startsAt', s.starts_at, 'endsAt', s.ends_at,
             'timezone', s.source_timezone) AS slot
@@ -185,6 +208,7 @@ export function createMentorsService({ pool, storage, environment }) {
        FROM mentor_profiles mp JOIN users u ON u.id = mp.user_id
        LEFT JOIN mentor_expertise me ON me.mentor_id = mp.id AND me.status = 'APPROVED'
        LEFT JOIN topics t ON t.id = me.topic_id
+       LEFT JOIN positions p ON p.id = me.position_id
        WHERE ${clauses.join(" AND ")}
        GROUP BY mp.id, u.display_name
        ORDER BY mp.public_rating DESC NULLS LAST, mp.id
@@ -202,6 +226,7 @@ export function createMentorsService({ pool, storage, environment }) {
     const result = await pool.query(
       `SELECT mp.*, u.display_name,
         coalesce(array_agg(DISTINCT t.name) FILTER (WHERE t.id IS NOT NULL), '{}') AS expertise,
+        coalesce(array_agg(DISTINCT p.name) FILTER (WHERE p.id IS NOT NULL), '{}') AS position_expertise,
         coalesce((SELECT jsonb_agg(jsonb_build_object('id', s.id, 'startsAt', s.starts_at,
           'endsAt', s.ends_at, 'timezone', s.source_timezone) ORDER BY s.starts_at)
           FROM availability_slots s WHERE s.mentor_id = mp.id AND s.status = 'AVAILABLE' AND s.starts_at > now()), '[]'::jsonb) AS next_slots,
@@ -224,6 +249,7 @@ export function createMentorsService({ pool, storage, environment }) {
        FROM mentor_profiles mp JOIN users u ON u.id = mp.user_id
        LEFT JOIN mentor_expertise me ON me.mentor_id = mp.id AND me.status = 'APPROVED'
        LEFT JOIN topics t ON t.id = me.topic_id
+       LEFT JOIN positions p ON p.id = me.position_id
        WHERE mp.id = $1 AND mp.verification_status = 'APPROVED'
        GROUP BY mp.id, u.display_name`,
       [id],

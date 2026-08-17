@@ -17,6 +17,7 @@ interface NavLink {
 const roleNavigation: Record<Exclude<Role, "public">, NavLink[]> = {
   student: [
     { to: routes.studentDashboard, label: "Trang chủ" },
+    { to: routes.studentProfile, label: "Hồ sơ" },
     { to: routes.questions, label: "Câu hỏi" },
     { to: routes.mentors, label: "Mentor" },
     { to: `${routes.studentDashboard}#bookings`, label: "Lịch phỏng vấn" },
@@ -31,6 +32,8 @@ const roleNavigation: Record<Exclude<Role, "public">, NavLink[]> = {
   admin: [
     { to: routes.adminQueue, label: "Queue" },
     { to: routes.adminQuestions, label: "Câu hỏi" },
+    { to: routes.adminQuestionImport, label: "Import" },
+    { to: routes.adminTaxonomy, label: "Taxonomy" },
   ],
 };
 
@@ -143,15 +146,7 @@ export function AppNavbar({ publicMode = false }: { publicMode?: boolean }) {
               </button>
               {profileOpen && (
                 <div className="absolute right-0 top-full mt-2 w-48 overflow-hidden rounded-xl border border-edge bg-panel py-1 shadow-lg">
-                  {["Hồ sơ của tôi", "Cài đặt"].map((label) => (
-                    <button key={label}
-                      type="button"
-                      onClick={() => setProfileOpen(false)}
-                      className="w-full px-4 py-2.5 text-left text-sm text-ink-secondary transition-colors hover:bg-canvas hover:text-ink"
-                    >
-                      {label}
-                    </button>
-                  ))}
+                  {authenticatedRole === "student" && <Link to={routes.studentProfile} className="block w-full px-4 py-2.5 text-left text-sm text-ink-secondary transition-colors hover:bg-canvas hover:text-ink">Hồ sơ của tôi</Link>}
                   <button type="button" onClick={async () => { setProfileOpen(false); await logout(); navigate(routes.login); }} className="w-full px-4 py-2.5 text-left text-sm text-danger transition-colors hover:bg-danger-soft">Đăng xuất</button>
                 </div>
               )}

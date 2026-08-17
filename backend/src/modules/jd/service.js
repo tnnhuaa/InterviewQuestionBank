@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { fileTypeFromBuffer } from "file-type";
+import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { AppError, notFoundError } from "../../shared/errors.js";
 import { withTransaction } from "../../platform/db/transaction.js";
 import { findIdempotentResult, saveIdempotentResult } from "../../platform/idempotency.js";
@@ -17,6 +18,31 @@ function sha256(value) {
 
 function normalize(value) {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+async function validatePdf(buffer) {
+  let document;
+  try {
+    document = await getDocument({ data: new Uint8Array(buffer), isEvalSupported: false }).promise;
+    if (document.numPages > 5) {
+      throw new AppError({ status: 422, code: "PDF_PAGE_LIMIT", message: "PDF chỉ được có tối đa 5 trang.", recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null } });
+    }
+    const attachments = await document.getAttachments();
+    if (attachments && Object.keys(attachments).length) {
+      throw new AppError({ status: 422, code: "PDF_EMBEDDED_FILES", message: "PDF có tệp đính kèm nhúng nên không thể xử lý an toàn.", recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null } });
+    }
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    const encrypted = error?.name === "PasswordException" || /password/i.test(error?.message ?? "");
+    throw new AppError({
+      status: 422,
+      code: encrypted ? "PDF_ENCRYPTED" : "PDF_MALFORMED",
+      message: encrypted ? "PDF có mật khẩu hoặc bị mã hóa. Hãy tải bản không mã hóa." : "PDF bị hỏng hoặc không đúng định dạng.",
+      recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
+    });
+  } finally {
+    await document?.destroy();
+  }
 }
 
 function jdDto(row) {
@@ -110,6 +136,21 @@ export function createJdService({ pool, storage }) {
         recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
       });
     }
+    const quota = await pool.query(
+      `SELECT count(*)::int AS count FROM job_descriptions
+       WHERE student_id = $1 AND source_type IN ('PDF','IMAGE')
+         AND created_at >= now() - interval '24 hours'`,
+      [studentId],
+    );
+    if (quota.rows[0].count >= 20) {
+      throw new AppError({
+        status: 429,
+        code: "JD_UPLOAD_QUOTA_REACHED",
+        message: "Bạn đã dùng hết 20 lượt upload trong 24 giờ. Có thể dán nội dung JD để tiếp tục ngay.",
+        recovery: { kind: "PASTE_TEXT", retryable: false, retryAfterSeconds: 3600 },
+      });
+    }
+    if (detected.mime === "application/pdf") await validatePdf(file.buffer);
     const objectKey = await storage.put(file.buffer, { contentType: detected.mime });
     try {
       const result = await pool.query(
@@ -329,13 +370,17 @@ export function createJdService({ pool, storage }) {
       }
       const requirements = [];
       for (const item of detected) {
+        const sourceStart = jd.corrected_text.toLocaleLowerCase("vi-VN")
+          .indexOf(String(item.matchedTerm).toLocaleLowerCase("vi-VN"));
         const result = await client.query(
           `INSERT INTO jd_requirements (
-             job_description_id, analysis_version, raw_text, requirement_type,
+             job_description_id, analysis_version, raw_text, source_start, source_end, requirement_type,
              normalized_topic_id, confidence, rule_evidence
-           ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-           RETURNING id, raw_text, requirement_type, normalized_topic_id, confidence`,
-          [id, analysisVersion, item.matchedTerm, item.type ?? "SKILL", item.topic?.id ?? null,
+           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+           RETURNING id, raw_text, source_start, source_end, requirement_type, normalized_topic_id, confidence`,
+          [id, analysisVersion, item.matchedTerm, sourceStart >= 0 ? sourceStart : null,
+            sourceStart >= 0 ? sourceStart + String(item.matchedTerm).length : null,
+            item.type ?? "SKILL", item.topic?.id ?? null,
             item.topic ? 0.95 : 0.75, { rule: item.topic ? "taxonomy_alias" : "pilot_dictionary" }],
         );
         requirements.push(result.rows[0]);
@@ -472,6 +517,7 @@ export function createJdService({ pool, storage }) {
         if (!requirement.effective_topic_id) continue;
         const candidates = await client.query(
           `SELECT q.id, q.title, q.content, q.difficulty, t.name AS topic_name,
+                  t.priority AS topic_priority,
                   coalesce(array_agg(p.slug) FILTER (WHERE p.id IS NOT NULL), '{}') AS positions
            FROM questions q
            JOIN question_topics qt ON qt.question_id = q.id
@@ -479,7 +525,7 @@ export function createJdService({ pool, storage }) {
            LEFT JOIN question_positions qp ON qp.question_id = q.id
            LEFT JOIN positions p ON p.id = qp.position_id
            WHERE q.lifecycle_status = 'PUBLISHED' AND t.status = 'ACTIVE' AND t.id = $1
-           GROUP BY q.id, t.name
+           GROUP BY q.id, t.id
            ORDER BY q.id`,
           [requirement.effective_topic_id],
         );
@@ -502,7 +548,7 @@ export function createJdService({ pool, storage }) {
         }
       }
       scored.sort((left, right) => right.score - left.score
-        || String(left.requirement.effective_topic_id).localeCompare(String(right.requirement.effective_topic_id))
+        || left.candidate.topic_priority - right.candidate.topic_priority
         || left.candidate.id.localeCompare(right.candidate.id));
       const perRequirement = new Map();
       const selected = [];
@@ -605,7 +651,11 @@ export function createJdService({ pool, storage }) {
     return withTransaction(pool, async (client) => {
       await getOwned(studentId, input.jobDescriptionId, client);
       const matches = await client.query(
-        `SELECT m.id, m.requirement_id, r.normalized_topic_id, m.question_id, m.matching_version
+        `SELECT m.id, m.requirement_id,
+                coalesce((SELECT o.topic_id FROM requirement_normalization_overrides o
+                          WHERE o.requirement_id = r.id ORDER BY mapping_input_version DESC LIMIT 1),
+                         r.normalized_topic_id) AS normalized_topic_id,
+                m.question_id, m.matching_version
          FROM jd_question_matches m
          JOIN jd_requirements r ON r.id = m.requirement_id
          WHERE m.job_description_id = $1 AND m.id = ANY($2::uuid[])
@@ -656,9 +706,9 @@ export function createJdService({ pool, storage }) {
     );
     if (!plan.rowCount) throw notFoundError();
     const items = await pool.query(
-      `SELECT pi.id, pi.priority, pi.practice_status, pi.mentor_next_action,
+      `SELECT pi.id, pi.priority, pi.practice_status, pi.mentor_next_action, pi.version,
               q.id AS question_id, q.title, q.difficulty,
-              r.raw_text AS requirement, t.name AS topic, m.score, m.reason
+              r.raw_text AS requirement, t.id AS topic_id, t.name AS topic, m.score, m.reason
        FROM preparation_plan_items pi
        LEFT JOIN questions q ON q.id = pi.question_id
        LEFT JOIN jd_requirements r ON r.id = pi.requirement_id
@@ -678,13 +728,154 @@ export function createJdService({ pool, storage }) {
         id: row.id,
         priority: row.priority,
         practiceStatus: row.practice_status,
+        version: row.version,
         mentorNextAction: row.mentor_next_action,
         requirement: row.requirement,
         topic: row.topic,
+        topicId: row.topic_id,
         score: row.score,
         reason: row.reason,
         question: { id: row.question_id, title: row.title, difficulty: row.difficulty },
       })),
+    };
+  }
+
+  async function updatePlanItem(studentId, planId, itemId, input, correlationId) {
+    return withTransaction(pool, async (client) => {
+      const selected = await client.query(
+        `SELECT pi.*, p.version AS plan_version
+         FROM preparation_plan_items pi
+         JOIN preparation_plans p ON p.id = pi.plan_id
+         WHERE pi.id = $1 AND pi.plan_id = $2 AND p.student_id = $3 AND p.status = 'ACTIVE'
+         FOR UPDATE OF pi, p`,
+        [itemId, planId, studentId],
+      );
+      if (!selected.rowCount) throw notFoundError();
+      if (selected.rows[0].version !== input.version) {
+        throw new AppError({
+          status: 409,
+          code: "VERSION_CONFLICT",
+          message: "Mục trong kế hoạch đã thay đổi. Hãy tải lại kế hoạch.",
+          recovery: { kind: "RETRY_SAFE", retryable: true, retryAfterSeconds: null },
+        });
+      }
+      const updated = await client.query(
+        `UPDATE preparation_plan_items SET
+           priority = coalesce($2, priority),
+           practice_status = coalesce($3, practice_status),
+           updated_at = now(), version = version + 1
+         WHERE id = $1
+         RETURNING id, plan_id AS "planId", priority, practice_status AS "practiceStatus", version, question_id`,
+        [itemId, input.priority ?? null, input.practiceStatus ?? null],
+      );
+      if (input.practiceStatus && updated.rows[0].question_id) {
+        await client.query(
+          `INSERT INTO practice_progress(student_id, question_id, status)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (student_id, question_id) DO UPDATE SET
+             status = EXCLUDED.status, updated_at = now(), version = practice_progress.version + 1`,
+          [studentId, updated.rows[0].question_id, input.practiceStatus],
+        );
+      }
+      await client.query(
+        "UPDATE preparation_plans SET updated_at = now(), version = version + 1 WHERE id = $1",
+        [planId],
+      );
+      await writeAudit(client, {
+        actorId: studentId,
+        action: "PREPARATION_PLAN_ITEM_UPDATED",
+        targetType: "PREPARATION_PLAN",
+        targetId: planId,
+        correlationId,
+        metadata: { itemId, priority: input.priority, practiceStatus: input.practiceStatus },
+      });
+      const { question_id: ignored, ...body } = updated.rows[0];
+      void ignored;
+      return body;
+    });
+  }
+
+  async function listMentorCandidates(studentId, planId, { availableFrom, availableTo, page, pageSize }) {
+    const plan = await pool.query(
+      `SELECT id, version FROM preparation_plans
+       WHERE id = $1 AND student_id = $2 AND status = 'ACTIVE'`,
+      [planId, studentId],
+    );
+    if (!plan.rowCount) throw notFoundError();
+    const values = [planId, availableFrom ?? new Date().toISOString(), availableTo ?? null, pageSize, (page - 1) * pageSize];
+    const base = `
+      FROM mentor_profiles mp
+      JOIN users u ON u.id = mp.user_id
+      WHERE mp.verification_status = 'APPROVED'
+        AND EXISTS (
+          SELECT 1 FROM mentor_expertise me
+          JOIN preparation_plan_items pi ON pi.topic_id = me.topic_id
+          WHERE pi.plan_id = $1 AND me.mentor_id = mp.id AND me.status = 'APPROVED'
+        )
+        AND EXISTS (
+          SELECT 1 FROM availability_slots sx
+          WHERE sx.mentor_id = mp.id AND sx.status = 'AVAILABLE'
+            AND sx.starts_at >= $2::timestamptz
+            AND ($3::timestamptz IS NULL OR sx.starts_at < $3::timestamptz)
+        )`;
+    const [items, count] = await Promise.all([
+      pool.query(
+        `SELECT mp.*, u.display_name,
+           (SELECT count(DISTINCT me.topic_id)::int
+            FROM mentor_expertise me JOIN preparation_plan_items pi ON pi.topic_id = me.topic_id
+            WHERE pi.plan_id = $1 AND me.mentor_id = mp.id AND me.status = 'APPROVED') AS topic_overlap,
+           (SELECT count(DISTINCT me.position_id)::int
+            FROM mentor_expertise me
+            JOIN question_positions qp ON qp.position_id = me.position_id
+            JOIN preparation_plan_items pi ON pi.question_id = qp.question_id
+            WHERE pi.plan_id = $1 AND me.mentor_id = mp.id AND me.status = 'APPROVED') AS position_fit,
+           coalesce((SELECT array_agg(DISTINCT t.name ORDER BY t.name)
+            FROM mentor_expertise me JOIN preparation_plan_items pi ON pi.topic_id = me.topic_id
+            JOIN topics t ON t.id = me.topic_id
+            WHERE pi.plan_id = $1 AND me.mentor_id = mp.id AND me.status = 'APPROVED'), '{}') AS expertise,
+           coalesce((SELECT jsonb_agg(slot ORDER BY slot->>'startsAt') FROM (
+             SELECT jsonb_build_object('id', s.id, 'startsAt', s.starts_at, 'endsAt', s.ends_at,
+               'timezone', s.source_timezone) AS slot
+             FROM availability_slots s WHERE s.mentor_id = mp.id AND s.status = 'AVAILABLE'
+               AND s.starts_at >= $2::timestamptz
+               AND ($3::timestamptz IS NULL OR s.starts_at < $3::timestamptz)
+             ORDER BY s.starts_at LIMIT 3
+           ) candidate_slots), '[]'::jsonb) AS next_slots,
+           (SELECT min(s.starts_at) FROM availability_slots s WHERE s.mentor_id = mp.id
+             AND s.status = 'AVAILABLE' AND s.starts_at >= $2::timestamptz
+             AND ($3::timestamptz IS NULL OR s.starts_at < $3::timestamptz)) AS first_slot
+         ${base}
+         ORDER BY topic_overlap DESC, position_fit DESC, first_slot, mp.public_rating DESC NULLS LAST, mp.id
+         LIMIT $4 OFFSET $5`,
+        values,
+      ),
+      pool.query(`SELECT count(*)::int AS total ${base}`, values.slice(0, 3)),
+    ]);
+    return {
+      planId,
+      planVersion: plan.rows[0].version,
+      items: items.rows.map((row) => ({
+        id: row.id,
+        userId: row.user_id,
+        displayName: row.display_name,
+        headline: row.headline,
+        bio: row.bio,
+        timezone: row.timezone,
+        verificationStatus: row.verification_status,
+        publicRating: row.public_rating,
+        expertise: row.expertise,
+        nextSlots: row.next_slots,
+        version: row.version,
+        topicOverlap: row.topic_overlap,
+        positionFit: row.position_fit,
+        matchReasons: [
+          `Khớp ${row.topic_overlap} chủ đề trong kế hoạch`,
+          `Khớp ${row.position_fit} vị trí của nhóm câu hỏi`,
+          "Mentor đã được duyệt",
+          "Có lịch trống phù hợp",
+        ],
+      })),
+      pageInfo: { page, pageSize, total: count.rows[0].total },
     };
   }
 
@@ -713,6 +904,8 @@ export function createJdService({ pool, storage }) {
     getMatches,
     createPlan,
     getPlan,
+    updatePlanItem,
+    listMentorCandidates,
     listPlans,
   };
 }

@@ -78,8 +78,8 @@ export function createJdRouter({ pool, storage }) {
       analysisVersion: z.number().int().positive(),
       mappingInputVersion: z.number().int().positive(),
       items: z.array(z.object({
-        requirementId: z.uuid(),
-        topicId: z.uuid().nullable(),
+        requirementId: z.guid(),
+        topicId: z.guid().nullable(),
         reason: z.string().trim().min(2).max(500),
       })).max(100),
     }), request.body);
@@ -104,15 +104,46 @@ export function createJdRouter({ pool, storage }) {
 
   router.post("/preparation-plans", requireRole("STUDENT"), asyncHandler(async (request, response) => {
     const input = parse(z.object({
-      jobDescriptionId: z.uuid(),
+      jobDescriptionId: z.guid(),
       matchingVersion: z.string().min(1).max(100),
-      matchIds: z.array(z.uuid()).min(1).max(10),
+      matchIds: z.array(z.guid()).min(1).max(10),
     }), request.body);
     response.status(201).json(await service.createPlan(request.auth.user.id, input, request.correlationId));
   }));
 
   router.get("/preparation-plans/:planId", requireRole("STUDENT"), asyncHandler(async (request, response) => {
     response.json(await service.getPlan(request.auth.user.id, request.params.planId));
+  }));
+
+  router.patch("/preparation-plans/:planId/items/:itemId", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const input = parse(z.object({
+      priority: z.enum(["MUST", "SHOULD", "OPTIONAL"]).optional(),
+      practiceStatus: z.enum(["NOT_STARTED", "PRACTICING", "COMPLETED", "REVISIT"]).optional(),
+      version: z.number().int().positive(),
+    }).refine((value) => value.priority !== undefined || value.practiceStatus !== undefined, {
+      message: "Cần chọn ít nhất một thay đổi",
+    }), request.body);
+    response.json(await service.updatePlanItem(
+      request.auth.user.id,
+      request.params.planId,
+      request.params.itemId,
+      input,
+      request.correlationId,
+    ));
+  }));
+
+  router.get("/preparation-plans/:planId/mentor-candidates", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const query = parse(z.object({
+      availableFrom: z.iso.datetime().optional(),
+      availableTo: z.iso.datetime().optional(),
+      page: z.coerce.number().int().positive().default(1),
+      pageSize: z.coerce.number().int().min(1).max(100).default(20),
+    }).refine((value) => !value.availableFrom || !value.availableTo
+      || new Date(value.availableTo) > new Date(value.availableFrom), {
+      message: "Khoảng thời gian không hợp lệ",
+      path: ["availableTo"],
+    }), request.query);
+    response.json(await service.listMentorCandidates(request.auth.user.id, request.params.planId, query));
   }));
 
   router.get("/preparation-plans", requireRole("STUDENT"), asyncHandler(async (request, response) => {

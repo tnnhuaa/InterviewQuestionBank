@@ -4,6 +4,7 @@ import { getEnvironment } from "../config/environment.js";
 import { pool } from "../platform/db/pool.js";
 import { withTransaction } from "../platform/db/transaction.js";
 import { createOperationCase } from "../platform/operations.js";
+import { createInAppNotification } from "../platform/outbox.js";
 import { createPrivateStorage } from "../platform/storage/private-storage.js";
 import { createOneTimeToken } from "../platform/security/tokens.js";
 import { extractDocument } from "../modules/jd/extractor.js";
@@ -22,7 +23,8 @@ async function claimExtractionJob(poolInstance) {
       `SELECT ej.*, jd.original_file_ref, jd.original_mime_type
        FROM extraction_jobs ej
        JOIN job_descriptions jd ON jd.id = ej.job_description_id
-       WHERE ej.status = 'PENDING' AND ej.available_at <= now()
+       WHERE ((ej.status = 'PENDING' AND ej.available_at <= now())
+          OR (ej.status = 'PROCESSING' AND ej.locked_until <= now()))
        ORDER BY ej.available_at, ej.created_at
        FOR UPDATE OF ej SKIP LOCKED LIMIT 1`,
     );
@@ -30,6 +32,7 @@ async function claimExtractionJob(poolInstance) {
     const job = result.rows[0];
     await client.query(
       `UPDATE extraction_jobs SET status = 'PROCESSING', started_at = now(),
+         locked_at = now(), locked_until = now() + interval '5 minutes',
          attempt_count = attempt_count + 1 WHERE id = $1`,
       [job.id],
     );
@@ -63,7 +66,8 @@ async function processExtractionJob({ poolInstance, storage, environment, job })
       }
       await client.query(
         `UPDATE extraction_jobs SET status = 'SUCCEEDED', finished_at = now(),
-           duration_ms = $2, confidence = $3, error_code = NULL WHERE id = $1`,
+           duration_ms = $2, confidence = $3, error_code = NULL,
+           locked_at = NULL, locked_until = NULL WHERE id = $1`,
         [job.id, Math.round(performance.now() - startedAt), result.confidence],
       );
     });
@@ -77,7 +81,7 @@ async function processExtractionJob({ poolInstance, storage, environment, job })
         `UPDATE extraction_jobs SET status = $2,
            available_at = CASE WHEN $2 = 'PENDING' THEN now() + interval '1 minute' ELSE available_at END,
            finished_at = CASE WHEN $2 = 'FAILED' THEN now() ELSE NULL END,
-           duration_ms = $3, error_code = $4
+           duration_ms = $3, error_code = $4, locked_at = NULL, locked_until = NULL
          WHERE id = $1`,
         [job.id, finalAttempt ? "FAILED" : "PENDING", Math.round(performance.now() - startedAt), errorCode],
       );
@@ -104,13 +108,15 @@ async function claimNotification(poolInstance) {
     const result = await client.query(
       `SELECT no.*, u.email, u.display_name
        FROM notification_outbox no JOIN users u ON u.id = no.recipient_user_id
-       WHERE no.status IN ('PENDING', 'RETRY') AND no.available_at <= now()
+       WHERE ((no.status IN ('PENDING', 'RETRY') AND no.available_at <= now())
+          OR (no.status = 'PROCESSING' AND no.locked_until <= now()))
        ORDER BY no.available_at, no.occurred_at
        FOR UPDATE OF no SKIP LOCKED LIMIT 1`,
     );
     if (!result.rowCount) return null;
     await client.query(
-      "UPDATE notification_outbox SET status = 'PROCESSING', attempt_count = attempt_count + 1 WHERE id = $1",
+      `UPDATE notification_outbox SET status = 'PROCESSING', attempt_count = attempt_count + 1,
+         locked_at = now(), locked_until = now() + interval '5 minutes' WHERE id = $1`,
       [result.rows[0].id],
     );
     return { ...result.rows[0], attempt_count: result.rows[0].attempt_count + 1 };
@@ -140,6 +146,9 @@ async function tokenUrl(poolInstance, environment, payload) {
 }
 
 async function notificationContent(poolInstance, environment, job) {
+  if (job.payload?.title && job.payload?.body) {
+    return { subject: job.payload.title, text: job.payload.body };
+  }
   const link = await tokenUrl(poolInstance, environment, job.payload);
   const templates = {
     "identity.email.verification.requested": {
@@ -180,6 +189,28 @@ async function notificationContent(poolInstance, environment, job) {
 async function processNotification({ poolInstance, transporter, environment, job }) {
   try {
     const content = await notificationContent(poolInstance, environment, job);
+    const active = await poolInstance.query("SELECT status FROM notification_outbox WHERE id = $1", [job.id]);
+    if (!active.rowCount || active.rows[0].status !== "PROCESSING") return;
+    if (job.channel === "IN_APP") {
+      await withTransaction(poolInstance, async (client) => {
+        await createInAppNotification(client, {
+          userId: job.recipient_user_id,
+          eventType: job.event_type,
+          title: content.subject,
+          body: content.text,
+          resourceType: job.aggregate_type,
+          resourceId: job.aggregate_id,
+          sourceOutboxId: job.id,
+        });
+        await client.query(
+          `UPDATE notification_outbox SET status = 'SENT', sent_at = now(),
+             last_error_class = NULL, locked_at = NULL, locked_until = NULL
+           WHERE id = $1 AND status = 'PROCESSING'`,
+          [job.id],
+        );
+      });
+      return;
+    }
     const result = await transporter.sendMail({
       from: environment.smtp.from,
       to: job.email,
@@ -189,7 +220,9 @@ async function processNotification({ poolInstance, transporter, environment, job
     });
     await poolInstance.query(
       `UPDATE notification_outbox SET status = 'SENT', sent_at = now(),
-         provider_message_id = $2, last_error_class = NULL WHERE id = $1`,
+         provider_message_id = $2, last_error_class = NULL,
+         locked_at = NULL, locked_until = NULL
+       WHERE id = $1 AND status = 'PROCESSING'`,
       [job.id, result.messageId],
     );
   } catch (error) {
@@ -197,8 +230,9 @@ async function processNotification({ poolInstance, transporter, environment, job
     await withTransaction(poolInstance, async (client) => {
       await client.query(
         `UPDATE notification_outbox SET status = $2,
-           available_at = CASE WHEN $2 = 'RETRY' THEN now() + ($3 || ' minutes')::interval ELSE available_at END,
-           last_error_class = $4 WHERE id = $1`,
+           available_at = CASE WHEN $2 = 'RETRY' THEN scheduled_for + ($3 || ' minutes')::interval ELSE available_at END,
+           last_error_class = $4, locked_at = NULL, locked_until = NULL
+         WHERE id = $1 AND status = 'PROCESSING'`,
         [job.id, retryMinutes ? "RETRY" : "DEAD", retryMinutes ?? 0, error.name],
       );
       if (!retryMinutes) {
@@ -270,6 +304,19 @@ async function publishDueReviews(poolInstance) {
   });
 }
 
+async function escalateExpiredMeetingLinkFailures(poolInstance) {
+  const result = await poolInstance.query(
+    `UPDATE operation_cases SET
+       public_summary = 'Mentor chưa thay link trong 15 phút. Hai bên có thể chọn reschedule hoặc chờ Admin hỗ trợ.',
+       updated_at = now(), version = version + 1
+     WHERE case_type = 'MEETING_LINK_FAILED' AND status IN ('OPEN','IN_PROGRESS')
+       AND (restricted_metadata->>'replacementDeadline')::timestamptz <= now()
+       AND public_summary NOT LIKE 'Mentor chưa thay link%'
+     RETURNING id`,
+  );
+  return result.rowCount;
+}
+
 export function startWorker({ poolInstance = pool, environment = getEnvironment() } = {}) {
   const storage = createPrivateStorage(environment.storage);
   const transporter = nodemailer.createTransport({
@@ -290,10 +337,16 @@ export function startWorker({ poolInstance = pool, environment = getEnvironment(
     if (publishedReviews) {
       console.log(JSON.stringify({ event: "reviews.published", count: publishedReviews }));
     }
-    const extractionJob = await claimExtractionJob(poolInstance);
-    if (extractionJob) await processExtractionJob({ poolInstance, storage, environment, job: extractionJob });
-    const notification = await claimNotification(poolInstance);
-    if (notification) await processNotification({ poolInstance, transporter, environment, job: notification });
+    const escalatedLinks = await escalateExpiredMeetingLinkFailures(poolInstance);
+    if (escalatedLinks) console.log(JSON.stringify({ event: "meeting_links.recovery_expired", count: escalatedLinks }));
+    const extractionJobs = await Promise.all(
+      Array.from({ length: environment.ocr.concurrency }, () => claimExtractionJob(poolInstance)),
+    );
+    await Promise.all(extractionJobs.filter(Boolean).map((job) => processExtractionJob({ poolInstance, storage, environment, job })));
+    const notifications = await Promise.all(
+      Array.from({ length: 4 }, () => claimNotification(poolInstance)),
+    );
+    await Promise.all(notifications.filter(Boolean).map((job) => processNotification({ poolInstance, transporter, environment, job })));
   }
   const loop = (async () => {
     while (!stopped) {

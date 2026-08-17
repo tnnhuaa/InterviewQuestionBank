@@ -11,10 +11,14 @@ function requiredRole(pathname: string): Exclude<Role, "public"> | null {
 
 function RouteAccess() {
   const { pathname } = useLocation();
-  const { role, sessionLoading } = useApp();
+  const { role, user, sessionLoading } = useApp();
   const required = requiredRole(pathname);
   if (sessionLoading) return <div className="grid min-h-screen place-items-center bg-canvas text-sm text-ink-secondary">Đang kiểm tra phiên đăng nhập…</div>;
-  if (required && role !== required && import.meta.env.VITE_ENABLE_DEMO_TOOLS !== "true") return <Navigate to="/login" replace state={{ returnTo: pathname }} />;
+  const roleCode = required?.toUpperCase() as "STUDENT" | "MENTOR" | "ADMIN" | undefined;
+  const authorized = !required || (import.meta.env.VITE_ENABLE_DEMO_TOOLS === "true"
+    ? role === required
+    : Boolean(roleCode && user?.roles.includes(roleCode)));
+  if (!authorized) return <Navigate to="/login" replace state={{ returnTo: pathname }} />;
   return <Outlet />;
 }
 

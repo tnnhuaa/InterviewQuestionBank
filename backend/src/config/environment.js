@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./load-dotenv.js";
 
 function toPositiveInteger(value, fallback) {
   const parsedValue = Number.parseInt(value, 10);
@@ -15,7 +15,6 @@ function toBoolean(value, fallback = false) {
 export function getEnvironment(source = process.env) {
   return {
     nodeEnv: source.NODE_ENV ?? "development",
-    appEnv: source.APP_ENV ?? "local",
     port: toPositiveInteger(source.PORT, 3000),
     frontendOrigin: source.FRONTEND_ORIGIN ?? "http://localhost:5173",
     databaseUrl: source.DATABASE_URL,
@@ -25,7 +24,7 @@ export function getEnvironment(source = process.env) {
     sessionTtlHours: toPositiveInteger(source.SESSION_TTL_HOURS, 168),
     sessionSecret: source.SESSION_SECRET,
     csrfSecret: source.CSRF_SECRET,
-    openApiResponseValidation: toBoolean(source.OPENAPI_RESPONSE_VALIDATION, source.NODE_ENV !== "production"),
+    openApiValidation: toBoolean(source.OPENAPI_VALIDATION, true),
     passwordResetTtlMinutes: toPositiveInteger(source.PASSWORD_RESET_TTL_MINUTES, 30),
     emailVerificationTtlHours: toPositiveInteger(source.EMAIL_VERIFICATION_TTL_HOURS, 24),
     smtp: {
@@ -56,6 +55,9 @@ export function getEnvironment(source = process.env) {
 
 export function validateEnvironment(environment) {
   const missing = [];
+  if (!["development", "test", "production"].includes(environment.nodeEnv)) {
+    throw new Error("NODE_ENV must be development, test, or production");
+  }
   if (!environment.databaseUrl) missing.push("DATABASE_URL");
   if (!environment.sessionSecret || environment.sessionSecret.length < 32) missing.push("SESSION_SECRET (at least 32 characters)");
   if (!environment.frontendOrigin) missing.push("FRONTEND_ORIGIN");
