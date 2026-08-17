@@ -380,6 +380,9 @@ export function startWorker({ poolInstance = pool, environment = getEnvironment(
           event: "worker.tick_failed",
           errorClass: error.name,
           errorCode: error.code ?? "WORKER_TICK_FAILED",
+          errorMessage: error.message,
+          errorTable: error.table,
+          errorSchema: error.schema,
         }));
       }
       await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));

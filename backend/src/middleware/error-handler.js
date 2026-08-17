@@ -44,6 +44,10 @@ export function errorHandler(error, request, response, next) {
       correlationId: request.correlationId,
       code: appError.code,
       errorClass: error.name,
+      errorMessage: error.message,
+      databaseCode: error.code,
+      errorTable: error.table,
+      errorConstraint: error.constraint,
     }));
   }
 
