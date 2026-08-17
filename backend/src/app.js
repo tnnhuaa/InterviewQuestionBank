@@ -23,6 +23,7 @@ import { createDashboardRouter } from "./modules/dashboard/index.js";
 import { createQuestionImportsRouter } from "./modules/question-imports/index.js";
 import { AppError } from "./shared/errors.js";
 import { createStatusRouter } from "./modules/system/status.routes.js";
+import { createAiProvider, createAiRouter } from "./modules/ai/index.js";
 
 const disconnectedCheck = async () => false;
 
@@ -43,6 +44,7 @@ export function createApp({
   environment = getEnvironment(),
   pool = databasePool,
   storage = createPrivateStorage(environment.storage),
+  aiProvider = createAiProvider(environment),
 } = {}) {
   const app = express();
 
@@ -97,6 +99,7 @@ export function createApp({
   app.use("/api/v1", createOperationsRouter({ pool }));
   app.use("/api/v1", createDashboardRouter({ pool }));
   app.use("/api/v1", createQuestionImportsRouter({ pool }));
+  app.use("/api/v1", createAiRouter({ pool, environment, provider: aiProvider }));
   app.use(notFoundHandler);
   app.use(errorHandler);
 

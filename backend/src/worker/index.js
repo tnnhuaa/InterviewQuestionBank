@@ -8,6 +8,7 @@ import { createInAppNotification } from "../platform/outbox.js";
 import { createPrivateStorage } from "../platform/storage/private-storage.js";
 import { createOneTimeToken } from "../platform/security/tokens.js";
 import { extractDocument } from "../modules/jd/extractor.js";
+import { claimAiJob, createAiJobHandlers, createAiProvider, processAiJob } from "../modules/ai/index.js";
 
 const pollIntervalMs = 2000;
 const retentionIntervalMs = 60_000;
@@ -325,6 +326,8 @@ export function startWorker({ poolInstance = pool, environment = getEnvironment(
     secure: environment.smtp.secure,
     auth: environment.smtp.user ? { user: environment.smtp.user, pass: environment.smtp.password } : undefined,
   });
+  const aiProvider = createAiProvider(environment);
+  const aiHandlers = createAiJobHandlers({ pool: poolInstance, environment });
   let stopped = false;
   let nextRetentionAt = 0;
   async function tick() {
@@ -343,6 +346,17 @@ export function startWorker({ poolInstance = pool, environment = getEnvironment(
       Array.from({ length: environment.ocr.concurrency }, () => claimExtractionJob(poolInstance)),
     );
     await Promise.all(extractionJobs.filter(Boolean).map((job) => processExtractionJob({ poolInstance, storage, environment, job })));
+    if (environment.ai.enabled) {
+      const aiJobs = await Promise.all(
+        Array.from({ length: environment.ai.concurrency }, () => claimAiJob(poolInstance)),
+      );
+      await Promise.all(aiJobs.filter(Boolean).map((job) => processAiJob({
+        pool: poolInstance,
+        provider: aiProvider,
+        handlers: aiHandlers,
+        job,
+      })));
+    }
     const notifications = await Promise.all(
       Array.from({ length: 4 }, () => claimNotification(poolInstance)),
     );

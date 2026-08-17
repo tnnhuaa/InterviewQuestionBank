@@ -12,6 +12,11 @@ function toBoolean(value, fallback = false) {
   return value === "true";
 }
 
+function toNumber(value, fallback) {
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) ? parsedValue : fallback;
+}
+
 export function getEnvironment(source = process.env) {
   return {
     nodeEnv: source.NODE_ENV ?? "development",
@@ -50,6 +55,33 @@ export function getEnvironment(source = process.env) {
       timeoutSeconds: toPositiveInteger(source.OCR_TIMEOUT_SECONDS, 60),
       maxAttempts: toPositiveInteger(source.OCR_MAX_ATTEMPTS, 2),
     },
+    ai: {
+      provider: source.AI_PROVIDER ?? "gemini",
+      enabled: toBoolean(source.AI_ENABLED),
+      features: {
+        jdAnalysis: toBoolean(source.AI_JD_ANALYSIS_ENABLED),
+        recommendationExplanation: toBoolean(source.AI_RECOMMENDATION_EXPLANATION_ENABLED),
+        agendaDraft: toBoolean(source.AI_AGENDA_DRAFT_ENABLED),
+        feedbackDraft: toBoolean(source.AI_FEEDBACK_DRAFT_ENABLED),
+      },
+      apiKey: source.GEMINI_API_KEY,
+      model: source.GEMINI_MODEL ?? "gemini-3.5-flash-lite",
+      apiVersion: source.GEMINI_API_VERSION ?? "v1",
+      timeoutMs: toPositiveInteger(source.GEMINI_TIMEOUT_MS, 15000),
+      maxAttempts: toPositiveInteger(source.GEMINI_MAX_ATTEMPTS, 2),
+      concurrency: toPositiveInteger(source.GEMINI_CONCURRENCY, 2),
+      temperature: toNumber(source.GEMINI_TEMPERATURE, 0.1),
+      maxInputTokens: toPositiveInteger(source.GEMINI_MAX_INPUT_TOKENS, 20000),
+      maxOutputTokens: toPositiveInteger(source.GEMINI_MAX_OUTPUT_TOKENS, 4096),
+      rpmBudget: toPositiveInteger(source.GEMINI_RPM_BUDGET, 12),
+      tpmBudget: toPositiveInteger(source.GEMINI_TPM_BUDGET, 200000),
+      dailyRequestBudget: toPositiveInteger(source.GEMINI_DAILY_REQUEST_BUDGET, 450),
+      dailyInputTokenBudget: toPositiveInteger(source.GEMINI_DAILY_INPUT_TOKEN_BUDGET, 5000000),
+      userDailyRequestBudget: toPositiveInteger(source.AI_USER_DAILY_REQUEST_BUDGET, 20),
+      circuitBreakerFailureThreshold: toPositiveInteger(source.GEMINI_CIRCUIT_BREAKER_FAILURE_THRESHOLD, 5),
+      circuitBreakerResetSeconds: toPositiveInteger(source.GEMINI_CIRCUIT_BREAKER_RESET_SECONDS, 60),
+      resultRetentionDays: toPositiveInteger(source.AI_RESULT_RETENTION_DAYS, 30),
+    },
   };
 }
 
@@ -61,5 +93,10 @@ export function validateEnvironment(environment) {
   if (!environment.databaseUrl) missing.push("DATABASE_URL");
   if (!environment.sessionSecret || environment.sessionSecret.length < 32) missing.push("SESSION_SECRET (at least 32 characters)");
   if (!environment.frontendOrigin) missing.push("FRONTEND_ORIGIN");
+  if (environment.ai.enabled && environment.ai.provider !== "gemini") missing.push("AI_PROVIDER=gemini");
+  if (environment.ai.enabled && !environment.ai.apiKey) missing.push("GEMINI_API_KEY");
+  if (environment.ai.temperature < 0 || environment.ai.temperature > 1) {
+    throw new Error("GEMINI_TEMPERATURE must be between 0 and 1");
+  }
   if (missing.length) throw new Error(`Missing required environment configuration: ${missing.join(", ")}`);
 }
