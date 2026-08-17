@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { ApiError } from "@/shared/api/client";
 import { jobDescriptionsApi, type JobDescription } from "@/shared/api/resources";
 import AuthNavbar from "@/shared/components/AuthNavbar";
 import ErrorPanel from "@/shared/components/ErrorPanel";
@@ -16,10 +17,17 @@ function ReviewEditor({ jd }: { jd: JobDescription }) {
       ? await jobDescriptionsApi.saveCorrectedText(jd.id, value, save.data?.correctedVersion ?? jd.correctedVersion)
       : save.data ?? jd;
     const confirmed = await jobDescriptionsApi.confirm(jd.id, current.correctedVersion);
-    await jobDescriptionsApi.analyze(jd.id, confirmed.correctedVersion);
-    return confirmed;
-  }, onSuccess: () => navigate(`/job-descriptions/${jd.id}/mapping`) });
-  return <><label className="block text-xs font-semibold text-ink-secondary">Văn bản đã chỉnh sửa<textarea rows={20} value={value} onChange={(event) => setValue(event.target.value)} className="mt-2 w-full rounded-lg border border-edge bg-panel p-4 text-sm leading-6 outline-none focus:border-primary" /></label>{(save.error || confirm.error) && <div className="mt-4"><ErrorPanel error={save.error || confirm.error} /></div>}<div className="mt-5 flex flex-wrap justify-end gap-2"><button disabled={save.isPending || value.trim().length === 0} onClick={() => save.mutate()} className="rounded-lg border border-edge bg-panel px-5 py-2.5 text-sm font-medium text-ink-secondary">Lưu bản chỉnh sửa</button><button disabled={confirm.isPending || save.isPending || value.trim().length === 0} onClick={() => confirm.mutate()} className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-on-primary">Xác nhận và phân tích</button></div></>;
+    try {
+      const job = await jobDescriptionsApi.startAiAnalysis(jd.id, confirmed.correctedVersion);
+      return { confirmed, aiJobId: job.id };
+    } catch (error) {
+      const fallbackCodes = new Set(["AI_DISABLED", "AI_PROVIDER_UNAVAILABLE", "AI_DAILY_BUDGET_REACHED"]);
+      if (!(error instanceof ApiError) || !fallbackCodes.has(error.code)) throw error;
+      await jobDescriptionsApi.analyze(jd.id, confirmed.correctedVersion);
+      return { confirmed, aiJobId: null };
+    }
+  }, onSuccess: ({ aiJobId }) => navigate(`/job-descriptions/${jd.id}/mapping${aiJobId ? `?aiJobId=${aiJobId}` : ""}`) });
+  return <><label className="block text-xs font-semibold text-ink-secondary">Văn bản đã chỉnh sửa<textarea rows={20} value={value} onChange={(event) => setValue(event.target.value)} className="mt-2 w-full rounded-lg border border-edge bg-panel p-4 text-sm leading-6 outline-none focus:border-primary" /></label><p className="mt-3 text-xs text-ink-muted">Gemini có thể hỗ trợ nhận diện yêu cầu. Bạn vẫn là người xác nhận kết quả trước khi hệ thống tìm câu hỏi; khi AI không khả dụng, hệ thống tự dùng bộ phân tích quy tắc.</p>{(save.error || confirm.error) && <div className="mt-4"><ErrorPanel error={save.error || confirm.error} /></div>}<div className="mt-5 flex flex-wrap justify-end gap-2"><button disabled={save.isPending || value.trim().length === 0} onClick={() => save.mutate()} className="rounded-lg border border-edge bg-panel px-5 py-2.5 text-sm font-medium text-ink-secondary">Lưu bản chỉnh sửa</button><button disabled={confirm.isPending || save.isPending || value.trim().length === 0} onClick={() => confirm.mutate()} className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-on-primary">{confirm.isPending ? "Đang tạo phân tích…" : "Xác nhận và phân tích"}</button></div></>;
 }
 
 export default function JDOCRReview() {

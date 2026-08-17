@@ -27,7 +27,20 @@ export interface JobDescription {
   version: number;
 }
 
-export interface Requirement { id: string; raw_text: string; requirement_type: string; normalized_topic_id?: string; confidence?: number }
+export interface Requirement {
+  id: string; raw_text: string; source_start?: number; source_end?: number;
+  requirement_type: string; normalized_topic_id?: string; effective_topic_id?: string;
+  topic_name?: string; confidence?: number; source?: "GEMINI"; decision?: "ACCEPTED" | "EDITED" | "UNMAPPED";
+  decision_topic_id?: string;
+}
+export interface AiJob {
+  id: string; kind: "JD_ANALYSIS" | "RECOMMENDATION_EXPLANATION" | "INTERVIEW_AGENDA" | "FEEDBACK_DRAFT";
+  resourceType: "JOB_DESCRIPTION" | "PREPARATION_PLAN" | "BOOKING"; resourceId: string;
+  status: "PENDING" | "PROCESSING" | "SUCCEEDED" | "SUCCEEDED_WITH_FALLBACK" | "FAILED" | "CANCELLED";
+  provider: string; model: string; promptVersion: string; schemaVersion: string;
+  attemptCount: number; maxAttempts: number; fallbackUsed: boolean; result?: Record<string, unknown>;
+  errorCode?: string; correlationId?: string; createdAt: string; updatedAt: string;
+}
 export interface Match { id: string; requirementId: string; requirement: string; topic?: string; question: { id: string; title: string; difficulty: Difficulty }; score: number; reason: string; rank: number }
 export interface PreparationPlan { id: string; jobDescriptionId: string; matchingVersion: string; status: string; version: number; items: Array<{ id: string; priority: "MUST" | "SHOULD" | "OPTIONAL"; requirement?: string; topic?: string; topicId?: string; score?: number; reason?: string; practiceStatus: PracticeStatus; mentorNextAction?: string; version: number; question: { id?: string; title?: string; difficulty?: Difficulty } }> }
 
@@ -116,8 +129,10 @@ export const jobDescriptionsApi = {
   saveCorrectedText: (id: string, correctedText: string, version: number) => apiFetch<JobDescription>(`/job-descriptions/${id}/text`, { method: "PATCH", json: { correctedText, version } }),
   confirm: (id: string, version: number) => apiFetch<JobDescription>(`/job-descriptions/${id}/confirm`, { method: "POST", json: { version } }),
   analyze: (id: string, correctedTextVersion: number) => apiFetch<{ jobDescriptionId: string; analysisVersion: number; requirements: Requirement[] }>(`/job-descriptions/${id}/analyze`, { method: "POST", json: { correctedTextVersion }, headers: { "Idempotency-Key": createIdempotencyKey() } }),
-  getAnalysis: (id: string, analysisVersion?: number) => apiFetch<{ jobDescriptionId: string; analysisVersion: number; requirements: Array<Requirement & { effective_topic_id?: string; topic_name?: string }> }>(`/job-descriptions/${id}/analysis${toQuery({ analysisVersion })}`),
+  startAiAnalysis: (id: string, correctedTextVersion: number) => apiFetch<AiJob>(`/job-descriptions/${id}/analysis-jobs`, { method: "POST", json: { correctedTextVersion }, headers: { "Idempotency-Key": createIdempotencyKey() } }),
+  getAnalysis: (id: string, analysisVersion?: number) => apiFetch<{ jobDescriptionId: string; analysisVersion: number; requirements: Requirement[] }>(`/job-descriptions/${id}/analysis${toQuery({ analysisVersion })}`),
   normalizations: (id: string, input: { analysisVersion: number; mappingInputVersion: number; items: Array<{ requirementId: string; topicId: string | null; reason: string }> }) => apiFetch(`/job-descriptions/${id}/requirement-normalizations`, { method: "PUT", json: input }),
+  decideRequirement: (id: string, requirementId: string, input: { analysisVersion: number; decision: "ACCEPTED" | "EDITED" | "UNMAPPED"; topicId?: string | null; reason?: string }) => apiFetch<{ jobDescriptionId: string; analysisVersion: number; requirements: Requirement[] }>(`/job-descriptions/${id}/requirements/${requirementId}`, { method: "PATCH", json: input }),
   match: (id: string, analysisVersion: number) => apiFetch<{ matches: Match[]; matchingVersion: string }>(`/job-descriptions/${id}/matches`, { method: "POST", json: { analysisVersion }, headers: { "Idempotency-Key": createIdempotencyKey() } }),
   getMatches: (id: string, analysisVersion?: number) => apiFetch<{ matches: Match[]; matchingVersion: string }>(`/job-descriptions/${id}/matches${toQuery({ analysisVersion })}`),
 };
@@ -128,6 +143,12 @@ export const preparationPlansApi = {
   get: (id: string) => apiFetch<PreparationPlan>(`/preparation-plans/${id}`),
   updateItem: (planId: string, itemId: string, input: { priority?: string; practiceStatus?: PracticeStatus; version: number }) => apiFetch(`/preparation-plans/${planId}/items/${itemId}`, { method: "PATCH", json: input }),
   mentorCandidates: (planId: string, filters: Record<string, string | number | undefined> = {}) => apiFetch<Page<Mentor> & { planId: string; planVersion: number }>(`/preparation-plans/${planId}/mentor-candidates${toQuery(filters)}`),
+};
+
+export const aiApi = {
+  capabilities: () => apiFetch<{ provider: string; model: string; enabled: boolean; available: boolean; features: Record<string, boolean> }>("/ai/capabilities"),
+  getJob: (id: string) => apiFetch<AiJob>(`/ai-jobs/${id}`),
+  retry: (id: string) => apiFetch<AiJob>(`/ai-jobs/${id}/retry`, { method: "POST", headers: { "Idempotency-Key": createIdempotencyKey() } }),
 };
 
 export const mentorsApi = {

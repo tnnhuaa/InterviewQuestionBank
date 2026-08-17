@@ -8,9 +8,9 @@ import { createJdService } from "./service.js";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { files: 1, fileSize: 10 * 1024 * 1024 } });
 
-export function createJdRouter({ pool, storage }) {
+export function createJdRouter({ pool, storage, environment }) {
   const router = Router();
-  const service = createJdService({ pool, storage });
+  const service = createJdService({ pool, storage, environment });
 
   router.post("/job-descriptions", requireRole("STUDENT"), upload.single("file"), asyncHandler(async (request, response) => {
     const result = request.file
@@ -68,6 +68,17 @@ export function createJdRouter({ pool, storage }) {
     ));
   }));
 
+  router.post("/job-descriptions/:jobDescriptionId/analysis-jobs", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const { correctedTextVersion } = parse(z.object({ correctedTextVersion: z.number().int().positive() }), request.body);
+    response.status(202).json(await service.startAiAnalysis(
+      request.auth.user.id,
+      request.params.jobDescriptionId,
+      correctedTextVersion,
+      request.correlationId,
+      request.get("Idempotency-Key"),
+    ));
+  }));
+
   router.get("/job-descriptions/:jobDescriptionId/analysis", requireRole("STUDENT"), asyncHandler(async (request, response) => {
     const query = parse(z.object({ analysisVersion: z.coerce.number().int().positive().optional() }), request.query);
     response.json(await service.getAnalysis(request.auth.user.id, request.params.jobDescriptionId, query.analysisVersion));
@@ -84,6 +95,26 @@ export function createJdRouter({ pool, storage }) {
       })).max(100),
     }), request.body);
     response.json(await service.saveNormalizations(request.auth.user.id, request.params.jobDescriptionId, input));
+  }));
+
+  router.patch("/job-descriptions/:jobDescriptionId/requirements/:requirementId", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const input = parse(z.object({
+      analysisVersion: z.number().int().positive(),
+      decision: z.enum(["ACCEPTED", "EDITED", "UNMAPPED"]),
+      topicId: z.guid().nullable().optional(),
+      reason: z.string().trim().min(2).max(500).optional(),
+    }).superRefine((value, context) => {
+      if (value.decision === "EDITED" && !value.topicId) {
+        context.addIssue({ code: "custom", path: ["topicId"], message: "Cần chọn chủ đề thay thế" });
+      }
+    }), request.body);
+    response.json(await service.decideRequirement(
+      request.auth.user.id,
+      request.params.jobDescriptionId,
+      request.params.requirementId,
+      input,
+      request.correlationId,
+    ));
   }));
 
   router.post("/job-descriptions/:jobDescriptionId/matches", requireRole("STUDENT"), asyncHandler(async (request, response) => {

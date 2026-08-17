@@ -5,6 +5,7 @@ import { AppError, notFoundError } from "../../shared/errors.js";
 import { withTransaction } from "../../platform/db/transaction.js";
 import { findIdempotentResult, saveIdempotentResult } from "../../platform/idempotency.js";
 import { writeAudit } from "../../platform/audit.js";
+import { createAiJob } from "../ai/jobs.js";
 
 const allowedTypes = new Map([
   ["application/pdf", "PDF"],
@@ -66,7 +67,7 @@ function jdDto(row) {
   };
 }
 
-export function createJdService({ pool, storage }) {
+export function createJdService({ pool, storage, environment }) {
   async function getOwned(studentId, id, client = pool) {
     const result = await client.query(
       `SELECT jd.*, ej.id AS job_id, ej.status AS job_status, ej.attempt_count,
@@ -319,6 +320,88 @@ export function createJdService({ pool, storage }) {
     return jdDto(result.rows[0]);
   }
 
+  async function startAiAnalysis(studentId, id, correctedTextVersion, correlationId, key) {
+    return withTransaction(pool, async (client) => {
+      const jd = await getOwned(studentId, id, client);
+      const idempotency = await findIdempotentResult(client, {
+        actorId: studentId,
+        operation: "START_AI_JD_ANALYSIS",
+        key,
+        input: { id, correctedTextVersion },
+      });
+      if (idempotency.cached?.response_body) return idempotency.cached.response_body;
+      if (jd.status !== "CONFIRMED" || jd.corrected_version !== correctedTextVersion) {
+        throw new AppError({
+          status: 409,
+          code: "TEXT_NOT_CONFIRMED",
+          message: "Hãy xác nhận phiên bản văn bản hiện tại trước khi phân tích.",
+          recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+        });
+      }
+      const job = await createAiJob(client, {
+        actorId: studentId,
+        kind: "JD_ANALYSIS",
+        resourceType: "JOB_DESCRIPTION",
+        resourceId: id,
+        input: { correctedText: jd.corrected_text, correctedTextVersion },
+        promptVersion: "jd-analysis-v1",
+        schemaVersion: "jd-analysis-schema-v1",
+        correlationId,
+        environment,
+      });
+      await saveIdempotentResult(client, {
+        actorId: studentId,
+        operation: "START_AI_JD_ANALYSIS",
+        key,
+        digest: idempotency.digest,
+        status: 202,
+        body: job,
+        resourceId: job.id,
+      });
+      return job;
+    });
+  }
+
+  async function saveAiAnalysis(studentId, id, correctedTextVersion, requirements, aiJob, correlationId) {
+    return withTransaction(pool, async (client) => {
+      const jd = await getOwned(studentId, id, client);
+      if (jd.status !== "CONFIRMED" || jd.corrected_version !== correctedTextVersion) {
+        throw Object.assign(new Error("AI_INPUT_VERSION_STALE"), { code: "AI_INPUT_VERSION_STALE", retryable: false });
+      }
+      const next = await client.query(
+        "SELECT coalesce(max(analysis_version), 0)::int + 1 AS version FROM jd_requirements WHERE job_description_id = $1",
+        [id],
+      );
+      const analysisVersion = next.rows[0].version;
+      const inserted = [];
+      for (const requirement of requirements) {
+        const result = await client.query(
+          `INSERT INTO jd_requirements (
+             job_description_id, analysis_version, raw_text, source_start, source_end,
+             requirement_type, normalized_topic_id, confidence, rule_evidence
+           ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+          [id, analysisVersion, requirement.rawText, requirement.sourceStart,
+            requirement.sourceEnd, requirement.requirementType, requirement.topicId,
+            requirement.confidence, { source: "GEMINI", aiJobId: aiJob.id, promptVersion: aiJob.prompt_version }],
+        );
+        inserted.push(result.rows[0]);
+      }
+      await client.query(
+        "UPDATE job_descriptions SET status = 'ANALYZED', updated_at = now(), version = version + 1 WHERE id = $1",
+        [id],
+      );
+      await writeAudit(client, {
+        actorId: studentId,
+        action: "JD_ANALYZED_WITH_AI",
+        targetType: "JOB_DESCRIPTION",
+        targetId: id,
+        metadata: { analysisVersion, requirementCount: inserted.length, aiJobId: aiJob.id },
+        correlationId,
+      });
+      return { jobDescriptionId: id, analysisVersion, requirements: inserted };
+    });
+  }
+
   async function analyze(studentId, id, correctedTextVersion, correlationId, key) {
     return withTransaction(pool, async (client) => {
       const jd = await getOwned(studentId, id, client);
@@ -424,12 +507,80 @@ export function createJdService({ pool, storage }) {
         await client.query(
           `INSERT INTO requirement_normalization_overrides (
              requirement_id, topic_id, actor_id, reason, mapping_input_version
-           ) VALUES ($1, $2, $3, $4, $5)`,
+           ) VALUES ($1, $2, $3, $4, $5)
+           ON CONFLICT (requirement_id, mapping_input_version)
+           DO UPDATE SET topic_id = EXCLUDED.topic_id, actor_id = EXCLUDED.actor_id,
+             reason = EXCLUDED.reason, created_at = now()`,
           [item.requirementId, item.topicId, studentId, item.reason, input.mappingInputVersion],
         );
       }
       return { jobDescriptionId: id, ...input };
     });
+  }
+
+  async function decideRequirement(studentId, id, requirementId, input, correlationId) {
+    await withTransaction(pool, async (client) => {
+      await getOwned(studentId, id, client);
+      const requirementResult = await client.query(
+        `SELECT id, normalized_topic_id FROM jd_requirements
+         WHERE id = $1 AND job_description_id = $2 AND analysis_version = $3 FOR UPDATE`,
+        [requirementId, id, input.analysisVersion],
+      );
+      if (!requirementResult.rowCount) throw notFoundError();
+      const requirement = requirementResult.rows[0];
+      const selectedTopicId = input.decision === "UNMAPPED"
+        ? null
+        : input.topicId ?? requirement.normalized_topic_id;
+      if (input.decision !== "UNMAPPED" && !selectedTopicId) {
+        throw new AppError({
+          status: 422,
+          code: "REQUIREMENT_TOPIC_REQUIRED",
+          message: "Hãy chọn một chủ đề hoặc đánh dấu yêu cầu là chưa ánh xạ.",
+          fieldErrors: { topicId: "Chọn chủ đề hoặc chọn Chưa ánh xạ" },
+          recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+        });
+      }
+      if (selectedTopicId) {
+        const topic = await client.query("SELECT id FROM topics WHERE id = $1 AND status = 'ACTIVE'", [selectedTopicId]);
+        if (!topic.rowCount) {
+          throw new AppError({
+            status: 422,
+            code: "TOPIC_NOT_ACTIVE",
+            message: "Chủ đề đã chọn không còn hoạt động. Hãy chọn chủ đề khác.",
+            fieldErrors: { topicId: "Chọn một chủ đề đang hoạt động" },
+            recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+          });
+        }
+      }
+      await client.query(
+        `INSERT INTO ai_requirement_decisions (
+           requirement_id, student_id, decision, selected_topic_id, reason, analysis_version
+         ) VALUES ($1,$2,$3,$4,$5,$6)
+         ON CONFLICT (requirement_id, student_id)
+         DO UPDATE SET decision = EXCLUDED.decision, selected_topic_id = EXCLUDED.selected_topic_id,
+           reason = EXCLUDED.reason, analysis_version = EXCLUDED.analysis_version, created_at = now()`,
+        [requirementId, studentId, input.decision, selectedTopicId, input.reason ?? null, input.analysisVersion],
+      );
+      await client.query(
+        `INSERT INTO requirement_normalization_overrides (
+           requirement_id, topic_id, actor_id, reason, mapping_input_version
+         ) VALUES ($1,$2,$3,$4,$5)
+         ON CONFLICT (requirement_id, mapping_input_version)
+         DO UPDATE SET topic_id = EXCLUDED.topic_id, actor_id = EXCLUDED.actor_id,
+           reason = EXCLUDED.reason, created_at = now()`,
+        [requirementId, selectedTopicId, studentId,
+          input.reason ?? `Student ${input.decision.toLowerCase()} AI suggestion`, input.analysisVersion],
+      );
+      await writeAudit(client, {
+        actorId: studentId,
+        action: "AI_REQUIREMENT_DECIDED",
+        targetType: "JD_REQUIREMENT",
+        targetId: requirementId,
+        metadata: { jobDescriptionId: id, analysisVersion: input.analysisVersion, decision: input.decision },
+        correlationId,
+      });
+    });
+    return getAnalysis(studentId, id, input.analysisVersion);
   }
 
   async function getAnalysis(studentId, id, analysisVersion) {
@@ -440,15 +591,17 @@ export function createJdService({ pool, storage }) {
     const version = versionResult.rows[0]?.version;
     if (!version) throw notFoundError();
     const result = await pool.query(
-      `SELECT r.id, r.raw_text, r.requirement_type, r.normalized_topic_id, r.confidence,
+      `SELECT r.id, r.raw_text, r.source_start, r.source_end, r.requirement_type,
+              r.normalized_topic_id, r.confidence, r.rule_evidence->>'source' AS source,
               coalesce((SELECT o.topic_id FROM requirement_normalization_overrides o
                         WHERE o.requirement_id = r.id ORDER BY mapping_input_version DESC LIMIT 1), r.normalized_topic_id) AS effective_topic_id,
-              t.name AS topic_name
+              t.name AS topic_name, d.decision, d.selected_topic_id AS decision_topic_id
        FROM jd_requirements r
+       LEFT JOIN ai_requirement_decisions d ON d.requirement_id = r.id AND d.student_id = $3
        LEFT JOIN topics t ON t.id = coalesce((SELECT o.topic_id FROM requirement_normalization_overrides o
                         WHERE o.requirement_id = r.id ORDER BY mapping_input_version DESC LIMIT 1), r.normalized_topic_id)
        WHERE r.job_description_id = $1 AND r.analysis_version = $2 ORDER BY r.id`,
-      [id, version],
+      [id, version, studentId],
     );
     return { jobDescriptionId: id, analysisVersion: version, requirements: result.rows };
   }
@@ -463,6 +616,25 @@ export function createJdService({ pool, storage }) {
         input: { id, analysisVersion },
       });
       if (idempotency.cached?.response_body) return idempotency.cached.response_body;
+      const pendingReview = await client.query(
+        `SELECT count(*)::int AS count FROM jd_requirements r
+         WHERE r.job_description_id = $1 AND r.analysis_version = $2
+           AND r.rule_evidence->>'source' = 'GEMINI' AND r.confidence < 0.75
+           AND NOT EXISTS (
+             SELECT 1 FROM ai_requirement_decisions d
+             WHERE d.requirement_id = r.id AND d.student_id = $3
+           )`,
+        [id, analysisVersion, studentId],
+      );
+      if (pendingReview.rows[0].count > 0) {
+        throw new AppError({
+          status: 409,
+          code: "AI_REQUIREMENT_CONFIRMATION_REQUIRED",
+          message: "Hãy xác nhận hoặc chỉnh các yêu cầu AI có độ tin cậy thấp trước khi tìm câu hỏi.",
+          fieldErrors: { requirements: `${pendingReview.rows[0].count} yêu cầu đang chờ xác nhận` },
+          recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+        });
+      }
       const requirements = await client.query(
         `SELECT r.*,
           coalesce((SELECT o.topic_id FROM requirement_normalization_overrides o
@@ -897,8 +1069,11 @@ export function createJdService({ pool, storage }) {
     retryExtraction,
     saveCorrectedText,
     confirmText,
+    startAiAnalysis,
+    saveAiAnalysis,
     analyze,
     saveNormalizations,
+    decideRequirement,
     getAnalysis,
     match,
     getMatches,

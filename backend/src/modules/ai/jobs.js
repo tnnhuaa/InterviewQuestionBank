@@ -4,6 +4,13 @@ import { findIdempotentResult, saveIdempotentResult } from "../../platform/idemp
 import { createOperationCase } from "../../platform/operations.js";
 import { hashAiValue } from "./provider.js";
 
+const featureByJobKind = {
+  JD_ANALYSIS: "jdAnalysis",
+  RECOMMENDATION_EXPLANATION: "recommendationExplanation",
+  INTERVIEW_AGENDA: "agendaDraft",
+  FEEDBACK_DRAFT: "feedbackDraft",
+};
+
 export function aiJobDto(row) {
   return {
     id: row.id,
@@ -62,7 +69,8 @@ export async function createAiJob(client, {
   correlationId,
   environment,
 }) {
-  if (!environment.ai.enabled || !environment.ai.features) throw aiUnavailable();
+  const feature = featureByJobKind[kind];
+  if (!environment.ai.enabled || !feature || !environment.ai.features[feature]) throw aiUnavailable();
   await enforceBudget(client, actorId, environment);
   const inputHash = hashAiValue(input);
   const result = await client.query(
