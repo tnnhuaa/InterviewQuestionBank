@@ -133,7 +133,7 @@ export function createIdentityService({ pool, environment }) {
     });
   }
 
-  async function login({ email, password }) {
+  async function login({ email, password, currentSessionId = null }) {
     const result = await pool.query(
       `SELECT u.id, u.email, u.display_name, u.status, u.password_hash,
               coalesce(array_agg(ur.role_code) FILTER (WHERE ur.role_code IS NOT NULL), '{}') AS roles
@@ -155,11 +155,20 @@ export function createIdentityService({ pool, environment }) {
     const sessionToken = createOpaqueToken();
     const csrfToken = createOpaqueToken();
     const expiresAt = new Date(Date.now() + environment.sessionTtlHours * 60 * 60 * 1000);
-    const session = await pool.query(
-      `INSERT INTO sessions (user_id, token_hash, csrf_secret_hash, expires_at)
-       VALUES ($1, $2, $3, $4) RETURNING id, expires_at`,
-      [row.id, hashToken(sessionToken), hashToken(csrfToken), expiresAt],
-    );
+    const session = await withTransaction(pool, async (client) => {
+      const created = await client.query(
+        `INSERT INTO sessions (user_id, token_hash, csrf_secret_hash, expires_at)
+         VALUES ($1, $2, $3, $4) RETURNING id, expires_at`,
+        [row.id, hashToken(sessionToken), hashToken(csrfToken), expiresAt],
+      );
+      if (currentSessionId) {
+        await client.query(
+          "UPDATE sessions SET revoked_at = now() WHERE id = $1 AND id <> $2 AND revoked_at IS NULL",
+          [currentSessionId, created.rows[0].id],
+        );
+      }
+      return created;
+    });
     return {
       user: publicUser(row),
       session: { id: session.rows[0].id, expiresAt: session.rows[0].expires_at },

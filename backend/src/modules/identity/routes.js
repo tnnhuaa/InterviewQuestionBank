@@ -30,13 +30,13 @@ export function createIdentityRouter({ pool, environment }) {
 
   router.post("/auth/login", authLimiter, asyncHandler(async (request, response) => {
     const input = parse(z.object({ email: z.email(), password: z.string().min(1).max(128) }), request.body);
-    const result = await service.login(input);
+    const result = await service.login({ ...input, currentSessionId: request.auth?.session?.id });
     response.cookie(sessionCookieName(environment), result.sessionToken, sessionCookieOptions(environment));
     response.json({ user: result.user, session: result.session, csrfToken: result.csrfToken });
   }));
 
-  router.post("/auth/logout", requireAuth, asyncHandler(async (request, response) => {
-    await service.logout(request.auth.session.id);
+  router.post("/auth/logout", asyncHandler(async (request, response) => {
+    await service.logout(request.auth?.session?.id);
     response.clearCookie(sessionCookieName(environment), sessionCookieOptions(environment));
     response.status(204).end();
   }));

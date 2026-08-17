@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiFetch, setCsrfToken } from "@/shared/api/client";
+import { ApiError, apiFetch, setCsrfToken } from "@/shared/api/client";
 
 export type Role = "public" | "student" | "mentor" | "admin";
 export interface SessionUser { id: string; email: string; displayName: string; roles: Array<"STUDENT" | "MENTOR" | "ADMIN"> }
@@ -38,10 +38,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     applyLogin: (payload) => {
       setCsrfToken(payload.csrfToken);
       setDemoRole(null);
+      queryClient.clear();
       queryClient.setQueryData(["session"], payload.user);
     },
     logout: async () => {
-      await apiFetch("/auth/logout", { method: "POST" });
+      try {
+        await apiFetch("/auth/logout", { method: "POST" });
+      } catch (error) {
+        if (!(error instanceof ApiError && error.status === 401)) throw error;
+      }
       setCsrfToken(null);
       setDemoRole(null);
       queryClient.clear();
