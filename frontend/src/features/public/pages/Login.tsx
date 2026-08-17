@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useApp } from "@/app/AppContext";
-import { canAccessPath } from "@/app/access";
+import { postLoginPath } from "@/app/access";
 import { authApi } from "@/shared/api/resources";
 import { ApiError } from "@/shared/api/client";
 import AuthFormLayout from "@/shared/components/AuthFormLayout";
@@ -19,11 +19,10 @@ export default function Login() {
   const location = useLocation();
   const { applyLogin } = useApp();
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { email: "", password: "" } });
-  const login = useMutation({ mutationFn: authApi.login, onSuccess: (payload) => {
-    applyLogin(payload);
-    const fallback = payload.user.roles.includes("ADMIN") ? "/admin" : payload.user.roles.includes("MENTOR") ? "/mentor/bookings" : "/student/dashboard";
+  const login = useMutation({ mutationFn: authApi.login, onSuccess: async (payload) => {
+    await applyLogin(payload);
     const returnTo = (location.state as { returnTo?: string } | null)?.returnTo;
-    navigate(returnTo && canAccessPath(payload.user, returnTo) ? returnTo : fallback, { replace: true });
+    navigate(postLoginPath(payload.user, returnTo), { replace: true });
   }, onError: (error) => {
     form.resetField("password");
     if (error instanceof ApiError) Object.entries(error.fieldErrors).forEach(([name, message]) => form.setError(name as keyof Values, { message }));
