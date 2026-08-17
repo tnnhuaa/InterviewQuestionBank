@@ -65,7 +65,7 @@ Cấu trúc này giữ transaction booking trong một database, giảm chi phí
 | [ADR-001](ADR/ADR-001-Technology-Stack.md) | React/Vite/Tailwind + Node.js/Express + PostgreSQL | Khớp năng lực nhóm, test/deploy tách biệt và chi phí pilot thấp | Accepted for PoC |
 | [ADR-002](ADR/ADR-002-Booking-Consistency.md) | PostgreSQL transaction + row lock + partial unique index | Chống double booking ở nguồn chân lý | Accepted, pending PoC |
 | [ADR-003](ADR/ADR-003-Notification-Reliability.md) | Transactional outbox + worker | Provider failure không làm mất booking | Accepted, pending PoC |
-| [ADR-004](ADR/ADR-004-JD-Processing-and-Question-Matching.md) | Direct extraction trước, OCR nội bộ fallback; rule-based matching có version | Ít hạ tầng, giải thích được và deterministic cho PoC | Accepted for PoC; Proposed for MVP |
+| [ADR-004](ADR/ADR-004-JD-Processing-and-Question-Matching.md) | **PoC Question:** Gemini rút trích topic từ JD; keyword matching với Question Bank | Kiểm chứng nhanh luồng JD → topic → câu hỏi; chấp nhận provider dependency, privacy risk và kết quả không hoàn toàn deterministic | Accepted for current PoC; requires MVP review |
 | Scope decision | External meeting link | Giảm scope/security cost của video | Accepted by MVP scope |
 | Security decision | Server-side RBAC + object ownership policy | Không tin role/ownership từ client | Accepted for PoC |
 
