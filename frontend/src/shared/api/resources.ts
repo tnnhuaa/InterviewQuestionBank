@@ -72,6 +72,9 @@ export interface AuditEntry { id: string; actorId?: string; action: string; targ
 export interface MentorVerification { verification_id: string; status: string; created_at: string; version: number; mentor_id: string; headline: string; bio: string; display_name: string; email: string }
 export interface FeedbackAction { id: string; description: string; topicId?: string; questionId?: string; applied: boolean }
 export interface BookingFeedback { id: string; bookingId: string; rubricScores: { technical: number; communication: number; structure: number }; strengths: string; weaknesses: string; actions: FeedbackAction[]; createdAt: string; version: number }
+export interface AgendaSection { title: string; durationMinutes: number; objective: string; questionIds: string[]; notes: string }
+export interface AgendaDraft { id: string; bookingId: string; jobId: string; agenda: AgendaSection[]; status: "DRAFT" | "USED" | "DISCARDED"; version: number; createdAt: string; updatedAt: string }
+export interface FeedbackDraft { id: string; bookingId: string; jobId: string; rubricScores: { technical: number; communication: number; structure: number }; strengths: string; weaknesses: string; nextActions: Array<{ description: string; topicId?: string; questionId?: string }>; status: "DRAFT" | "USED" | "DISCARDED"; version: number; createdAt: string; updatedAt: string }
 export interface StudentDashboard {
   summary: { practice: { notStarted: number; practicing: number; completed: number; revisit: number }; bookmarked: number; activePlans: number; jobDescriptions: number; upcomingBookings: number };
   nextActions: Array<{ id: string; planId: string; priority: string; practiceStatus: PracticeStatus; mentorNextAction?: string; questionId?: string; questionTitle?: string; topic?: string }>;
@@ -170,6 +173,12 @@ export const bookingsApi = {
   transition: (id: string, input: Record<string, unknown>) => apiFetch<Booking>(`/bookings/${id}/transitions`, { method: "POST", json: input, headers: { "Idempotency-Key": createIdempotencyKey() } }),
   meetingLink: (id: string, input: { url: string; version?: number }) => apiFetch(`/bookings/${id}/meeting-link`, { method: "PUT", json: input }),
   reportLink: (id: string, reason: string) => apiFetch(`/bookings/${id}/meeting-link-failures`, { method: "POST", json: { reason } }),
+  startAgendaDraft: (id: string) => apiFetch<AiJob>(`/bookings/${id}/agenda-drafts`, { method: "POST", headers: { "Idempotency-Key": createIdempotencyKey() } }),
+  agendaDraft: (id: string) => apiFetch<AgendaDraft>(`/bookings/${id}/agenda-drafts`),
+  updateAgendaDraft: (bookingId: string, draftId: string, input: { agenda: AgendaSection[]; status: AgendaDraft["status"]; version: number }) => apiFetch<AgendaDraft>(`/bookings/${bookingId}/agenda-drafts/${draftId}`, { method: "PATCH", json: input }),
+  startFeedbackDraft: (id: string, sessionNotes: string) => apiFetch<AiJob>(`/bookings/${id}/feedback-drafts`, { method: "POST", json: { sessionNotes }, headers: { "Idempotency-Key": createIdempotencyKey() } }),
+  feedbackDraft: (id: string) => apiFetch<FeedbackDraft>(`/bookings/${id}/feedback-drafts`),
+  updateFeedbackDraft: (bookingId: string, draftId: string, input: Omit<FeedbackDraft, "id" | "bookingId" | "jobId" | "createdAt" | "updatedAt">) => apiFetch<FeedbackDraft>(`/bookings/${bookingId}/feedback-drafts/${draftId}`, { method: "PATCH", json: input }),
   feedback: (id: string) => apiFetch<BookingFeedback>(`/bookings/${id}/feedback`),
   createFeedback: (id: string, input: Record<string, unknown>) => apiFetch(`/bookings/${id}/feedback`, { method: "POST", json: input }),
   applyFeedback: (id: string, actionIds: string[]) => apiFetch(`/bookings/${id}/feedback/apply`, { method: "POST", json: { actionIds } }),

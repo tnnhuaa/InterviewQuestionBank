@@ -19,6 +19,29 @@ const transitionSchema = z.object({
   }
 });
 
+const agendaSchema = z.array(z.object({
+  title: z.string().trim().min(3).max(200),
+  durationMinutes: z.number().int().min(1).max(120),
+  objective: z.string().trim().min(3).max(1000),
+  questionIds: z.array(z.guid()).max(10),
+  notes: z.string().trim().max(1000).default(""),
+})).min(1).max(10);
+
+const feedbackDraftSchema = z.object({
+  rubricScores: z.object({
+    technical: z.number().min(0).max(5),
+    communication: z.number().min(0).max(5),
+    structure: z.number().min(0).max(5),
+  }).strict(),
+  strengths: z.string().trim().min(10).max(5000),
+  weaknesses: z.string().trim().min(10).max(5000),
+  nextActions: z.array(z.object({
+    description: z.string().trim().min(3).max(500),
+    topicId: z.guid().optional(),
+    questionId: z.guid().optional(),
+  })).min(1).max(20),
+});
+
 export function createBookingsRouter({ pool, environment }) {
   const router = Router();
   const service = createBookingsService({ pool, environment });
@@ -65,25 +88,69 @@ export function createBookingsRouter({ pool, environment }) {
     response.status(202).json(await service.reportMeetingLinkFailure(request.auth.user, request.params.bookingId, input, request.correlationId));
   }));
 
+  router.post("/bookings/:bookingId/agenda-drafts", requireRole("MENTOR"), asyncHandler(async (request, response) => {
+    response.status(202).json(await service.startAgendaDraft(
+      request.auth.user,
+      request.params.bookingId,
+      request.get("Idempotency-Key"),
+      request.correlationId,
+    ));
+  }));
+
+  router.get("/bookings/:bookingId/agenda-drafts", requireRole("MENTOR"), asyncHandler(async (request, response) => {
+    response.json(await service.getAgendaDraft(request.auth.user, request.params.bookingId));
+  }));
+
+  router.patch("/bookings/:bookingId/agenda-drafts/:draftId", requireRole("MENTOR"), asyncHandler(async (request, response) => {
+    const input = parse(z.object({
+      agenda: agendaSchema,
+      status: z.enum(["DRAFT", "USED", "DISCARDED"]).default("DRAFT"),
+      version: z.number().int().positive(),
+    }), request.body);
+    response.json(await service.updateAgendaDraft(
+      request.auth.user,
+      request.params.bookingId,
+      request.params.draftId,
+      input,
+      request.correlationId,
+    ));
+  }));
+
+  router.post("/bookings/:bookingId/feedback-drafts", requireRole("MENTOR"), asyncHandler(async (request, response) => {
+    const input = parse(z.object({ sessionNotes: z.string().trim().min(20).max(10000) }), request.body);
+    response.status(202).json(await service.startFeedbackDraft(
+      request.auth.user,
+      request.params.bookingId,
+      input,
+      request.get("Idempotency-Key"),
+      request.correlationId,
+    ));
+  }));
+
+  router.get("/bookings/:bookingId/feedback-drafts", requireRole("MENTOR"), asyncHandler(async (request, response) => {
+    response.json(await service.getFeedbackDraft(request.auth.user, request.params.bookingId));
+  }));
+
+  router.patch("/bookings/:bookingId/feedback-drafts/:draftId", requireRole("MENTOR"), asyncHandler(async (request, response) => {
+    const input = parse(feedbackDraftSchema.extend({
+      status: z.enum(["DRAFT", "USED", "DISCARDED"]).default("DRAFT"),
+      version: z.number().int().positive(),
+    }), request.body);
+    response.json(await service.updateFeedbackDraft(
+      request.auth.user,
+      request.params.bookingId,
+      request.params.draftId,
+      input,
+      request.correlationId,
+    ));
+  }));
+
   router.get("/bookings/:bookingId/feedback", requireAuth, asyncHandler(async (request, response) => {
     response.json(await service.getFeedback(request.auth.user, request.params.bookingId));
   }));
 
   router.post("/bookings/:bookingId/feedback", requireRole("MENTOR"), asyncHandler(async (request, response) => {
-    const input = parse(z.object({
-      rubricScores: z.object({
-        technical: z.number().min(0).max(5),
-        communication: z.number().min(0).max(5),
-        structure: z.number().min(0).max(5),
-      }).strict(),
-      strengths: z.string().trim().min(10).max(5000),
-      weaknesses: z.string().trim().min(10).max(5000),
-      nextActions: z.array(z.object({
-        description: z.string().trim().min(3).max(500),
-        topicId: z.guid().optional(),
-        questionId: z.guid().optional(),
-      })).min(1).max(20),
-    }), request.body);
+    const input = parse(feedbackDraftSchema.extend({ draftId: z.guid().optional() }), request.body);
     response.status(201).json(await service.createFeedback(request.auth.user, request.params.bookingId, input, request.correlationId));
   }));
 

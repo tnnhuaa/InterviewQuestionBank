@@ -305,6 +305,13 @@ async function publishDueReviews(poolInstance) {
   });
 }
 
+async function cleanupExpiredAiPrivateInputs(poolInstance) {
+  const result = await poolInstance.query(
+    "DELETE FROM ai_job_private_inputs WHERE expires_at <= now() RETURNING job_id",
+  );
+  return result.rowCount;
+}
+
 async function escalateExpiredMeetingLinkFailures(poolInstance) {
   const result = await poolInstance.query(
     `UPDATE operation_cases SET
@@ -334,6 +341,8 @@ export function startWorker({ poolInstance = pool, environment = getEnvironment(
     if (Date.now() >= nextRetentionAt) {
       const deletedFiles = await cleanupExpiredOriginalFiles(poolInstance, storage);
       if (deletedFiles) console.log(JSON.stringify({ event: "retention.jd_originals_deleted", count: deletedFiles }));
+      const deletedAiInputs = await cleanupExpiredAiPrivateInputs(poolInstance);
+      if (deletedAiInputs) console.log(JSON.stringify({ event: "retention.ai_private_inputs_deleted", count: deletedAiInputs }));
       nextRetentionAt = Date.now() + retentionIntervalMs;
     }
     const publishedReviews = await publishDueReviews(poolInstance);

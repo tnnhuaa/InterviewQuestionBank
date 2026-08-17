@@ -2,6 +2,7 @@ import { z } from "zod";
 import { withTransaction } from "../../platform/db/transaction.js";
 import { createJdService } from "../jd/service.js";
 import { AiProviderError, hashAiValue } from "./provider.js";
+import { createAgendaDraftHandler, createFeedbackDraftHandler } from "./draft-handlers.js";
 
 const requirementOutput = z.object({
   requirements: z.array(z.object({
@@ -316,5 +317,7 @@ export function createAiJobHandlers({ pool, environment }) {
   return {
     JD_ANALYSIS: createJdAnalysisHandler({ pool, environment }),
     RECOMMENDATION_EXPLANATION: createRecommendationExplanationHandler({ pool }),
+    INTERVIEW_AGENDA: createAgendaDraftHandler({ pool }),
+    FEEDBACK_DRAFT: createFeedbackDraftHandler({ pool, environment }),
   };
 }

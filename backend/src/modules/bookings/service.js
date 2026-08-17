@@ -5,6 +5,7 @@ import { createOperationCase } from "../../platform/operations.js";
 import { createInAppNotification, enqueueNotification } from "../../platform/outbox.js";
 import { findIdempotentResult, saveIdempotentResult } from "../../platform/idempotency.js";
 import { decryptPrivateValue, encryptPrivateValue, fingerprintPrivateValue } from "../../platform/security/encryption.js";
+import { createAiJob } from "../ai/jobs.js";
 
 const terminalStates = new Set(["REJECTED", "CANCELLED", "COMPLETED", "NO_SHOW"]);
 
@@ -91,6 +92,35 @@ async function notify(client, booking, recipientUserId, eventType, title, body) 
     payload: { bookingId: booking.id },
     deduplicationKey: `${eventType}:${booking.id}:${booking.version}:${recipientUserId}`,
   });
+}
+
+function agendaDraftDto(row) {
+  return {
+    id: row.id,
+    bookingId: row.booking_id,
+    jobId: row.job_id,
+    agenda: row.agenda,
+    status: row.status,
+    version: row.version,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function feedbackDraftDto(row) {
+  return {
+    id: row.id,
+    bookingId: row.booking_id,
+    jobId: row.job_id,
+    rubricScores: row.rubric_scores,
+    strengths: row.strengths,
+    weaknesses: row.weaknesses,
+    nextActions: row.next_actions,
+    status: row.status,
+    version: row.version,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
 }
 
 async function cancelPendingReminders(client, bookingId, scheduleVersion = null) {
@@ -550,10 +580,179 @@ export function createBookingsService({ pool, environment }) {
     });
   }
 
+  async function startAgendaDraft(actor, bookingId, idempotencyKey, correlationId) {
+    return withTransaction(pool, async (client) => {
+      const row = await getParticipantRow(client, actor, bookingId, true);
+      if (row.mentor_user_id !== actor.id || row.state !== "CONFIRMED") throw notFoundError();
+      const input = {
+        bookingVersion: row.version,
+        roleSummary: row.role_summary,
+        senioritySummary: row.seniority_summary,
+        topicIds: row.topic_ids ?? [],
+        questionIds: row.question_ids ?? [],
+        goal: row.goal,
+        interviewType: row.interview_type,
+      };
+      const idempotency = await findIdempotentResult(client, {
+        actorId: actor.id,
+        operation: "START_AI_AGENDA_DRAFT",
+        key: idempotencyKey,
+        input: { bookingId, ...input },
+      });
+      if (idempotency.cached?.response_body) return idempotency.cached.response_body;
+      const job = await createAiJob(client, {
+        actorId: actor.id,
+        kind: "INTERVIEW_AGENDA",
+        resourceType: "BOOKING",
+        resourceId: bookingId,
+        input,
+        promptVersion: "interview-agenda-v1",
+        schemaVersion: "interview-agenda-schema-v1",
+        correlationId,
+        environment,
+      });
+      await saveIdempotentResult(client, {
+        actorId: actor.id,
+        operation: "START_AI_AGENDA_DRAFT",
+        key: idempotencyKey,
+        digest: idempotency.digest,
+        status: 202,
+        body: job,
+        resourceId: job.id,
+      });
+      return job;
+    });
+  }
+
+  async function getAgendaDraft(actor, bookingId) {
+    const booking = await getParticipantRow(pool, actor, bookingId);
+    if (booking.mentor_user_id !== actor.id) throw notFoundError();
+    const result = await pool.query(
+      `SELECT * FROM interview_agenda_drafts
+       WHERE booking_id = $1 AND mentor_id = $2 ORDER BY created_at DESC LIMIT 1`,
+      [bookingId, booking.mentor_id],
+    );
+    if (!result.rowCount) throw notFoundError();
+    return agendaDraftDto(result.rows[0]);
+  }
+
+  async function updateAgendaDraft(actor, bookingId, draftId, input, correlationId) {
+    return withTransaction(pool, async (client) => {
+      const booking = await getParticipantRow(client, actor, bookingId);
+      if (booking.mentor_user_id !== actor.id) throw notFoundError();
+      const result = await client.query(
+        `UPDATE interview_agenda_drafts SET agenda = $4, status = $5,
+           updated_at = now(), version = version + 1
+         WHERE id = $1 AND booking_id = $2 AND mentor_id = $3 AND version = $6
+         RETURNING *`,
+        [draftId, bookingId, booking.mentor_id, input.agenda, input.status, input.version],
+      );
+      if (!result.rowCount) throw conflict("VERSION_CONFLICT", "Agenda draft đã thay đổi. Hãy tải lại trước khi lưu.");
+      await writeAudit(client, {
+        actorId: actor.id,
+        action: "AI_AGENDA_DRAFT_UPDATED",
+        targetType: "BOOKING",
+        targetId: bookingId,
+        correlationId,
+        metadata: { draftId, status: input.status },
+      });
+      return agendaDraftDto(result.rows[0]);
+    });
+  }
+
+  async function startFeedbackDraft(actor, bookingId, input, idempotencyKey, correlationId) {
+    return withTransaction(pool, async (client) => {
+      const row = await getParticipantRow(client, actor, bookingId, true);
+      if (row.mentor_user_id !== actor.id || row.state !== "COMPLETED") throw notFoundError();
+      const existingFeedback = await client.query("SELECT 1 FROM feedback WHERE booking_id = $1", [bookingId]);
+      if (existingFeedback.rowCount) throw conflict("FEEDBACK_ALREADY_EXISTS", "Lịch hẹn này đã có feedback.", "NONE");
+      const jobInput = { bookingVersion: row.version, sessionNotes: input.sessionNotes };
+      const idempotency = await findIdempotentResult(client, {
+        actorId: actor.id,
+        operation: "START_AI_FEEDBACK_DRAFT",
+        key: idempotencyKey,
+        input: { bookingId, ...jobInput },
+      });
+      if (idempotency.cached?.response_body) return idempotency.cached.response_body;
+      const job = await createAiJob(client, {
+        actorId: actor.id,
+        kind: "FEEDBACK_DRAFT",
+        resourceType: "BOOKING",
+        resourceId: bookingId,
+        input: jobInput,
+        promptVersion: "feedback-draft-v1",
+        schemaVersion: "feedback-draft-schema-v1",
+        correlationId,
+        environment,
+      });
+      await client.query(
+        `INSERT INTO ai_job_private_inputs(job_id, encrypted_payload)
+         VALUES ($1,$2) ON CONFLICT (job_id) DO UPDATE SET
+           encrypted_payload = EXCLUDED.encrypted_payload, expires_at = now() + interval '24 hours'`,
+        [job.id, encryptPrivateValue(JSON.stringify({ sessionNotes: input.sessionNotes }), environment.sessionSecret)],
+      );
+      await saveIdempotentResult(client, {
+        actorId: actor.id,
+        operation: "START_AI_FEEDBACK_DRAFT",
+        key: idempotencyKey,
+        digest: idempotency.digest,
+        status: 202,
+        body: job,
+        resourceId: job.id,
+      });
+      return job;
+    });
+  }
+
+  async function getFeedbackDraft(actor, bookingId) {
+    const booking = await getParticipantRow(pool, actor, bookingId);
+    if (booking.mentor_user_id !== actor.id) throw notFoundError();
+    const result = await pool.query(
+      `SELECT * FROM feedback_drafts
+       WHERE booking_id = $1 AND mentor_id = $2 ORDER BY created_at DESC LIMIT 1`,
+      [bookingId, booking.mentor_id],
+    );
+    if (!result.rowCount) throw notFoundError();
+    return feedbackDraftDto(result.rows[0]);
+  }
+
+  async function updateFeedbackDraft(actor, bookingId, draftId, input, correlationId) {
+    return withTransaction(pool, async (client) => {
+      const booking = await getParticipantRow(client, actor, bookingId);
+      if (booking.mentor_user_id !== actor.id) throw notFoundError();
+      const result = await client.query(
+        `UPDATE feedback_drafts SET rubric_scores = $4, strengths = $5, weaknesses = $6,
+           next_actions = $7, status = $8, updated_at = now(), version = version + 1
+         WHERE id = $1 AND booking_id = $2 AND mentor_id = $3 AND version = $9
+         RETURNING *`,
+        [draftId, bookingId, booking.mentor_id, input.rubricScores, input.strengths,
+          input.weaknesses, input.nextActions, input.status, input.version],
+      );
+      if (!result.rowCount) throw conflict("VERSION_CONFLICT", "Feedback draft đã thay đổi. Hãy tải lại trước khi lưu.");
+      await writeAudit(client, {
+        actorId: actor.id,
+        action: "AI_FEEDBACK_DRAFT_UPDATED",
+        targetType: "BOOKING",
+        targetId: bookingId,
+        correlationId,
+        metadata: { draftId, status: input.status },
+      });
+      return feedbackDraftDto(result.rows[0]);
+    });
+  }
+
   async function createFeedback(actor, bookingId, input, correlationId) {
     return withTransaction(pool, async (client) => {
       const row = await getParticipantRow(client, actor, bookingId, true);
       if (row.mentor_user_id !== actor.id || row.state !== "COMPLETED") throw notFoundError();
+      if (input.draftId) {
+        const draft = await client.query(
+          `SELECT id FROM feedback_drafts WHERE id = $1 AND booking_id = $2 AND mentor_id = $3
+           AND status IN ('DRAFT','USED') FOR UPDATE`,
+          [input.draftId, bookingId, row.mentor_id],
+        );
+        if (!draft.rowCount) throw notFoundError();
+      }
       const context = await client.query(
         "SELECT topic_ids, question_ids FROM booking_context_snapshots WHERE booking_id = $1",
         [bookingId],
@@ -580,6 +779,12 @@ export function createBookingsService({ pool, environment }) {
           [result.rows[0].id, action.description, action.topicId ?? null, action.questionId ?? null],
         );
         actions.push({ ...inserted.rows[0], applied: false });
+      }
+      if (input.draftId) {
+        await client.query(
+          "UPDATE feedback_drafts SET status = 'USED', updated_at = now(), version = version + 1 WHERE id = $1",
+          [input.draftId],
+        );
       }
       await notify(client, row, row.student_id, "FEEDBACK_READY", "Mentor đã gửi feedback", "Mở lịch hẹn để xem nhận xét và bước tiếp theo.");
       await writeAudit(client, { actorId: actor.id, action: "FEEDBACK_CREATED", targetType: "BOOKING", targetId: bookingId, correlationId });
@@ -794,6 +999,8 @@ export function createBookingsService({ pool, environment }) {
 
   return {
     list, get, create, transition, saveMeetingLink, reportMeetingLinkFailure,
+    startAgendaDraft, getAgendaDraft, updateAgendaDraft,
+    startFeedbackDraft, getFeedbackDraft, updateFeedbackDraft,
     createFeedback, getFeedback, applyFeedback, createCompletionDispute,
     resolveParticipantCase, createReview,
   };
