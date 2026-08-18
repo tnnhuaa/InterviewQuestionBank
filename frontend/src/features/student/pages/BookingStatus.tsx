@@ -1,121 +1,23 @@
-import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowRight, Check } from '@phosphor-icons/react'
-import AuthNavbar from '@/shared/components/AuthNavbar'
-import StatusBadge from '@/shared/components/StatusBadge'
-import BookingTimeline from '@/shared/components/BookingTimeline'
-import { BOOKINGS, MENTORS } from '@/shared/data/mock'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { bookingsApi, mentorsApi } from "@/shared/api/resources";
+import { useApp } from "@/app/AppContext";
+import AuthNavbar from "@/shared/components/AuthNavbar";
+import ErrorPanel from "@/shared/components/ErrorPanel";
 
 export default function BookingStatus() {
-  const { bookingId } = useParams()
-  const navigate = useNavigate()
-  const booking = BOOKINGS.find(b => b.id === bookingId) || BOOKINGS[0]
-  const mentor = MENTORS.find(m => m.id === booking.mentorId)!
+  const { bookingId = "" } = useParams();
+  const { user } = useApp();
+  const queryClient = useQueryClient();
+  const [reason, setReason] = useState("");
+  const [proposedSlotId, setProposedSlotId] = useState("");
+  const booking = useQuery({ queryKey: ["booking", bookingId], queryFn: () => bookingsApi.get(bookingId), enabled: Boolean(bookingId), refetchInterval: (query) => ["PENDING", "RESCHEDULE_PROPOSED"].includes(query.state.data?.status ?? "") ? 10_000 : false });
+  const mentor = useQuery({ queryKey: ["mentor", booking.data?.mentorId], queryFn: () => mentorsApi.get(booking.data!.mentorId), enabled: Boolean(booking.data?.mentorId) });
+  const transition = useMutation({ mutationFn: (input: { action: string; reason?: string; proposedSlotId?: string }) => bookingsApi.transition(bookingId, { ...input, version: booking.data!.version }), onSuccess: (data) => { setReason(""); queryClient.setQueryData(["booking", bookingId], data); } });
+  const dispute = useMutation({ mutationFn: () => bookingsApi.disputeCompletion(bookingId, { reason }), onSuccess: () => setReason("") });
+  const resolveCase = useMutation({ mutationFn: ({ caseId, action, version }: { caseId: string; action: "APPROVE" | "DISMISS"; version: number }) => bookingsApi.resolveCase(bookingId, caseId, { action, reason, version }), onSuccess: () => { setReason(""); queryClient.invalidateQueries({ queryKey: ["booking", bookingId] }); } });
+  const canReportNoShow = booking.data ? Date.now() >= new Date(booking.data.startsAt).getTime() + 15 * 60_000 : false;
 
-  return (
-    <div className="min-h-screen bg-canvas">
-      <AuthNavbar />
-
-      <div className="max-w-[760px] mx-auto px-6 py-8">
-        {/* Top status */}
-        <div className="bg-panel border border-edge rounded-xl p-6 mb-6">
-          <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
-            <div>
-              <p className="text-xs text-ink-muted mb-1">Mã đặt lịch</p>
-              <p className="text-sm font-mono font-semibold text-ink">{booking.id}</p>
-            </div>
-            <StatusBadge status={booking.status} />
-          </div>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-canvas-subtle shrink-0">
-              <img src={mentor.avatar} alt={mentor.name} className="w-full h-full object-cover" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-ink">{mentor.name}</p>
-              <p className="text-xs text-ink-muted">{mentor.role}</p>
-            </div>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-2">
-            {[
-              { label: 'Chủ đề', value: booking.topic },
-              { label: 'Loại phỏng vấn', value: booking.interviewType },
-              { label: 'Ngày', value: booking.date },
-              { label: 'Giờ', value: `${booking.time} · ${booking.timezone}` },
-            ].map(row => (
-              <div key={row.label} className="flex justify-between text-xs p-2 bg-canvas-subtle rounded-lg">
-                <span className="text-ink-muted">{row.label}</span>
-                <span className="text-ink font-medium text-right max-w-[60%]">{row.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid sm:grid-cols-[1fr_240px] gap-6">
-          {/* Timeline */}
-          <div className="bg-panel border border-edge rounded-xl p-6">
-            <p className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-5">Lịch sử hoạt động</p>
-            <BookingTimeline events={booking.timeline} />
-          </div>
-
-          {/* Contextual action panel */}
-          <div className="space-y-4">
-            {booking.status === 'confirmed' && (
-              <div className="bg-ok-soft border border-ok/20 rounded-xl p-5">
-                <div className="w-8 h-8 rounded-full bg-ok/20 flex items-center justify-center mb-3">
-                  <Check aria-hidden size={17} weight="bold" className="text-ok" />
-                </div>
-                <p className="text-sm font-semibold text-ink mb-1">Đã xác nhận</p>
-                <p className="text-xs text-ink-secondary mb-4">Chuẩn bị cho buổi phỏng vấn của bạn.</p>
-                <button
-                  onClick={() => navigate('/sessions/S-001')}
-                  className="w-full bg-primary hover:bg-primary-hover text-on-primary font-medium px-4 py-2.5 rounded-lg text-sm transition-colors"
-                >
-                  <span className="inline-flex items-center gap-1.5">Xem buổi phỏng vấn <ArrowRight aria-hidden size={15} /></span>
-                </button>
-              </div>
-            )}
-
-            {booking.status === 'pending' && (
-              <div className="bg-notice-soft border border-notice/20 rounded-xl p-5">
-                <p className="text-sm font-semibold text-ink mb-1">Đang chờ xác nhận</p>
-                <p className="text-xs text-ink-secondary mb-2">Mentor sẽ phản hồi trong vòng 24 giờ.</p>
-                <button className="w-full border border-edge text-ink-secondary hover:border-danger hover:text-danger font-medium px-4 py-2 rounded-lg text-xs transition-colors mt-2">
-                  Hủy yêu cầu
-                </button>
-              </div>
-            )}
-
-            {booking.status === 'reschedule-proposed' && (
-              <div className="bg-accent-soft border border-accent/20 rounded-xl p-5">
-                <p className="text-sm font-semibold text-ink mb-1">Mentor đề xuất đổi lịch</p>
-                <p className="text-xs text-ink-secondary mb-3">Slot mới: <strong>Thứ Tư, 14:00</strong></p>
-                <div className="space-y-2">
-                  <button className="w-full bg-primary hover:bg-primary-hover text-on-primary font-medium px-4 py-2.5 rounded-lg text-sm transition-colors">
-                    Chấp nhận
-                  </button>
-                  <button className="w-full border border-edge text-ink-secondary font-medium px-4 py-2 rounded-lg text-sm hover:border-primary hover:text-primary transition-colors">
-                    Chọn lịch khác
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {booking.status === 'rejected' && (
-              <div className="bg-danger-soft border border-danger/20 rounded-xl p-5">
-                <p className="text-sm font-semibold text-ink mb-1">Yêu cầu không được chấp nhận</p>
-                <p className="text-xs text-ink-secondary mb-4">Slot đã không còn khả dụng. Mentor đã hủy do lịch xung đột.</p>
-                <button onClick={() => navigate('/mentors')} className="w-full bg-primary hover:bg-primary-hover text-on-primary font-medium px-4 py-2.5 rounded-lg text-sm transition-colors">
-                  Quay lại tìm mentor
-                </button>
-              </div>
-            )}
-
-            <div className="bg-panel border border-edge rounded-xl p-4">
-              <p className="text-xs font-semibold text-ink mb-2">Cần hỗ trợ?</p>
-              <button className="inline-flex items-center gap-1 text-xs text-ink-secondary transition-colors hover:text-ink">Báo cáo sự cố <ArrowRight aria-hidden size={13} /></button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+  return <div className="min-h-screen bg-canvas"><AuthNavbar /><main className="mx-auto max-w-[800px] px-6 py-8">{booking.error ? <ErrorPanel error={booking.error} onRetry={() => booking.refetch()} /> : booking.isLoading ? <p className="text-sm text-ink-muted">Đang tải lịch hẹn…</p> : booking.data ? <><section className="rounded-xl border border-edge bg-panel p-6"><div className="flex items-start justify-between gap-3"><div><p className="text-xs text-ink-muted">Mã đặt lịch</p><h1 className="mt-1 font-mono text-sm font-semibold text-ink">{booking.data.id}</h1></div><span className="rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold text-primary">{booking.data.status}</span></div><dl className="mt-6 grid gap-3 sm:grid-cols-2"><div><dt className="text-xs text-ink-muted">Mentor</dt><dd className="mt-1 text-sm font-medium text-ink">{booking.data.mentorName}</dd></div><div><dt className="text-xs text-ink-muted">Thời gian</dt><dd className="mt-1 text-sm font-medium text-ink">{new Date(booking.data.startsAt).toLocaleString("vi-VN")}</dd></div><div><dt className="text-xs text-ink-muted">Chủ đề</dt><dd className="mt-1 text-sm text-ink">{booking.data.topicNames.join(", ")}</dd></div><div><dt className="text-xs text-ink-muted">Schedule version</dt><dd className="mt-1 text-sm text-ink">v{booking.data.scheduleVersion ?? 1}</dd></div></dl>{booking.data.meetingLink ? <a href={booking.data.meetingLink} target="_blank" rel="noreferrer" className="mt-5 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-on-primary">Mở phòng phỏng vấn</a> : null}</section>{(transition.error || dispute.error || resolveCase.error) && <div className="mt-5"><ErrorPanel error={transition.error || dispute.error || resolveCase.error} /></div>}<section className="mt-5 rounded-xl border border-edge bg-panel p-5"><h2 className="text-sm font-semibold text-ink">Thao tác có kiểm soát</h2><label className="mt-4 block text-xs font-semibold text-ink-secondary">Lý do<textarea value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Không nhập credential hoặc dữ liệu nhạy cảm" className="mt-1.5 w-full rounded-md border border-edge p-3 text-sm" /></label>{["PENDING", "CONFIRMED"].includes(booking.data.status) ? <div className="mt-4 space-y-3"><select value={proposedSlotId} onChange={(event) => setProposedSlotId(event.target.value)} className="w-full rounded-md border border-edge bg-canvas px-3 py-2 text-sm"><option value="">Chọn slot mới nếu muốn đổi lịch</option>{mentor.data?.nextSlots.filter((slot) => slot.id !== booking.data?.slotId).map((slot) => <option key={slot.id} value={slot.id}>{new Date(slot.startsAt).toLocaleString("vi-VN")}</option>)}</select><div className="flex flex-wrap gap-2"><button disabled={reason.trim().length < 3 || transition.isPending} onClick={() => transition.mutate({ action: "CANCEL", reason })} className="rounded-md border border-danger/30 px-4 py-2 text-xs font-medium text-danger">Yêu cầu hủy</button><button disabled={reason.trim().length < 3 || !proposedSlotId || transition.isPending} onClick={() => transition.mutate({ action: "PROPOSE_RESCHEDULE", reason, proposedSlotId })} className="rounded-md border border-edge px-4 py-2 text-xs font-medium text-ink-secondary">Đề xuất đổi lịch</button>{canReportNoShow ? <button disabled={reason.trim().length < 3} onClick={() => transition.mutate({ action: "REPORT_NO_SHOW", reason })} className="rounded-md border border-notice/30 px-4 py-2 text-xs font-medium text-notice-ink">Báo no-show</button> : null}</div></div> : null}{booking.data.status === "RESCHEDULE_PROPOSED" ? <div className="mt-4 flex flex-wrap gap-2"><button onClick={() => transition.mutate({ action: "ACCEPT_RESCHEDULE" })} className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-on-primary">Chấp nhận giờ mới</button><button onClick={() => transition.mutate({ action: "REJECT_RESCHEDULE" })} className="rounded-md border border-edge px-4 py-2 text-xs font-medium text-ink-secondary">Từ chối</button></div> : null}{booking.data.status === "COMPLETED" ? <div className="mt-4 flex flex-wrap gap-2"><Link to={`/bookings/${booking.data.id}/feedback`} className="rounded-md border border-edge px-4 py-2 text-xs font-medium text-ink-secondary">Xem feedback</Link><Link to={`/bookings/${booking.data.id}/review`} className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-on-primary">Viết review</Link><button disabled={reason.trim().length < 10 || dispute.isPending} onClick={() => dispute.mutate()} className="rounded-md border border-danger/30 px-4 py-2 text-xs font-medium text-danger">Dispute completion</button></div> : null}</section>{booking.data.participantCases?.filter((item) => item.requestedBy !== user?.id).map((item) => <section key={item.id} className="mt-5 rounded-xl border border-notice/30 bg-notice-soft p-5"><p className="text-xs font-semibold text-notice-ink">{item.type}</p><p className="mt-2 text-sm text-ink">{item.summary}</p><div className="mt-3 flex gap-2"><button disabled={reason.trim().length < 5} onClick={() => resolveCase.mutate({ caseId: item.id, action: "APPROVE", version: item.version })} className="rounded-md bg-primary px-4 py-2 text-xs text-on-primary">Đồng ý</button><button disabled={reason.trim().length < 5} onClick={() => resolveCase.mutate({ caseId: item.id, action: "DISMISS", version: item.version })} className="rounded-md border border-edge px-4 py-2 text-xs">Từ chối</button></div></section>)}</> : null}</main></div>;
 }

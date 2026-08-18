@@ -1,94 +1,16 @@
-import { useState } from 'react'
-import { Info, X } from '@phosphor-icons/react'
-import PublicNavbar from '@/shared/components/PublicNavbar'
-import AuthNavbar from '@/shared/components/AuthNavbar'
-import MentorCard from '@/shared/components/MentorCard'
-import { MENTORS } from '@/shared/data/mock'
-import { useApp } from '@/app/AppContext'
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useApp } from "@/app/AppContext";
+import { mentorsApi, questionsApi } from "@/shared/api/resources";
+import AuthNavbar from "@/shared/components/AuthNavbar";
+import PublicNavbar from "@/shared/components/PublicNavbar";
+import ErrorPanel from "@/shared/components/ErrorPanel";
+import MentorCard from "@/shared/components/MentorCard";
 
 export default function Mentors() {
-  const { role } = useApp()
-  const [contextFilter, setContextFilter] = useState<string | null>('JavaScript · Frontend')
-  const [, setFilters] = useState<Record<string, string>>({})
-
-  return (
-    <div className="min-h-screen bg-canvas">
-      {role === 'public' ? <PublicNavbar /> : <AuthNavbar />}
-
-      <div className="max-w-[1280px] mx-auto px-6 py-8">
-        <div className="mb-6">
-          <h1 className="text-[22px] font-semibold text-ink">Tìm mentor phù hợp với buổi phỏng vấn của bạn</h1>
-          <p className="text-sm text-ink-secondary mt-1">Chỉ hiển thị mentor đã được xác minh.</p>
-        </div>
-
-        {/* Context banner */}
-        {contextFilter && (
-          <div className="flex items-center gap-3 bg-primary-soft border border-primary/20 rounded-lg px-4 py-3 mb-5">
-            <Info aria-hidden size={16} className="shrink-0 text-primary" />
-            <p className="text-sm text-primary flex-1">Đang tìm mentor cho: <strong>{contextFilter}</strong></p>
-            <button onClick={() => setContextFilter(null)} className="text-primary/60 hover:text-primary transition-colors">
-              <X aria-hidden size={16} weight="bold" />
-            </button>
-          </div>
-        )}
-
-        <div className="flex gap-6">
-          {/* Filters sidebar */}
-          <aside className="hidden md:block w-52 shrink-0">
-            <div className="space-y-6">
-              {[
-                { label: 'Chuyên môn', opts: ['React', 'JavaScript', 'CSS', 'System Design', 'Node.js', 'Leadership'] },
-                { label: 'Loại phỏng vấn', opts: ['Technical', 'System Design', 'Behavioral', 'Leadership'] },
-                { label: 'Ngôn ngữ', opts: ['Tiếng Việt', 'English'] },
-                { label: 'Múi giờ', opts: ['GMT+7', 'GMT+8', 'GMT+9'] },
-              ].map(section => (
-                <div key={section.label}>
-                  <p className="text-xs font-semibold text-ink-secondary uppercase tracking-wider mb-2">{section.label}</p>
-                  <div className="space-y-1">
-                    {section.opts.map(opt => (
-                      <label key={opt} className="flex items-center gap-2 cursor-pointer group">
-                        <input
-                          type="checkbox"
-                          className="w-3.5 h-3.5 rounded border-edge-strong accent-primary"
-                          onChange={e => setFilters(prev => e.target.checked ? { ...prev, [opt]: '1' } : Object.fromEntries(Object.entries(prev).filter(([k]) => k !== opt)))}
-                        />
-                        <span className="text-xs text-ink-secondary group-hover:text-ink transition-colors">{opt}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </aside>
-
-          {/* Results */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-edge">
-              <p className="text-sm text-ink-secondary">
-                <span className="font-semibold text-ink">{MENTORS.length}</span> mentor
-              </p>
-              <select className="text-xs bg-panel border border-edge rounded-md px-2 py-1 text-ink-secondary focus:border-primary outline-none">
-                <option>Phù hợp nhất</option>
-                <option>Rating cao nhất</option>
-                <option>Slot sớm nhất</option>
-              </select>
-            </div>
-
-            <div className="space-y-4">
-              {MENTORS.map(m => (
-                <MentorCard key={m.id} mentor={m} />
-              ))}
-            </div>
-
-            {/* Empty state variant */}
-            <div className="mt-8 p-6 border border-dashed border-edge rounded-xl text-center bg-canvas-subtle/50">
-              <p className="text-sm font-medium text-ink-secondary mb-1">Không tìm thấy mentor khớp bộ lọc thời gian</p>
-              <p className="text-xs text-ink-muted mb-3">Có mentor với chuyên môn phù hợp, nhưng chưa có slot trong khung giờ bạn chọn.</p>
-              <button className="text-xs text-primary font-medium hover:underline">Xóa bộ lọc thời gian</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+  const { role } = useApp();
+  const [topic, setTopic] = useState("");
+  const taxonomy = useQuery({ queryKey: ["taxonomy"], queryFn: questionsApi.taxonomy });
+  const mentors = useQuery({ queryKey: ["mentors", topic], queryFn: () => mentorsApi.list({ topic, pageSize: 50 }) });
+  return <div className="min-h-screen bg-canvas">{role === "public" ? <PublicNavbar /> : <AuthNavbar />}<main className="mx-auto max-w-[1000px] px-6 py-8"><div className="flex flex-wrap items-end justify-between gap-4"><div><h1 className="text-[22px] font-semibold text-ink">Tìm Mentor</h1><p className="mt-1 text-sm text-ink-secondary">Chỉ hồ sơ đã được Admin duyệt mới xuất hiện.</p></div><label className="text-xs font-semibold text-ink-secondary">Chuyên môn<select value={topic} onChange={(event) => setTopic(event.target.value)} className="mt-1 block min-w-56 rounded-lg border border-edge bg-panel px-3 py-2 text-sm font-normal"><option value="">Tất cả</option>{taxonomy.data?.topics.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select></label></div>{mentors.error && <div className="mt-5"><ErrorPanel error={mentors.error} onRetry={() => mentors.refetch()} /></div>}<div className="mt-6 space-y-4">{mentors.isLoading && <p className="text-sm text-ink-muted">Đang tải mentor…</p>}{mentors.data?.items.map((mentor) => <MentorCard key={mentor.id} mentor={mentor} />)}{mentors.data?.items.length === 0 && <div className="rounded-xl border border-dashed border-edge p-10 text-center text-sm text-ink-muted">Chưa có mentor đã duyệt phù hợp bộ lọc.</div>}</div></main></div>;
 }

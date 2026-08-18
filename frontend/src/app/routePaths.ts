@@ -1,7 +1,13 @@
 export const routes = {
   home: "/homepage",
   login: "/login",
+  register: "/register",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
+  verifyEmail: "/verify-email",
+  acceptAdminInvite: "/accept-admin-invite",
   studentDashboard: "/student/dashboard",
+  studentProfile: "/student/profile",
   questions: "/questions",
   question: (questionId = ":questionId") => `/questions/${questionId}`,
   mentors: "/mentors",
@@ -16,6 +22,8 @@ export const routes = {
     `/job-descriptions/${jobDescriptionId}/review`,
   jobDescriptionMapping: (jobDescriptionId = ":jobDescriptionId") =>
     `/job-descriptions/${jobDescriptionId}/mapping`,
+  jobDescriptionRecommendations: (jobDescriptionId = ":jobDescriptionId") =>
+    `/job-descriptions/${jobDescriptionId}/recommendations`,
   preparationPlan: (planId = ":planId") => `/preparation-plans/${planId}`,
   mentorOnboarding: "/mentor/onboarding",
   mentorVerification: "/mentor/verification",
@@ -28,6 +36,8 @@ export const routes = {
   adminQueue: "/admin",
   adminMentorReview: (mentorId = ":mentorId") => `/admin/mentors/${mentorId}/review`,
   adminQuestions: "/admin/questions",
+  adminQuestionImport: "/admin/questions/import",
+  adminTaxonomy: "/admin/taxonomy",
   adminCase: (caseId = ":caseId") => `/admin/cases/${caseId}`,
   adminAudit: (decisionId = ":decisionId") => `/admin/audit/${decisionId}`,
   systemStatus: "/system-status",

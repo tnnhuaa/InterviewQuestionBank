@@ -1,0 +1,760 @@
+openapi: 3.1.0
+info:
+  title: PrepVI R1 API
+  version: 1.0.0
+  description: Same-origin API contract for PrepVI US-01–30. Sensitive fields are intentionally absent from error schemas.
+servers:
+  - url: /api/v1
+security:
+  - sessionCookie: []
+paths:
+  /health:
+    get:
+      security: []
+      operationId: health
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /readiness:
+    get:
+      security: []
+      operationId: readiness
+      responses: { "200": { $ref: "#/components/responses/Success" }, "503": { $ref: "#/components/responses/Error" } }
+  /ai/capabilities:
+    get:
+      operationId: getAiCapabilities
+      responses: { "200": { $ref: "#/components/responses/AiCapabilities" } }
+  /ai-jobs/{jobId}:
+    parameters: [ { $ref: "#/components/parameters/AiJobId" } ]
+    get:
+      operationId: getAiJob
+      responses: { "200": { $ref: "#/components/responses/AiJob" }, "404": { $ref: "#/components/responses/Error" } }
+  /ai-jobs/{jobId}/retry:
+    parameters: [ { $ref: "#/components/parameters/AiJobId" }, { $ref: "#/components/parameters/IdempotencyKey" } ]
+    post:
+      operationId: retryAiJob
+      responses: { "202": { $ref: "#/components/responses/AiJob" }, "409": { $ref: "#/components/responses/Error" } }
+  /auth/register:
+    post:
+      security: []
+      operationId: register
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/RegisterInput" } } } }
+      responses: { "201": { $ref: "#/components/responses/User" }, "409": { $ref: "#/components/responses/Error" } }
+  /auth/verify-email:
+    post:
+      security: []
+      operationId: verifyEmail
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/TokenInput" } } } }
+      responses: { "200": { $ref: "#/components/responses/User" }, "400": { $ref: "#/components/responses/Error" } }
+  /auth/login:
+    post:
+      security: []
+      operationId: login
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/LoginInput" } } } }
+      responses: { "200": { $ref: "#/components/responses/Login" }, "401": { $ref: "#/components/responses/Error" } }
+  /auth/logout:
+    post:
+      operationId: logout
+      responses: { "204": { description: Session revoked }, "403": { $ref: "#/components/responses/Error" } }
+  /auth/csrf:
+    get:
+      operationId: rotateCsrf
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /auth/forgot-password:
+    post:
+      security: []
+      operationId: forgotPassword
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "202": { $ref: "#/components/responses/Success" } }
+  /auth/reset-password:
+    post:
+      security: []
+      operationId: resetPassword
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "204": { description: Password changed }, "400": { $ref: "#/components/responses/Error" } }
+  /auth/accept-admin-invite:
+    post:
+      security: []
+      operationId: acceptAdminInvite
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/User" }, "400": { $ref: "#/components/responses/Error" } }
+  /me:
+    get:
+      operationId: me
+      responses: { "200": { $ref: "#/components/responses/User" }, "401": { $ref: "#/components/responses/Error" } }
+  /student-profile:
+    get:
+      operationId: getStudentProfile
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+    patch:
+      operationId: updateStudentProfile
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" } }
+  /taxonomy:
+    get:
+      security: []
+      operationId: getTaxonomy
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /questions:
+    get:
+      security: []
+      operationId: listQuestions
+      parameters:
+        - { name: search, in: query, schema: { type: string } }
+        - { name: topic, in: query, schema: { type: string } }
+        - { name: difficulty, in: query, schema: { $ref: "#/components/schemas/Difficulty" } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses: { "200": { $ref: "#/components/responses/QuestionPage" } }
+  /questions/{questionId}:
+    parameters: [ { $ref: "#/components/parameters/QuestionId" } ]
+    get:
+      security: []
+      operationId: getQuestion
+      responses: { "200": { $ref: "#/components/responses/Question" }, "404": { $ref: "#/components/responses/Error" } }
+  /practice-progress/{questionId}:
+    parameters: [ { $ref: "#/components/parameters/QuestionId" } ]
+    put:
+      operationId: updatePracticeProgress
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /admin/questions:
+    get:
+      operationId: adminListQuestions
+      parameters:
+        - { name: search, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses: { "200": { $ref: "#/components/responses/QuestionPage" } }
+    post:
+      operationId: createQuestion
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "201": { $ref: "#/components/responses/Question" }, "422": { $ref: "#/components/responses/Error" } }
+  /admin/questions/{questionId}:
+    parameters: [ { $ref: "#/components/parameters/QuestionId" } ]
+    put:
+      operationId: updateQuestion
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Question" }, "409": { $ref: "#/components/responses/Error" } }
+  /admin/questions/{questionId}/lifecycle:
+    parameters: [ { $ref: "#/components/parameters/QuestionId" } ]
+    patch:
+      operationId: changeQuestionLifecycle
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Question" }, "409": { $ref: "#/components/responses/Error" } }
+  /admin/taxonomy:
+    get:
+      operationId: adminGetTaxonomy
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /admin/taxonomy/versions:
+    post:
+      operationId: createTaxonomyVersion
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /admin/taxonomy/versions/{versionId}:
+    parameters: [ { name: versionId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    patch:
+      operationId: updateTaxonomyVersion
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" } }
+  /admin/topics:
+    post:
+      operationId: createTopic
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /admin/topics/{itemId}:
+    parameters: [ { name: itemId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    patch:
+      operationId: updateTopic
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" } }
+  /admin/positions:
+    post:
+      operationId: createPosition
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /admin/positions/{itemId}:
+    parameters: [ { name: itemId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    patch:
+      operationId: updatePosition
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" } }
+  /admin/topic-aliases:
+    post:
+      operationId: createTopicAlias
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /admin/topic-aliases/{aliasId}:
+    parameters: [ { name: aliasId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    delete:
+      operationId: deleteTopicAlias
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "204": { description: Alias deleted } }
+  /job-descriptions:
+    get:
+      operationId: listJobDescriptions
+      responses: { "200": { $ref: "#/components/responses/Page" } }
+    post:
+      operationId: createJobDescription
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { type: object, required: [text], properties: { text: { type: string, maxLength: 50000 } } } }
+          multipart/form-data: { schema: { type: object, required: [file], properties: { file: { type: string, format: binary } } } }
+      responses: { "201": { $ref: "#/components/responses/JobDescription" }, "413": { $ref: "#/components/responses/Error" }, "415": { $ref: "#/components/responses/Error" } }
+  /job-descriptions/{jobDescriptionId}:
+    parameters: [ { $ref: "#/components/parameters/JobDescriptionId" } ]
+    get:
+      operationId: getJobDescription
+      responses: { "200": { $ref: "#/components/responses/JobDescription" }, "404": { $ref: "#/components/responses/Error" } }
+  /job-descriptions/{jobDescriptionId}/extract:
+    parameters: [ { $ref: "#/components/parameters/JobDescriptionId" }, { $ref: "#/components/parameters/IdempotencyKey" } ]
+    post:
+      operationId: startExtraction
+      responses: { "202": { $ref: "#/components/responses/JobDescription" }, "409": { $ref: "#/components/responses/Error" } }
+  /job-descriptions/{jobDescriptionId}/extraction-retries:
+    parameters: [ { $ref: "#/components/parameters/JobDescriptionId" }, { $ref: "#/components/parameters/IdempotencyKey" } ]
+    post:
+      operationId: retryExtraction
+      responses: { "202": { $ref: "#/components/responses/JobDescription" } }
+  /job-descriptions/{jobDescriptionId}/text:
+    parameters: [ { $ref: "#/components/parameters/JobDescriptionId" } ]
+    patch:
+      operationId: saveCorrectedText
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/JobDescription" }, "409": { $ref: "#/components/responses/Error" } }
+  /job-descriptions/{jobDescriptionId}/confirm:
+    parameters: [ { $ref: "#/components/parameters/JobDescriptionId" } ]
+    post:
+      operationId: confirmCorrectedText
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/JobDescription" }, "409": { $ref: "#/components/responses/Error" } }
+  /job-descriptions/{jobDescriptionId}/analyze:
+    parameters: [ { $ref: "#/components/parameters/JobDescriptionId" }, { $ref: "#/components/parameters/IdempotencyKey" } ]
+    post:
+      operationId: analyzeJobDescription
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /job-descriptions/{jobDescriptionId}/analysis-jobs:
+    parameters: [ { $ref: "#/components/parameters/JobDescriptionId" }, { $ref: "#/components/parameters/IdempotencyKey" } ]
+    post:
+      operationId: startAiJobDescriptionAnalysis
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "202": { $ref: "#/components/responses/AiJob" }, "409": { $ref: "#/components/responses/Error" }, "503": { $ref: "#/components/responses/Error" } }
+  /job-descriptions/{jobDescriptionId}/analysis:
+    parameters: [ { $ref: "#/components/parameters/JobDescriptionId" } ]
+    get:
+      operationId: getJobDescriptionAnalysis
+      parameters: [ { name: analysisVersion, in: query, schema: { type: integer, minimum: 1 } } ]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /job-descriptions/{jobDescriptionId}/requirement-normalizations:
+    parameters: [ { $ref: "#/components/parameters/JobDescriptionId" } ]
+    put:
+      operationId: saveRequirementNormalizations
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /job-descriptions/{jobDescriptionId}/requirements/{requirementId}:
+    parameters:
+      - { $ref: "#/components/parameters/JobDescriptionId" }
+      - { name: requirementId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      operationId: decideAiRequirement
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" }, "422": { $ref: "#/components/responses/Error" } }
+  /job-descriptions/{jobDescriptionId}/matches:
+    parameters: [ { $ref: "#/components/parameters/JobDescriptionId" } ]
+    get:
+      operationId: getMatches
+      parameters: [ { name: analysisVersion, in: query, schema: { type: integer, minimum: 1 } } ]
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+    post:
+      operationId: createMatches
+      parameters: [ { $ref: "#/components/parameters/IdempotencyKey" } ]
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /preparation-plans:
+    get:
+      operationId: listPreparationPlans
+      responses: { "200": { $ref: "#/components/responses/Page" } }
+    post:
+      operationId: createPreparationPlan
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "201": { $ref: "#/components/responses/Success" } }
+  /preparation-plans/{planId}:
+    parameters: [ { $ref: "#/components/parameters/PlanId" } ]
+    get:
+      operationId: getPreparationPlan
+      responses: { "200": { $ref: "#/components/responses/Success" }, "404": { $ref: "#/components/responses/Error" } }
+  /preparation-plans/{planId}/items/{itemId}:
+    parameters:
+      - { $ref: "#/components/parameters/PlanId" }
+      - { name: itemId, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      operationId: updatePreparationPlanItem
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" } }
+  /preparation-plans/{planId}/mentor-candidates:
+    parameters:
+      - { $ref: "#/components/parameters/PlanId" }
+      - { name: availableFrom, in: query, schema: { type: string, format: date-time } }
+      - { name: availableTo, in: query, schema: { type: string, format: date-time } }
+      - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+      - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+    get:
+      operationId: listPreparationPlanMentorCandidates
+      responses: { "200": { $ref: "#/components/responses/Page" } }
+  /preparation-plans/{planId}/recommendation-explanation-jobs:
+    parameters: [ { $ref: "#/components/parameters/PlanId" }, { $ref: "#/components/parameters/IdempotencyKey" } ]
+    post:
+      operationId: startRecommendationExplanationJob
+      responses: { "202": { $ref: "#/components/responses/AiJob" }, "409": { $ref: "#/components/responses/Error" }, "503": { $ref: "#/components/responses/Error" } }
+  /mentors:
+    get:
+      security: []
+      operationId: listMentors
+      parameters:
+        - { name: topic, in: query, schema: { type: string } }
+        - { name: availableFrom, in: query, schema: { type: string, format: date-time } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses: { "200": { $ref: "#/components/responses/Page" } }
+  /mentors/{mentorId}:
+    parameters: [ { $ref: "#/components/parameters/MentorId" } ]
+    get:
+      security: []
+      operationId: getMentor
+      responses: { "200": { $ref: "#/components/responses/Success" }, "404": { $ref: "#/components/responses/Error" } }
+  /mentor-profile:
+    get:
+      operationId: getMentorProfile
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+    put:
+      operationId: saveMentorProfile
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /mentor-verifications:
+    post:
+      operationId: submitMentorVerification
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [headline, bio, timezone, consent, evidence]
+              properties:
+                headline: { type: string }
+                bio: { type: string }
+                timezone: { type: string }
+                consent: { type: string, const: "true" }
+                topicIds: { type: string }
+                positionIds: { type: string }
+                expertiseEvidence: { type: string }
+                evidence: { type: string, format: binary }
+      responses: { "201": { $ref: "#/components/responses/Success" }, "415": { $ref: "#/components/responses/Error" } }
+  /availability-slots:
+    get:
+      operationId: listAvailabilitySlots
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+    post:
+      operationId: createAvailabilitySlot
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "201": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" } }
+  /availability-slots/{slotId}:
+    parameters: [ { name: slotId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    delete:
+      operationId: cancelAvailabilitySlot
+      parameters: [ { name: version, in: query, required: true, schema: { type: integer, minimum: 1 } } ]
+      responses: { "204": { description: Cancelled }, "409": { $ref: "#/components/responses/Error" } }
+  /admin/mentor-verifications:
+    get:
+      operationId: listMentorVerifications
+      responses: { "200": { $ref: "#/components/responses/Page" } }
+  /admin/mentor-verifications/{verificationId}/evidence:
+    parameters: [ { name: verificationId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    get:
+      operationId: getMentorEvidence
+      parameters:
+        - { name: expires, in: query, required: true, schema: { type: integer, minimum: 1 } }
+        - { name: signature, in: query, required: true, schema: { type: string, pattern: "^[0-9a-fA-F]{64}$" } }
+      responses: { "200": { description: Restricted evidence, content: { application/octet-stream: { schema: { type: string, format: binary } } } } }
+  /admin/mentor-verifications/{verificationId}/evidence-link:
+    parameters: [ { name: verificationId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    get:
+      operationId: createMentorEvidenceLink
+      responses: { "302": { description: Redirect to a five-minute signed evidence URL } }
+  /admin/mentor-verifications/{verificationId}/decision:
+    parameters: [ { name: verificationId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    post:
+      operationId: decideMentorVerification
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" } }
+  /bookings:
+    get:
+      operationId: listBookings
+      parameters:
+        - { name: state, in: query, schema: { $ref: "#/components/schemas/BookingStatus" } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses: { "200": { $ref: "#/components/responses/Page" } }
+    post:
+      operationId: createBooking
+      parameters: [ { $ref: "#/components/parameters/IdempotencyKey" } ]
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "201": { $ref: "#/components/responses/Booking" }, "409": { $ref: "#/components/responses/Error" } }
+  /bookings/{bookingId}:
+    parameters: [ { $ref: "#/components/parameters/BookingId" } ]
+    get:
+      operationId: getBooking
+      responses: { "200": { $ref: "#/components/responses/Booking" }, "404": { $ref: "#/components/responses/Error" } }
+  /bookings/{bookingId}/transitions:
+    parameters: [ { $ref: "#/components/parameters/BookingId" }, { $ref: "#/components/parameters/IdempotencyKey" } ]
+    post:
+      operationId: transitionBooking
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Booking" }, "202": { $ref: "#/components/responses/Booking" }, "409": { $ref: "#/components/responses/Error" } }
+  /bookings/{bookingId}/meeting-link:
+    parameters: [ { $ref: "#/components/parameters/BookingId" } ]
+    put:
+      operationId: saveMeetingLink
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" } }
+  /bookings/{bookingId}/meeting-link-failures:
+    parameters: [ { $ref: "#/components/parameters/BookingId" } ]
+    post:
+      operationId: reportMeetingLinkFailure
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "202": { $ref: "#/components/responses/Success" } }
+  /bookings/{bookingId}/agenda-drafts:
+    parameters: [ { $ref: "#/components/parameters/BookingId" } ]
+    get:
+      operationId: getInterviewAgendaDraft
+      responses: { "200": { $ref: "#/components/responses/AgendaDraft" }, "404": { $ref: "#/components/responses/Error" } }
+    post:
+      operationId: startInterviewAgendaDraft
+      parameters: [ { $ref: "#/components/parameters/IdempotencyKey" } ]
+      responses: { "202": { $ref: "#/components/responses/AiJob" }, "409": { $ref: "#/components/responses/Error" }, "503": { $ref: "#/components/responses/Error" } }
+  /bookings/{bookingId}/agenda-drafts/{draftId}:
+    parameters: [ { $ref: "#/components/parameters/BookingId" }, { $ref: "#/components/parameters/DraftId" } ]
+    patch:
+      operationId: updateInterviewAgendaDraft
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/AgendaDraft" }, "409": { $ref: "#/components/responses/Error" } }
+  /bookings/{bookingId}/feedback-drafts:
+    parameters: [ { $ref: "#/components/parameters/BookingId" } ]
+    get:
+      operationId: getFeedbackDraft
+      responses: { "200": { $ref: "#/components/responses/FeedbackDraft" }, "404": { $ref: "#/components/responses/Error" } }
+    post:
+      operationId: startFeedbackDraft
+      parameters: [ { $ref: "#/components/parameters/IdempotencyKey" } ]
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "202": { $ref: "#/components/responses/AiJob" }, "409": { $ref: "#/components/responses/Error" }, "503": { $ref: "#/components/responses/Error" } }
+  /bookings/{bookingId}/feedback-drafts/{draftId}:
+    parameters: [ { $ref: "#/components/parameters/BookingId" }, { $ref: "#/components/parameters/DraftId" } ]
+    patch:
+      operationId: updateFeedbackDraft
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/FeedbackDraft" }, "409": { $ref: "#/components/responses/Error" } }
+  /bookings/{bookingId}/feedback:
+    parameters: [ { $ref: "#/components/parameters/BookingId" } ]
+    get:
+      operationId: getFeedback
+      responses: { "200": { $ref: "#/components/responses/Success" }, "404": { $ref: "#/components/responses/Error" } }
+    post:
+      operationId: createFeedback
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "201": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" } }
+  /bookings/{bookingId}/feedback/apply:
+    parameters: [ { $ref: "#/components/parameters/BookingId" } ]
+    post:
+      operationId: applyFeedbackToPlan
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /bookings/{bookingId}/completion-disputes:
+    parameters: [ { $ref: "#/components/parameters/BookingId" } ]
+    post:
+      operationId: createCompletionDispute
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "202": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" } }
+  /bookings/{bookingId}/operation-cases/{caseId}/actions:
+    parameters:
+      - { $ref: "#/components/parameters/BookingId" }
+      - { $ref: "#/components/parameters/CaseId" }
+      - { $ref: "#/components/parameters/IdempotencyKey" }
+    post:
+      operationId: resolveParticipantOperationCase
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" } }
+  /bookings/{bookingId}/review:
+    parameters: [ { $ref: "#/components/parameters/BookingId" } ]
+    post:
+      operationId: createReview
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "201": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" } }
+  /notifications:
+    get:
+      operationId: listNotifications
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /notifications/{notificationId}/read:
+    parameters: [ { name: notificationId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    post:
+      operationId: readNotification
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /admin/operation-cases:
+    get:
+      operationId: listOperationCases
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [OPEN, IN_PROGRESS, RESOLVED, DISMISSED] } }
+        - { name: type, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses: { "200": { $ref: "#/components/responses/Page" } }
+  /admin/operation-cases/{caseId}:
+    parameters: [ { $ref: "#/components/parameters/CaseId" } ]
+    get:
+      operationId: getOperationCase
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /admin/operation-cases/{caseId}/impact:
+    parameters: [ { $ref: "#/components/parameters/CaseId" } ]
+    get:
+      operationId: previewOperationImpact
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /admin/operation-cases/{caseId}/actions:
+    parameters: [ { $ref: "#/components/parameters/CaseId" }, { $ref: "#/components/parameters/IdempotencyKey" } ]
+    post:
+      operationId: actOnOperationCase
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" }, "422": { $ref: "#/components/responses/Error" } }
+  /admin/audit:
+    get:
+      operationId: listAuditLog
+      parameters:
+        - { name: targetType, in: query, schema: { type: string } }
+        - { name: targetId, in: query, schema: { type: string, format: uuid } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses: { "200": { $ref: "#/components/responses/Page" } }
+  /admin/reports:
+    get:
+      operationId: listReports
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [OPEN, IN_REVIEW, RESOLVED, DISMISSED] } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses: { "200": { $ref: "#/components/responses/Page" } }
+  /student-dashboard:
+    get:
+      operationId: getStudentDashboard
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /admin/question-imports/preview:
+    post:
+      operationId: previewQuestionImport
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties: { file: { type: string, format: binary } }
+      responses: { "201": { $ref: "#/components/responses/Success" }, "422": { $ref: "#/components/responses/Error" } }
+  /admin/question-imports/{importId}:
+    parameters: [ { name: importId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    get:
+      operationId: getQuestionImport
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [VALID, INVALID, IMPORTED, SKIPPED] } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses: { "200": { $ref: "#/components/responses/Success" } }
+  /admin/question-imports/{importId}/commit:
+    parameters:
+      - { name: importId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { $ref: "#/components/parameters/IdempotencyKey" }
+    post:
+      operationId: commitQuestionImport
+      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
+      responses: { "200": { $ref: "#/components/responses/Success" }, "409": { $ref: "#/components/responses/Error" } }
+  /admin/question-imports/{importId}/errors.csv:
+    parameters: [ { name: importId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    get:
+      operationId: downloadQuestionImportErrors
+      responses:
+        "200":
+          description: CSV containing invalid rows and recovery instructions
+          content: { text/csv: { schema: { type: string } } }
+components:
+  securitySchemes:
+    sessionCookie: { type: apiKey, in: cookie, name: __Host-prepvi_session }
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 8, maxLength: 200 } }
+    QuestionId: { name: questionId, in: path, required: true, schema: { type: string } }
+    JobDescriptionId: { name: jobDescriptionId, in: path, required: true, schema: { type: string, format: uuid } }
+    PlanId: { name: planId, in: path, required: true, schema: { type: string, format: uuid } }
+    MentorId: { name: mentorId, in: path, required: true, schema: { type: string, format: uuid } }
+    BookingId: { name: bookingId, in: path, required: true, schema: { type: string, format: uuid } }
+    CaseId: { name: caseId, in: path, required: true, schema: { type: string, format: uuid } }
+    AiJobId: { name: jobId, in: path, required: true, schema: { type: string, format: uuid } }
+    DraftId: { name: draftId, in: path, required: true, schema: { type: string, format: uuid } }
+  requestBodies:
+    JsonInput:
+      required: true
+      content:
+        application/json:
+          schema: { type: object, additionalProperties: true }
+  schemas:
+    Recovery:
+      type: object
+      required: [kind, retryable, retryAfterSeconds]
+      properties:
+        kind: { type: string, enum: [RETRY_SAFE, EDIT_INPUT, REUPLOAD, PASTE_TEXT, SELECT_ANOTHER_SLOT, WAIT, CONTACT_SUPPORT, NONE] }
+        retryable: { type: boolean }
+        retryAfterSeconds: { type: [integer, "null"] }
+    Error:
+      type: object
+      additionalProperties: false
+      required: [code, message, correlationId, fieldErrors, recovery]
+      properties:
+        code: { type: string }
+        message: { type: string }
+        correlationId: { type: string, format: uuid }
+        fieldErrors: { type: object, additionalProperties: { type: string } }
+        recovery: { $ref: "#/components/schemas/Recovery" }
+    User:
+      type: object
+      required: [id, email, displayName, roles]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        displayName: { type: string }
+        status: { type: string }
+        roles: { type: array, items: { type: string, enum: [STUDENT, MENTOR, ADMIN] } }
+    RegisterInput:
+      type: object
+      required: [email, password, displayName]
+      properties: { email: { type: string, format: email }, password: { type: string, minLength: 8, writeOnly: true }, displayName: { type: string, minLength: 2 } }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties: { email: { type: string, format: email }, password: { type: string, writeOnly: true } }
+    TokenInput:
+      type: object
+      required: [token]
+      properties: { token: { type: string, writeOnly: true } }
+    Difficulty: { type: string, enum: [EASY, MEDIUM, HARD] }
+    BookingStatus: { type: string, enum: [PENDING, CONFIRMED, RESCHEDULE_PROPOSED, REJECTED, CANCELLED, COMPLETED, NO_SHOW] }
+    Question:
+      type: object
+      required: [id, slug, title, content, difficulty, lifecycleStatus, topics, positions, version]
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        title: { type: string }
+        content: { type: string }
+        answerCriteria: { type: array, items: { type: string } }
+        difficulty: { $ref: "#/components/schemas/Difficulty" }
+        lifecycleStatus: { type: string, enum: [DRAFT, IN_REVIEW, PUBLISHED, ARCHIVED] }
+        topics: { type: array, items: { type: string } }
+        positions: { type: array, items: { type: string } }
+        version: { type: integer }
+    JobDescription:
+      type: object
+      required: [id, sourceType, status, correctedVersion, version]
+      properties:
+        id: { type: string, format: uuid }
+        sourceType: { type: string, enum: [PASTED_TEXT, PDF, IMAGE] }
+        status: { type: string, enum: [DRAFT, EXTRACTING, READY_FOR_REVIEW, CONFIRMED, ANALYZED, FAILED] }
+        correctedText: { type: [string, "null"] }
+        correctedVersion: { type: integer }
+        version: { type: integer }
+    Booking:
+      type: object
+      required: [id, mentorId, slotId, status, startsAt, endsAt, version]
+      properties:
+        id: { type: string, format: uuid }
+        mentorId: { type: string, format: uuid }
+        slotId: { type: string, format: uuid }
+        status: { $ref: "#/components/schemas/BookingStatus" }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        version: { type: integer }
+    AiJob:
+      type: object
+      required: [id, kind, resourceType, resourceId, status, provider, model, promptVersion, schemaVersion, attemptCount, maxAttempts, fallbackUsed, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string, enum: [JD_ANALYSIS, RECOMMENDATION_EXPLANATION, INTERVIEW_AGENDA, FEEDBACK_DRAFT] }
+        resourceType: { type: string, enum: [JOB_DESCRIPTION, PREPARATION_PLAN, BOOKING] }
+        resourceId: { type: string, format: uuid }
+        status: { type: string, enum: [PENDING, PROCESSING, SUCCEEDED, SUCCEEDED_WITH_FALLBACK, FAILED, CANCELLED] }
+        provider: { type: string }
+        model: { type: string }
+        promptVersion: { type: string }
+        schemaVersion: { type: string }
+        attemptCount: { type: integer, minimum: 0 }
+        maxAttempts: { type: integer, minimum: 1 }
+        fallbackUsed: { type: boolean }
+        result: { type: [object, "null"], additionalProperties: true }
+        errorCode: { type: [string, "null"] }
+        correlationId: { type: [string, "null"], format: uuid }
+        operationCaseId: { type: [string, "null"], format: uuid }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AiCapabilities:
+      type: object
+      required: [provider, model, enabled, available, features]
+      properties:
+        provider: { type: string }
+        model: { type: string }
+        enabled: { type: boolean }
+        available: { type: boolean }
+        features:
+          type: object
+          required: [jdAnalysis, recommendationExplanation, agendaDraft, feedbackDraft]
+          properties:
+            jdAnalysis: { type: boolean }
+            recommendationExplanation: { type: boolean }
+            agendaDraft: { type: boolean }
+            feedbackDraft: { type: boolean }
+    AgendaDraft:
+      type: object
+      additionalProperties: true
+      required: [id, bookingId, jobId, agenda, status, version]
+      properties:
+        id: { type: string, format: uuid }
+        bookingId: { type: string, format: uuid }
+        jobId: { type: string, format: uuid }
+        agenda: { type: array, items: { type: object, additionalProperties: true } }
+        status: { type: string, enum: [DRAFT, USED, DISCARDED] }
+        version: { type: integer, minimum: 1 }
+    FeedbackDraft:
+      type: object
+      additionalProperties: true
+      required: [id, bookingId, jobId, rubricScores, strengths, weaknesses, nextActions, status, version]
+      properties:
+        id: { type: string, format: uuid }
+        bookingId: { type: string, format: uuid }
+        jobId: { type: string, format: uuid }
+        rubricScores: { type: object, additionalProperties: { type: number } }
+        strengths: { type: string }
+        weaknesses: { type: string }
+        nextActions: { type: array, items: { type: object, additionalProperties: true } }
+        status: { type: string, enum: [DRAFT, USED, DISCARDED] }
+        version: { type: integer, minimum: 1 }
+    PageInfo:
+      type: object
+      required: [page, pageSize, total]
+      properties: { page: { type: integer }, pageSize: { type: integer }, total: { type: integer } }
+  responses:
+    Success: { description: Successful resource response, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
+    Page: { description: Paginated response, content: { application/json: { schema: { type: object, required: [items, pageInfo], properties: { items: { type: array, items: { type: object, additionalProperties: true } }, pageInfo: { $ref: "#/components/schemas/PageInfo" } } } } } }
+    Error: { description: Safe actionable error, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+    User: { description: Safe user projection, content: { application/json: { schema: { $ref: "#/components/schemas/User" } } } }
+    Login: { description: Authenticated session, content: { application/json: { schema: { type: object, required: [user, csrfToken], properties: { user: { $ref: "#/components/schemas/User" }, csrfToken: { type: string } } } } } }
+    Question: { description: Question resource, content: { application/json: { schema: { $ref: "#/components/schemas/Question" } } } }
+    QuestionPage: { description: Question page, content: { application/json: { schema: { type: object, required: [items, pageInfo], properties: { items: { type: array, items: { $ref: "#/components/schemas/Question" } }, pageInfo: { $ref: "#/components/schemas/PageInfo" } } } } } }
+    JobDescription: { description: Private job description projection, content: { application/json: { schema: { $ref: "#/components/schemas/JobDescription" } } } }
+    Booking: { description: Booking projection, content: { application/json: { schema: { $ref: "#/components/schemas/Booking" } } } }
+    AiJob: { description: Safe asynchronous AI job projection, content: { application/json: { schema: { $ref: "#/components/schemas/AiJob" } } } }
+    AiCapabilities: { description: Effective environment and operations feature flags, content: { application/json: { schema: { $ref: "#/components/schemas/AiCapabilities" } } } }
+    AgendaDraft: { description: Mentor-owned editable interview agenda draft, content: { application/json: { schema: { $ref: "#/components/schemas/AgendaDraft" } } } }
+    FeedbackDraft: { description: Mentor-owned editable feedback draft, content: { application/json: { schema: { $ref: "#/components/schemas/FeedbackDraft" } } } }

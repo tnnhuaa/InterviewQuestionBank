@@ -1,362 +1,57 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ArrowDown, ArrowRight, CaretDown, CaretUp, Check, MagnifyingGlass, Plus, X } from '@phosphor-icons/react'
-import AuthNavbar from '@/shared/components/AuthNavbar'
-import JDFlowStepper from '@/shared/components/JDFlowStepper'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { aiApi, jobDescriptionsApi, preparationPlansApi, type PreparationPlan, type PracticeStatus } from "@/shared/api/resources";
+import AuthNavbar from "@/shared/components/AuthNavbar";
+import ErrorPanel from "@/shared/components/ErrorPanel";
+import JDFlowStepper from "@/shared/components/JDFlowStepper";
 
-type Priority = 'must' | 'should' | 'optional'
-
-interface RecommendedQuestion {
-  id: string
-  title: string
-  topic: string
-  difficulty: 'Dễ' | 'Trung bình' | 'Khó'
-  estimatedMin: number
-  practiceStatus: 'not-started' | 'practicing' | 'confident'
-  priority: Priority
-  jdSource: string
-  mappedTopic: string
-  reason: string
-  removed?: boolean
+function MatchSelection({ jobDescriptionId, analysisVersion }: { jobDescriptionId: string; analysisVersion?: number }) {
+  const navigate = useNavigate();
+  const matches = useQuery({ queryKey: ["jd-matches", jobDescriptionId, analysisVersion], queryFn: () => jobDescriptionsApi.getMatches(jobDescriptionId, analysisVersion) });
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const createPlan = useMutation({ mutationFn: () => preparationPlansApi.create({ jobDescriptionId, matchingVersion: matches.data!.matchingVersion, matchIds: [...selected] }), onSuccess: (plan) => navigate(`/preparation-plans/${plan.id}`, { replace: true }) });
+  if (matches.error) return <ErrorPanel error={matches.error} onRetry={() => matches.refetch()} />;
+  if (matches.isLoading) return <p className="text-sm text-ink-muted">Đang tải kết quả deterministic…</p>;
+  if (!matches.data?.matches.length) return <div className="rounded-xl border border-edge bg-panel p-8 text-center"><p className="text-sm font-semibold text-ink">Chưa có câu hỏi vượt threshold 60</p><p className="mt-1 text-xs text-ink-muted">Evidence vẫn được giữ. Bạn có thể tìm Question Bank thủ công.</p><Link to="/questions?from=jd" className="mt-4 inline-block text-sm font-medium text-primary">Mở Question Bank</Link></div>;
+  return <>{createPlan.error && <div className="mb-4"><ErrorPanel error={createPlan.error} /></div>}<div className="space-y-3">{matches.data.matches.map((match) => <label key={match.id} className="flex cursor-pointer gap-4 rounded-xl border border-edge bg-panel p-5"><input type="checkbox" checked={selected.has(match.id)} onChange={(event) => setSelected((current) => { const next = new Set(current); if (event.target.checked) next.add(match.id); else next.delete(match.id); return next; })} className="mt-1 accent-primary" /><span className="min-w-0 flex-1"><span className="text-sm font-semibold text-ink">{match.question.title}</span><span className="mt-1 block text-xs text-ink-muted">{match.topic || match.requirement} · điểm {match.score}</span><span className="mt-2 block text-xs leading-5 text-ink-secondary">{match.reason}</span></span></label>)}</div><button disabled={!selected.size || createPlan.isPending} onClick={() => createPlan.mutate()} className="mt-6 w-full rounded-lg bg-primary px-5 py-3 text-sm font-medium text-on-primary disabled:opacity-50">Tạo kế hoạch từ {selected.size} câu đã chọn</button></>;
 }
 
-const INITIAL_QUESTIONS: RecommendedQuestion[] = [
-  { id: 'js-event-loop',    title: 'JavaScript Event Loop và Async Programming',            topic: 'JavaScript', difficulty: 'Trung bình', estimatedMin: 12, practiceStatus: 'not-started', priority: 'must',     jdSource: 'Solid knowledge of JavaScript and ES6+',                   mappedTopic: 'JavaScript → Async',      reason: 'JD yêu cầu kiến thức về asynchronous JavaScript.' },
-  { id: 'js-closure',       title: 'Closures và Scope trong JavaScript',                    topic: 'JavaScript', difficulty: 'Trung bình', estimatedMin: 10, practiceStatus: 'not-started', priority: 'must',     jdSource: 'Solid knowledge of JavaScript and ES6+',                   mappedTopic: 'JavaScript → Closures',   reason: 'Closure là kiến thức JS cơ bản thường gặp trong phỏng vấn Intern.' },
-  { id: 'react-lifecycle',  title: 'React Component Lifecycle',                             topic: 'React',      difficulty: 'Trung bình', estimatedMin: 10, practiceStatus: 'not-started', priority: 'must',     jdSource: 'Basic understanding of React and component lifecycle',      mappedTopic: 'React → Lifecycle',       reason: 'JD nêu trực tiếp "component lifecycle".' },
-  { id: 'react-hooks',      title: 'useState và useEffect — lỗi thường gặp và cách tránh', topic: 'React',      difficulty: 'Trung bình', estimatedMin: 12, practiceStatus: 'practicing',  priority: 'must',     jdSource: 'Basic understanding of React and component lifecycle',      mappedTopic: 'React → Hooks',           reason: 'Hooks là cách hiện đại quản lý lifecycle trong React.' },
-  { id: 'rest-api',         title: 'REST API — HTTP methods và status codes',               topic: 'REST API',   difficulty: 'Dễ',         estimatedMin:  8, practiceStatus: 'not-started', priority: 'must',     jdSource: 'Familiarity with REST API and HTTP methods',               mappedTopic: 'REST API → HTTP',         reason: 'JD nêu trực tiếp "REST API and HTTP methods".' },
-  { id: 'git-workflow',     title: 'Git branching và workflow trong dự án nhóm',            topic: 'Git',        difficulty: 'Dễ',         estimatedMin:  8, practiceStatus: 'not-started', priority: 'must',     jdSource: 'Git knowledge and version control workflows',               mappedTopic: 'Git → Workflow',          reason: 'JD yêu cầu "version control workflows".' },
-  { id: 'es6-features',     title: 'ES6+ — Destructuring, Spread, Arrow functions',         topic: 'JavaScript', difficulty: 'Dễ',         estimatedMin: 10, practiceStatus: 'not-started', priority: 'should',   jdSource: 'Solid knowledge of JavaScript and ES6+',                   mappedTopic: 'JavaScript → ES6+',       reason: 'ES6+ được đề cập rõ trong JD.' },
-  { id: 'behavioral',       title: 'Xử lý xung đột trong nhóm — câu hỏi tình huống',       topic: 'Behavioral', difficulty: 'Trung bình', estimatedMin: 15, practiceStatus: 'not-started', priority: 'should',   jdSource: 'Good communication skills',                                mappedTopic: 'Behavioral → Giao tiếp', reason: 'JD yêu cầu kỹ năng giao tiếp — câu hỏi Behavioral thường đi kèm.' },
-  { id: 'react-state',      title: 'State management — khi nào dùng Context vs Redux?',    topic: 'React',      difficulty: 'Khó',        estimatedMin: 12, practiceStatus: 'not-started', priority: 'should',   jdSource: 'Basic understanding of React',                             mappedTopic: 'React → State',           reason: 'Hiểu về state là nền tảng React.' },
-  { id: 'css-specificity',  title: 'CSS Specificity và cascade rules',                      topic: 'CSS',        difficulty: 'Dễ',         estimatedMin:  8, practiceStatus: 'not-started', priority: 'should',   jdSource: 'Basic understanding of CSS-in-JS solutions',               mappedTopic: 'CSS → Specificity',       reason: 'CSS-in-JS yêu cầu hiểu cơ bản về CSS.' },
-  { id: 'promise-async',    title: 'Promises vs async/await — sự khác biệt thực tế',       topic: 'JavaScript', difficulty: 'Trung bình', estimatedMin: 10, practiceStatus: 'not-started', priority: 'should',   jdSource: 'Solid knowledge of JavaScript and ES6+',                   mappedTopic: 'JavaScript → Async',      reason: 'Async programming là nền tảng JS hiện đại.' },
-  { id: 'typescript-basics',title: 'TypeScript basics — types, interfaces, generics',       topic: 'TypeScript', difficulty: 'Trung bình', estimatedMin: 12, practiceStatus: 'not-started', priority: 'optional', jdSource: 'Experience with TypeScript (Nice to have)',                 mappedTopic: 'TypeScript → Basics',     reason: 'TypeScript được liệt kê là "nice to have" trong JD.' },
-  { id: 'git-conflict',     title: 'Xử lý merge conflict trong Git',                        topic: 'Git',        difficulty: 'Dễ',         estimatedMin:  8, practiceStatus: 'not-started', priority: 'optional', jdSource: 'Git knowledge and version control workflows',               mappedTopic: 'Git → Merge conflict',    reason: 'Kỹ năng Git thực tế ngoài lý thuyết.' },
-  { id: 'rest-api-auth',    title: 'REST API Authentication — Token vs Session',            topic: 'REST API',   difficulty: 'Khó',        estimatedMin: 15, practiceStatus: 'not-started', priority: 'optional', jdSource: 'Familiarity with REST API',                                 mappedTopic: 'REST API → Auth',         reason: 'Auth là khái niệm nâng cao trong REST API.' },
-]
-
-const PRIORITY_META: Record<Priority, { label: string; desc: string; accentClass: string; borderClass: string }> = {
-  must:     { label: 'Cần luyện',  desc: 'Yêu cầu trực tiếp từ JD',       accentClass: 'text-primary bg-primary-soft border-primary/25', borderClass: 'border-l-primary' },
-  should:   { label: 'Nên luyện', desc: 'Chủ đề hỗ trợ quan trọng',       accentClass: 'text-ok bg-ok-soft border-ok/25',               borderClass: 'border-l-ok' },
-  optional: { label: 'Tuỳ chọn',  desc: 'Hữu ích nhưng ưu tiên thấp hơn', accentClass: 'text-ink-muted bg-canvas-subtle border-edge',   borderClass: 'border-l-edge-strong' },
+function PlanItem({ plan, item }: { plan: PreparationPlan; item: PreparationPlan["items"][number] }) {
+  const queryClient = useQueryClient();
+  const update = useMutation({
+    mutationFn: (practiceStatus: PracticeStatus) => preparationPlansApi.updateItem(plan.id, item.id, { practiceStatus, version: item.version }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["plan", plan.id] });
+      queryClient.invalidateQueries({ queryKey: ["student-dashboard"] });
+    },
+  });
+  return <article className="rounded-xl border border-edge bg-panel p-5"><div className="flex flex-wrap items-center justify-between gap-3"><span className="rounded-full bg-primary-soft px-2.5 py-1 text-[11px] font-semibold text-primary">{item.priority}</span><select aria-label="Trạng thái luyện tập" value={item.practiceStatus} disabled={update.isPending || plan.status !== "ACTIVE"} onChange={(event) => update.mutate(event.target.value as PracticeStatus)} className="rounded-md border border-edge bg-canvas px-2 py-1.5 text-xs"><option value="NOT_STARTED">Chưa bắt đầu</option><option value="PRACTICING">Đang luyện</option><option value="COMPLETED">Hoàn thành</option><option value="REVISIT">Cần ôn lại</option></select></div><h2 className="mt-3 text-sm font-semibold text-ink">{item.question?.title ?? item.mentorNextAction}</h2><p className="mt-1 text-xs text-ink-muted">{item.topic ?? "Next action từ Mentor"} · v{item.version}</p>{item.reason && <div className="mt-3 rounded-md bg-canvas-subtle p-3"><p className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted">Điểm phù hợp do quy tắc hệ thống</p><p className="mt-1 text-xs leading-5 text-ink-secondary">{item.reason}</p></div>}{item.aiExplanation && <div className="mt-2 rounded-md border border-primary/15 bg-primary-soft p-3"><p className="text-[11px] font-semibold uppercase tracking-wide text-primary">Giải thích được Gemini hỗ trợ</p><p className="mt-1 text-xs leading-5 text-ink-secondary">{item.aiExplanation}</p></div>}{item.question?.id ? <Link to={`/questions/${item.question.id}`} className="mt-3 inline-block text-xs font-medium text-primary">Mở câu hỏi →</Link> : null}{update.error && <div className="mt-3"><ErrorPanel error={update.error} /></div>}</article>;
 }
 
-const DIFF_COLOR: Record<string, string> = {
-  'Dễ':       'text-ok bg-ok-soft border-ok/30',
-  'Trung bình':'text-ink-secondary bg-canvas-subtle border-edge',
-  'Khó':      'text-accent bg-accent/10 border-accent/30',
-}
-
-const PRACTICE_DOT: Record<string, string> = {
-  'not-started': 'bg-edge-strong',
-  'practicing':  'bg-notice',
-  'confident':   'bg-ok',
+function PlanView({ planId }: { planId: string }) {
+  const queryClient = useQueryClient();
+  const [aiJobId, setAiJobId] = useState("");
+  const plan = useQuery({ queryKey: ["plan", planId], queryFn: () => preparationPlansApi.get(planId) });
+  const candidates = useQuery({ queryKey: ["plan-mentor-candidates", planId], queryFn: () => preparationPlansApi.mentorCandidates(planId), enabled: plan.data?.status === "ACTIVE" });
+  const capabilities = useQuery({ queryKey: ["ai-capabilities"], queryFn: aiApi.capabilities });
+  const startExplanations = useMutation({ mutationFn: () => preparationPlansApi.startRecommendationExplanations(planId), onSuccess: (job) => setAiJobId(job.id) });
+  const explanationJob = useQuery({ queryKey: ["ai-job", aiJobId], queryFn: () => aiApi.getJob(aiJobId), enabled: Boolean(aiJobId), refetchInterval: (query) => ["PENDING", "PROCESSING"].includes(query.state.data?.status ?? "") ? 1500 : false });
+  useEffect(() => {
+    if (!["SUCCEEDED", "SUCCEEDED_WITH_FALLBACK"].includes(explanationJob.data?.status ?? "")) return;
+    void queryClient.invalidateQueries({ queryKey: ["plan", planId] });
+    void queryClient.invalidateQueries({ queryKey: ["plan-mentor-candidates", planId] });
+  }, [explanationJob.data?.status, planId, queryClient]);
+  if (plan.error) return <ErrorPanel error={plan.error} onRetry={() => plan.refetch()} />;
+  if (plan.isLoading) return <p className="text-sm text-ink-muted">Đang tải kế hoạch…</p>;
+  if (!plan.data) return null;
+  const explanationEnabled = capabilities.data?.enabled && capabilities.data.features.recommendationExplanation;
+  const explanationRunning = ["PENDING", "PROCESSING"].includes(explanationJob.data?.status ?? "");
+  return <div className="space-y-8">{plan.data.status !== "ACTIVE" && <div className="rounded-xl border border-notice/30 bg-notice-soft p-5 text-sm text-notice-ink">Kế hoạch này đã {plan.data.status.toLowerCase()}. Hãy xác nhận lại JD và tạo plan mới trước khi đặt lịch.</div>}{plan.data.status === "ACTIVE" && <section className="rounded-xl border border-edge bg-canvas-subtle p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-ink">Giải thích gợi ý bằng Gemini</h2><p className="mt-1 text-xs text-ink-muted">AI chỉ diễn giải candidate đã qua bộ lọc; không đổi điểm, thứ tự hoặc điều kiện đặt lịch.</p></div><button disabled={!explanationEnabled || startExplanations.isPending || explanationRunning} onClick={() => startExplanations.mutate()} className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-on-primary disabled:opacity-50">{explanationRunning ? "Đang tạo giải thích…" : "Tạo giải thích AI"}</button></div>{capabilities.data && !explanationEnabled && <p className="mt-3 text-xs text-ink-muted">Tính năng đang tắt; các lý do deterministic bên dưới vẫn đầy đủ.</p>}{explanationJob.data?.status === "SUCCEEDED_WITH_FALLBACK" && <p className="mt-3 text-xs text-notice-ink">Gemini không khả dụng. Hệ thống giữ nguyên lý do deterministic để bạn tiếp tục.</p>}{startExplanations.error && <div className="mt-4"><ErrorPanel error={startExplanations.error} /></div>}{explanationJob.error && <div className="mt-4"><ErrorPanel error={explanationJob.error} onRetry={() => explanationJob.refetch()} /></div>}</section>}<section><h2 className="mb-3 text-sm font-semibold text-ink">Câu hỏi và next actions</h2><div className="space-y-3">{plan.data.items.map((item) => <PlanItem key={`${item.id}:${item.version}`} plan={plan.data} item={item} />)}</div></section><section><div className="mb-3"><h2 className="text-sm font-semibold text-ink">Mentor phù hợp với kế hoạch</h2><p className="mt-1 text-xs text-ink-muted">Backend kiểm tra lại expertise được duyệt và future slot; thứ tự kết quả deterministic.</p></div>{candidates.error ? <ErrorPanel error={candidates.error} onRetry={() => candidates.refetch()} /> : candidates.isLoading ? <p className="text-sm text-ink-muted">Đang tìm Mentor theo topic…</p> : candidates.data?.items.length ? <div className="grid gap-4 md:grid-cols-2">{candidates.data.items.map((mentor) => <article key={mentor.id} className="rounded-xl border border-edge bg-panel p-5"><h3 className="text-sm font-semibold text-ink">{mentor.displayName}</h3><p className="mt-1 text-xs text-ink-muted">{mentor.headline}</p><div className="mt-3 rounded-md bg-canvas-subtle p-3"><p className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted">Xếp hạng deterministic</p><ul className="mt-1 space-y-1">{mentor.matchReasons?.map((reason) => <li key={reason} className="text-xs text-ink-secondary">• {reason}</li>)}</ul></div>{mentor.aiExplanation && <div className="mt-2 rounded-md border border-primary/15 bg-primary-soft p-3"><p className="text-[11px] font-semibold uppercase tracking-wide text-primary">Giải thích được Gemini hỗ trợ</p><p className="mt-1 text-xs leading-5 text-ink-secondary">{mentor.aiExplanation}</p></div>}<div className="mt-4 flex flex-wrap gap-2">{mentor.nextSlots.map((slot) => <Link key={slot.id} to={`/bookings/new?mentorId=${mentor.id}&slotId=${slot.id}&planId=${planId}`} className="rounded-md border border-primary/30 px-3 py-2 text-xs font-medium text-primary">{new Date(slot.startsAt).toLocaleString("vi-VN")}</Link>)}</div></article>)}</div> : <div className="rounded-xl border border-dashed border-edge p-8 text-center"><p className="text-sm text-ink">Chưa có Mentor phù hợp trong khoảng hiện tại.</p><div className="mt-3 flex justify-center gap-4"><Link to="/mentors" className="text-xs font-medium text-primary">Tìm Mentor thủ công</Link><Link to="/questions" className="text-xs text-ink-secondary">Tiếp tục tự luyện</Link></div></div>}</section></div>;
 }
 
 export default function JDRecommendations() {
-  const navigate = useNavigate()
-  const [questions, setQuestions] = useState<RecommendedQuestion[]>(INITIAL_QUESTIONS)
-  const [expanded, setExpanded] = useState<string | null>(null)
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [drawerSearch, setDrawerSearch] = useState('')
-
-  const active   = questions.filter(q => !q.removed)
-  const removed  = questions.filter(q => q.removed)
-  const mustQ    = active.filter(q => q.priority === 'must')
-  const shouldQ  = active.filter(q => q.priority === 'should')
-  const optionalQ = active.filter(q => q.priority === 'optional')
-  const totalMin = active.reduce((s, q) => s + q.estimatedMin, 0)
-  const totalTopics = [...new Set(active.map(q => q.topic))].length
-
-  const removeQ  = (id: string) => setQuestions(prev => prev.map(q => q.id === id ? { ...q, removed: true } : q))
-  const restoreQ = (id: string) => setQuestions(prev => prev.map(q => q.id === id ? { ...q, removed: false } : q))
-
-  const fmtTime = (min: number) => {
-    const h = Math.floor(min / 60), m = min % 60
-    return h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h ${m}m`
-  }
-
-  const renderQuestion = (q: RecommendedQuestion) => {
-    const isExp = expanded === q.id
-    const meta  = PRIORITY_META[q.priority]
-
-    return (
-      <div key={q.id} className={`bg-panel border border-edge border-l-4 ${meta.borderClass} rounded-xl overflow-hidden transition-shadow hover:shadow-sm`}>
-        <div className="p-4">
-          <div className="flex items-start gap-3">
-            <div className="flex-1 min-w-0">
-              {/* Meta row */}
-              <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${DIFF_COLOR[q.difficulty]}`}>
-                  {q.difficulty}
-                </span>
-                <span className="text-xs text-ink-muted">{q.topic}</span>
-                <span className="text-xs text-ink-muted">·</span>
-                <span className="text-xs text-ink-muted">~{q.estimatedMin} phút</span>
-                {q.practiceStatus !== 'not-started' && (
-                  <span className="flex items-center gap-1 text-xs text-ink-muted">
-                    <span className={`w-1.5 h-1.5 rounded-full ${PRACTICE_DOT[q.practiceStatus]}`} />
-                    {q.practiceStatus === 'practicing' ? 'Đang luyện' : 'Tự tin'}
-                  </span>
-                )}
-              </div>
-
-              {/* Title */}
-              <p className="text-sm font-semibold text-ink leading-snug mb-1.5">{q.title}</p>
-
-              {/* Reason — always visible */}
-              <p className="text-xs text-ink-secondary leading-relaxed">{q.reason}</p>
-
-              {/* Expand: full reasoning chain */}
-              <button
-                onClick={() => setExpanded(isExp ? null : q.id)}
-                className="mt-1.5 text-xs text-ink-muted hover:text-primary transition-colors flex items-center gap-1"
-              >
-                {isExp ? <><span>Ẩn chi tiết</span><CaretUp aria-hidden size={12} /></> : <><span>Xem lý do đầy đủ</span><CaretDown aria-hidden size={12} /></>}
-              </button>
-
-              {isExp && (
-                <div className="mt-2 bg-canvas-subtle border border-edge rounded-xl p-3 space-y-2">
-                  <div>
-                    <p className="text-[10px] text-ink-muted uppercase tracking-wider font-semibold mb-0.5">Yêu cầu trong JD</p>
-                    <p className="text-xs text-ink-secondary italic">"{q.jdSource}"</p>
-                  </div>
-                  <div className="flex items-start gap-1.5 text-xs text-ink-muted">
-                    <ArrowDown aria-hidden size={13} className="mt-0.5 shrink-0" />
-                    <span>Mapped: <span className="text-ink font-medium">{q.mappedTopic}</span></span>
-                  </div>
-                  <div className="flex items-start gap-1.5 text-xs text-ink-muted">
-                    <ArrowDown aria-hidden size={13} className="mt-0.5 shrink-0" />
-                    <span>Đề xuất: <span className="text-ink font-medium">{q.title}</span></span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-col gap-1.5 shrink-0 pt-0.5">
-              <button
-                onClick={() => navigate('/questions/js-event-loop')}
-                className="text-xs bg-primary hover:bg-primary-hover text-on-primary font-semibold px-3.5 py-2 rounded-lg transition-colors whitespace-nowrap"
-              >
-                <span className="inline-flex items-center gap-1">Luyện ngay <ArrowRight aria-hidden size={13} /></span>
-              </button>
-              <button
-                onClick={() => navigate('/questions/js-event-loop')}
-                className="text-xs border border-edge text-ink-secondary px-3.5 py-2 rounded-lg hover:border-primary hover:text-primary transition-colors whitespace-nowrap"
-              >
-                Xem câu hỏi
-              </button>
-              <button
-                onClick={() => removeQ(q.id)}
-                className="text-xs text-ink-muted hover:text-danger transition-colors text-center py-1"
-              >
-                Bỏ khỏi bộ
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const renderSection = (qs: RecommendedQuestion[], priority: Priority) => {
-    if (qs.length === 0) return null
-    const meta = PRIORITY_META[priority]
-    return (
-      <section className="mb-7">
-        <div className="flex items-center gap-2.5 mb-3 pb-2 border-b border-edge">
-          <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${meta.accentClass}`}>
-            {meta.label}
-          </span>
-          <span className="text-xs text-ink-muted">{meta.desc}</span>
-          <span className="ml-auto text-xs font-semibold text-ink tabular-nums">{qs.length} câu</span>
-        </div>
-        <div className="space-y-2.5">{qs.map(renderQuestion)}</div>
-      </section>
-    )
-  }
-
-  return (
-    <div className="min-h-screen bg-canvas pb-24 lg:pb-0">
-      <AuthNavbar />
-      <JDFlowStepper currentStep={3} />
-
-      <div className="max-w-[1100px] mx-auto px-6 py-8">
-        <div className="mb-5">
-          <h1 className="text-2xl font-semibold text-ink tracking-tight">Bộ câu hỏi dành cho JD này</h1>
-          <p className="text-sm text-ink-secondary mt-1.5">Mỗi câu hỏi được chọn dựa trên yêu cầu bạn đã xác nhận. Bạn có thể bỏ hoặc thêm bất kỳ câu nào.</p>
-        </div>
-
-        {/* Context strip */}
-        <div className="bg-panel border border-edge rounded-xl px-5 py-3 flex flex-wrap gap-x-6 gap-y-2 mb-6">
-          <span className="text-xs font-semibold text-ink bg-canvas-subtle border border-edge px-2.5 py-1 rounded-full">Frontend Intern</span>
-          {[
-            { label: 'Yêu cầu', value: '8' },
-            { label: 'Topics', value: `${totalTopics}` },
-            { label: 'Tổng', value: `${active.length} câu` },
-            { label: 'Thời gian', value: fmtTime(totalMin) },
-          ].map(item => (
-            <div key={item.label} className="flex items-center gap-1.5">
-              <span className="text-xs text-ink-muted">{item.label}:</span>
-              <span className="text-xs font-semibold text-ink">{item.value}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex gap-6">
-          {/* Main list */}
-          <div className="flex-1 min-w-0">
-            {renderSection(mustQ, 'must')}
-            {renderSection(shouldQ, 'should')}
-            {renderSection(optionalQ, 'optional')}
-
-            {/* Removed questions */}
-            {removed.length > 0 && (
-              <div className="border-t border-edge pt-4 mt-2">
-                <p className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-2">Đã bỏ ({removed.length})</p>
-                <div className="space-y-1.5">
-                  {removed.map(q => (
-                    <div key={q.id} className="flex items-center justify-between px-3 py-2 bg-canvas-subtle border border-edge rounded-xl opacity-60">
-                      <span className="text-xs text-ink-secondary truncate">{q.title}</span>
-                      <button onClick={() => restoreQ(q.id)} className="text-xs text-primary hover:underline font-medium ml-3 shrink-0">Khôi phục</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Add from bank */}
-            <div className="mt-5 pt-4 border-t border-edge">
-              <button
-                onClick={() => setDrawerOpen(true)}
-                className="text-sm text-primary hover:underline font-medium flex items-center gap-1.5"
-              >
-                <Plus aria-hidden size={14} weight="bold" />
-                Thêm câu hỏi từ Question Bank
-              </button>
-            </div>
-
-            {/* Transparency */}
-            <p className="text-xs text-ink-muted leading-relaxed mt-8 pb-2 border-t border-edge pt-4">
-              Thứ tự câu hỏi dựa trên mức độ liên quan với JD. Đây không phải đánh giá năng lực hoặc dự đoán khả năng trúng tuyển.
-            </p>
-          </div>
-
-          {/* Desktop sidebar */}
-          <aside className="hidden lg:block w-56 shrink-0">
-            <div className="bg-panel border border-edge rounded-xl p-4 sticky top-20">
-              <p className="text-xs font-bold text-ink-secondary uppercase tracking-wider mb-3">Kế hoạch luyện</p>
-
-              <div className="space-y-2 mb-4">
-                {([['must', mustQ.length], ['should', shouldQ.length], ['optional', optionalQ.length]] as const).map(([p, count]) => {
-                  const meta = PRIORITY_META[p]
-                  return (
-                    <div key={p} className="flex items-center justify-between">
-                      <span className="text-xs text-ink-muted">{meta.label}</span>
-                      <span className="text-xs font-bold text-ink tabular-nums">{count} câu</span>
-                    </div>
-                  )
-                })}
-                <div className="border-t border-edge pt-2 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-ink-secondary">Tổng</span>
-                  <span className="text-sm font-bold text-ink tabular-nums">{active.length} câu</span>
-                </div>
-                <p className="text-[11px] text-ink-muted">Ước tính: {fmtTime(totalMin)}</p>
-              </div>
-
-              <button
-                onClick={() => navigate('/questions/js-event-loop')}
-                className="w-full bg-primary hover:bg-primary-hover text-on-primary font-semibold py-3 rounded-xl text-sm transition-colors mb-2"
-              >
-                Bắt đầu luyện
-              </button>
-              <button
-                onClick={() => setSaved(true)}
-                className={`w-full border font-semibold py-2.5 rounded-xl text-sm transition-colors ${
-                  saved ? 'border-ok text-ok bg-ok-soft' : 'border-edge text-ink-secondary hover:border-primary hover:text-primary'
-                }`}
-              >
-                {saved ? <span className="inline-flex items-center gap-1"><Check aria-hidden size={14} weight="bold" />Đã lưu</span> : 'Lưu bộ câu hỏi'}
-              </button>
-
-              <div className="mt-3 pt-3 border-t border-edge">
-                <button
-                  onClick={() => navigate('/questions')}
-                  className="text-xs text-ink-muted hover:text-primary transition-colors"
-                >
-                  <span className="inline-flex items-center gap-1">Xem toàn bộ Question Bank <ArrowRight aria-hidden size={13} /></span>
-                </button>
-              </div>
-            </div>
-          </aside>
-        </div>
-      </div>
-
-      {/* Mobile sticky bottom */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 bg-panel border-t border-edge px-4 py-3 flex items-center gap-3 z-40">
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-ink">{active.length} câu · {fmtTime(totalMin)}</p>
-          <p className="text-xs text-ink-muted">{mustQ.length} cần · {shouldQ.length} nên luyện</p>
-        </div>
-        <button
-          onClick={() => navigate('/questions/js-event-loop')}
-          className="bg-primary hover:bg-primary-hover text-on-primary font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors whitespace-nowrap shrink-0"
-        >
-          Bắt đầu luyện
-        </button>
-      </div>
-
-      {/* Add question drawer */}
-      {drawerOpen && (
-        <div className="fixed inset-0 bg-ink/25 z-50 flex justify-end" onClick={() => setDrawerOpen(false)}>
-          <div className="bg-panel w-full max-w-[440px] h-full overflow-y-auto shadow-xl" onClick={e => e.stopPropagation()}>
-            <div className="sticky top-0 bg-panel border-b border-edge px-5 py-4 flex items-center justify-between">
-              <h2 className="text-base font-semibold text-ink">Thêm câu hỏi</h2>
-              <button onClick={() => setDrawerOpen(false)} className="p-1.5 hover:bg-canvas-subtle rounded-lg text-ink-muted hover:text-ink transition-colors">
-                <X aria-hidden size={18} weight="bold" />
-              </button>
-            </div>
-            <div className="p-5">
-              <div className="relative mb-4">
-                <MagnifyingGlass aria-hidden size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
-                <input type="search" placeholder="Tìm câu hỏi..." value={drawerSearch} onChange={e => setDrawerSearch(e.target.value)}
-                  className="w-full bg-canvas-subtle border border-edge rounded-xl pl-9 pr-4 py-2.5 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none" />
-              </div>
-              <div className="flex gap-1.5 mb-4 flex-wrap">
-                {['JavaScript', 'React', 'CSS', 'Git', 'Behavioral'].map(t => (
-                  <button key={t} className="text-xs px-3 py-1 border border-edge rounded-full text-ink-secondary hover:border-primary hover:text-primary transition-colors">{t}</button>
-                ))}
-              </div>
-              <div className="space-y-2">
-                {[
-                  { id: 'css-grid',    title: 'CSS Grid vs Flexbox — khi nào dùng cái nào?', topic: 'CSS',        diff: 'Dễ' },
-                  { id: 'ts-generics', title: 'TypeScript Generics — cách dùng và lợi ích',  topic: 'TypeScript', diff: 'Khó' },
-                  { id: 'react-memo',  title: 'React.memo và useMemo — khi nào tối ưu?',     topic: 'React',      diff: 'Khó' },
-                ].filter(q => !drawerSearch || q.title.toLowerCase().includes(drawerSearch.toLowerCase())).map(q => {
-                  const already = active.some(aq => aq.id === q.id)
-                  return (
-                    <div key={q.id} className="flex items-center gap-3 p-3.5 border border-edge rounded-xl bg-canvas-subtle hover:border-edge-strong transition-colors">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-ink">{q.title}</p>
-                        <p className="text-xs text-ink-muted mt-0.5">{q.topic} · {q.diff}</p>
-                      </div>
-                      {already ? (
-                        <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-ok"><Check aria-hidden size={13} weight="bold" />Đã thêm</span>
-                      ) : (
-                        <button className="text-xs text-primary border border-primary/30 font-semibold px-3 py-1.5 rounded-lg hover:bg-primary-soft transition-colors shrink-0">Thêm</button>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
+  const { jobDescriptionId, planId } = useParams();
+  const [params] = useSearchParams();
+  return <div className="min-h-screen bg-canvas"><AuthNavbar /><main className="mx-auto max-w-[980px] px-6 py-8"><JDFlowStepper currentStep={4} /><h1 className="mt-8 text-[22px] font-semibold text-ink">Kế hoạch luyện tập</h1><p className="mt-1 text-sm text-ink-secondary">Question và Mentor cùng được dẫn từ một plan có version; không dùng AI score.</p><div className="mt-6">{jobDescriptionId ? <MatchSelection jobDescriptionId={jobDescriptionId} analysisVersion={Number(params.get("analysisVersion")) || undefined} /> : planId ? <PlanView planId={planId} /> : <ErrorPanel error={new Error("Thiếu JD hoặc preparation plan ID")} />}</div></main></div>;
 }

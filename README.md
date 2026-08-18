@@ -1,74 +1,43 @@
-# Interview Question Bank
+# PrepVI
 
-Foundation codebase for the Interview Practice Platform. The application is a modular monolith with a React SPA, an Express API, and PostgreSQL hosted by Supabase.
+Ngân hàng câu hỏi và nền tảng hỗ trợ chuẩn bị phỏng vấn.
 
-```text
-Browser -> /api/v1 -> Express -> pg -> Supabase PostgreSQL
-```
+## Yêu cầu
 
-The browser never connects to PostgreSQL or the Supabase Data API directly.
+- Node.js 24+
+- npm 11+
+- File `.env` dùng chung do người quản lý dự án cung cấp
 
-## Requirements
+## Chạy lần đầu
 
-- Node.js 22 or newer
-- npm 11 or newer
-- Docker Desktop only when running Supabase locally
+1. Nhận file `.env` từ người quản lý và đặt vào thư mục gốc của dự án, cùng cấp với `package.json`.
 
-## Setup
+2. Cài dependency:
 
-```bash
-cp .env.example .env
-npm install
-npm run dev
-```
+   ```bash
+   npm install
+   ```
 
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:3000`
-- Health: `http://localhost:3000/api/v1/health`
+3. Chạy ứng dụng:
 
-Each workspace can also run independently:
+   ```bash
+   npm run dev
+   ```
 
-```bash
-npm run dev --workspace frontend
-npm run dev --workspace backend
-```
+4. Mở `http://localhost:5173`.
 
-The Vite development server proxies the relative `/api/v1` path to `VITE_DEV_API_TARGET`. Application code never contains a deployment hostname.
+## Tài khoản demo
 
-## Quality checks
+| Vai trò | Email                       | Mật khẩu     |
+| ------- | --------------------------- | ------------ |
+| Student | `student.demo@prepvi.local` | `demo@12345` |
+| Mentor  | `mentor.demo@prepvi.local`  | `demo@12345` |
+| Admin   | `admin.demo@prepvi.local`   | `demo@12345` |
 
-```bash
-npm run lint
-npm test
-npm run build
-```
+## Lưu ý
 
-The same checks run in GitHub Actions for pushes and pull requests.
-
-## API status endpoints
-
-`GET /api/v1/health` confirms that the API process is running:
-
-```json
-{ "status": "ok", "service": "interview-question-bank-api" }
-```
-
-`GET /api/v1/ready` confirms that required dependencies are available. Before the database adapter exists it intentionally returns HTTP `503`:
-
-```json
-{ "status": "not_ready", "database": "disconnected" }
-```
-
-When `backend/src/platform/db/check-connection.js` is added, export `checkConnection` (or a default function). It should resolve to `true` after a successful database check and throw or resolve to `false` on failure. The API discovers this adapter during startup without requiring frontend changes.
-
-## Database workflow
-
-Database migrations and seed data are owned by the Supabase foundation task. Do not edit a migration after it has been pushed.
-
-```bash
-npm run db:start
-npm run db:reset
-npm run db:status
-```
-
-Only the database owner should run `npm run db:push` against the shared project. Never run `supabase db reset --linked`. Secrets and real connection strings belong in `.env` or the deployment platform, never in Git.
+- Dự án dùng chung database Supabase và Gemini API key đã cấu hình trong `.env`; thành viên không cần tạo database hoặc API key riêng.
+- Chỉ gửi `.env` qua kênh riêng của nhóm. Không commit, chụp màn hình hoặc đăng công khai nội dung file này.
+- Không tự chạy `db:migrate`, `db:seed:*` hoặc `db:reset` nếu chưa được yêu cầu; mọi thay đổi đều tác động đến database chung.
+- Gemini có quota dùng chung. Khi key hết hạn hoặc hết quota, người quản lý sẽ cập nhật key mới và gửi lại `.env`.
+- `npm run dev` chạy API, worker và frontend; kiểm tra API tại `http://localhost:3000/api/v1/health` và nhấn `Ctrl+C` để dừng.

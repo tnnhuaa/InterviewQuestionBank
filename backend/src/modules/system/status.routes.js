@@ -11,8 +11,7 @@ export function createStatusRouter({ checkDatabase }) {
     });
   });
 
-  router.get("/ready", async (request, response) => {
-    void request;
+  router.get(["/ready", "/readiness"], async (request, response) => {
 
     try {
       if (await checkDatabase()) {
@@ -25,8 +24,11 @@ export function createStatusRouter({ checkDatabase }) {
     }
 
     return response.status(503).json({
-      status: "not_ready",
-      database: "disconnected",
+      code: "DEPENDENCY_UNAVAILABLE",
+      message: "Database provider is temporarily unavailable; no business mutation was attempted.",
+      correlationId: request.correlationId,
+      fieldErrors: {},
+      recovery: { kind: "WAIT", retryable: true, retryAfterSeconds: 10 },
     });
   });
 

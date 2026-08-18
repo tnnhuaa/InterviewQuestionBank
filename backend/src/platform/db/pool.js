@@ -5,6 +5,6 @@ const environment = getEnvironment();
 
 export const pool = new pg.Pool({
   connectionString: environment.databaseUrl,
-  ssl: environment.databaseSsl ? { rejectUnauthorized: false } : false,
+  ssl: environment.databaseSsl ? { rejectUnauthorized: true } : false,
   max: environment.dbPoolMax,
 });

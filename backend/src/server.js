@@ -1,8 +1,9 @@
 import { createApp } from "./app.js";
 import { loadDatabaseCheck } from "./config/database-check.js";
-import { getEnvironment } from "./config/environment.js";
+import { getEnvironment, validateEnvironment } from "./config/environment.js";
 
 const environment = getEnvironment();
+validateEnvironment(environment);
 const checkDatabase = await loadDatabaseCheck();
 const app = createApp({ checkDatabase, environment });
 

@@ -2,8 +2,8 @@
 
 | Thuộc tính | Giá trị |
 |---|---|
-| Phiên bản | 0.5 |
-| Ngày cập nhật | 16/08/2026 |
+| Phiên bản | 0.6 |
+| Ngày cập nhật | 17/08/2026 |
 | Architecture owner | Luân |
 | Trạng thái | Proposed architecture baseline cho MVP/pilot; được xác nhận dần bằng PoC evidence |
 
@@ -13,7 +13,7 @@ Kiến trúc MVP là **React SPA và Express REST API triển khai độc lập*
 
 Luồng chính bắt đầu từ một JD cụ thể: nhập JD → extract text/OCR → Student kiểm tra và sửa text → phân tích requirement → chuẩn hóa taxonomy → mapping Question Bank → tạo preparation plan → tự luyện hoặc đặt mentor → feedback cập nhật kế hoạch. Mentor Marketplace vẫn được giữ nhưng là bước hỗ trợ sau preparation plan, không còn là điểm bắt đầu của sản phẩm.
 
-Cấu trúc này giữ transaction booking trong một database, giảm chi phí vận hành và cho phép frontend/backend làm việc độc lập. Bốn quyết định kiến trúc được quản lý bằng ADR: technology stack, booking consistency, notification reliability và chiến lược xử lý JD/matching. Đây là kiến trúc mục tiêu cho MVP/pilot; PoC chỉ cung cấp evidence để chấp nhận, điều chỉnh hoặc thay thế từng quyết định qua các validation scenario ở mục 15.
+Cấu trúc này giữ transaction booking trong một database, giảm chi phí vận hành và cho phép frontend/backend làm việc độc lập. Năm quyết định kiến trúc được quản lý bằng ADR, trong đó Gemini là lớp hỗ trợ sau adapter và feature flag; rule/policy/PostgreSQL vẫn là nguồn chân lý. Đây là kiến trúc mục tiêu cho MVP/pilot; PoC chỉ cung cấp evidence để chấp nhận, điều chỉnh hoặc thay thế từng quyết định qua các validation scenario ở mục 15.
 
 ## 2. Goals, scope và architecture drivers
 
@@ -43,7 +43,7 @@ Cấu trúc này giữ transaction booking trong một database, giảm chi phí
 ### 2.3 Out of scope
 
 - Microservices, event streaming platform và multi-region deployment.
-- AI interviewer/scoring, chatbot phỏng vấn và ML/semantic recommendation.
+- AI interviewer/scoring, chatbot phỏng vấn, Gemini reranking và semantic/vector recommendation tự trị.
 - OCR mọi định dạng/ngôn ngữ và phân tích tài liệu ngoài JD.
 - Built-in WebRTC/video, recording và transcription.
 - Payment/escrow/payout.
@@ -65,7 +65,8 @@ Cấu trúc này giữ transaction booking trong một database, giảm chi phí
 | [ADR-001](ADR/ADR-001-Technology-Stack.md) | React/Vite/Tailwind + Node.js/Express + PostgreSQL | Khớp năng lực nhóm, test/deploy tách biệt và chi phí pilot thấp | Accepted for PoC |
 | [ADR-002](ADR/ADR-002-Booking-Consistency.md) | PostgreSQL transaction + row lock + partial unique index | Chống double booking ở nguồn chân lý | Accepted, pending PoC |
 | [ADR-003](ADR/ADR-003-Notification-Reliability.md) | Transactional outbox + worker | Provider failure không làm mất booking | Accepted, pending PoC |
-| [ADR-004](ADR/ADR-004-JD-Processing-and-Question-Matching.md) | **PoC Question:** Gemini rút trích topic từ JD; keyword matching với Question Bank | Kiểm chứng nhanh luồng JD → topic → câu hỏi; chấp nhận provider dependency, privacy risk và kết quả không hoàn toàn deterministic | Accepted for current PoC; requires MVP review |
+| [ADR-004](ADR/ADR-004-JD-Processing-and-Question-Matching.md) | Direct extraction trước, OCR nội bộ fallback; rule-based matching có version | Ít hạ tầng, giải thích được và deterministic cho PoC | Accepted for PoC; Proposed for MVP |
+| [ADR-005](ADR/ADR-005-Hybrid-Gemini-Assistance.md) | Gemini hỗ trợ extraction/explanation/draft sau adapter; hard filter, scorer và mutation vẫn deterministic | Tăng khả năng hiểu JD nhưng giữ privacy, audit và fallback | Accepted behind feature flags |
 | Scope decision | External meeting link | Giảm scope/security cost của video | Accepted by MVP scope |
 | Security decision | Server-side RBAC + object ownership policy | Không tin role/ownership từ client | Accepted for PoC |
 
@@ -80,6 +81,7 @@ Cấu trúc này giữ transaction booking trong một database, giảm chi phí
 | Data | PostgreSQL | ACID, constraint, row lock, index, audit và backup |
 | Job/queue | PostgreSQL outbox + worker module | At-least-once, idempotent, retry/dead-letter state |
 | JD processing | Direct text extraction + internal OCR adapter + PostgreSQL processing job | OCR chỉ cho ảnh/PDF scan; không gọi semantic/AI matching trong PoC |
+| AI assistance | `AiProvider` adapter + PostgreSQL AI job; Gemini 3.5 Flash Lite qua backend | Structured JSON, domain validation, quota/circuit breaker và manual fallback |
 | Matching | Taxonomy/alias dictionary + versioned rule-based scorer | Chỉ Published Question; lưu requirement nguồn, score và reason |
 | Auth | Server-side session qua same-origin `/api` proxy | `__Host-` cookie `Secure`, `HttpOnly`, `SameSite=Lax`; CSRF control |
 | Test | Vitest, React Testing Library, Supertest, Playwright | Integration/concurrency dùng PostgreSQL thật |
@@ -101,6 +103,8 @@ flowchart LR
     API --> Obj["Private File Storage Adapter"]
     JDWorker["Extraction/OCR Worker"] --> DB
     JDWorker --> Obj
+    AIWorker["AI Job Worker"] --> DB
+    AIWorker --> Gemini["Gemini API"]
     Worker["Notification Worker"] --> DB
     Worker --> Email["Email Provider"]
     Student --> Meet["External Meeting Provider"]
@@ -116,6 +120,7 @@ flowchart LR
 - Verification document và meeting link là dữ liệu nhạy cảm, tách khỏi public profile.
 - JD file, extracted/corrected text, requirement và preparation plan là dữ liệu private theo Student; chỉ Mentor/Admin có quan hệ nghiệp vụ hợp lệ mới xem được phần tối thiểu cần thiết.
 - OCR là một cách lấy text từ ảnh/PDF scan, không được dùng như tên chung cho JD analysis hoặc question matching.
+- Gemini nằm ngoài trust boundary; chỉ nhận dữ liệu tối thiểu, output được xem là untrusted và không thực hiện mutation nghiệp vụ.
 - Admin action có quyền cao phải được audit.
 
 ## 5. Container và deployment view
@@ -174,6 +179,7 @@ Nếu sau này browser gọi trực tiếp `api.example.com` từ `app.example.c
 | JD Ingestion | Nhận pasted text/file, metadata, trạng thái và bản text được Student xác nhận | Tự phân tích skill hoặc công khai file |
 | Text Extraction/OCR Adapter | Nhận dạng source, direct-extract text; chỉ OCR ảnh/PDF scan; chuẩn hóa lỗi adapter | Tự mapping question hoặc thay corrected text |
 | JD Analysis | Phát hiện role, seniority, skill/technology/requirement và chuẩn hóa alias về taxonomy | Tạo nội dung AI hoặc sửa taxonomy âm thầm |
+| AI Assistance | Requirement/taxonomy candidate, recommendation explanation, agenda/feedback draft | Bỏ qua ownership/hard filter, tạo ID hoặc tự submit mutation |
 | Question Matching | Tính score deterministic theo requirement/topic, lọc Published Question, tạo reason và version | Trả Draft hoặc gọi semantic/AI matching trong PoC |
 | Preparation Plan | Gom requirement/topic/question được chọn, theo dõi plan và cung cấp context cho Practice/Booking | Thay đổi booking state hoặc mentor feedback |
 | Practice | Bookmark/progress | Công khai dữ liệu Student |
@@ -192,6 +198,7 @@ Nếu sau này browser gọi trực tiếp `api.example.com` từ `app.example.c
 - Module khác tham chiếu entity qua ID và public contract, không sửa bảng thuộc module khác tùy ý.
 - Booking kiểm tra Mentor/Slot qua domain service trong cùng transaction khi cần.
 - JD Analysis chỉ đọc `corrected_text` đã được Student xác nhận; không phân tích trực tiếp file hoặc tự ghi đè text.
+- AI Assistance chỉ nhận snapshot tối thiểu; mọi output qua schema/domain validation và luôn có rule-based/manual fallback.
 - Question Matching dùng public read contract của Taxonomy/Questions; kết quả luôn gắn `matching_version` và không làm thay đổi Question Bank.
 - Preparation Plan tham chiếu snapshot/version của match; Booking chỉ nhận `preparation_plan_id`/`job_description_id` thuộc Student và lưu context tối thiểu cho Mentor.
 - Feedback ghi strength, weakness và next action; Preparation Plan áp dụng next action qua use case riêng, không cho Feedback sửa bảng plan trực tiếp.

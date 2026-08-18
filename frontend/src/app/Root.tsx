@@ -1,43 +1,26 @@
-import { useEffect, type ReactNode } from "react";
-import { Outlet, useLocation } from "react-router-dom";
-import { AppProvider, useApp, type Role } from "@/app/AppContext";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { AppProvider, useApp } from "@/app/AppContext";
+import { canAccessPath, postLoginPath, requiredRoleForPath } from "@/app/access";
+import { routes } from "@/app/routePaths";
 import DemoBar from "@/shared/components/DemoBar";
 
-function inferRole(pathname: string): Role | null {
-  if (pathname.startsWith("/admin")) return "admin";
-  if (pathname.startsWith("/mentor/")) return "mentor";
-  if (
-    pathname.startsWith("/student") ||
-    pathname.startsWith("/job-descriptions") ||
-    pathname.startsWith("/preparation-plans") ||
-    pathname.startsWith("/bookings") ||
-    pathname.startsWith("/sessions")
-  ) {
-    return "student";
+function RouteAccess() {
+  const location = useLocation();
+  const { pathname } = location;
+  const { role, user, sessionLoading } = useApp();
+  const required = requiredRoleForPath(pathname);
+  if (sessionLoading) return <div className="grid min-h-screen place-items-center bg-canvas text-sm text-ink-secondary">Đang kiểm tra phiên đăng nhập…</div>;
+  if (pathname === routes.login && user) {
+    const returnTo = (location.state as { returnTo?: string } | null)?.returnTo;
+    return <Navigate to={postLoginPath(user, returnTo)} replace />;
   }
-  if (pathname === "/homepage" || pathname === "/login") return "public";
-  return null;
-}
-
-function RouteRoleSync({ children }: { children: ReactNode }) {
-  const { pathname } = useLocation();
-  const { role, setRole } = useApp();
-
-  useEffect(() => {
-    const routeRole = inferRole(pathname);
-    if (routeRole && routeRole !== role) setRole(routeRole);
-  }, [pathname, role, setRole]);
-
-  return children;
+  const authorized = !required || (import.meta.env.VITE_ENABLE_DEMO_TOOLS === "true"
+    ? role === required
+    : Boolean(user && canAccessPath(user, pathname)));
+  if (!authorized) return <Navigate to="/login" replace state={{ returnTo: pathname }} />;
+  return <Outlet />;
 }
 
 export default function Root() {
-  return (
-    <AppProvider>
-      <RouteRoleSync>
-        {(import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEMO_TOOLS === "true") && <DemoBar />}
-        <Outlet />
-      </RouteRoleSync>
-    </AppProvider>
-  );
+  return <AppProvider>{import.meta.env.VITE_ENABLE_DEMO_TOOLS === "true" && <DemoBar />}<RouteAccess /></AppProvider>;
 }

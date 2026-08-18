@@ -1,15 +1,17 @@
 import { pool } from "./pool.js";
 
 export async function checkConnection() {
+  let client;
   try {
-    const client = await pool.connect();
-    // Execute a simple query to verify the connection is alive
+    client = await pool.connect();
     await client.query("SELECT 1");
-    client.release();
-    console.log("Database is connection")
     return true;
   } catch (error) {
-    console.error("Database connection error in checkConnection:", error);
+    if (process.env.NODE_ENV !== "test") {
+      console.error(JSON.stringify({ event: "database.readiness_failed", errorClass: error.name }));
+    }
     return false;
+  } finally {
+    client?.release();
   }
 }

@@ -1,134 +1,73 @@
-import { useState } from 'react'
-import { Check } from '@phosphor-icons/react'
-import AuthNavbar from '@/shared/components/AuthNavbar'
-import { FEEDBACK_DATA } from '@/shared/data/mock'
-import type { FeedbackRubric } from '@/shared/data/mock'
+import { useEffect, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useNavigate, useParams } from "react-router-dom";
+import { ApiError } from "@/shared/api/client";
+import { aiApi, bookingsApi, type FeedbackDraft } from "@/shared/api/resources";
+import AuthNavbar from "@/shared/components/AuthNavbar";
+import ErrorPanel from "@/shared/components/ErrorPanel";
 
-const INITIAL_RUBRIC: FeedbackRubric[] = [
-  { criterion: 'Kiến thức kỹ thuật', score: 0, maxScore: 5, explanation: '', evidence: '' },
-  { criterion: 'Cấu trúc câu trả lời', score: 0, maxScore: 5, explanation: '', evidence: '' },
-  { criterion: 'Giao tiếp', score: 0, maxScore: 5, explanation: '', evidence: '' },
-  { criterion: 'Xử lý câu hỏi tiếp theo', score: 0, maxScore: 5, explanation: '', evidence: '' },
-]
+type Scores = FeedbackDraft["rubricScores"];
 
 export default function MentorFeedbackForm() {
-  const [rubric, setRubric] = useState<FeedbackRubric[]>(INITIAL_RUBRIC)
-  const [strengths, setStrengths] = useState('')
-  const [improvements, setImprovements] = useState('')
-  const [nextActions, setNextActions] = useState('')
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const [draft, setDraft] = useState(false)
+  const { bookingId = "" } = useParams();
+  const navigate = useNavigate();
+  const [strengths, setStrengths] = useState("");
+  const [weaknesses, setWeaknesses] = useState("");
+  const [actions, setActions] = useState("");
+  const [scores, setScores] = useState<Scores>({ communication: 3, technical: 3, structure: 3 });
+  const [sessionNotes, setSessionNotes] = useState("");
+  const [jobId, setJobId] = useState("");
+  const [formTouched, setFormTouched] = useState(false);
+  const [appliedDraftId, setAppliedDraftId] = useState("");
+  const capabilities = useQuery({ queryKey: ["ai-capabilities"], queryFn: aiApi.capabilities });
+  const draft = useQuery({ queryKey: ["feedback-draft", bookingId], queryFn: () => bookingsApi.feedbackDraft(bookingId), enabled: Boolean(bookingId), retry: false });
+  const startDraft = useMutation({ mutationFn: () => bookingsApi.startFeedbackDraft(bookingId, sessionNotes), onSuccess: (job) => setJobId(job.id) });
+  const job = useQuery({ queryKey: ["ai-job", jobId], queryFn: () => aiApi.getJob(jobId), enabled: Boolean(jobId), refetchInterval: (query) => ["PENDING", "PROCESSING"].includes(query.state.data?.status ?? "") ? 1500 : false });
+  useEffect(() => {
+    if (job.data?.status === "SUCCEEDED") void draft.refetch();
+  }, [job.data?.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const updateScore = (idx: number, score: number) => {
-    setRubric(prev => prev.map((r, i) => i === idx ? { ...r, score } : r))
-  }
+  const actionPayload = (sourceDraft?: FeedbackDraft) => actions.split("\n").map((item) => item.trim()).filter(Boolean).map((description) => {
+    const reference = sourceDraft?.nextActions.find((item) => item.description === description);
+    return { description, ...(reference?.topicId ? { topicId: reference.topicId } : {}), ...(reference?.questionId ? { questionId: reference.questionId } : {}) };
+  });
+  const submit = useMutation({
+    mutationFn: () => bookingsApi.createFeedback(bookingId, {
+      rubricScores: scores,
+      strengths,
+      weaknesses,
+      nextActions: actionPayload(draft.data),
+      ...(appliedDraftId ? { draftId: appliedDraftId } : {}),
+    }),
+    onSuccess: () => navigate(`/mentor/bookings/${bookingId}`),
+  });
+  const saveDraft = useMutation({
+    mutationFn: () => bookingsApi.updateFeedbackDraft(bookingId, draft.data!.id, {
+      rubricScores: scores,
+      strengths,
+      weaknesses,
+      nextActions: actionPayload(draft.data),
+      status: "DRAFT",
+      version: draft.data!.version,
+    }),
+    onSuccess: () => draft.refetch(),
+  });
+  const applyDraft = () => {
+    if (!draft.data || formTouched) return;
+    setScores(draft.data.rubricScores);
+    setStrengths(draft.data.strengths);
+    setWeaknesses(draft.data.weaknesses);
+    setActions(draft.data.nextActions.map((item) => item.description).join("\n"));
+    setAppliedDraftId(draft.data.id);
+    setFormTouched(true);
+  };
+  const touch = () => setFormTouched(true);
+  const enabled = capabilities.data?.enabled && capabilities.data.features.feedbackDraft;
+  const running = ["PENDING", "PROCESSING"].includes(job.data?.status ?? "");
+  const draftNotFound = draft.error instanceof ApiError && draft.error.status === 404;
 
-  const updateField = (idx: number, field: 'explanation' | 'evidence', val: string) => {
-    setRubric(prev => prev.map((r, i) => i === idx ? { ...r, [field]: val } : r))
-  }
-
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-canvas">
-        <AuthNavbar />
-        <div className="max-w-[480px] mx-auto px-6 py-20 text-center">
-          <div className="w-14 h-14 rounded-full bg-ok-soft border-2 border-ok flex items-center justify-center mx-auto mb-6">
-            <Check aria-hidden size={25} weight="bold" className="text-ok" />
-          </div>
-          <h1 className="text-[22px] font-semibold text-ink mb-2">Feedback đã được gửi</h1>
-          <p className="text-sm text-ink-secondary mb-2">Học viên sẽ nhận được feedback ngay bây giờ.</p>
-          <p className="text-xs text-ink-muted">Sau khi gửi, feedback không thể chỉnh sửa theo chính sách audit.</p>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="min-h-screen bg-canvas">
-      <AuthNavbar />
-
-      <div className="max-w-[760px] mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <div>
-            <h1 className="text-[22px] font-semibold text-ink">Viết feedback</h1>
-            <p className="text-xs text-ink-muted mt-1">BK-2024-001 · JavaScript & React · {FEEDBACK_DATA.date}</p>
-          </div>
-          <button onClick={() => setDraft(true)} className="text-sm border border-edge text-ink-secondary hover:border-primary hover:text-primary font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-            {draft && <Check aria-hidden size={14} weight="bold" />}
-            {draft ? 'Đã lưu nháp' : 'Lưu nháp'}
-          </button>
-        </div>
-
-        <div className="space-y-5">
-          {/* Rubric */}
-          <div className="bg-panel border border-edge rounded-xl p-6">
-            <p className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-4">Đánh giá theo tiêu chí</p>
-            {rubric.map((r, idx) => (
-              <div key={r.criterion} className="py-5 border-b border-edge last:border-b-0">
-                <p className="text-sm font-semibold text-ink mb-2">{r.criterion}</p>
-                <div className="flex items-center gap-1 mb-3">
-                  {Array.from({ length: r.maxScore }, (_, i) => i + 1).map(i => (
-                    <button key={i} onClick={() => updateScore(idx, i)}
-                      className={`w-8 h-8 rounded-md border text-sm font-medium transition-colors ${
-                        i <= r.score ? 'bg-primary text-on-primary border-primary' : 'border-edge text-ink-muted hover:border-primary hover:text-primary'
-                      }`}
-                    >
-                      {i}
-                    </button>
-                  ))}
-                  <span className="text-xs text-ink-muted ml-2">
-                    {r.score === 5 ? 'Xuất sắc' : r.score === 4 ? 'Tốt' : r.score === 3 ? 'Đạt' : r.score === 2 ? 'Cần cải thiện' : r.score === 1 ? 'Chưa đạt' : '—'}
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  <textarea rows={2} placeholder="Giải thích ngắn gọn..." value={r.explanation} onChange={e => updateField(idx, 'explanation', e.target.value)}
-                    className="w-full bg-canvas-subtle border border-edge rounded-lg px-3 py-2 text-xs text-ink placeholder:text-ink-muted focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none resize-none" />
-                  <input type="text" placeholder="Dẫn chứng từ buổi phỏng vấn (tùy chọn)..." value={r.evidence} onChange={e => updateField(idx, 'evidence', e.target.value)}
-                    className="w-full bg-canvas-subtle border border-edge rounded-lg px-3 py-2 text-xs text-ink placeholder:text-ink-muted focus:border-primary outline-none" />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Strengths & Improvements */}
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="bg-panel border border-edge rounded-xl p-5">
-              <label className="block text-xs font-semibold text-ok uppercase tracking-wider mb-2">Điểm mạnh <span className="text-accent">*</span></label>
-              <textarea rows={3} placeholder="Những gì học viên đã làm tốt..." value={strengths} onChange={e => setStrengths(e.target.value)}
-                className="w-full bg-ok-soft/50 border border-ok/20 rounded-lg px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-ok focus:ring-1 focus:ring-ok/20 outline-none resize-none" />
-            </div>
-            <div className="bg-panel border border-edge rounded-xl p-5">
-              <label className="block text-xs font-semibold text-notice-ink uppercase tracking-wider mb-2">Cần cải thiện <span className="text-accent">*</span></label>
-              <textarea rows={3} placeholder="Những điểm cần phát triển..." value={improvements} onChange={e => setImprovements(e.target.value)}
-                className="w-full bg-notice-soft/50 border border-notice/20 rounded-lg px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-notice/50 focus:ring-1 focus:ring-notice/20 outline-none resize-none" />
-            </div>
-          </div>
-
-          {/* Next actions */}
-          <div className="bg-panel border border-edge rounded-xl p-5">
-            <label className="block text-xs font-semibold text-ink-muted uppercase tracking-wider mb-2">Bước tiếp theo <span className="text-accent">*</span></label>
-            <textarea rows={3} placeholder="Đề xuất câu hỏi hoặc chủ đề học viên nên luyện tiếp..." value={nextActions} onChange={e => setNextActions(e.target.value)}
-              className="w-full bg-canvas-subtle border border-edge rounded-lg px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none resize-none" />
-          </div>
-
-          {/* Submit */}
-          {showConfirm ? (
-            <div className="bg-notice-soft border border-notice/20 rounded-xl p-5">
-              <p className="text-sm font-semibold text-ink mb-1">Xác nhận gửi feedback</p>
-              <p className="text-xs text-ink-secondary mb-4">Feedback sẽ được gửi cho học viên ngay sau khi xác nhận. Sau khi gửi, bạn không thể chỉnh sửa.</p>
-              <div className="flex gap-3">
-                <button onClick={() => setShowConfirm(false)} className="flex-1 border border-edge text-ink-secondary font-medium py-2.5 rounded-lg text-sm hover:border-primary transition-colors">Quay lại</button>
-                <button onClick={() => setSubmitted(true)} className="flex-1 bg-primary hover:bg-primary-hover text-on-primary font-medium py-2.5 rounded-lg text-sm transition-colors">Gửi feedback</button>
-              </div>
-            </div>
-          ) : (
-            <button onClick={() => setShowConfirm(true)} className="w-full bg-primary hover:bg-primary-hover text-on-primary font-medium px-6 py-3 rounded-lg text-sm transition-colors">
-              Xem lại và gửi feedback
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  )
+  return <div className="min-h-screen bg-canvas"><AuthNavbar /><main className="mx-auto max-w-[760px] px-6 py-8"><h1 className="text-[22px] font-semibold text-ink">Feedback có cấu trúc</h1><p className="mt-1 text-sm text-ink-secondary">Gemini chỉ tạo bản nháp từ ghi chú của bạn. Feedback chỉ được gửi sau khi Mentor kiểm tra và bấm gửi.</p>
+    <section className="mt-6 rounded-xl border border-edge bg-canvas-subtle p-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-sm font-semibold text-ink">Tạo draft bằng Gemini</h2><p className="mt-1 text-xs text-ink-muted">Không nhập mật khẩu, meeting link hoặc dữ liệu riêng không cần thiết. Ghi chú được mã hóa tạm thời và xóa sau xử lý.</p></div><button disabled={!enabled || sessionNotes.trim().length < 20 || startDraft.isPending || running} onClick={() => startDraft.mutate()} className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-on-primary disabled:opacity-50">{running ? "Đang tạo draft…" : "Tạo draft AI"}</button></div><label className="mt-4 block text-xs font-semibold text-ink-secondary">Ghi chú buổi phỏng vấn<textarea rows={5} value={sessionNotes} onChange={(event) => setSessionNotes(event.target.value)} placeholder="Ghi lại evidence về cách ứng viên trả lời, điểm làm tốt và điểm cần cải thiện…" className="mt-1.5 w-full rounded-md border border-edge bg-panel p-3 text-sm" /></label>{capabilities.data && !enabled && <p className="mt-3 text-xs text-ink-muted">Tính năng AI đang tắt; form feedback thủ công bên dưới vẫn hoạt động đầy đủ.</p>}{job.data?.status === "SUCCEEDED_WITH_FALLBACK" && <p className="mt-3 text-xs text-notice-ink">Gemini không khả dụng. Ghi chú của bạn đã được xóa khỏi hàng đợi; hãy tiếp tục điền form thủ công.</p>}{job.data?.status === "FAILED" && <p className="mt-3 text-xs text-danger">Không thể tạo draft. Hãy điền form thủ công và gửi mã hỗ trợ {job.data.operationCaseId ?? job.data.id} cho Admin nếu cần.</p>}{startDraft.error && <div className="mt-4"><ErrorPanel error={startDraft.error} /></div>}{job.error && <div className="mt-4"><ErrorPanel error={job.error} onRetry={() => job.refetch()} /></div>}{draft.error && !draftNotFound && <div className="mt-4"><ErrorPanel error={draft.error} onRetry={() => draft.refetch()} /></div>}{draft.data && <div className="mt-4 rounded-lg border border-primary/20 bg-primary-soft p-4"><p className="text-xs font-semibold text-primary">Draft Gemini đã sẵn sàng · v{draft.data.version}</p><p className="mt-1 text-xs text-ink-secondary">Hệ thống không tự ghi đè form. Chỉ áp dụng khi bạn chưa chỉnh form thủ công.</p><button disabled={formTouched} onClick={applyDraft} className="mt-3 rounded-md border border-primary/30 bg-panel px-3 py-1.5 text-xs font-medium text-primary disabled:opacity-50">{appliedDraftId ? "Đã áp dụng vào form" : "Áp dụng draft vào form"}</button></div>}</section>
+    {(submit.error || saveDraft.error) && <div className="mt-5"><ErrorPanel error={submit.error || saveDraft.error} /></div>}<form onSubmit={(event) => { event.preventDefault(); submit.mutate(); }} className="mt-6 space-y-5 rounded-xl border border-edge bg-panel p-6"><fieldset><legend className="text-xs font-semibold text-ink-secondary">Rubric cố định 0–5</legend><div className="mt-2 grid gap-3 sm:grid-cols-3">{Object.entries(scores).map(([key, value]) => <label key={key} className="text-xs text-ink-secondary">{key}<input type="number" min={0} max={5} value={value} onChange={(event) => { touch(); setScores((current) => ({ ...current, [key]: Number(event.target.value) })); }} className="mt-1 block w-full rounded-md border border-edge px-3 py-2 text-sm" /></label>)}</div></fieldset><label className="block text-xs font-semibold text-ink-secondary">Điểm mạnh<textarea required minLength={10} rows={4} value={strengths} onChange={(event) => { touch(); setStrengths(event.target.value); }} className="mt-1.5 w-full rounded-md border border-edge p-3 text-sm" /></label><label className="block text-xs font-semibold text-ink-secondary">Điểm cần cải thiện<textarea required minLength={10} rows={4} value={weaknesses} onChange={(event) => { touch(); setWeaknesses(event.target.value); }} className="mt-1.5 w-full rounded-md border border-edge p-3 text-sm" /></label><label className="block text-xs font-semibold text-ink-secondary">Next actions — mỗi dòng một hành động<textarea required rows={5} value={actions} onChange={(event) => { touch(); setActions(event.target.value); }} className="mt-1.5 w-full rounded-md border border-edge p-3 text-sm" /></label>{draft.data && appliedDraftId && <button type="button" disabled={saveDraft.isPending} onClick={() => saveDraft.mutate()} className="w-full rounded-lg border border-edge bg-panel px-5 py-3 text-sm font-medium text-ink-secondary">Lưu chỉnh sửa vào draft</button>}<button disabled={submit.isPending} className="w-full rounded-lg bg-primary px-5 py-3 text-sm font-medium text-on-primary">Gửi feedback chính thức một lần</button></form>
+  </main></div>;
 }

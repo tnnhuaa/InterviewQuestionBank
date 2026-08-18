@@ -1,1 +1,1 @@
-export const identityModule = { name: "identity" };
+export { createIdentityRouter } from "./routes.js";

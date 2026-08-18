@@ -1,107 +1,48 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { GoogleLogo, SpinnerGap } from '@phosphor-icons/react'
-import { useApp } from '@/app/AppContext'
-import { Brand } from '@/shared/components/navigation/Brand'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { SpinnerGap } from "@phosphor-icons/react";
+import { useForm } from "react-hook-form";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { z } from "zod";
+import { useApp } from "@/app/AppContext";
+import { postLoginPath } from "@/app/access";
+import { authApi } from "@/shared/api/resources";
+import { ApiError } from "@/shared/api/client";
+import AuthFormLayout from "@/shared/components/AuthFormLayout";
+import ErrorPanel from "@/shared/components/ErrorPanel";
+
+const schema = z.object({ email: z.email("Email không hợp lệ"), password: z.string().min(1, "Nhập mật khẩu") });
+type Values = z.infer<typeof schema>;
 
 export default function Login() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const { setRole } = useApp()
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { applyLogin } = useApp();
+  const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { email: "", password: "" } });
+  const login = useMutation({ mutationFn: authApi.login, onSuccess: async (payload) => {
+    await applyLogin(payload);
+    const returnTo = (location.state as { returnTo?: string } | null)?.returnTo;
+    navigate(postLoginPath(payload.user, returnTo), { replace: true });
+  }, onError: (error) => {
+    form.resetField("password");
+    if (error instanceof ApiError) Object.entries(error.fieldErrors).forEach(([name, message]) => form.setError(name as keyof Values, { message }));
+  } });
 
-  const handleGoogle = () => {
-    setLoading(true)
-    setError(null)
-    setTimeout(() => {
-      setLoading(false)
-      setRole('student')
-      navigate('/student/dashboard')
-    }, 1200)
-  }
-
-  return (
-    <div className="min-h-screen flex flex-col sm:flex-row">
-      {/* Brand panel */}
-      <div className="sm:w-[45%] bg-warm flex flex-col justify-between p-10 sm:p-14 min-h-[200px] sm:min-h-screen">
-        <Brand to="/homepage" />
-        <div className="my-10 sm:my-0">
-          <p className="text-[11px] font-semibold text-primary tracking-widest uppercase mb-6">Practice with purpose.</p>
-          <div className="space-y-6">
-            {[
-              { step: '01', label: 'Chọn câu hỏi phù hợp' },
-              { step: '02', label: 'Luyện tập với mentor' },
-              { step: '03', label: 'Nhận feedback có cấu trúc' },
-            ].map(item => (
-              <div key={item.step} className="flex items-center gap-4">
-                <span className="text-2xl font-light text-edge-strong tabular-nums">{item.step}</span>
-                <div className="h-px flex-1 bg-edge-strong/60"/>
-                <span className="text-sm font-medium text-ink">{item.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <p className="text-xs text-ink-muted">Chỉ dành cho người dùng được mời.</p>
-      </div>
-
-      {/* Auth panel */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-canvas">
-        <div className="w-full max-w-[380px]">
-          <div className="mb-10">
-            <h1 className="text-[28px] font-semibold text-ink leading-[36px] mb-2">Chào mừng trở lại</h1>
-            <p className="text-sm text-ink-secondary">Đăng nhập để tiếp tục quá trình luyện phỏng vấn.</p>
-          </div>
-
-          {error && (
-            <div className="mb-6 p-3 bg-danger-soft border border-danger/20 rounded-lg text-sm text-danger">
-              {error}
-            </div>
-          )}
-
-          <button
-            onClick={handleGoogle}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-panel border border-edge hover:border-primary/40 text-ink font-medium px-5 py-3 rounded-lg text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed mb-6"
-          >
-            {loading ? (
-              <SpinnerGap aria-hidden size={18} className="animate-spin" />
-            ) : (
-              <GoogleLogo aria-hidden size={18} weight="bold" />
-            )}
-            {loading ? 'Đang đăng nhập...' : 'Tiếp tục với Google'}
-          </button>
-
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-edge"/>
-            </div>
-            <div className="relative text-center">
-              <span className="bg-canvas px-3 text-xs text-ink-muted">hoặc</span>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-ink-secondary mb-1.5">Email tổ chức</label>
-              <input
-                type="email"
-                placeholder="ten@congty.com"
-                className="w-full bg-panel border border-edge rounded-lg px-4 py-2.5 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all"
-              />
-            </div>
-            <button className="w-full bg-canvas-subtle hover:bg-edge text-ink font-medium px-5 py-2.5 rounded-lg text-sm border border-edge transition-colors">
-              Tiếp tục với email
-            </button>
-          </div>
-
-          <p className="text-[11px] text-ink-muted mt-8 text-center leading-relaxed">
-            Bằng cách tiếp tục, bạn đồng ý với{' '}
-            <a href="#" className="text-primary hover:underline">Điều khoản dịch vụ</a>
-            {' '}và{' '}
-            <a href="#" className="text-primary hover:underline">Chính sách quyền riêng tư</a>.
-          </p>
-        </div>
-      </div>
-    </div>
-  )
+  return <AuthFormLayout title="Chào mừng trở lại" description="Đăng nhập bằng email và mật khẩu để tiếp tục.">
+    {login.error && <div className="mb-5"><ErrorPanel error={login.error} /></div>}
+    <form className="space-y-4" onSubmit={form.handleSubmit((values) => login.mutate(values))} noValidate>
+      <label className="block text-xs font-semibold text-ink-secondary">Email
+        <input autoComplete="email" type="email" {...form.register("email")} className="mt-1.5 w-full rounded-lg border border-edge bg-panel px-4 py-2.5 text-sm outline-none focus:border-primary" />
+        {form.formState.errors.email && <span className="mt-1 block text-xs text-danger">{form.formState.errors.email.message}</span>}
+      </label>
+      <label className="block text-xs font-semibold text-ink-secondary">Mật khẩu
+        <input autoComplete="current-password" type="password" {...form.register("password")} className="mt-1.5 w-full rounded-lg border border-edge bg-panel px-4 py-2.5 text-sm outline-none focus:border-primary" />
+        {form.formState.errors.password && <span className="mt-1 block text-xs text-danger">{form.formState.errors.password.message}</span>}
+      </label>
+      <div className="flex items-center justify-between text-xs"><Link to="/register" className="text-primary hover:underline">Tạo tài khoản Student</Link><Link to="/forgot-password" className="text-primary hover:underline">Quên mật khẩu?</Link></div>
+      <button disabled={login.isPending} className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-medium text-on-primary hover:bg-primary-hover disabled:opacity-60">
+        {login.isPending && <SpinnerGap aria-hidden size={17} className="animate-spin" />} Đăng nhập
+      </button>
+    </form>
+  </AuthFormLayout>;
 }

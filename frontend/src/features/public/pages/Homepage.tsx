@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight, CaretRight, Check } from '@phosphor-icons/react'
+import { useQuery } from '@tanstack/react-query'
 import PublicNavbar from '@/shared/components/PublicNavbar'
-import { QUESTIONS, MENTORS } from '@/shared/data/mock'
+import { mentorsApi, questionsApi } from '@/shared/api/resources'
 import MentorCard from '@/shared/components/MentorCard'
 
 const STEPS = [
@@ -14,6 +15,8 @@ const STEPS = [
 
 export default function Homepage() {
   const navigate = useNavigate()
+  const questions = useQuery({ queryKey: ['questions', 'homepage'], queryFn: () => questionsApi.list({ pageSize: 5 }) })
+  const mentors = useQuery({ queryKey: ['mentors', 'homepage'], queryFn: () => mentorsApi.list({ pageSize: 3 }) })
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -147,16 +150,16 @@ export default function Homepage() {
             ))}
           </div>
           <div className="divide-y divide-edge">
-            {QUESTIONS.slice(0, 5).map(q => (
-              <div key={q.id} onClick={() => navigate(`/questions/${q.id}`)} className="flex items-start gap-4 px-5 py-3.5 hover:bg-primary-soft/30 cursor-pointer transition-colors">
+            {questions.data?.items.map(q => (
+              <div key={q.id} onClick={() => navigate(`/questions/${q.slug}`)} className="flex items-start gap-4 px-5 py-3.5 hover:bg-primary-soft/30 cursor-pointer transition-colors">
                 <div className="flex-1 min-w-0">
-                  {q.source && <p className="text-[10px] text-ink-muted mb-0.5">Hỏi tại {q.source}</p>}
-                  <p className="text-sm text-ink leading-[22px]">{q.titleVi}</p>
+                  {q.source?.name && <p className="text-[10px] text-ink-muted mb-0.5">Nguồn: {q.source.name}</p>}
+                  <p className="text-sm text-ink leading-[22px]">{q.title}</p>
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                    {q.tags.map(tag => (
+                    {q.topics.map(tag => (
                       <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded-full bg-canvas-subtle text-ink-secondary border border-edge">{tag}</span>
                     ))}
-                    <span className="text-[10px] text-ink-muted">· {q.practiceCount} lượt luyện</span>
+                    <span className="text-[10px] text-ink-muted">· {q.difficulty}</span>
                   </div>
                 </div>
                 <CaretRight aria-hidden size={16} className="mt-1 shrink-0 text-ink-muted" />
@@ -182,9 +185,9 @@ export default function Homepage() {
             <button onClick={() => navigate('/mentors')} className="hidden items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary-hover md:inline-flex">Xem tất cả <ArrowRight aria-hidden size={14} /></button>
           </div>
           <div className="grid lg:grid-cols-[2fr_1fr] gap-4">
-            <MentorCard mentor={MENTORS[0]} />
+            {mentors.data?.items[0] && <MentorCard mentor={mentors.data.items[0]} />}
             <div className="flex flex-col gap-3">
-              {MENTORS.slice(1).map(m => (
+              {mentors.data?.items.slice(1).map(m => (
                 <MentorCard key={m.id} mentor={m} compact />
               ))}
             </div>
@@ -200,7 +203,7 @@ export default function Homepage() {
             <p className="text-base text-ink-secondary leading-relaxed mb-6">
               Mỗi buổi phỏng vấn được đánh giá theo tiêu chí rõ ràng — kiến thức, cấu trúc, giao tiếp, và xử lý câu hỏi tiếp theo. Bạn biết chính xác phải cải thiện điều gì.
             </p>
-            <button onClick={() => navigate('/bookings/BK-2024-001/feedback')} className="text-sm text-primary font-medium hover:text-primary-hover transition-colors">
+            <button onClick={() => navigate('/login')} className="text-sm text-primary font-medium hover:text-primary-hover transition-colors">
               <span className="inline-flex items-center gap-1">Xem ví dụ feedback <ArrowRight aria-hidden size={14} /></span>
             </button>
           </div>

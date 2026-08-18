@@ -1,119 +1,30 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Info } from '@phosphor-icons/react'
-import AuthNavbar from '@/shared/components/AuthNavbar'
-import BookingTimeline from '@/shared/components/BookingTimeline'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import { adminApi } from "@/shared/api/resources";
+import AuthNavbar from "@/shared/components/AuthNavbar";
+import ErrorPanel from "@/shared/components/ErrorPanel";
 
-const CASE_TIMELINE = [
-  { actor: 'Học viên Bảo', role: 'student', timestamp: '15 tháng 3, 2025 · 18:30', description: 'Gửi yêu cầu đặt lịch.' },
-  { actor: 'Phạm Thị Linh', role: 'mentor', timestamp: '15 tháng 3, 2025 · 19:00', description: 'Xác nhận lịch hẹn.' },
-  { actor: 'Học viên Bảo', role: 'student', timestamp: '16 tháng 3, 2025 · 10:00', description: 'Báo cáo: Mentor không xuất hiện trong buổi phỏng vấn.' },
-  { actor: 'System', role: 'system', timestamp: '16 tháng 3, 2025 · 10:05', description: 'Case được tự động tạo và đưa vào queue admin.' },
-]
+const ACTION_LABELS: Record<string, string> = {
+  RETRY_AI_JOB: "Đưa AI job về hàng đợi",
+  DISABLE_FEATURE: "Tắt feature AI liên quan",
+  DISMISS: "Đóng case, không thay đổi dữ liệu",
+  ASSIGN: "Nhận xử lý case",
+};
 
 export default function AdminCase() {
-  const navigate = useNavigate()
-  const [internalNote, setInternalNote] = useState('')
-  const [done, setDone] = useState(false)
-
-  return (
-    <div className="min-h-screen bg-canvas">
-      <AuthNavbar />
-
-      <div className="max-w-[1100px] mx-auto px-6 py-8">
-        <div className="flex items-center gap-2 text-xs text-ink-muted mb-6">
-          <button onClick={() => navigate('/admin')} className="hover:text-ink">Admin</button>
-          <span>/</span>
-          <span>Case Q-002</span>
-        </div>
-
-        <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
-          <div>
-            <h1 className="text-[22px] font-semibold text-ink">BK-2024-089 — Báo cáo no-show</h1>
-            <div className="flex items-center gap-3 mt-1 text-xs flex-wrap">
-              <span className="bg-danger-soft text-danger border border-danger/20 px-2 py-0.5 rounded-full font-medium">Report</span>
-              <span className="text-ink-muted">Tạo: 16 tháng 3, 2025 · 10:05</span>
-              <span className="text-ink-muted">Trạng thái: Đang mở</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex gap-6">
-          <div className="flex-1 space-y-5">
-            {/* Case summary */}
-            <div className="bg-panel border border-edge rounded-xl p-6">
-              <p className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-4">Tóm tắt case</p>
-              <div className="space-y-2.5">
-                {[
-                  { label: 'Loại case', value: 'No-show report' },
-                  { label: 'Booking ID', value: 'BK-2024-089' },
-                  { label: 'Học viên', value: 'Bảo (ẩn danh với công chúng)' },
-                  { label: 'Mentor', value: 'Phạm Thị Linh' },
-                  { label: 'Slot báo cáo', value: 'Thứ Sáu, 21 tháng 3, 2025 · 14:00' },
-                  { label: 'Lý do báo cáo', value: 'Mentor không xuất hiện sau 15 phút.' },
-                  { label: 'Chính sách liên quan', value: 'No-show Policy v1.2' },
-                ].map(r => (
-                  <div key={r.label} className="flex gap-4">
-                    <span className="text-xs text-ink-muted w-32 shrink-0">{r.label}</span>
-                    <span className="text-sm text-ink-secondary">{r.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Timeline */}
-            <div className="bg-panel border border-edge rounded-xl p-6">
-              <p className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-4">Timeline</p>
-              <BookingTimeline events={CASE_TIMELINE} />
-            </div>
-
-            {/* Internal notes — visually distinct */}
-            <div className="border-2 border-dashed border-edge-strong rounded-xl p-5 bg-canvas-subtle">
-              <div className="flex items-center gap-2 mb-3">
-                <Info aria-hidden size={16} className="text-ink-muted" />
-                <p className="text-xs font-semibold text-ink-secondary uppercase tracking-wider">Ghi chú nội bộ — không hiển thị cho người dùng</p>
-              </div>
-              <textarea rows={3} placeholder="Thêm ghi chú nội bộ về case này..." value={internalNote} onChange={e => setInternalNote(e.target.value)}
-                className="w-full bg-panel border border-edge-strong rounded-lg px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none resize-none" />
-              <p className="text-[10px] text-ink-muted mt-1">Chỉ hiển thị với admin. Không bao giờ được gửi cho học viên hay mentor.</p>
-            </div>
-          </div>
-
-          {/* Action panel */}
-          <aside className="w-64 shrink-0">
-            <div className="bg-panel border border-edge rounded-xl p-5 sticky top-20 space-y-3">
-              <p className="text-xs font-semibold text-ink-muted uppercase tracking-wider">Hành động</p>
-
-              {done ? (
-                <div className="text-center py-4">
-                  <p className="text-sm font-medium text-ok mb-1">Đã xử lý</p>
-                  <p className="text-xs text-ink-muted">Case được đóng và ghi log.</p>
-                </div>
-              ) : (
-                <>
-                  <button onClick={() => setDone(true)} className="w-full bg-primary hover:bg-primary-hover text-on-primary font-medium px-4 py-2.5 rounded-lg text-sm transition-colors">
-                    Resolve case
-                  </button>
-                  <button className="w-full border border-edge text-ink-secondary hover:border-primary hover:text-primary font-medium px-4 py-2.5 rounded-lg text-sm transition-colors">
-                    Ẩn đánh giá (placeholder)
-                  </button>
-                  <button className="w-full border border-edge text-ink-secondary hover:border-primary hover:text-primary font-medium px-4 py-2.5 rounded-lg text-sm transition-colors">
-                    Đổi lịch (placeholder)
-                  </button>
-                  <button className="w-full border border-edge text-ink-secondary hover:border-primary hover:text-primary font-medium px-4 py-2.5 rounded-lg text-sm transition-colors">
-                    Hoàn lịch (placeholder)
-                  </button>
-                  <p className="text-[10px] text-ink-muted">Mỗi hành động yêu cầu xác nhận và được ghi audit log.</p>
-                </>
-              )}
-
-              <div className="border-t border-edge pt-3">
-                <button onClick={() => navigate('/admin/audit/AUD-001')} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">Xem audit log <ArrowRight aria-hidden size={12} /></button>
-              </div>
-            </div>
-          </aside>
-        </div>
-      </div>
-    </div>
-  )
+  const { caseId = "" } = useParams();
+  const queryClient = useQueryClient();
+  const item = useQuery({ queryKey: ["operation-case", caseId], queryFn: () => adminApi.case(caseId) });
+  const impact = useQuery({ queryKey: ["operation-impact", caseId], queryFn: () => adminApi.impact(caseId) });
+  const [reason, setReason] = useState("");
+  const action = useMutation({
+    mutationFn: (name: string) => adminApi.act(caseId, { action: name, reason, version: item.data!.version }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["operation-case", caseId], data);
+      queryClient.invalidateQueries({ queryKey: ["operation-cases"] });
+      queryClient.invalidateQueries({ queryKey: ["ai-capabilities"] });
+    },
+  });
+  return <div className="min-h-screen bg-canvas"><AuthNavbar /><main className="mx-auto max-w-[800px] px-6 py-8">{item.error || impact.error ? <ErrorPanel error={item.error || impact.error} /> : item.isLoading ? <p className="text-sm text-ink-muted">Đang tải case…</p> : item.data && <><section className="rounded-xl border border-edge bg-panel p-6"><div className="flex justify-between gap-3"><div><p className="text-xs font-semibold text-primary">{item.data.type}</p><h1 className="mt-2 text-lg font-semibold text-ink">{item.data.summary}</h1></div><span className="text-xs font-medium text-ink-muted">{item.data.status} · v{item.data.version}</span></div><p className="mt-5 text-xs text-ink-muted">Target: {item.data.targetType} / {item.data.targetId}</p>{item.data.aiJob && <dl className="mt-4 grid gap-2 rounded-lg bg-canvas-subtle p-4 text-xs sm:grid-cols-2"><div><dt className="text-ink-muted">Tác vụ</dt><dd className="mt-1 font-medium text-ink">{item.data.aiJob.kind}</dd></div><div><dt className="text-ink-muted">Model</dt><dd className="mt-1 font-medium text-ink">{item.data.aiJob.model}</dd></div><div><dt className="text-ink-muted">Lỗi an toàn</dt><dd className="mt-1 font-mono text-ink">{item.data.aiJob.errorCode ?? "AI_JOB_FAILED"}</dd></div><div><dt className="text-ink-muted">Lượt chạy</dt><dd className="mt-1 font-medium text-ink">{item.data.aiJob.attemptCount}/{item.data.aiJob.maxAttempts}</dd></div></dl>}</section><section className="mt-5 rounded-xl border border-edge bg-panel p-6"><h2 className="text-sm font-semibold text-ink">Impact preview</h2><ul className="mt-3 space-y-2">{impact.data?.effects.map((effect) => <li key={effect} className="text-sm text-ink-secondary">• {effect}</li>)}</ul><label className="mt-5 block text-xs font-semibold text-ink-secondary">Lý do bắt buộc<textarea minLength={5} required value={reason} onChange={(event) => setReason(event.target.value)} className="mt-1.5 w-full rounded-md border border-edge p-3 text-sm" /></label>{action.error && <div className="mt-4"><ErrorPanel error={action.error} /></div>}<div className="mt-4 flex flex-wrap gap-2">{item.data.allowedActions.map((name) => <button key={name} disabled={reason.trim().length < 5 || action.isPending || !["OPEN", "IN_PROGRESS"].includes(item.data!.status)} onClick={() => action.mutate(name)} className={`rounded-md border px-4 py-2 text-xs font-medium disabled:opacity-40 ${name === "DISABLE_FEATURE" ? "border-danger/30 bg-danger-soft text-danger" : "border-edge bg-canvas text-ink-secondary"}`}>{ACTION_LABELS[name] ?? name}</button>)}</div></section></>}</main></div>;
 }
