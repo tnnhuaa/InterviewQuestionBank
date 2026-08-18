@@ -6,6 +6,7 @@ import { withTransaction } from "../../platform/db/transaction.js";
 import { findIdempotentResult, saveIdempotentResult } from "../../platform/idempotency.js";
 import { writeAudit } from "../../platform/audit.js";
 import { createAiJob } from "../ai/jobs.js";
+import { scoreQuestionMatch } from "./matcher.js";
 
 const allowedTypes = new Map([
   ["application/pdf", "PDF"],
@@ -368,6 +369,10 @@ export function createJdService({ pool, storage, environment }) {
       if (jd.status !== "CONFIRMED" || jd.corrected_version !== correctedTextVersion) {
         throw Object.assign(new Error("AI_INPUT_VERSION_STALE"), { code: "AI_INPUT_VERSION_STALE", retryable: false });
       }
+      const taxonomyVersion = await client.query(
+        "SELECT id FROM taxonomy_versions WHERE status = 'ACTIVE' ORDER BY created_at DESC LIMIT 1",
+      );
+      if (!taxonomyVersion.rowCount) throw new Error("No active taxonomy version");
       const next = await client.query(
         "SELECT coalesce(max(analysis_version), 0)::int + 1 AS version FROM jd_requirements WHERE job_description_id = $1",
         [id],
@@ -378,11 +383,13 @@ export function createJdService({ pool, storage, environment }) {
         const result = await client.query(
           `INSERT INTO jd_requirements (
              job_description_id, analysis_version, raw_text, source_start, source_end,
-             requirement_type, normalized_topic_id, confidence, rule_evidence
-           ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+             requirement_type, normalized_topic_id, confidence, rule_evidence,
+             corrected_text_version, taxonomy_version_id
+           ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
           [id, analysisVersion, requirement.rawText, requirement.sourceStart,
             requirement.sourceEnd, requirement.requirementType, requirement.topicId,
-            requirement.confidence, { source: "GEMINI", aiJobId: aiJob.id, promptVersion: aiJob.prompt_version }],
+            requirement.confidence, { source: "GEMINI", aiJobId: aiJob.id, promptVersion: aiJob.prompt_version },
+            correctedTextVersion, taxonomyVersion.rows[0].id],
         );
         inserted.push(result.rows[0]);
       }
@@ -425,13 +432,18 @@ export function createJdService({ pool, storage, environment }) {
         [id],
       );
       const analysisVersion = next.rows[0].version;
+      const taxonomyVersion = await client.query(
+        "SELECT id FROM taxonomy_versions WHERE status = 'ACTIVE' ORDER BY created_at DESC LIMIT 1",
+      );
+      if (!taxonomyVersion.rowCount) throw new Error("No active taxonomy version");
       const taxonomy = await client.query(
         `SELECT t.id, t.name, t.slug,
           coalesce(array_agg(ta.alias) FILTER (WHERE ta.id IS NOT NULL), '{}') AS aliases
          FROM topics t
-         LEFT JOIN topic_aliases ta ON ta.topic_id = t.id
+         LEFT JOIN topic_aliases ta ON ta.topic_id = t.id AND ta.taxonomy_version_id = $1
          WHERE t.status = 'ACTIVE'
          GROUP BY t.id ORDER BY t.priority, t.id`,
+        [taxonomyVersion.rows[0].id],
       );
       const normalizedText = normalize(jd.corrected_text);
       const detected = [];
@@ -458,13 +470,14 @@ export function createJdService({ pool, storage, environment }) {
         const result = await client.query(
           `INSERT INTO jd_requirements (
              job_description_id, analysis_version, raw_text, source_start, source_end, requirement_type,
-             normalized_topic_id, confidence, rule_evidence
-           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+             normalized_topic_id, confidence, rule_evidence, corrected_text_version, taxonomy_version_id
+           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
            RETURNING id, raw_text, source_start, source_end, requirement_type, normalized_topic_id, confidence`,
           [id, analysisVersion, item.matchedTerm, sourceStart >= 0 ? sourceStart : null,
             sourceStart >= 0 ? sourceStart + String(item.matchedTerm).length : null,
             item.type ?? "SKILL", item.topic?.id ?? null,
-            item.topic ? 0.95 : 0.75, { rule: item.topic ? "taxonomy_alias" : "pilot_dictionary" }],
+            item.topic ? 0.95 : 0.75, { rule: item.topic ? "taxonomy_alias" : "pilot_dictionary" },
+            correctedTextVersion, taxonomyVersion.rows[0].id],
         );
         requirements.push(result.rows[0]);
       }
@@ -584,10 +597,13 @@ export function createJdService({ pool, storage, environment }) {
   }
 
   async function getAnalysis(studentId, id, analysisVersion) {
-    await getOwned(studentId, id);
+    const jd = await getOwned(studentId, id);
     const versionResult = analysisVersion
       ? { rows: [{ version: analysisVersion }] }
-      : await pool.query("SELECT max(analysis_version)::int AS version FROM jd_requirements WHERE job_description_id = $1", [id]);
+      : await pool.query(
+        "SELECT max(analysis_version)::int AS version FROM jd_requirements WHERE job_description_id = $1 AND corrected_text_version = $2",
+        [id, jd.corrected_version],
+      );
     const version = versionResult.rows[0]?.version;
     if (!version) throw notFoundError();
     const result = await pool.query(
@@ -600,9 +616,11 @@ export function createJdService({ pool, storage, environment }) {
        LEFT JOIN ai_requirement_decisions d ON d.requirement_id = r.id AND d.student_id = $3
        LEFT JOIN topics t ON t.id = coalesce((SELECT o.topic_id FROM requirement_normalization_overrides o
                         WHERE o.requirement_id = r.id ORDER BY mapping_input_version DESC LIMIT 1), r.normalized_topic_id)
-       WHERE r.job_description_id = $1 AND r.analysis_version = $2 ORDER BY r.id`,
-      [id, version, studentId],
+       WHERE r.job_description_id = $1 AND r.analysis_version = $2
+         AND r.corrected_text_version = $4 ORDER BY r.id`,
+      [id, version, studentId, jd.corrected_version],
     );
+    if (!result.rowCount) throw notFoundError();
     return { jobDescriptionId: id, analysisVersion: version, requirements: result.rows };
   }
 
@@ -616,15 +634,24 @@ export function createJdService({ pool, storage, environment }) {
         input: { id, analysisVersion },
       });
       if (idempotency.cached?.response_body) return idempotency.cached.response_body;
+      if (jd.status !== "ANALYZED") {
+        throw new AppError({
+          status: 409,
+          code: "ANALYSIS_NOT_CURRENT",
+          message: "Hãy xác nhận và phân tích phiên bản JD hiện tại trước khi tìm câu hỏi.",
+          recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+        });
+      }
       const pendingReview = await client.query(
         `SELECT count(*)::int AS count FROM jd_requirements r
          WHERE r.job_description_id = $1 AND r.analysis_version = $2
+           AND r.corrected_text_version = $4
            AND r.rule_evidence->>'source' = 'GEMINI' AND r.confidence < 0.75
            AND NOT EXISTS (
              SELECT 1 FROM ai_requirement_decisions d
              WHERE d.requirement_id = r.id AND d.student_id = $3
            )`,
-        [id, analysisVersion, studentId],
+        [id, analysisVersion, studentId, jd.corrected_version],
       );
       if (pendingReview.rows[0].count > 0) {
         throw new AppError({
@@ -644,9 +671,21 @@ export function createJdService({ pool, storage, environment }) {
          LEFT JOIN topics t ON t.id = coalesce((SELECT o.topic_id FROM requirement_normalization_overrides o
                     WHERE o.requirement_id = r.id ORDER BY mapping_input_version DESC LIMIT 1), r.normalized_topic_id)
          WHERE r.job_description_id = $1 AND r.analysis_version = $2
+           AND r.corrected_text_version = $3 AND r.taxonomy_version_id IS NOT NULL
          ORDER BY r.id`,
-        [id, analysisVersion],
+        [id, analysisVersion, jd.corrected_version],
       );
+      if (!requirements.rowCount) {
+        throw new AppError({
+          status: 409,
+          code: "ANALYSIS_NOT_CURRENT",
+          message: "Kết quả phân tích không thuộc phiên bản JD hiện tại. Hãy phân tích lại.",
+          recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+        });
+      }
+      const taxonomyVersionIds = [...new Set(requirements.rows.map((requirement) => requirement.taxonomy_version_id))];
+      if (taxonomyVersionIds.length !== 1) throw new Error("Analysis has inconsistent taxonomy versions");
+      const taxonomyVersionId = taxonomyVersionIds[0];
       const rule = await client.query(
         "SELECT * FROM matching_rule_versions WHERE status = 'ACTIVE' ORDER BY created_at DESC LIMIT 1",
       );
@@ -663,8 +702,9 @@ export function createJdService({ pool, storage, environment }) {
            r.normalized_topic_id)
          JOIN questions q ON q.id = m.question_id AND q.lifecycle_status = 'PUBLISHED'
          WHERE m.job_description_id = $1 AND m.analysis_version = $2 AND m.matching_version = $3
+           AND m.corrected_text_version = $4 AND m.taxonomy_version_id = $5
          ORDER BY m.rank`,
-        [id, analysisVersion, ruleSet.version],
+        [id, analysisVersion, ruleSet.version, jd.corrected_version, taxonomyVersionId],
       );
       if (existing.rowCount) {
         const body = {
@@ -685,6 +725,8 @@ export function createJdService({ pool, storage, environment }) {
         return body;
       }
       const scored = [];
+      const roleRequirements = requirements.rows.filter((requirement) => requirement.requirement_type === "ROLE");
+      const seniorityRequirements = requirements.rows.filter((requirement) => requirement.requirement_type === "SENIORITY");
       for (const requirement of requirements.rows) {
         if (!requirement.effective_topic_id) continue;
         const candidates = await client.query(
@@ -701,19 +743,14 @@ export function createJdService({ pool, storage, environment }) {
            ORDER BY q.id`,
           [requirement.effective_topic_id],
         );
-        const requirementWords = normalize(requirement.raw_text).split(/\W+/).filter((word) => word.length > 2);
         for (const candidate of candidates.rows) {
-          const haystack = normalize(`${candidate.title} ${candidate.content}`);
-          const covered = requirementWords.filter((word) => haystack.includes(word)).length;
-          const keywordScore = requirementWords.length
-            ? Math.round((covered / requirementWords.length) * ruleSet.keyword_weight)
-            : ruleSet.keyword_weight;
-          const roleScore = /frontend/i.test(jd.corrected_text) && candidate.positions.length
-            ? ruleSet.role_weight : 0;
-          const junior = /intern|junior|fresher|thực tập/i.test(jd.corrected_text);
-          const seniorityScore = junior && ["EASY", "MEDIUM"].includes(candidate.difficulty)
-            ? ruleSet.seniority_weight : 0;
-          const score = ruleSet.exact_topic_weight + keywordScore + roleScore + seniorityScore;
+          const { keywordScore, roleScore, seniorityScore, score } = scoreQuestionMatch({
+            requirementText: requirement.raw_text,
+            candidate,
+            ruleSet,
+            roleRequirements,
+            seniorityRequirements,
+          });
           if (score >= ruleSet.threshold) {
             scored.push({ requirement, candidate, score, keywordScore, roleScore, seniorityScore });
           }
@@ -732,8 +769,9 @@ export function createJdService({ pool, storage, environment }) {
       }
       const resultHash = sha256(selected.map((item) => `${item.requirement.id}:${item.candidate.id}:${item.score}`).join("|"));
       await client.query(
-        "DELETE FROM jd_question_matches WHERE job_description_id = $1 AND analysis_version = $2 AND matching_version = $3",
-        [id, analysisVersion, ruleSet.version],
+        `DELETE FROM jd_question_matches WHERE job_description_id = $1 AND analysis_version = $2
+         AND matching_version = $3 AND corrected_text_version = $4 AND taxonomy_version_id = $5`,
+        [id, analysisVersion, ruleSet.version, jd.corrected_version, taxonomyVersionId],
       );
       const matches = [];
       for (const [index, item] of selected.entries()) {
@@ -741,12 +779,14 @@ export function createJdService({ pool, storage, environment }) {
         const result = await client.query(
           `INSERT INTO jd_question_matches (
              job_description_id, requirement_id, question_id, analysis_version,
-             matching_version, score, reason, rule_evidence, result_hash, rank
-           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+             matching_version, score, reason, rule_evidence, result_hash, rank,
+             corrected_text_version, taxonomy_version_id
+           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
            RETURNING id`,
           [id, item.requirement.id, item.candidate.id, analysisVersion, ruleSet.version,
             item.score, reason, { keywordScore: item.keywordScore, roleScore: item.roleScore,
-              seniorityScore: item.seniorityScore }, resultHash, index + 1],
+              seniorityScore: item.seniorityScore }, resultHash, index + 1,
+            jd.corrected_version, taxonomyVersionId],
         );
         matches.push({
           id: result.rows[0].id,
@@ -786,7 +826,7 @@ export function createJdService({ pool, storage, environment }) {
   }
 
   async function getMatches(studentId, id, analysisVersion) {
-    await getOwned(studentId, id);
+    const jd = await getOwned(studentId, id);
     const result = await pool.query(
       `SELECT m.id, m.requirement_id, r.raw_text AS requirement, t.name AS topic,
               m.score, m.reason, m.rank, m.matching_version, m.result_hash,
@@ -798,8 +838,10 @@ export function createJdService({ pool, storage, environment }) {
          r.normalized_topic_id)
        JOIN questions q ON q.id = m.question_id AND q.lifecycle_status = 'PUBLISHED'
        WHERE m.job_description_id = $1 AND ($2::int IS NULL OR m.analysis_version = $2)
+         AND m.corrected_text_version = $3
+         AND r.corrected_text_version = $3
        ORDER BY m.rank`,
-      [id, analysisVersion ?? null],
+      [id, analysisVersion ?? null, jd.corrected_version],
     );
     return {
       jobDescriptionId: id,
@@ -830,8 +872,12 @@ export function createJdService({ pool, storage, environment }) {
                 m.question_id, m.matching_version
          FROM jd_question_matches m
          JOIN jd_requirements r ON r.id = m.requirement_id
+         JOIN job_descriptions jd ON jd.id = m.job_description_id
          WHERE m.job_description_id = $1 AND m.id = ANY($2::uuid[])
-           AND m.matching_version = $3`,
+           AND m.matching_version = $3
+           AND jd.status = 'ANALYZED'
+           AND m.corrected_text_version = jd.corrected_version
+           AND r.corrected_text_version = jd.corrected_version`,
         [input.jobDescriptionId, input.matchIds, input.matchingVersion],
       );
       if (matches.rowCount !== input.matchIds.length || matches.rowCount > 10) {

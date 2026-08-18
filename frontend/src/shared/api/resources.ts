@@ -63,6 +63,7 @@ export interface Booking {
   meetingLink?: string; meetingLinkVersion?: number; version: number;
   meetingRecovery?: { id: string; summary: string; deadline: string; version: number };
   participantCases?: Array<{ id: string; type: "LATE_CHANGE" | "NO_SHOW"; summary: string; version: number; requestedBy: string }>;
+  transitionHistory?: Array<{ id: string; fromState: string | null; toState: string; action: string; reason: string | null; occurredAt: string; actorName: string }>;
   operationCase?: { id: string; status: string; version: number };
   pendingProposal?: { id: string; proposed_slot_id: string; proposed_by: string; reason: string; starts_at: string; ends_at: string; source_timezone: string };
 }
@@ -168,7 +169,7 @@ export const mentorsApi = {
 
 export const bookingsApi = {
   list: (filters: Record<string, string | number | undefined> = {}) => apiFetch<Page<Booking>>(`/bookings${toQuery(filters)}`),
-  create: (input: Record<string, unknown>) => apiFetch<Booking>("/bookings", { method: "POST", json: input, headers: { "Idempotency-Key": createIdempotencyKey() } }),
+  create: (input: Record<string, unknown>, idempotencyKey: string = createIdempotencyKey()) => apiFetch<Booking>("/bookings", { method: "POST", json: input, headers: { "Idempotency-Key": idempotencyKey } }),
   get: (id: string) => apiFetch<Booking>(`/bookings/${id}`),
   transition: (id: string, input: Record<string, unknown>) => apiFetch<Booking>(`/bookings/${id}/transitions`, { method: "POST", json: input, headers: { "Idempotency-Key": createIdempotencyKey() } }),
   meetingLink: (id: string, input: { url: string; version?: number }) => apiFetch(`/bookings/${id}/meeting-link`, { method: "PUT", json: input }),

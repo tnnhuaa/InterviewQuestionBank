@@ -4,6 +4,7 @@ import { requireAuth, requireRole } from "../../middleware/auth.js";
 import { asyncHandler } from "../../shared/async-handler.js";
 import { parse } from "../../shared/validation.js";
 import { createBookingsService } from "./service.js";
+import { createBookingSchema } from "./validation.js";
 
 const transitionSchema = z.object({
   action: z.enum(["CONFIRM", "REJECT", "CANCEL", "PROPOSE_RESCHEDULE", "ACCEPT_RESCHEDULE", "REJECT_RESCHEDULE", "COMPLETE", "REPORT_NO_SHOW"]),
@@ -56,16 +57,7 @@ export function createBookingsRouter({ pool, environment }) {
   }));
 
   router.post("/bookings", requireRole("STUDENT"), asyncHandler(async (request, response) => {
-    const input = parse(z.object({
-      mentorId: z.guid(), slotId: z.guid(), jobDescriptionId: z.guid().optional(), preparationPlanId: z.guid().optional(),
-      preparationPlanVersion: z.number().int().positive().optional(),
-      selectedTopicIds: z.array(z.guid()).min(1).max(30),
-      goal: z.string().trim().min(10).max(1000), interviewType: z.string().trim().min(2).max(100), timezone: z.string().max(80).optional(),
-    }).refine((value) => Boolean(value.jobDescriptionId || value.preparationPlanId), {
-      message: "Cần chọn JD hoặc kế hoạch chuẩn bị", path: ["preparationPlanId"],
-    }).refine((value) => !value.preparationPlanId || value.preparationPlanVersion !== undefined, {
-      message: "Thiếu phiên bản kế hoạch", path: ["preparationPlanVersion"],
-    }), request.body);
+    const input = parse(createBookingSchema, request.body);
     response.status(201).json(await service.create(request.auth.user.id, input, request.get("Idempotency-Key"), request.correlationId));
   }));
 
