@@ -11,4 +11,5 @@ coverage/
 .vscode/
 .supabase/
 .local/
-
+poc/.env
+poc_question/backend/.env
