@@ -169,6 +169,88 @@ export function createJdService({ pool, storage, environment }) {
     }
   }
 
+  async function extractFromFileWithAi(studentId, file, aiProvider) {
+    if (!file?.buffer?.length) {
+      throw new AppError({
+        status: 422,
+        code: "EMPTY_DOCUMENT",
+        message: "Tệp không có nội dung để xử lý.",
+        recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
+      });
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      throw new AppError({
+        status: 413,
+        code: "FILE_TOO_LARGE",
+        message: "Tệp vượt quá giới hạn 10 MB.",
+        recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
+      });
+    }
+    const detected = await fileTypeFromBuffer(file.buffer);
+    const sourceType = allowedTypes.get(detected?.mime);
+    if (!sourceType) {
+      throw new AppError({
+        status: 415,
+        code: "UNSUPPORTED_DOCUMENT",
+        message: "Chỉ hỗ trợ PDF, PNG hoặc JPEG hợp lệ.",
+        recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
+      });
+    }
+
+    let extractedText = "";
+
+    if (detected.mime === "application/pdf") {
+      // PDF: thử trích text trực tiếp trước (pdfjs), nếu không có thì dùng Gemini vision
+      if (detected.mime === "application/pdf") await validatePdf(file.buffer);
+      const { getDocument: getPdfDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
+      const pdfDoc = await getPdfDocument({ data: new Uint8Array(file.buffer), isEvalSupported: false }).promise;
+      const pages = [];
+      for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const content = await page.getTextContent();
+        pages.push(content.items.map((item) => item.str).join(" ").trim());
+      }
+      await pdfDoc.destroy().catch(() => {});
+      const directText = pages.join("\n\n").trim();
+      if (directText.length >= 50) {
+        extractedText = directText;
+      } else {
+        // PDF scan: dùng Gemini để OCR
+        extractedText = await aiProvider.extractTextFromFile({ buffer: file.buffer, mimeType: detected.mime });
+      }
+    } else {
+      // Ảnh PNG/JPEG: gửi trực tiếp lên Gemini để OCR
+      extractedText = await aiProvider.extractTextFromFile({ buffer: file.buffer, mimeType: detected.mime });
+    }
+
+    if (!extractedText.trim()) {
+      throw new AppError({
+        status: 422,
+        code: "EMPTY_EXTRACTION",
+        message: "Không thể đọc được nội dung từ tệp này. Hãy thử tệp khác hoặc dán văn bản thủ công.",
+        recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
+      });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO job_descriptions (
+         student_id, source_type, original_mime_type,
+         original_size_bytes, original_content_hash,
+         extracted_text, corrected_text, corrected_version,
+         extraction_method, extraction_version,
+         status, updated_at
+       ) VALUES ($1, $2, $3, $4, $5, $6, $6, 1, 'OCR', 'extract-v1', 'READY_FOR_REVIEW', now())
+       RETURNING *`,
+      [studentId, sourceType, detected.mime, file.size, sha256(file.buffer), extractedText.trim()],
+    );
+    await pool.query(
+      `INSERT INTO jd_text_versions (job_description_id, version, corrected_text, created_by)
+       VALUES ($1, 1, $2, $3) ON CONFLICT DO NOTHING`,
+      [result.rows[0].id, extractedText.trim(), studentId],
+    );
+    return jdDto(result.rows[0]);
+  }
+
   async function get(studentId, id) {
     return jdDto(await getOwned(studentId, id));
   }
@@ -1193,6 +1275,7 @@ export function createJdService({ pool, storage, environment }) {
   return {
     createFromText,
     createFromFile,
+    extractFromFileWithAi,
     get,
     list,
     startExtraction,

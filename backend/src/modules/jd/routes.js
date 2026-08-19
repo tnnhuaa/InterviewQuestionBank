@@ -8,9 +8,18 @@ import { createJdService } from "./service.js";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { files: 1, fileSize: 10 * 1024 * 1024 } });
 
-export function createJdRouter({ pool, storage, environment }) {
+export function createJdRouter({ pool, storage, environment, aiProvider }) {
   const router = Router();
   const service = createJdService({ pool, storage, environment });
+
+  // Endpoint mới: upload file → Gemini OCR ngay lập tức, không cần worker
+  router.post("/job-descriptions/extract-from-file", requireRole("STUDENT"), upload.single("file"), asyncHandler(async (request, response) => {
+    if (!request.file) {
+      return response.status(422).json({ code: "EMPTY_DOCUMENT", message: "Không có tệp nào được gửi lên.", fieldErrors: {}, recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null } });
+    }
+    const result = await service.extractFromFileWithAi(request.auth.user.id, request.file, aiProvider);
+    response.status(201).json(result);
+  }));
 
   router.post("/job-descriptions", requireRole("STUDENT"), upload.single("file"), asyncHandler(async (request, response) => {
     const result = request.file

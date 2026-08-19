@@ -14,9 +14,7 @@ export default function JDUpload() {
   const [file, setFile] = useState<File | null>(null);
   const mutation = useMutation({ mutationFn: async () => {
     if (mode === "text") return jobDescriptionsApi.createFromText(text);
-    const created = await jobDescriptionsApi.upload(file!);
-    await jobDescriptionsApi.startExtraction(created.id);
-    return created;
+    return await jobDescriptionsApi.extractFromFile(file!);
   }, onSuccess: (jd) => navigate(`/job-descriptions/${jd.id}/review`) });
   const canSubmit = mode === "text" ? text.trim().length > 0 : Boolean(file);
   return <div className="min-h-screen bg-canvas"><AuthNavbar /><main className="mx-auto max-w-[900px] px-6 py-8"><JDFlowStepper currentStep={1} />
