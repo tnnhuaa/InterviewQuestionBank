@@ -294,7 +294,7 @@ export function createFeedbackDraftHandler({ pool, environment }) {
            updated_at = now(), version = feedback_drafts.version + 1
          RETURNING id, version`,
         [job.id, job.resource_id, context.booking.mentor_id, feedback.rubricScores,
-          feedback.strengths, feedback.weaknesses, feedback.nextActions],
+          feedback.strengths, feedback.weaknesses, JSON.stringify(feedback.nextActions)],
       );
       await client.query("DELETE FROM ai_job_private_inputs WHERE job_id = $1", [job.id]);
       await writeAudit(client, {
