@@ -260,16 +260,53 @@ export function createMentorsService({ pool, storage, environment }) {
 
   async function listSlots(userId) {
     const result = await pool.query(
-      `SELECT s.id, s.starts_at, s.ends_at, s.source_timezone, s.status, s.version
+      `SELECT s.id, s.starts_at, s.ends_at, s.source_timezone, s.status, s.version,
+              (SELECT count(*)::int FROM bookings b
+               WHERE b.slot_id = s.id AND b.state = 'PENDING') AS pending_booking_count,
+              (s.status = 'AVAILABLE' AND NOT EXISTS (
+                SELECT 1 FROM bookings b
+                WHERE b.slot_id = s.id
+                  AND b.state IN ('PENDING', 'CONFIRMED', 'RESCHEDULE_PROPOSED')
+              )) AS deletable
        FROM availability_slots s JOIN mentor_profiles mp ON mp.id = s.mentor_id
-       WHERE mp.user_id = $1 ORDER BY s.starts_at`,
+       WHERE mp.user_id = $1
+         AND s.starts_at > now()
+         AND s.status <> 'CANCELLED'
+       ORDER BY s.starts_at`,
       [userId],
     );
     return result.rows.map((row) => ({ id: row.id, startsAt: row.starts_at, endsAt: row.ends_at,
-      timezone: row.source_timezone, status: row.status, version: row.version }));
+      timezone: row.source_timezone, status: row.status, version: row.version,
+      pendingBookingCount: row.pending_booking_count, deletable: row.deletable }));
   }
 
   async function createSlot(userId, input) {
+    const startsAt = new Date(input.startsAt);
+    const endsAt = new Date(input.endsAt);
+    if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) {
+      throw new AppError({
+        status: 422,
+        code: "INVALID_SLOT_TIME",
+        message: "Thời gian bắt đầu hoặc kết thúc không hợp lệ.",
+        recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+      });
+    }
+    if (endsAt <= startsAt) {
+      throw new AppError({
+        status: 422,
+        code: "INVALID_SLOT_RANGE",
+        message: "Giờ kết thúc phải sau giờ bắt đầu.",
+        recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+      });
+    }
+    if (startsAt <= new Date()) {
+      throw new AppError({
+        status: 422,
+        code: "SLOT_IN_PAST",
+        message: "Chỉ có thể tạo khung giờ trong tương lai.",
+        recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+      });
+    }
     try {
       const result = await pool.query(
         `INSERT INTO availability_slots (mentor_id, starts_at, ends_at, source_timezone)
@@ -304,10 +341,14 @@ export function createMentorsService({ pool, storage, environment }) {
 
   async function cancelSlot(userId, slotId, version) {
     const result = await pool.query(
-      `UPDATE availability_slots s SET status = 'CANCELLED', version = version + 1, updated_at = now()
+      `UPDATE availability_slots s SET status = 'CANCELLED', version = s.version + 1, updated_at = now()
        FROM mentor_profiles mp
        WHERE s.id = $1 AND s.mentor_id = mp.id AND mp.user_id = $2
          AND s.status = 'AVAILABLE' AND s.version = $3
+         AND NOT EXISTS (
+           SELECT 1 FROM bookings b
+           WHERE b.slot_id = s.id AND b.state IN ('PENDING', 'CONFIRMED', 'RESCHEDULE_PROPOSED')
+         )
        RETURNING s.id`,
       [slotId, userId, version],
     );
@@ -315,7 +356,7 @@ export function createMentorsService({ pool, storage, environment }) {
       throw new AppError({
         status: 409,
         code: "SLOT_NOT_EDITABLE",
-        message: "Khung giờ không còn có thể xóa. Hãy tải lại lịch.",
+        message: "Khung giờ không thể xóa vì đã thay đổi hoặc đang được dùng bởi một yêu cầu đặt lịch.",
         recovery: { kind: "RETRY_SAFE", retryable: true, retryAfterSeconds: null },
       });
     }
