@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { mentorsApi, questionsApi, type Mentor } from "@/shared/api/resources";
 import ErrorPanel from "@/shared/components/ErrorPanel";
 
@@ -8,8 +7,11 @@ function toggleId(current: string[], id: string, checked: boolean) {
   return checked ? [...current, id] : current.filter((value) => value !== id);
 }
 
-export default function MentorProfileForm({ initial }: { initial?: Mentor }) {
-  const navigate = useNavigate();
+const TIMEZONES: string[] = typeof Intl !== "undefined" && "supportedValuesOf" in Intl
+  ? Intl.supportedValuesOf("timeZone")
+  : ["UTC", "Asia/Ho_Chi_Minh", "Asia/Bangkok", "Asia/Singapore", "Asia/Shanghai", "Asia/Tokyo", "Asia/Seoul", "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "Europe/London", "Europe/Berlin", "Europe/Paris", "Australia/Sydney"];
+
+export default function MentorProfileForm({ initial, onSaved, submitLabel = "Lưu hồ sơ" }: { initial?: Mentor; onSaved?: (profile: Mentor) => void; submitLabel?: string }) {
   const queryClient = useQueryClient();
   const taxonomy = useQuery({ queryKey: ["taxonomy"], queryFn: questionsApi.taxonomy });
   const [headline, setHeadline] = useState(initial?.headline ?? "");
@@ -21,9 +23,12 @@ export default function MentorProfileForm({ initial }: { initial?: Mentor }) {
     mutationFn: () => mentorsApi.saveProfile({ headline, bio, timezone, topicIds, positionIds }),
     onSuccess: (profile) => {
       queryClient.setQueryData(["mentor-profile"], profile);
-      navigate("/mentor/verification");
+      onSaved?.(profile);
     },
   });
+
+  const taxonomyError = taxonomy.error;
+  const taxonomyLoading = taxonomy.isLoading;
 
   return (
     <form onSubmit={(event) => { event.preventDefault(); mutation.mutate(); }} className="space-y-5 rounded-xl border border-edge bg-panel p-6">
@@ -38,32 +43,38 @@ export default function MentorProfileForm({ initial }: { initial?: Mentor }) {
       </label>
       <label className="block text-xs font-semibold text-ink-secondary">
         Múi giờ
-        <input required value={timezone} onChange={(event) => setTimezone(event.target.value)} className="mt-1.5 w-full rounded-lg border border-edge bg-canvas px-4 py-2.5 text-sm" />
+        <select required value={timezone} onChange={(event) => setTimezone(event.target.value)} className="mt-1.5 w-full cursor-pointer rounded-lg border border-edge bg-canvas px-4 py-2.5 text-sm">
+          {TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
+        </select>
       </label>
       <fieldset>
         <legend className="text-xs font-semibold text-ink-secondary">Chuyên môn kỹ thuật</legend>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
-          {taxonomy.data?.topics.map((topic) => (
-            <label key={topic.id} className="flex items-center gap-2 rounded-md border border-edge p-3 text-sm text-ink-secondary">
-              <input type="checkbox" checked={topicIds.includes(topic.id)} onChange={(event) => setTopicIds((current) => toggleId(current, topic.id, event.target.checked))} className="accent-primary" />
-              {topic.name}
-            </label>
-          ))}
-        </div>
+        {taxonomyError ? <p className="mt-2 text-xs text-danger">Không thể tải danh sách chủ đề. Hãy thử lại.</p> : taxonomyLoading ? <p className="mt-2 text-xs text-ink-muted">Đang tải danh sách chủ đề…</p> : (
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            {taxonomy.data?.topics.map((topic) => (
+              <label key={topic.id} className="flex cursor-pointer items-center gap-2 rounded-md border border-edge p-3 text-sm text-ink-secondary">
+                <input type="checkbox" checked={topicIds.includes(topic.id)} onChange={(event) => setTopicIds((current) => toggleId(current, topic.id, event.target.checked))} className="accent-primary" />
+                {topic.name}
+              </label>
+            ))}
+          </div>
+        )}
       </fieldset>
       <fieldset>
         <legend className="text-xs font-semibold text-ink-secondary">Vị trí có thể phỏng vấn</legend>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
-          {taxonomy.data?.positions.map((position) => (
-            <label key={position.id} className="flex items-center gap-2 rounded-md border border-edge p-3 text-sm text-ink-secondary">
-              <input type="checkbox" checked={positionIds.includes(position.id)} onChange={(event) => setPositionIds((current) => toggleId(current, position.id, event.target.checked))} className="accent-primary" />
-              {position.name}
-            </label>
-          ))}
-        </div>
+        {taxonomyError ? null : taxonomyLoading ? <p className="mt-2 text-xs text-ink-muted">Đang tải danh sách vị trí…</p> : (
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            {taxonomy.data?.positions.map((position) => (
+              <label key={position.id} className="flex cursor-pointer items-center gap-2 rounded-md border border-edge p-3 text-sm text-ink-secondary">
+                <input type="checkbox" checked={positionIds.includes(position.id)} onChange={(event) => setPositionIds((current) => toggleId(current, position.id, event.target.checked))} className="accent-primary" />
+                {position.name}
+              </label>
+            ))}
+          </div>
+        )}
       </fieldset>
-      <button disabled={mutation.isPending || topicIds.length === 0 || positionIds.length === 0} className="w-full rounded-lg bg-primary px-5 py-3 text-sm font-medium text-on-primary disabled:opacity-50">
-        Lưu hồ sơ
+      <button disabled={mutation.isPending || taxonomyLoading || topicIds.length === 0 || positionIds.length === 0} className="w-full rounded-lg bg-primary px-5 py-3 text-sm font-medium text-on-primary disabled:opacity-50">
+        {submitLabel}
       </button>
     </form>
   );

@@ -325,11 +325,26 @@ paths:
   /mentor-profile:
     get:
       operationId: getMentorProfile
-      responses: { "200": { $ref: "#/components/responses/Success" } }
+      responses:
+        "200":
+          $ref: "#/components/responses/MentorOwnProfile"
+        "404":
+          $ref: "#/components/responses/Error"
     put:
       operationId: saveMentorProfile
-      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
-      responses: { "200": { $ref: "#/components/responses/Success" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MentorProfileInput"
+      responses:
+        "200":
+          $ref: "#/components/responses/MentorOwnProfile"
+        "409":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/Error"
   /mentor-verifications:
     post:
       operationId: submitMentorVerification
@@ -339,17 +354,32 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [headline, bio, timezone, consent, evidence]
+              additionalProperties: false
+              required:
+                - consent
+                - profileVersion
+                - evidence
               properties:
-                headline: { type: string }
-                bio: { type: string }
-                timezone: { type: string }
-                consent: { type: string, const: "true" }
-                topicIds: { type: string }
-                positionIds: { type: string }
-                expertiseEvidence: { type: string }
-                evidence: { type: string, format: binary }
-      responses: { "201": { $ref: "#/components/responses/Success" }, "415": { $ref: "#/components/responses/Error" } }
+                consent:
+                  type: string
+                  const: "true"
+                profileVersion:
+                  type: integer
+                  minimum: 1
+                evidence:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          $ref: "#/components/responses/MentorVerificationSubmission"
+        "409":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        "415":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/Error"
   /availability-slots:
     get:
       operationId: listAvailabilitySlots
@@ -744,6 +774,77 @@ components:
       type: object
       required: [page, pageSize, total]
       properties: { page: { type: integer }, pageSize: { type: integer }, total: { type: integer } }
+    MentorVerificationStatus:
+      type: string
+      enum: [DRAFT, PENDING, APPROVED, REJECTED]
+    MentorReviewStatus:
+      type: string
+      enum: [PENDING, APPROVED, REJECTED]
+    MentorProfileInput:
+      type: object
+      additionalProperties: false
+      required: [headline, bio, timezone, topicIds, positionIds]
+      properties:
+        headline: { type: string, minLength: 5, maxLength: 180 }
+        bio: { type: string, minLength: 20, maxLength: 4000 }
+        timezone: { type: string, minLength: 1, maxLength: 80 }
+        topicIds:
+          type: array
+          minItems: 1
+          maxItems: 20
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        positionIds:
+          type: array
+          minItems: 1
+          maxItems: 20
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        expertiseEvidence: { type: string, maxLength: 1000 }
+    MentorLatestVerification:
+      type: object
+      additionalProperties: false
+      required: [id, status, submittedAt, version]
+      properties:
+        id: { type: string, format: uuid }
+        status: { $ref: "#/components/schemas/MentorReviewStatus" }
+        submittedAt: { type: string, format: date-time }
+        decidedAt: { type: [string, "null"], format: date-time }
+        decisionReason: { type: [string, "null"] }
+        version: { type: integer, minimum: 1 }
+    MentorOwnProfile:
+      type: object
+      additionalProperties: false
+      required: [id, userId, displayName, headline, bio, timezone, verificationStatus, expertise, positionExpertise, topicIds, positionIds, nextSlots, latestVerification, version]
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        displayName: { type: string }
+        headline: { type: string }
+        bio: { type: string }
+        timezone: { type: string }
+        verificationStatus: { $ref: "#/components/schemas/MentorVerificationStatus" }
+        publicRating: { type: [number, "null"] }
+        expertise: { type: array, items: { type: string } }
+        positionExpertise: { type: array, items: { type: string } }
+        topicIds: { type: array, items: { type: string, format: uuid } }
+        positionIds: { type: array, items: { type: string, format: uuid } }
+        nextSlots: { type: array, items: { type: object, additionalProperties: true } }
+        latestVerification:
+          anyOf:
+            - $ref: "#/components/schemas/MentorLatestVerification"
+            - type: "null"
+        version: { type: integer, minimum: 1 }
+    MentorVerificationSubmission:
+      type: object
+      additionalProperties: false
+      required: [verificationId, mentorId, status, submittedAt, version]
+      properties:
+        verificationId: { type: string, format: uuid }
+        mentorId: { type: string, format: uuid }
+        status: { type: string, const: PENDING }
+        submittedAt: { type: string, format: date-time }
+        version: { type: integer, minimum: 1 }
   responses:
     Success: { description: Successful resource response, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
     Page: { description: Paginated response, content: { application/json: { schema: { type: object, required: [items, pageInfo], properties: { items: { type: array, items: { type: object, additionalProperties: true } }, pageInfo: { $ref: "#/components/schemas/PageInfo" } } } } } }
@@ -758,3 +859,5 @@ components:
     AiCapabilities: { description: Effective environment and operations feature flags, content: { application/json: { schema: { $ref: "#/components/schemas/AiCapabilities" } } } }
     AgendaDraft: { description: Mentor-owned editable interview agenda draft, content: { application/json: { schema: { $ref: "#/components/schemas/AgendaDraft" } } } }
     FeedbackDraft: { description: Mentor-owned editable feedback draft, content: { application/json: { schema: { $ref: "#/components/schemas/FeedbackDraft" } } } }
+    MentorOwnProfile: { description: Private Mentor-owned profile projection. Verification evidence is never included., content: { application/json: { schema: { $ref: "#/components/schemas/MentorOwnProfile" } } } }
+    MentorVerificationSubmission: { description: Verification request accepted and placed in PENDING state., content: { application/json: { schema: { $ref: "#/components/schemas/MentorVerificationSubmission" } } } }

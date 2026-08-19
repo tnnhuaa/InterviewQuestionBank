@@ -44,7 +44,7 @@ function s3Storage(config) {
         Key: key,
         Body: buffer,
         ContentType: metadata.contentType,
-        Metadata: { classification: "private-jd" },
+        Metadata: { classification: metadata.classification ?? "private" },
       }));
       return key;
     },

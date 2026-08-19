@@ -1,29 +1,30 @@
 import { Router } from "express";
 import multer from "multer";
 import { z } from "zod";
-import { requireAuth, requireRole } from "../../middleware/auth.js";
+import { requireRole } from "../../middleware/auth.js";
 import { asyncHandler } from "../../shared/async-handler.js";
 import { parse } from "../../shared/validation.js";
 import { createMentorsService } from "./service.js";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { files: 1, fileSize: 10 * 1024 * 1024 } });
-const expertiseIdsSchema = (minimum = 0) => z.preprocess((value) => {
-  if (typeof value !== "string") return value;
-  try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed : [value];
-  } catch {
-    return [value];
-  }
-}, z.array(z.guid()).min(minimum).max(20).optional());
+
+const uniqueGuidArray = z.array(z.guid()).min(1).max(20).refine(
+  (ids) => new Set(ids).size === ids.length,
+  "Không được chọn chuyên môn trùng lặp",
+);
 
 const profileSchema = z.object({
   headline: z.string().trim().min(5).max(180),
   bio: z.string().trim().min(20).max(4000),
   timezone: z.string().trim().min(1).max(80),
-  topicIds: expertiseIdsSchema(1),
-  positionIds: expertiseIdsSchema(),
+  topicIds: uniqueGuidArray,
+  positionIds: uniqueGuidArray,
   expertiseEvidence: z.string().trim().max(1000).optional(),
+});
+
+const verificationSubmissionSchema = z.object({
+  consent: z.literal("true", { message: "Cần xác nhận đồng ý xử lý bằng chứng xác minh" }),
+  profileVersion: z.coerce.number().int().positive(),
 });
 
 export function createMentorsRouter({ pool, storage, environment }) {
@@ -44,18 +45,16 @@ export function createMentorsRouter({ pool, storage, environment }) {
     response.json(await service.getPublic(request.params.mentorId));
   }));
 
-  router.get("/mentor-profile", requireAuth, asyncHandler(async (request, response) => {
+  router.get("/mentor-profile", requireRole("MENTOR"), asyncHandler(async (request, response) => {
     response.json(await service.getOwnProfile(request.auth.user.id));
   }));
 
-  router.put("/mentor-profile", requireAuth, asyncHandler(async (request, response) => {
+  router.put("/mentor-profile", requireRole("MENTOR"), asyncHandler(async (request, response) => {
     response.json(await service.saveProfile(request.auth.user.id, parse(profileSchema, request.body)));
   }));
 
-  router.post("/mentor-verifications", requireAuth, upload.single("evidence"), asyncHandler(async (request, response) => {
-    const input = parse(profileSchema.extend({
-      consent: z.literal("true", { message: "Cần xác nhận đồng ý xử lý bằng chứng xác minh" }),
-    }), request.body);
+  router.post("/mentor-verifications", requireRole("MENTOR"), upload.single("evidence"), asyncHandler(async (request, response) => {
+    const input = parse(verificationSubmissionSchema, request.body);
     response.status(201).json(await service.submitVerification(
       request.auth.user.id, input, request.file, request.correlationId,
     ));

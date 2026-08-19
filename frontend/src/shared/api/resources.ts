@@ -46,11 +46,16 @@ export interface PreparationPlan { id: string; jobDescriptionId: string; matchin
 
   export interface Mentor {
     id: string; userId: string; displayName: string; headline: string; bio: string; timezone: string;
-    verificationStatus: "PENDING" | "APPROVED" | "REJECTED"; publicRating: number; expertise: string[];
+    verificationStatus: "DRAFT" | "PENDING" | "APPROVED" | "REJECTED"; publicRating: number; expertise: string[];
     positionExpertise?: string[]; topicIds?: string[]; positionIds?: string[];
     nextSlots: Array<{ id: string; startsAt: string; endsAt: string; timezone: string }>; version: number;
+    latestVerification?: { id: string; status: "PENDING" | "APPROVED" | "REJECTED"; submittedAt: string; decidedAt?: string | null; decisionReason?: string | null; version: number } | null;
     reviews?: Array<{ id: string; rating: number; comment?: string; studentName: string; createdAt: string }>;
     topicOverlap?: number; positionFit?: number; matchReasons?: string[]; aiExplanation?: string;
+  }
+
+  export interface MentorVerificationSubmission {
+    verificationId: string; mentorId: string; status: "PENDING"; submittedAt: string; version: number;
   }
 
 export type BookingStatus = "PENDING" | "CONFIRMED" | "RESCHEDULE_PROPOSED" | "REJECTED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
@@ -160,7 +165,13 @@ export const mentorsApi = {
   get: (id: string) => apiFetch<Mentor>(`/mentors/${id}`),
   ownProfile: () => apiFetch<Mentor>("/mentor-profile"),
   saveProfile: (input: Record<string, unknown>) => apiFetch<Mentor>("/mentor-profile", { method: "PUT", json: input }),
-  submitVerification: (body: FormData) => apiFetch("/mentor-verifications", { method: "POST", body }),
+  submitVerification: (input: { evidence: File; profileVersion: number }) => {
+    const form = new FormData();
+    form.append("evidence", input.evidence);
+    form.append("consent", "true");
+    form.append("profileVersion", String(input.profileVersion));
+    return apiFetch<MentorVerificationSubmission>("/mentor-verifications", { method: "POST", body: form });
+  },
   slots: () => apiFetch<{ items: Mentor["nextSlots"] }>("/availability-slots"),
   createSlot: (input: { startsAt: string; endsAt: string; timezone: string }) => apiFetch("/availability-slots", { method: "POST", json: input }),
   cancelSlot: (id: string, version: number) => apiFetch(`/availability-slots/${id}?version=${version}`, { method: "DELETE" }),

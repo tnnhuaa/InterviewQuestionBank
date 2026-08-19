@@ -1665,6 +1665,61 @@ export interface components {
             pageSize: number;
             total: number;
         };
+        /** @enum {string} */
+        MentorVerificationStatus: "DRAFT" | "PENDING" | "APPROVED" | "REJECTED";
+        /** @enum {string} */
+        MentorReviewStatus: "PENDING" | "APPROVED" | "REJECTED";
+        MentorProfileInput: {
+            headline: string;
+            bio: string;
+            timezone: string;
+            topicIds: string[];
+            positionIds: string[];
+            expertiseEvidence?: string;
+        };
+        MentorLatestVerification: {
+            /** Format: uuid */
+            id: string;
+            status: components["schemas"]["MentorReviewStatus"];
+            /** Format: date-time */
+            submittedAt: string;
+            /** Format: date-time */
+            decidedAt?: string | null;
+            decisionReason?: string | null;
+            version: number;
+        };
+        MentorOwnProfile: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            displayName: string;
+            headline: string;
+            bio: string;
+            timezone: string;
+            verificationStatus: components["schemas"]["MentorVerificationStatus"];
+            publicRating?: number | null;
+            expertise: string[];
+            positionExpertise: string[];
+            topicIds: string[];
+            positionIds: string[];
+            nextSlots: {
+                [key: string]: unknown;
+            }[];
+            latestVerification: components["schemas"]["MentorLatestVerification"] | null;
+            version: number;
+        };
+        MentorVerificationSubmission: {
+            /** Format: uuid */
+            verificationId: string;
+            /** Format: uuid */
+            mentorId: string;
+            /** @constant */
+            status: "PENDING";
+            /** Format: date-time */
+            submittedAt: string;
+            version: number;
+        };
     };
     responses: {
         /** @description Successful resource response */
@@ -1795,6 +1850,24 @@ export interface components {
             };
             content: {
                 "application/json": components["schemas"]["FeedbackDraft"];
+            };
+        };
+        /** @description Private Mentor-owned profile projection. Verification evidence is never included. */
+        MentorOwnProfile: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["MentorOwnProfile"];
+            };
+        };
+        /** @description Verification request accepted and placed in PENDING state. */
+        MentorVerificationSubmission: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["MentorVerificationSubmission"];
             };
         };
     };
@@ -2659,7 +2732,8 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["Success"];
+            200: components["responses"]["MentorOwnProfile"];
+            404: components["responses"]["Error"];
         };
     };
     saveMentorProfile: {
@@ -2669,9 +2743,15 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody: components["requestBodies"]["JsonInput"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MentorProfileInput"];
+            };
+        };
         responses: {
-            200: components["responses"]["Success"];
+            200: components["responses"]["MentorOwnProfile"];
+            409: components["responses"]["Error"];
+            422: components["responses"]["Error"];
         };
     };
     submitMentorVerification: {
@@ -2684,22 +2764,20 @@ export interface operations {
         requestBody: {
             content: {
                 "multipart/form-data": {
-                    headline: string;
-                    bio: string;
-                    timezone: string;
                     /** @constant */
                     consent: "true";
-                    topicIds?: string;
-                    positionIds?: string;
-                    expertiseEvidence?: string;
+                    profileVersion: number;
                     /** Format: binary */
                     evidence: string;
                 };
             };
         };
         responses: {
-            201: components["responses"]["Success"];
+            201: components["responses"]["MentorVerificationSubmission"];
+            409: components["responses"]["Error"];
+            413: components["responses"]["Error"];
             415: components["responses"]["Error"];
+            422: components["responses"]["Error"];
         };
     };
     listAvailabilitySlots: {

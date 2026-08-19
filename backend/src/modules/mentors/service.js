@@ -7,6 +7,18 @@ import { createOperationCase } from "../../platform/operations.js";
 
 const verificationTypes = new Set(["application/pdf", "image/png", "image/jpeg"]);
 
+function mapLatestVerification(raw) {
+  if (!raw) return null;
+  return {
+    id: raw.id,
+    status: raw.status,
+    submittedAt: raw.submittedAt,
+    decidedAt: raw.decidedAt ?? null,
+    decisionReason: raw.decisionReason ?? null,
+    version: raw.version,
+  };
+}
+
 function profileDto(row) {
   return {
     id: row.id,
@@ -19,11 +31,18 @@ function profileDto(row) {
     publicRating: row.public_rating,
     expertise: row.expertise ?? [],
     positionExpertise: row.position_expertise ?? [],
-    topicIds: row.topic_ids ?? [],
-    positionIds: row.position_ids ?? [],
     nextSlots: row.next_slots ?? [],
     reviews: row.reviews ?? [],
     version: row.version,
+  };
+}
+
+function ownProfileDto(row) {
+  return {
+    ...profileDto(row),
+    topicIds: row.topic_ids ?? [],
+    positionIds: row.position_ids ?? [],
+    latestVerification: mapLatestVerification(row.latest_verification),
   };
 }
 
@@ -54,60 +73,117 @@ export function createMentorsService({ pool, storage, environment }) {
     }
   }
 
-  async function ensureProfile(userId, input, client = pool) {
-    const result = await client.query(
-      `INSERT INTO mentor_profiles (user_id, headline, bio, timezone)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (user_id) DO UPDATE SET
-         headline = EXCLUDED.headline, bio = EXCLUDED.bio, timezone = EXCLUDED.timezone,
-         updated_at = now(), version = mentor_profiles.version + 1
-       RETURNING *`,
-      [userId, input.headline, input.bio, input.timezone],
-    );
-    await client.query(
-      "INSERT INTO user_roles (user_id, role_code) VALUES ($1, 'MENTOR') ON CONFLICT DO NOTHING",
-      [userId],
-    );
-    return result.rows[0];
+  async function validateTaxonomy(client, topicIds, positionIds) {
+    if (topicIds.length) {
+      const result = await client.query(
+        "SELECT id, status FROM topics WHERE id = ANY($1)",
+        [topicIds],
+      );
+      const found = new Map(result.rows.map((r) => [String(r.id), r.status]));
+      const missing = topicIds.filter((id) => !found.has(id));
+      const inactive = topicIds.filter((id) => found.get(id) !== "ACTIVE");
+      if (missing.length || inactive.length) {
+        const fieldErrors = {};
+        if (missing.length) fieldErrors.topicIds = "Một hoặc nhiều chủ đề không tồn tại.";
+        if (inactive.length) fieldErrors.topicIds = (fieldErrors.topicIds ? fieldErrors.topicIds + " " : "") + "Một hoặc nhiều chủ đề không còn hoạt động.";
+        throw new AppError({ status: 422, code: "VALIDATION_ERROR", message: "Dữ liệu chủ đề không hợp lệ.", fieldErrors,
+          recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null } });
+      }
+    }
+    if (positionIds.length) {
+      const result = await client.query(
+        "SELECT id, status FROM positions WHERE id = ANY($1)",
+        [positionIds],
+      );
+      const found = new Map(result.rows.map((r) => [String(r.id), r.status]));
+      const missing = positionIds.filter((id) => !found.has(id));
+      const inactive = positionIds.filter((id) => found.get(id) !== "ACTIVE");
+      if (missing.length || inactive.length) {
+        const fieldErrors = {};
+        if (missing.length) fieldErrors.positionIds = "Một hoặc nhiều vị trí không tồn tại.";
+        if (inactive.length) fieldErrors.positionIds = (fieldErrors.positionIds ? fieldErrors.positionIds + " " : "") + "Một hoặc nhiều vị trí không còn hoạt động.";
+        throw new AppError({ status: 422, code: "VALIDATION_ERROR", message: "Dữ liệu vị trí không hợp lệ.", fieldErrors,
+          recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null } });
+      }
+    }
+  }
+
+  function setsEqual(a, b) {
+    if (a.length !== b.length) return false;
+    const setB = new Set(b);
+    return a.every((id) => setB.has(id));
   }
 
   async function saveProfile(userId, input) {
     return withTransaction(pool, async (client) => {
-      const profile = await ensureProfile(userId, input, client);
-      if (input.topicIds || input.positionIds) {
+      const existing = await client.query(
+        "SELECT * FROM mentor_profiles WHERE user_id = $1 FOR UPDATE",
+        [userId],
+      );
+      const profile = existing.rowCount
+        ? (await client.query(
+            `UPDATE mentor_profiles SET headline = $2, bio = $3, timezone = $4, updated_at = now(), version = version + 1
+             WHERE user_id = $1 RETURNING *`,
+            [userId, input.headline, input.bio, input.timezone],
+          )).rows[0]
+        : (await client.query(
+            `INSERT INTO mentor_profiles (user_id, headline, bio, timezone)
+             VALUES ($1, $2, $3, $4) RETURNING *`,
+            [userId, input.headline, input.bio, input.timezone],
+          )).rows[0];
+
+      const status = profile.verification_status;
+
+      if (status === "PENDING") {
+        throw new AppError({
+          status: 409, code: "VERIFICATION_PENDING",
+          message: "Hồ sơ đang được xét duyệt. Hãy chờ quyết định trước khi chỉnh sửa và gửi lại.",
+          recovery: { kind: "WAIT", retryable: false, retryAfterSeconds: null },
+        });
+      }
+
+      await validateTaxonomy(client, input.topicIds, input.positionIds);
+
+      if (status === "APPROVED") {
+        const currentExpertise = await client.query(
+          "SELECT topic_id, position_id FROM mentor_expertise WHERE mentor_id = $1 AND status = 'APPROVED'",
+          [profile.id],
+        );
+        const currentTopicIds = currentExpertise.rows.filter((r) => r.topic_id).map((r) => String(r.topic_id)).sort();
+        const currentPositionIds = currentExpertise.rows.filter((r) => r.position_id).map((r) => String(r.position_id)).sort();
+        const newTopicIds = [...input.topicIds].sort();
+        const newPositionIds = [...input.positionIds].sort();
+        if (!setsEqual(currentTopicIds, newTopicIds) || !setsEqual(currentPositionIds, newPositionIds)) {
+          throw new AppError({
+            status: 409, code: "MENTOR_EXPERTISE_LOCKED",
+            message: "Hồ sơ đã được duyệt. Không thể thay đổi chuyên môn đã được phê duyệt.",
+            recovery: { kind: "NONE", retryable: false, retryAfterSeconds: null },
+          });
+        }
+      } else {
         await client.query("DELETE FROM mentor_expertise WHERE mentor_id = $1", [profile.id]);
-        for (const topicId of input.topicIds ?? []) {
+        for (const topicId of input.topicIds) {
           await client.query(
-            `INSERT INTO mentor_expertise (mentor_id, topic_id, evidence_note, status)
-             VALUES ($1, $2, $3, 'PENDING')`,
+            "INSERT INTO mentor_expertise (mentor_id, topic_id, evidence_note, status) VALUES ($1, $2, $3, 'PENDING')",
             [profile.id, topicId, input.expertiseEvidence ?? null],
           );
         }
-        for (const positionId of input.positionIds ?? []) {
+        for (const positionId of input.positionIds) {
           await client.query(
-            `INSERT INTO mentor_expertise (mentor_id, position_id, evidence_note, status)
-             VALUES ($1, $2, $3, 'PENDING')`,
+            "INSERT INTO mentor_expertise (mentor_id, position_id, evidence_note, status) VALUES ($1, $2, $3, 'PENDING')",
             [profile.id, positionId, input.expertiseEvidence ?? null],
           );
         }
       }
-      return profileDto({
-        ...profile,
-        display_name: null,
-        expertise: [],
-        position_expertise: [],
-        topic_ids: input.topicIds ?? [],
-        position_ids: input.positionIds ?? [],
-        next_slots: [],
-      });
+
+      return getOwnProfile(userId);
     });
   }
 
   async function submitVerification(userId, input, file, correlationId) {
-    if (!file?.buffer?.length || file.size > 10 * 1024 * 1024) {
+    if (!file?.buffer?.length) {
       throw new AppError({
-        status: 422,
-        code: "INVALID_VERIFICATION_EVIDENCE",
+        status: 422, code: "INVALID_VERIFICATION_EVIDENCE",
         message: "Bằng chứng xác minh phải là một tệp hợp lệ không quá 10 MB.",
         recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
       });
@@ -115,44 +191,128 @@ export function createMentorsService({ pool, storage, environment }) {
     const detected = await fileTypeFromBuffer(file.buffer);
     if (!verificationTypes.has(detected?.mime)) {
       throw new AppError({
-        status: 415,
-        code: "UNSUPPORTED_DOCUMENT",
+        status: 415, code: "UNSUPPORTED_DOCUMENT",
         message: "Bằng chứng xác minh chỉ hỗ trợ PDF, PNG hoặc JPEG.",
         recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
       });
     }
-    const key = await storage.put(file.buffer, { contentType: detected.mime });
+    const key = await storage.put(file.buffer, { contentType: detected.mime, classification: "mentor-verification" });
     try {
       return await withTransaction(pool, async (client) => {
-        const profile = await ensureProfile(userId, input, client);
-        const result = await client.query(
-          `INSERT INTO mentor_verifications (
-             mentor_id, evidence_ref, evidence_mime_type, evidence_size_bytes, consented_at
-           ) VALUES ($1, $2, $3, $4, now())
-           RETURNING id, status, created_at, version`,
-          [profile.id, key, detected.mime, file.size],
+        const existing = await client.query(
+          "SELECT * FROM mentor_profiles WHERE user_id = $1 FOR UPDATE",
+          [userId],
         );
-        await client.query(
-          "UPDATE mentor_profiles SET verification_status = 'PENDING', updated_at = now(), version = version + 1 WHERE id = $1",
+        if (!existing.rowCount) throw notFoundError();
+        const profile = existing.rows[0];
+
+        if (profile.version !== input.profileVersion) {
+          throw new AppError({
+            status: 409, code: "VERSION_CONFLICT",
+            message: "Hồ sơ đã thay đổi. Hãy tải lại trước khi gửi xác minh.",
+            recovery: { kind: "RETRY_SAFE", retryable: true, retryAfterSeconds: null },
+          });
+        }
+
+        if (profile.verification_status === "PENDING") {
+          throw new AppError({
+            status: 409, code: "VERIFICATION_ALREADY_PENDING",
+            message: "Hồ sơ xác minh đang được xét duyệt.",
+            recovery: { kind: "WAIT", retryable: false, retryAfterSeconds: null },
+          });
+        }
+
+        if (profile.verification_status === "APPROVED") {
+          throw new AppError({
+            status: 409, code: "MENTOR_ALREADY_APPROVED",
+            message: "Hồ sơ Mentor đã được xác minh.",
+            recovery: { kind: "NONE", retryable: false, retryAfterSeconds: null },
+          });
+        }
+
+        if (!profile.headline || !profile.bio || !profile.timezone) {
+          throw new AppError({
+            status: 422, code: "MENTOR_PROFILE_INCOMPLETE",
+            message: "Hồ sơ chưa đầy đủ. Hãy hoàn thiện trước khi gửi xác minh.",
+            fieldErrors: {
+              ...(profile.headline ? {} : { headline: "Headline là bắt buộc." }),
+              ...(profile.bio ? {} : { bio: "Giới thiệu là bắt buộc." }),
+              ...(profile.timezone ? {} : { timezone: "Múi giờ là bắt buộc." }),
+            },
+            recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+          });
+        }
+
+        const expertise = await client.query(
+          "SELECT topic_id, position_id FROM mentor_expertise WHERE mentor_id = $1",
           [profile.id],
         );
-        await createOperationCase(client, {
-          caseType: "MENTOR_VERIFICATION",
-          targetType: "MENTOR",
-          targetId: profile.id,
-          publicSummary: "Hồ sơ mentor đang chờ xét duyệt.",
-        });
-        await writeAudit(client, {
-          actorId: userId,
-          action: "MENTOR_VERIFICATION_SUBMITTED",
-          targetType: "MENTOR",
-          targetId: profile.id,
-          correlationId,
-        });
-        return { mentorId: profile.id, ...result.rows[0] };
+        const hasTopic = expertise.rows.some((r) => r.topic_id);
+        const hasPosition = expertise.rows.some((r) => r.position_id);
+        if (!hasTopic || !hasPosition) {
+          throw new AppError({
+            status: 422, code: "MENTOR_PROFILE_INCOMPLETE",
+            message: "Hồ sơ chưa đầy đủ. Hãy thêm ít nhất một chuyên môn kỹ thuật và một vị trí.",
+            fieldErrors: {
+              ...(hasTopic ? {} : { topicIds: "Cần ít nhất một chủ đề." }),
+              ...(hasPosition ? {} : { positionIds: "Cần ít nhất một vị trí." }),
+            },
+            recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+          });
+        }
+
+        try {
+          const result = await client.query(
+            `INSERT INTO mentor_verifications (
+               mentor_id, evidence_ref, evidence_mime_type, evidence_size_bytes, consented_at
+             ) VALUES ($1, $2, $3, $4, now())
+             RETURNING id, status, created_at, version`,
+            [profile.id, key, detected.mime, file.size],
+          );
+
+          await client.query(
+            "UPDATE mentor_profiles SET verification_status = 'PENDING', updated_at = now(), version = version + 1 WHERE id = $1",
+            [profile.id],
+          );
+
+          await createOperationCase(client, {
+            caseType: "MENTOR_VERIFICATION",
+            targetType: "MENTOR",
+            targetId: profile.id,
+            publicSummary: "Hồ sơ mentor đang chờ xét duyệt.",
+          });
+
+          await writeAudit(client, {
+            actorId: userId,
+            action: "MENTOR_VERIFICATION_SUBMITTED",
+            targetType: "MENTOR",
+            targetId: profile.id,
+            correlationId,
+          });
+
+          const row = result.rows[0];
+          return {
+            verificationId: row.id,
+            mentorId: profile.id,
+            status: row.status,
+            submittedAt: row.created_at,
+            version: row.version,
+          };
+        } catch (error) {
+          if (error.code === "23505") {
+            throw new AppError({
+              status: 409, code: "VERIFICATION_ALREADY_PENDING",
+              message: "Hồ sơ xác minh đang được xét duyệt.",
+              recovery: { kind: "WAIT", retryable: false, retryAfterSeconds: null },
+            });
+          }
+          throw error;
+        }
       });
     } catch (error) {
-      await storage.delete(key);
+      if (error.status !== 422 && error.status !== 409 && error.status !== 415) {
+        await storage.delete(key);
+      }
       throw error;
     }
   }
@@ -164,7 +324,16 @@ export function createMentorsService({ pool, storage, environment }) {
         coalesce(array_agg(DISTINCT p.name) FILTER (WHERE p.id IS NOT NULL), '{}') AS position_expertise,
         coalesce(array_agg(DISTINCT t.id) FILTER (WHERE t.id IS NOT NULL), '{}') AS topic_ids,
         coalesce(array_agg(DISTINCT p.id) FILTER (WHERE p.id IS NOT NULL), '{}') AS position_ids,
-        '[]'::jsonb AS next_slots
+        '[]'::jsonb AS next_slots,
+        (SELECT jsonb_build_object(
+          'id', mv.id, 'status', mv.status,
+          'submittedAt', mv.created_at, 'decidedAt', mv.decided_at,
+          'decisionReason', mv.decision_reason, 'version', mv.version
+        )
+        FROM mentor_verifications mv
+        WHERE mv.mentor_id = mp.id
+        ORDER BY mv.created_at DESC, mv.id DESC
+        LIMIT 1) AS latest_verification
        FROM mentor_profiles mp JOIN users u ON u.id = mp.user_id
        LEFT JOIN mentor_expertise me ON me.mentor_id = mp.id
        LEFT JOIN topics t ON t.id = me.topic_id
@@ -173,7 +342,7 @@ export function createMentorsService({ pool, storage, environment }) {
       [userId],
     );
     if (!result.rowCount) throw notFoundError();
-    return profileDto(result.rows[0]);
+    return ownProfileDto(result.rows[0]);
   }
 
   async function listPublic({ topic, availableFrom, page, pageSize }) {
