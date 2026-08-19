@@ -45,11 +45,21 @@ export function createMentorsRouter({ pool, storage, environment }) {
     asyncHandler(async (request, response) => {
       const query = parse(
         z.object({
-          topic: z.string().max(100).optional(),
+          topic: z.string().trim().max(100).optional(),
           availableFrom: z.iso.datetime().optional(),
+          availableTo: z.iso.datetime().optional(),
           page: z.coerce.number().int().positive().default(1),
           pageSize: z.coerce.number().int().min(1).max(100).default(20),
-        }),
+        }).refine(
+          (value) =>
+            !value.availableFrom ||
+            !value.availableTo ||
+            new Date(value.availableTo) > new Date(value.availableFrom),
+          {
+            message: "Khoảng thời gian không hợp lệ",
+            path: ["availableTo"],
+          },
+        ),
         request.query,
       );
       response.json(await service.listPublic(query));

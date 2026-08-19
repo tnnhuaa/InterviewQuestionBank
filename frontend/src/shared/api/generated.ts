@@ -1683,6 +1683,65 @@ export interface components {
             pageSize: number;
             total: number;
         };
+        PublicAvailabilitySlot: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            timezone: string;
+        };
+        PublicMentor: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+            headline: string;
+            bio: string;
+            timezone: string;
+            publicRating?: number | null;
+            expertise: string[];
+            positionExpertise: string[];
+            nextSlots: components["schemas"]["PublicAvailabilitySlot"][];
+            version: number;
+        };
+        PublicReview: {
+            /** Format: uuid */
+            id: string;
+            rating: number;
+            comment?: string | null;
+            studentName: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        PublicMentorDetail: components["schemas"]["PublicMentor"] & {
+            reviews?: components["schemas"]["PublicReview"][];
+        };
+        MentorSearchContext: {
+            matchingMentorCount: number;
+            availabilityFiltered: boolean;
+            /** @enum {string|null} */
+            emptyReason: "NO_MATCHING_MENTOR" | "NO_AVAILABLE_SLOT" | null;
+        };
+        MentorSearchResponse: {
+            items: components["schemas"]["PublicMentor"][];
+            pageInfo: components["schemas"]["PageInfo"];
+            searchContext: components["schemas"]["MentorSearchContext"];
+        };
+        PlanMentorCandidate: components["schemas"]["PublicMentor"] & {
+            topicOverlap: number;
+            positionFit: number;
+            matchReasons: string[];
+            aiExplanation?: string | null;
+        };
+        PlanMentorCandidateResponse: {
+            /** Format: uuid */
+            planId: string;
+            planVersion: number;
+            items: components["schemas"]["PlanMentorCandidate"][];
+            pageInfo: components["schemas"]["PageInfo"];
+            searchContext: components["schemas"]["MentorSearchContext"];
+        };
         /** @enum {string} */
         MentorVerificationStatus: "DRAFT" | "PENDING" | "APPROVED" | "REJECTED";
         /** @enum {string} */
@@ -2769,7 +2828,17 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["Page"];
+            /** @description Approved Mentor candidates matching the Student's active preparation plan */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanMentorCandidateResponse"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
         };
     };
     startRecommendationExplanationJob: {
@@ -2795,6 +2864,7 @@ export interface operations {
             query?: {
                 topic?: string;
                 availableFrom?: string;
+                availableTo?: string;
                 page?: number;
                 pageSize?: number;
             };
@@ -2804,7 +2874,16 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["Page"];
+            /** @description Approved public Mentors matching the selected filters */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MentorSearchResponse"];
+                };
+            };
+            422: components["responses"]["Error"];
         };
     };
     getMentor: {
@@ -2818,7 +2897,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["Success"];
+            /** @description Approved public Mentor profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicMentorDetail"];
+                };
+            };
             404: components["responses"]["Error"];
         };
     };

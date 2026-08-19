@@ -980,8 +980,27 @@ export function createJdService({ pool, storage, environment }) {
       [planId, studentId],
     );
     if (!plan.rowCount) throw notFoundError();
-    const values = [planId, availableFrom ?? new Date().toISOString(), availableTo ?? null, pageSize, (page - 1) * pageSize];
-    const base = `
+
+    const requestNow = new Date();
+    const effectiveFrom = availableFrom
+      ? new Date(Math.max(requestNow.getTime(), new Date(availableFrom).getTime()))
+      : requestNow;
+    const effectiveTo = availableTo ? new Date(availableTo) : null;
+
+    if (effectiveTo && effectiveTo <= effectiveFrom) {
+      throw new AppError({
+        status: 422,
+        code: "VALIDATION_ERROR",
+        message: "Khoảng thời gian không hợp lệ",
+        fieldErrors: { availableTo: "Thời gian kết thúc phải sau thời gian bắt đầu" },
+        recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+      });
+    }
+
+    const hasAvailabilityFilter = Boolean(availableFrom || availableTo);
+    const values = [planId, effectiveFrom.toISOString(), effectiveTo ? effectiveTo.toISOString() : null];
+
+    const expertiseOnlyBase = `
       FROM mentor_profiles mp
       JOIN users u ON u.id = mp.user_id
       WHERE mp.verification_status = 'APPROVED'
@@ -989,13 +1008,23 @@ export function createJdService({ pool, storage, environment }) {
           SELECT 1 FROM mentor_expertise me
           JOIN preparation_plan_items pi ON pi.topic_id = me.topic_id
           WHERE pi.plan_id = $1 AND me.mentor_id = mp.id AND me.status = 'APPROVED'
-        )
+        )`;
+
+    const base = `
+      ${expertiseOnlyBase}
         AND EXISTS (
           SELECT 1 FROM availability_slots sx
           WHERE sx.mentor_id = mp.id AND sx.status = 'AVAILABLE'
             AND sx.starts_at >= $2::timestamptz
             AND ($3::timestamptz IS NULL OR sx.starts_at < $3::timestamptz)
         )`;
+
+    const matchingCountResult = await pool.query(
+      `SELECT count(*)::int AS total ${expertiseOnlyBase}`,
+      values.slice(0, 1),
+    );
+    const matchingMentorCount = matchingCountResult.rows[0].total;
+
     const [items, count] = await Promise.all([
       pool.query(
         `SELECT mp.*, u.display_name,
@@ -1030,10 +1059,18 @@ export function createJdService({ pool, storage, environment }) {
          ${base}
          ORDER BY topic_overlap DESC, position_fit DESC, first_slot, mp.public_rating DESC NULLS LAST, mp.id
          LIMIT $4 OFFSET $5`,
-        values,
+        [...values, pageSize, (page - 1) * pageSize],
       ),
-      pool.query(`SELECT count(*)::int AS total ${base}`, values.slice(0, 3)),
+      pool.query(`SELECT count(*)::int AS total ${base}`, values),
     ]);
+
+    const total = count.rows[0].total;
+    const availabilityFiltered = hasAvailabilityFilter && total === 0 && matchingMentorCount > 0;
+    let emptyReason = null;
+    if (total === 0) {
+      emptyReason = matchingMentorCount === 0 ? "NO_MATCHING_MENTOR" : "NO_AVAILABLE_SLOT";
+    }
+
     return {
       planId,
       planVersion: plan.rows[0].version,
@@ -1047,6 +1084,7 @@ export function createJdService({ pool, storage, environment }) {
         verificationStatus: row.verification_status,
         publicRating: row.public_rating,
         expertise: row.expertise,
+        positionExpertise: [],
         nextSlots: row.next_slots,
         version: row.version,
         topicOverlap: row.topic_overlap,
@@ -1059,7 +1097,12 @@ export function createJdService({ pool, storage, environment }) {
         ],
         aiExplanation: row.ai_explanation,
       })),
-      pageInfo: { page, pageSize, total: count.rows[0].total },
+      pageInfo: { page, pageSize, total },
+      searchContext: {
+        matchingMentorCount,
+        availabilityFiltered,
+        emptyReason,
+      },
     };
   }
 

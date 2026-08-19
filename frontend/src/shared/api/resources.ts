@@ -5,6 +5,56 @@ export interface Page<T> {
   items: T[];
   pageInfo: { page: number; pageSize: number; total: number };
 }
+
+export interface PublicAvailabilitySlot {
+  id: string;
+  startsAt: string;
+  endsAt: string;
+  timezone: string;
+}
+
+export type MentorSearchEmptyReason =
+  | "NO_MATCHING_MENTOR"
+  | "NO_AVAILABLE_SLOT"
+  | null;
+
+export interface MentorSearchContext {
+  matchingMentorCount: number;
+  availabilityFiltered: boolean;
+  emptyReason: MentorSearchEmptyReason;
+}
+
+export interface MentorSearchResponse extends Page<Mentor> {
+  searchContext: MentorSearchContext;
+}
+
+export interface PlanMentorCandidateResponse
+  extends Page<Mentor & {
+    topicOverlap: number;
+    positionFit: number;
+    matchReasons: string[];
+    aiExplanation?: string | null;
+  }> {
+  planId: string;
+  planVersion: number;
+  searchContext: MentorSearchContext;
+}
+
+export interface MentorSearchFilters {
+  topic?: string;
+  availableFrom?: string;
+  availableTo?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface PlanMentorCandidateFilters {
+  availableFrom?: string;
+  availableTo?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 export type Difficulty = "EASY" | "MEDIUM" | "HARD";
 export type PracticeStatus =
   "NOT_STARTED" | "PRACTICING" | "COMPLETED" | "REVISIT";
@@ -688,10 +738,10 @@ export const preparationPlansApi = {
     }),
   mentorCandidates: (
     planId: string,
-    filters: Record<string, string | number | undefined> = {},
+    filters: PlanMentorCandidateFilters = {},
   ) =>
-    apiFetch<Page<Mentor> & { planId: string; planVersion: number }>(
-      `/preparation-plans/${planId}/mentor-candidates${toQuery(filters)}`,
+    apiFetch<PlanMentorCandidateResponse>(
+      `/preparation-plans/${planId}/mentor-candidates${toQuery(filters as Record<string, string | number | undefined>)}`,
     ),
   startRecommendationExplanations: (planId: string) =>
     apiFetch<AiJob>(
@@ -721,8 +771,8 @@ export const aiApi = {
 };
 
 export const mentorsApi = {
-  list: (filters: Record<string, string | number | undefined> = {}) =>
-    apiFetch<Page<Mentor>>(`/mentors${toQuery(filters)}`),
+  list: (filters: MentorSearchFilters = {}) =>
+    apiFetch<MentorSearchResponse>(`/mentors${toQuery(filters as Record<string, string | number | undefined>)}`),
   get: (id: string) => apiFetch<Mentor>(`/mentors/${id}`),
   ownProfile: () => apiFetch<Mentor>("/mentor-profile"),
   saveProfile: (input: Record<string, unknown>) =>

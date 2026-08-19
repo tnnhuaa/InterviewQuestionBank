@@ -551,7 +551,17 @@ paths:
         }
     get:
       operationId: listPreparationPlanMentorCandidates
-      responses: { "200": { $ref: "#/components/responses/Page" } }
+      responses:
+        "200":
+          description: Approved Mentor candidates matching the Student's active preparation plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlanMentorCandidateResponse"
+        "404":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/Error"
   /preparation-plans/{planId}/recommendation-explanation-jobs:
     parameters:
       [
@@ -571,9 +581,14 @@ paths:
       security: []
       operationId: listMentors
       parameters:
-        - { name: topic, in: query, schema: { type: string } }
+        - { name: topic, in: query, schema: { type: string, maxLength: 100 } }
         - {
             name: availableFrom,
+            in: query,
+            schema: { type: string, format: date-time },
+          }
+        - {
+            name: availableTo,
             in: query,
             schema: { type: string, format: date-time },
           }
@@ -583,17 +598,29 @@ paths:
             in: query,
             schema: { type: integer, minimum: 1, maximum: 100 },
           }
-      responses: { "200": { $ref: "#/components/responses/Page" } }
+      responses:
+        "200":
+          description: Approved public Mentors matching the selected filters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MentorSearchResponse"
+        "422":
+          $ref: "#/components/responses/Error"
   /mentors/{mentorId}:
     parameters: [{ $ref: "#/components/parameters/MentorId" }]
     get:
       security: []
       operationId: getMentor
       responses:
-        {
-          "200": { $ref: "#/components/responses/Success" },
-          "404": { $ref: "#/components/responses/Error" },
-        }
+        "200":
+          description: Approved public Mentor profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicMentorDetail"
+        "404":
+          $ref: "#/components/responses/Error"
   /mentor-profile:
     get:
       operationId: getMentorProfile
@@ -1504,6 +1531,92 @@ components:
           pageSize: { type: integer },
           total: { type: integer },
         }
+    PublicAvailabilitySlot:
+      type: object
+      additionalProperties: false
+      required: [id, startsAt, endsAt, timezone]
+      properties:
+        id: { type: string, format: uuid }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        timezone: { type: string }
+    PublicMentor:
+      type: object
+      additionalProperties: false
+      required:
+        [id, displayName, headline, bio, timezone, expertise, positionExpertise, nextSlots, version]
+      properties:
+        id: { type: string, format: uuid }
+        displayName: { type: string }
+        headline: { type: string }
+        bio: { type: string }
+        timezone: { type: string }
+        publicRating: { type: [number, "null"] }
+        expertise:
+          { type: array, items: { type: string } }
+        positionExpertise:
+          { type: array, items: { type: string } }
+        nextSlots:
+          { type: array, items: { $ref: "#/components/schemas/PublicAvailabilitySlot" } }
+        version: { type: integer, minimum: 1 }
+    PublicReview:
+      type: object
+      additionalProperties: false
+      required: [id, rating, studentName, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: [string, "null"] }
+        studentName: { type: string }
+        createdAt: { type: string, format: date-time }
+    PublicMentorDetail:
+      allOf:
+        - $ref: "#/components/schemas/PublicMentor"
+        - type: object
+          properties:
+            reviews:
+              { type: array, items: { $ref: "#/components/schemas/PublicReview" } }
+    MentorSearchContext:
+      type: object
+      additionalProperties: false
+      required: [matchingMentorCount, availabilityFiltered, emptyReason]
+      properties:
+        matchingMentorCount: { type: integer, minimum: 0 }
+        availabilityFiltered: { type: boolean }
+        emptyReason:
+          { type: [string, "null"], enum: [NO_MATCHING_MENTOR, NO_AVAILABLE_SLOT, null] }
+    MentorSearchResponse:
+      type: object
+      additionalProperties: false
+      required: [items, pageInfo, searchContext]
+      properties:
+        items:
+          { type: array, items: { $ref: "#/components/schemas/PublicMentor" } }
+        pageInfo: { $ref: "#/components/schemas/PageInfo" }
+        searchContext: { $ref: "#/components/schemas/MentorSearchContext" }
+    PlanMentorCandidate:
+      allOf:
+        - $ref: "#/components/schemas/PublicMentor"
+        - type: object
+          additionalProperties: false
+          required: [topicOverlap, positionFit, matchReasons]
+          properties:
+            topicOverlap: { type: integer, minimum: 0 }
+            positionFit: { type: integer, minimum: 0 }
+            matchReasons:
+              { type: array, items: { type: string } }
+            aiExplanation: { type: [string, "null"] }
+    PlanMentorCandidateResponse:
+      type: object
+      additionalProperties: false
+      required: [planId, planVersion, items, pageInfo, searchContext]
+      properties:
+        planId: { type: string, format: uuid }
+        planVersion: { type: integer, minimum: 1 }
+        items:
+          { type: array, items: { $ref: "#/components/schemas/PlanMentorCandidate" } }
+        pageInfo: { $ref: "#/components/schemas/PageInfo" }
+        searchContext: { $ref: "#/components/schemas/MentorSearchContext" }
     MentorVerificationStatus:
       type: string
       enum: [DRAFT, PENDING, APPROVED, REJECTED]

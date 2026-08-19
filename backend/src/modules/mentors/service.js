@@ -454,7 +454,24 @@ export function createMentorsService({ pool, storage, environment }) {
     return ownProfileDto(result.rows[0]);
   }
 
-  async function listPublic({ topic, availableFrom, page, pageSize }) {
+  async function listPublic({ topic, availableFrom, availableTo, page, pageSize }) {
+    const requestNow = new Date();
+    const effectiveFrom = availableFrom
+      ? new Date(Math.max(requestNow.getTime(), new Date(availableFrom).getTime()))
+      : requestNow;
+    const effectiveTo = availableTo ? new Date(availableTo) : null;
+
+    if (effectiveTo && effectiveTo <= effectiveFrom) {
+      throw new AppError({
+        status: 422,
+        code: "VALIDATION_ERROR",
+        message: "Khoảng thời gian không hợp lệ",
+        fieldErrors: { availableTo: "Thời gian kết thúc phải sau thời gian bắt đầu" },
+        recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+      });
+    }
+
+    const hasAvailabilityFilter = Boolean(availableFrom || availableTo);
     const values = [];
     const clauses = ["mp.verification_status = 'APPROVED'"];
     if (topic) {
@@ -465,13 +482,49 @@ export function createMentorsService({ pool, storage, environment }) {
           AND (tx.slug = $${values.length} OR lower(tx.name) = lower($${values.length}))
       )`);
     }
-    if (availableFrom) {
-      values.push(availableFrom);
-      clauses.push(`EXISTS (
-        SELECT 1 FROM availability_slots axs WHERE axs.mentor_id = mp.id
-          AND axs.status = 'AVAILABLE' AND axs.starts_at >= $${values.length}
-      )`);
+
+    const topicClauses = [...clauses];
+    const topicValues = [...values];
+
+    if (hasAvailabilityFilter) {
+      values.push(effectiveFrom.toISOString());
+      if (effectiveTo) {
+        values.push(effectiveTo.toISOString());
+        clauses.push(`EXISTS (
+          SELECT 1 FROM availability_slots axs WHERE axs.mentor_id = mp.id
+            AND axs.status = 'AVAILABLE'
+            AND axs.starts_at >= $${values.length - 1}::timestamptz
+            AND axs.starts_at < $${values.length}::timestamptz
+        )`);
+      } else {
+        clauses.push(`EXISTS (
+          SELECT 1 FROM availability_slots axs WHERE axs.mentor_id = mp.id
+            AND axs.status = 'AVAILABLE'
+            AND axs.starts_at >= $${values.length}::timestamptz
+        )`);
+      }
     }
+
+    const countResult = await pool.query(
+      `SELECT count(*)::int AS total FROM mentor_profiles mp WHERE ${clauses.join(" AND ")}`,
+      values,
+    );
+    const total = countResult.rows[0].total;
+
+    const matchingCountResult = await pool.query(
+      `SELECT count(*)::int AS total FROM mentor_profiles mp WHERE ${topicClauses.join(" AND ")}`,
+      topicValues,
+    );
+    const matchingMentorCount = matchingCountResult.rows[0].total;
+
+    let nextSlotClause;
+    if (hasAvailabilityFilter) {
+      nextSlotClause = `AND s.starts_at >= $${values.length - (effectiveTo ? 2 : 1)}::timestamptz
+         AND (s.starts_at < $${values.length - (effectiveTo ? 1 : 0)}::timestamptz)`;
+    } else {
+      nextSlotClause = "AND s.starts_at > now()";
+    }
+
     values.push(pageSize, (page - 1) * pageSize);
     const result = await pool.query(
       `SELECT mp.*, u.display_name,
@@ -481,25 +534,36 @@ export function createMentorsService({ pool, storage, environment }) {
           SELECT jsonb_build_object('id', s.id, 'startsAt', s.starts_at, 'endsAt', s.ends_at,
             'timezone', s.source_timezone) AS slot
           FROM availability_slots s WHERE s.mentor_id = mp.id AND s.status = 'AVAILABLE'
-            AND s.starts_at > now() ORDER BY s.starts_at LIMIT 3
-        ) slots), '[]'::jsonb) AS next_slots
+            ${nextSlotClause}
+          ORDER BY s.starts_at LIMIT 3
+        ) slots), '[]'::jsonb) AS next_slots,
+        (SELECT min(s.starts_at) FROM availability_slots s WHERE s.mentor_id = mp.id
+          AND s.status = 'AVAILABLE' ${nextSlotClause}) AS first_slot
        FROM mentor_profiles mp JOIN users u ON u.id = mp.user_id
        LEFT JOIN mentor_expertise me ON me.mentor_id = mp.id AND me.status = 'APPROVED'
        LEFT JOIN topics t ON t.id = me.topic_id
        LEFT JOIN positions p ON p.id = me.position_id
        WHERE ${clauses.join(" AND ")}
        GROUP BY mp.id, u.display_name
-       ORDER BY mp.public_rating DESC NULLS LAST, mp.id
+       ORDER BY first_slot ASC NULLS LAST, mp.public_rating DESC NULLS LAST, mp.id
        LIMIT $${values.length - 1} OFFSET $${values.length}`,
       values,
     );
-    const count = await pool.query(
-      `SELECT count(*)::int AS total FROM mentor_profiles mp WHERE ${clauses.join(" AND ")}`,
-      values.slice(0, values.length - 2),
-    );
+
+    const availabilityFiltered = hasAvailabilityFilter && total === 0 && matchingMentorCount > 0;
+    let emptyReason = null;
+    if (total === 0) {
+      emptyReason = matchingMentorCount === 0 ? "NO_MATCHING_MENTOR" : "NO_AVAILABLE_SLOT";
+    }
+
     return {
       items: result.rows.map(profileDto),
-      pageInfo: { page, pageSize, total: count.rows[0].total },
+      pageInfo: { page, pageSize, total },
+      searchContext: {
+        matchingMentorCount,
+        availabilityFiltered,
+        emptyReason,
+      },
     };
   }
 
