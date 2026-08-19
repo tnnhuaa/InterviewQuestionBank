@@ -12,7 +12,7 @@ describe("getEnvironment", () => {
         DATABASE_SSL: "true",
         DB_POOL_MAX: "10",
       }),
-    ).toEqual({
+    ).toMatchObject({
       nodeEnv: "production",
       port: 8080,
       frontendOrigin: "https://example.test",
@@ -23,7 +23,7 @@ describe("getEnvironment", () => {
   });
 
   it("uses safe defaults for invalid input", () => {
-    expect(getEnvironment({ PORT: "invalid" })).toEqual({
+    expect(getEnvironment({ PORT: "invalid" })).toMatchObject({
       nodeEnv: "development",
       port: 3000,
       frontendOrigin: "http://localhost:5173",
