@@ -53,11 +53,22 @@ export interface PreparationPlan { id: string; jobDescriptionId: string; matchin
     topicOverlap?: number; positionFit?: number; matchReasons?: string[]; aiExplanation?: string;
   }
 
+export interface AvailabilitySlot {
+  id: string;
+  startsAt: string;
+  endsAt: string;
+  timezone: string;
+  status: "AVAILABLE" | "BOOKED" | "BLOCKED";
+  version: number;
+  pendingBookingCount: number;
+  deletable: boolean;
+}
+
 export type BookingStatus = "PENDING" | "CONFIRMED" | "RESCHEDULE_PROPOSED" | "REJECTED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
 export interface Booking {
   id: string; studentId: string; studentName?: string; mentorId: string; mentorName?: string; slotId: string;
   jobDescriptionId?: string; preparationPlanId?: string; goal: string; interviewType: string; status: BookingStatus;
-  startsAt: string; endsAt: string; timezone: string; rescheduleCount: number; correctedText?: string;
+  startsAt: string; endsAt: string; timezone: string; rescheduleCount: number; proposalCount: number; correctedText?: string;
   topicNames: string[]; selectedTopicIds?: string[]; questionGroups?: Array<{ id: string; title: string }>;
   roleSummary?: string; senioritySummary?: string; preparationPlanVersion?: number; scheduleVersion?: number;
   meetingLink?: string; meetingLinkVersion?: number; version: number;
@@ -161,7 +172,7 @@ export const mentorsApi = {
   ownProfile: () => apiFetch<Mentor>("/mentor-profile"),
   saveProfile: (input: Record<string, unknown>) => apiFetch<Mentor>("/mentor-profile", { method: "PUT", json: input }),
   submitVerification: (body: FormData) => apiFetch("/mentor-verifications", { method: "POST", body }),
-  slots: () => apiFetch<{ items: Mentor["nextSlots"] }>("/availability-slots"),
+  slots: () => apiFetch<{ items: AvailabilitySlot[] }>("/availability-slots"),
   createSlot: (input: { startsAt: string; endsAt: string; timezone: string }) => apiFetch("/availability-slots", { method: "POST", json: input }),
   cancelSlot: (id: string, version: number) => apiFetch(`/availability-slots/${id}?version=${version}`, { method: "DELETE" }),
 };
