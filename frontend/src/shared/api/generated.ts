@@ -957,6 +957,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/mentor-verifications/{verificationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                verificationId: string;
+            };
+            cookie?: never;
+        };
+        get: operations["getMentorVerificationForReview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/mentor-verifications/{verificationId}/evidence": {
         parameters: {
             query?: never;
@@ -1718,6 +1736,87 @@ export interface components {
             status: "PENDING";
             /** Format: date-time */
             submittedAt: string;
+            version: number;
+        };
+        AdminMentorVerificationQueueItem: {
+            /** Format: uuid */
+            verificationId: string;
+            /** Format: uuid */
+            mentorId: string;
+            displayName: string;
+            headline: string;
+            /** Format: date-time */
+            submittedAt: string;
+            /** @enum {string} */
+            status: "PENDING";
+            version: number;
+        };
+        AdminMentorVerificationHistoryItem: {
+            /** Format: uuid */
+            verificationId: string;
+            /** @enum {string} */
+            status: "APPROVED" | "REJECTED";
+            /** Format: date-time */
+            submittedAt: string;
+            /** Format: date-time */
+            decidedAt?: string | null;
+            decisionReason?: string | null;
+            decidedBy?: {
+                /** Format: uuid */
+                id: string;
+                displayName: string;
+            } | null;
+        };
+        AdminMentorVerificationReview: {
+            /** Format: uuid */
+            verificationId: string;
+            /** Format: uuid */
+            mentorId: string;
+            /** @enum {string} */
+            status: "PENDING" | "APPROVED" | "REJECTED";
+            version: number;
+            /** Format: date-time */
+            submittedAt: string;
+            mentor: {
+                displayName: string;
+                headline: string;
+                bio: string;
+                timezone: string;
+                topics: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                }[];
+                positions: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                }[];
+            };
+            evidence: {
+                mimeType: string;
+                sizeBytes: number;
+            };
+            priorDecisions: components["schemas"]["AdminMentorVerificationHistoryItem"][];
+        };
+        MentorVerificationDecisionInput: {
+            /** @enum {string} */
+            decision: "APPROVED" | "REJECTED";
+            reason: string;
+            version: number;
+        };
+        MentorVerificationDecisionResult: {
+            /** Format: uuid */
+            verificationId: string;
+            /** Format: uuid */
+            mentorId: string;
+            /** @enum {string} */
+            status: "APPROVED" | "REJECTED";
+            reason: string;
+            /** Format: date-time */
+            decidedAt: string;
+            /** Format: uuid */
+            decidedBy: string;
             version: number;
         };
     };
@@ -2837,7 +2936,43 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["Page"];
+            /** @description Pending Mentor verification queue */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["AdminMentorVerificationQueueItem"][];
+                        pageInfo: components["schemas"]["PageInfo"];
+                    };
+                };
+            };
+            403: components["responses"]["Error"];
+        };
+    };
+    getMentorVerificationForReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                verificationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mentor verification Admin review detail */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMentorVerificationReview"];
+                };
+            };
+            403: components["responses"]["Error"];
+            404: components["responses"]["Error"];
         };
     };
     getMentorEvidence: {
@@ -2894,10 +3029,25 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: components["requestBodies"]["JsonInput"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MentorVerificationDecisionInput"];
+            };
+        };
         responses: {
-            200: components["responses"]["Success"];
+            /** @description Persisted Mentor verification decision */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MentorVerificationDecisionResult"];
+                };
+            };
+            403: components["responses"]["Error"];
+            404: components["responses"]["Error"];
             409: components["responses"]["Error"];
+            422: components["responses"]["Error"];
         };
     };
     listBookings: {
