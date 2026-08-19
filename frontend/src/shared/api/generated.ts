@@ -957,6 +957,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/mentor-verifications/{verificationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                verificationId: string;
+            };
+            cookie?: never;
+        };
+        get: operations["getMentorVerificationForReview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/mentor-verifications/{verificationId}/evidence": {
         parameters: {
             query?: never;
@@ -1665,6 +1683,142 @@ export interface components {
             pageSize: number;
             total: number;
         };
+        /** @enum {string} */
+        MentorVerificationStatus: "DRAFT" | "PENDING" | "APPROVED" | "REJECTED";
+        /** @enum {string} */
+        MentorReviewStatus: "PENDING" | "APPROVED" | "REJECTED";
+        MentorProfileInput: {
+            headline: string;
+            bio: string;
+            timezone: string;
+            topicIds: string[];
+            positionIds: string[];
+            expertiseEvidence?: string;
+        };
+        MentorLatestVerification: {
+            /** Format: uuid */
+            id: string;
+            status: components["schemas"]["MentorReviewStatus"];
+            /** Format: date-time */
+            submittedAt: string;
+            /** Format: date-time */
+            decidedAt?: string | null;
+            decisionReason?: string | null;
+            version: number;
+        };
+        MentorOwnProfile: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            displayName: string;
+            headline: string;
+            bio: string;
+            timezone: string;
+            verificationStatus: components["schemas"]["MentorVerificationStatus"];
+            publicRating?: number | null;
+            expertise: string[];
+            positionExpertise: string[];
+            topicIds: string[];
+            positionIds: string[];
+            nextSlots: {
+                [key: string]: unknown;
+            }[];
+            latestVerification: components["schemas"]["MentorLatestVerification"] | null;
+            version: number;
+        };
+        MentorVerificationSubmission: {
+            /** Format: uuid */
+            verificationId: string;
+            /** Format: uuid */
+            mentorId: string;
+            /** @constant */
+            status: "PENDING";
+            /** Format: date-time */
+            submittedAt: string;
+            version: number;
+        };
+        AdminMentorVerificationQueueItem: {
+            /** Format: uuid */
+            verificationId: string;
+            /** Format: uuid */
+            mentorId: string;
+            displayName: string;
+            headline: string;
+            /** Format: date-time */
+            submittedAt: string;
+            /** @enum {string} */
+            status: "PENDING";
+            version: number;
+        };
+        AdminMentorVerificationHistoryItem: {
+            /** Format: uuid */
+            verificationId: string;
+            /** @enum {string} */
+            status: "APPROVED" | "REJECTED";
+            /** Format: date-time */
+            submittedAt: string;
+            /** Format: date-time */
+            decidedAt?: string | null;
+            decisionReason?: string | null;
+            decidedBy?: {
+                /** Format: uuid */
+                id: string;
+                displayName: string;
+            } | null;
+        };
+        AdminMentorVerificationReview: {
+            /** Format: uuid */
+            verificationId: string;
+            /** Format: uuid */
+            mentorId: string;
+            /** @enum {string} */
+            status: "PENDING" | "APPROVED" | "REJECTED";
+            version: number;
+            /** Format: date-time */
+            submittedAt: string;
+            mentor: {
+                displayName: string;
+                headline: string;
+                bio: string;
+                timezone: string;
+                topics: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                }[];
+                positions: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                }[];
+            };
+            evidence: {
+                mimeType: string;
+                sizeBytes: number;
+            };
+            priorDecisions: components["schemas"]["AdminMentorVerificationHistoryItem"][];
+        };
+        MentorVerificationDecisionInput: {
+            /** @enum {string} */
+            decision: "APPROVED" | "REJECTED";
+            reason: string;
+            version: number;
+        };
+        MentorVerificationDecisionResult: {
+            /** Format: uuid */
+            verificationId: string;
+            /** Format: uuid */
+            mentorId: string;
+            /** @enum {string} */
+            status: "APPROVED" | "REJECTED";
+            reason: string;
+            /** Format: date-time */
+            decidedAt: string;
+            /** Format: uuid */
+            decidedBy: string;
+            version: number;
+        };
     };
     responses: {
         /** @description Successful resource response */
@@ -1795,6 +1949,24 @@ export interface components {
             };
             content: {
                 "application/json": components["schemas"]["FeedbackDraft"];
+            };
+        };
+        /** @description Private Mentor-owned profile projection. Verification evidence is never included. */
+        MentorOwnProfile: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["MentorOwnProfile"];
+            };
+        };
+        /** @description Verification request accepted and placed in PENDING state. */
+        MentorVerificationSubmission: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["MentorVerificationSubmission"];
             };
         };
     };
@@ -2659,7 +2831,8 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["Success"];
+            200: components["responses"]["MentorOwnProfile"];
+            404: components["responses"]["Error"];
         };
     };
     saveMentorProfile: {
@@ -2669,9 +2842,15 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody: components["requestBodies"]["JsonInput"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MentorProfileInput"];
+            };
+        };
         responses: {
-            200: components["responses"]["Success"];
+            200: components["responses"]["MentorOwnProfile"];
+            409: components["responses"]["Error"];
+            422: components["responses"]["Error"];
         };
     };
     submitMentorVerification: {
@@ -2684,22 +2863,20 @@ export interface operations {
         requestBody: {
             content: {
                 "multipart/form-data": {
-                    headline: string;
-                    bio: string;
-                    timezone: string;
                     /** @constant */
                     consent: "true";
-                    topicIds?: string;
-                    positionIds?: string;
-                    expertiseEvidence?: string;
+                    profileVersion: number;
                     /** Format: binary */
                     evidence: string;
                 };
             };
         };
         responses: {
-            201: components["responses"]["Success"];
+            201: components["responses"]["MentorVerificationSubmission"];
+            409: components["responses"]["Error"];
+            413: components["responses"]["Error"];
             415: components["responses"]["Error"];
+            422: components["responses"]["Error"];
         };
     };
     listAvailabilitySlots: {
@@ -2759,7 +2936,43 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["Page"];
+            /** @description Pending Mentor verification queue */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["AdminMentorVerificationQueueItem"][];
+                        pageInfo: components["schemas"]["PageInfo"];
+                    };
+                };
+            };
+            403: components["responses"]["Error"];
+        };
+    };
+    getMentorVerificationForReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                verificationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mentor verification Admin review detail */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMentorVerificationReview"];
+                };
+            };
+            403: components["responses"]["Error"];
+            404: components["responses"]["Error"];
         };
     };
     getMentorEvidence: {
@@ -2816,10 +3029,25 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: components["requestBodies"]["JsonInput"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MentorVerificationDecisionInput"];
+            };
+        };
         responses: {
-            200: components["responses"]["Success"];
+            /** @description Persisted Mentor verification decision */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MentorVerificationDecisionResult"];
+                };
+            };
+            403: components["responses"]["Error"];
+            404: components["responses"]["Error"];
             409: components["responses"]["Error"];
+            422: components["responses"]["Error"];
         };
     };
     listBookings: {
