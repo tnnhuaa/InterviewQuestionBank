@@ -3,19 +3,18 @@ import { createAiProvider } from './src/modules/ai/provider.js';
 import { getEnvironment } from './src/config/environment.js';
 import { pool as databasePool } from './src/platform/db/pool.js';
 import { createPrivateStorage } from './src/platform/storage/private-storage.js';
-import fs from 'fs';
 
 
 
 async function test() {
   const env = getEnvironment();
   const aiProvider = createAiProvider(env);
-  const service = createJdService({ 
-    pool: databasePool, 
-    storage: createPrivateStorage(env.storage), 
-    environment: env 
+  const service = createJdService({
+    pool: databasePool,
+    storage: createPrivateStorage(env.storage),
+    environment: env
   });
-  
+
   // Create a minimal PNG
   const b64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
   const buffer = Buffer.from(b64, 'base64');
