@@ -13,3 +13,4 @@ coverage/
 .local/
 poc/.env
 poc_question/backend/.env
+.codegraph/

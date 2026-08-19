@@ -8,6 +8,19 @@ function normalizedContentHash(content) {
   return createHash("sha256").update(content.trim().replace(/\s+/g, " ").toLowerCase()).digest("hex");
 }
 
+function mapDuplicateContentError(error) {
+  if (error?.code === "23505" && error?.constraint === "ux_questions_normalized_content_hash") {
+    return new AppError({
+      status: 409,
+      code: "DUPLICATE_QUESTION_CONTENT",
+      message: "Đã tồn tại câu hỏi có nội dung trùng lặp.",
+      fieldErrors: { content: "Nội dung trùng với câu hỏi hiện có" },
+      recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+    });
+  }
+  return error;
+}
+
 function questionDto(row) {
   return {
     id: row.id,
@@ -137,7 +150,7 @@ export function createQuestionsService({ pool }) {
         [studentId, questionId, input.bookmarked, input.status],
       );
       await client.query(
-        `UPDATE preparation_plan_items pi SET practice_status = $3, updated_at = now(), version = version + 1
+        `UPDATE preparation_plan_items pi SET practice_status = $3, updated_at = now(), version = pi.version + 1
          FROM preparation_plans p
          WHERE pi.plan_id = p.id AND p.student_id = $1 AND pi.question_id = $2
            AND pi.practice_status <> $3`,
@@ -157,40 +170,45 @@ export function createQuestionsService({ pool }) {
         recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
       });
     }
-    const questionId = await withTransaction(pool, async (client) => {
-      const result = await client.query(
-        `INSERT INTO questions (
-           slug, title, content, answer_criteria, difficulty, lifecycle_status,
-           source_name, source_url, provenance_note, created_by, published_at, normalized_content_hash
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-           CASE WHEN $6 = 'PUBLISHED' THEN now() ELSE NULL END, $11)
-         RETURNING id`,
-        [input.slug, input.title, input.content, JSON.stringify(input.answerCriteria), input.difficulty,
-          input.lifecycleStatus, input.sourceName, input.sourceUrl, input.provenanceNote, actorId,
-          normalizedContentHash(input.content)],
-      );
-      const questionId = result.rows[0].id;
-      for (const topicId of input.topicIds) {
-        await client.query("INSERT INTO question_topics (question_id, topic_id) VALUES ($1, $2)", [questionId, topicId]);
-      }
-      for (const positionId of input.positionIds) {
-        await client.query("INSERT INTO question_positions (question_id, position_id) VALUES ($1, $2)", [questionId, positionId]);
-      }
-      await writeAudit(client, {
-        actorId,
-        action: "QUESTION_CREATED",
-        targetType: "QUESTION",
-        targetId: questionId,
-        reason: input.moderationReason,
-        correlationId,
+    try {
+      const questionId = await withTransaction(pool, async (client) => {
+        const result = await client.query(
+          `INSERT INTO questions (
+             slug, title, content, answer_criteria, difficulty, lifecycle_status,
+             source_name, source_url, provenance_note, created_by, published_at, normalized_content_hash
+           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+             CASE WHEN $6 = 'PUBLISHED' THEN now() ELSE NULL END, $11)
+           RETURNING id`,
+          [input.slug, input.title, input.content, JSON.stringify(input.answerCriteria), input.difficulty,
+            input.lifecycleStatus, input.sourceName, input.sourceUrl, input.provenanceNote, actorId,
+            normalizedContentHash(input.content)],
+        );
+        const questionId = result.rows[0].id;
+        for (const topicId of input.topicIds) {
+          await client.query("INSERT INTO question_topics (question_id, topic_id) VALUES ($1, $2)", [questionId, topicId]);
+        }
+        for (const positionId of input.positionIds) {
+          await client.query("INSERT INTO question_positions (question_id, position_id) VALUES ($1, $2)", [questionId, positionId]);
+        }
+        await writeAudit(client, {
+          actorId,
+          action: "QUESTION_CREATED",
+          targetType: "QUESTION",
+          targetId: questionId,
+          reason: input.moderationReason,
+          correlationId,
+        });
+        return questionId;
       });
-      return questionId;
-    });
-    return get({ id: questionId, actorId, includeAll: true });
+      return get({ id: questionId, actorId, includeAll: true });
+    } catch (error) {
+      throw mapDuplicateContentError(error);
+    }
   }
 
   async function updateQuestion(actorId, questionId, input, correlationId) {
-    await withTransaction(pool, async (client) => {
+    try {
+      await withTransaction(pool, async (client) => {
       const current = await client.query(
         "SELECT version, lifecycle_status FROM questions WHERE id = $1 FOR UPDATE",
         [questionId],
@@ -216,8 +234,11 @@ export function createQuestionsService({ pool }) {
         await client.query("INSERT INTO question_positions(question_id, position_id) VALUES ($1,$2)", [questionId, positionId]);
       }
       await writeAudit(client, { actorId, action: "QUESTION_UPDATED", targetType: "QUESTION", targetId: questionId, reason: input.reason, correlationId });
-    });
-    return get({ id: questionId, actorId, includeAll: true });
+      });
+      return get({ id: questionId, actorId, includeAll: true });
+    } catch (error) {
+      throw mapDuplicateContentError(error);
+    }
   }
 
   async function changeLifecycle(actorId, questionId, input, correlationId) {
