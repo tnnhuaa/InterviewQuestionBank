@@ -18,6 +18,22 @@ function conflict(code, message, recoveryKind = "RETRY_SAFE") {
   });
 }
 
+export async function assertRescheduleProposalLimit(client, bookingId) {
+  const proposalCount = await client.query(
+    "SELECT count(*)::int AS count FROM booking_reschedule_proposals WHERE booking_id = $1",
+    [bookingId],
+  );
+  if (proposalCount.rows[0].count >= 2) {
+    throw conflict("RESCHEDULE_LIMIT_REACHED", "Lịch này đã dùng hết hai lần đề xuất đổi giờ.", "CONTACT_SUPPORT");
+  }
+}
+
+export function assertCanCreateFeedback(row, actor) {
+  if (row.mentor_user_id !== actor.id || row.state !== "COMPLETED") {
+    throw notFoundError();
+  }
+}
+
 function bookingDto(row) {
   return {
     id: row.id,
@@ -35,6 +51,7 @@ function bookingDto(row) {
     endsAt: row.ends_at,
     timezone: row.source_timezone,
     rescheduleCount: row.reschedule_count,
+    proposalCount: row.proposal_count ?? 0,
     correctedText: row.corrected_text,
     topicNames: row.topic_names ?? [],
     selectedTopicIds: row.topic_ids ?? [],
@@ -56,6 +73,7 @@ const bookingProjection = `
     bcs.role_summary, bcs.seniority_summary,
     jtv.corrected_text,
     ml.recovery_deadline,
+    (SELECT count(*)::int FROM booking_reschedule_proposals brp WHERE brp.booking_id = b.id) AS proposal_count,
     coalesce((SELECT array_agg(DISTINCT t.name ORDER BY t.name)
       FROM topics t WHERE t.id = ANY(coalesce(bcs.topic_ids, '{}'))),
       (SELECT array_agg(DISTINCT t.name ORDER BY t.name)
@@ -422,7 +440,7 @@ export function createBookingsService({ pool, environment }) {
         }
       } else if (input.action === "PROPOSE_RESCHEDULE") {
         if ((!isStudent && !isMentor) || !["PENDING", "CONFIRMED"].includes(row.state)) throw notFoundError();
-        if (row.reschedule_count >= 2) throw conflict("RESCHEDULE_LIMIT_REACHED", "Lịch này đã dùng hết hai lần đề xuất đổi giờ.", "CONTACT_SUPPORT");
+        await assertRescheduleProposalLimit(client, row.id);
         const hours = (new Date(row.starts_at).getTime() - Date.now()) / 3_600_000;
         if (hours < 12) {
           operationCase = await createOperationCase(client, {
@@ -663,7 +681,7 @@ export function createBookingsService({ pool, environment }) {
   async function startFeedbackDraft(actor, bookingId, input, idempotencyKey, correlationId) {
     return withTransaction(pool, async (client) => {
       const row = await getParticipantRow(client, actor, bookingId, true);
-      if (row.mentor_user_id !== actor.id || row.state !== "COMPLETED") throw notFoundError();
+      assertCanCreateFeedback(row, actor);
       const existingFeedback = await client.query("SELECT 1 FROM feedback WHERE booking_id = $1", [bookingId]);
       if (existingFeedback.rowCount) throw conflict("FEEDBACK_ALREADY_EXISTS", "Lịch hẹn này đã có feedback.", "NONE");
       const jobInput = { bookingVersion: row.version, sessionNotes: input.sessionNotes };
@@ -726,7 +744,7 @@ export function createBookingsService({ pool, environment }) {
          WHERE id = $1 AND booking_id = $2 AND mentor_id = $3 AND version = $9
          RETURNING *`,
         [draftId, bookingId, booking.mentor_id, input.rubricScores, input.strengths,
-          input.weaknesses, input.nextActions, input.status, input.version],
+          input.weaknesses, JSON.stringify(input.nextActions), input.status, input.version],
       );
       if (!result.rowCount) throw conflict("VERSION_CONFLICT", "Feedback draft đã thay đổi. Hãy tải lại trước khi lưu.");
       await writeAudit(client, {
@@ -744,7 +762,7 @@ export function createBookingsService({ pool, environment }) {
   async function createFeedback(actor, bookingId, input, correlationId) {
     return withTransaction(pool, async (client) => {
       const row = await getParticipantRow(client, actor, bookingId, true);
-      if (row.mentor_user_id !== actor.id || row.state !== "COMPLETED") throw notFoundError();
+      assertCanCreateFeedback(row, actor);
       if (input.draftId) {
         const draft = await client.query(
           `SELECT id FROM feedback_drafts WHERE id = $1 AND booking_id = $2 AND mentor_id = $3
