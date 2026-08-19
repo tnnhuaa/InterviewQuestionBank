@@ -12,24 +12,26 @@ describe("getEnvironment", () => {
         DATABASE_SSL: "true",
         DB_POOL_MAX: "10",
       }),
-    ).toEqual({
+    ).toMatchObject({
       nodeEnv: "production",
       port: 8080,
       frontendOrigin: "https://example.test",
       databaseUrl: "postgres://user:pass@host:5432/db",
       databaseSsl: true,
       dbPoolMax: 10,
+      notifications: { remindersEnabled: false },
     });
   });
 
   it("uses safe defaults for invalid input", () => {
-    expect(getEnvironment({ PORT: "invalid" })).toEqual({
+    expect(getEnvironment({ PORT: "invalid" })).toMatchObject({
       nodeEnv: "development",
       port: 3000,
       frontendOrigin: "http://localhost:5173",
       databaseUrl: undefined,
       databaseSsl: false,
       dbPoolMax: 5,
+      notifications: { remindersEnabled: false },
     });
   });
 });

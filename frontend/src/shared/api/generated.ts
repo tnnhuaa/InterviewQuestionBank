@@ -1516,6 +1516,30 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        InAppNotification: {
+            /** Format: uuid */
+            id: string;
+            eventType: string;
+            title: string;
+            body: string;
+            resourceType: string | null;
+            /** Format: uuid */
+            resourceId: string | null;
+            /** Format: date-time */
+            readAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        NotificationListResponse: {
+            items: components["schemas"]["InAppNotification"][];
+            unread: number;
+        };
+        NotificationReadResult: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            readAt: string;
+        };
         Recovery: {
             /** @enum {string} */
             kind: "RETRY_SAFE" | "EDIT_INPUT" | "REUPLOAD" | "PASTE_TEXT" | "SELECT_ANOTHER_SLOT" | "WAIT" | "CONTACT_SUPPORT" | "NONE";
@@ -3429,7 +3453,16 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["Success"];
+            /** @description Current user's recent in-app notifications and unread count */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationListResponse"];
+                };
+            };
+            401: components["responses"]["Error"];
         };
     };
     readNotification: {
@@ -3443,7 +3476,17 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["Success"];
+            /** @description Notification marked as read */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationReadResult"];
+                };
+            };
+            401: components["responses"]["Error"];
+            404: components["responses"]["Error"];
         };
     };
     listOperationCases: {

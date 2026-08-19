@@ -18,6 +18,25 @@ function extractionErrorCode(error) {
   return knownCodes.has(error?.message) ? error.message : "EXTRACTION_PROVIDER_FAILURE";
 }
 
+function classifyNotificationError(error) {
+  const name = error?.name ?? "UnknownError";
+  const code = error?.code ?? "";
+  const responseCode = error?.responseCode ?? 0;
+
+  if (name === "AuthError" || name === "AuthenticationError") return { retryable: false, errorClass: name };
+  if (code === "EAUTH" || (code === "ECONNREFUSED" && responseCode === 530)) return { retryable: false, errorClass: "SMTP_AUTH_FAILURE" };
+  if (responseCode >= 500 && responseCode < 600) return { retryable: true, errorClass: `SMTP_${responseCode}` };
+  if (responseCode >= 400 && responseCode < 500 && responseCode !== 421 && responseCode !== 451) {
+    return { retryable: false, errorClass: `SMTP_${responseCode}` };
+  }
+  if (code === "ETIMEDOUT" || code === "ECONNRESET" || code === "ENOTFOUND" || code === "EAI_AGAIN") {
+    return { retryable: true, errorClass: `NETWORK_${code}` };
+  }
+  if (name === "CanceledError" || name === "TimeoutError") return { retryable: true, errorClass: `${name}` };
+
+  return { retryable: true, errorClass: name };
+}
+
 async function claimExtractionJob(poolInstance) {
   return withTransaction(poolInstance, async (client) => {
     const result = await client.query(
@@ -115,12 +134,19 @@ async function claimNotification(poolInstance) {
        FOR UPDATE OF no SKIP LOCKED LIMIT 1`,
     );
     if (!result.rowCount) return null;
+    const job = result.rows[0];
     await client.query(
       `UPDATE notification_outbox SET status = 'PROCESSING', attempt_count = attempt_count + 1,
          locked_at = now(), locked_until = now() + interval '5 minutes' WHERE id = $1`,
-      [result.rows[0].id],
+      [job.id],
     );
-    return { ...result.rows[0], attempt_count: result.rows[0].attempt_count + 1 };
+    const claimed = { ...job, attempt_count: job.attempt_count + 1 };
+    if (job.status === "PROCESSING") {
+      console.log(JSON.stringify({ event: "notification.claim_recovered", outboxId: job.id, eventType: job.event_type, aggregateType: job.aggregate_type, aggregateId: job.aggregate_id, channel: job.channel, attemptCount: claimed.attempt_count }));
+    } else {
+      console.log(JSON.stringify({ event: "notification.claimed", outboxId: job.id, eventType: job.event_type, aggregateType: job.aggregate_type, aggregateId: job.aggregate_id, channel: job.channel, attemptCount: claimed.attempt_count }));
+    }
+    return claimed;
   });
 }
 
@@ -164,30 +190,63 @@ async function notificationContent(poolInstance, environment, job) {
       subject: "Lời mời quản trị PrepVI",
       text: `Xin chào ${job.display_name},\n\nThiết lập tài khoản quản trị tại: ${link}`,
     },
-    "booking.requested": {
+    "BOOKING_REQUESTED": {
       subject: "Bạn có yêu cầu đặt lịch mới",
       text: "Mở PrepVI để xem yêu cầu đặt lịch và quyết định bước tiếp theo.",
     },
-    "booking.confirmed": {
+    "BOOKING_CONFIRMED": {
       subject: "Lịch luyện phỏng vấn đã được xác nhận",
       text: "Mở PrepVI để xem thời gian và thông tin buổi luyện.",
     },
-    "booking.cancelled": {
+    "BOOKING_REJECTED": {
+      subject: "Yêu cầu đặt lịch chưa được chấp nhận",
+      text: "Mở PrepVI để xem trạng thái và chọn khung giờ khác.",
+    },
+    "BOOKING_CANCELLED": {
       subject: "Lịch luyện phỏng vấn đã được hủy",
       text: "Mở PrepVI để xem trạng thái và lựa chọn lịch khác nếu cần.",
     },
-    "feedback.submitted": {
+    "BOOKING_RESCHEDULE_PROPOSED": {
+      subject: "Có đề xuất đổi giờ",
+      text: "Mở PrepVI để chấp nhận hoặc từ chối giờ mới.",
+    },
+    "BOOKING_RESCHEDULE_ACCEPTED": {
+      subject: "Giờ phỏng vấn mới đã được xác nhận",
+      text: "Mở PrepVI để kiểm tra thời gian mới.",
+    },
+    "BOOKING_RESCHEDULE_REJECTED": {
+      subject: "Đề xuất đổi giờ không được chấp nhận",
+      text: "Mở PrepVI để xem thời gian hiện tại và lựa chọn tiếp theo.",
+    },
+    "BOOKING_COMPLETED": {
+      subject: "Buổi phỏng vấn đã hoàn tất",
+      text: "Mở PrepVI để xem phản hồi và bước tiếp theo.",
+    },
+    "MEETING_LINK_READY": {
+      subject: "Link phòng phỏng vấn đã sẵn sàng",
+      text: "Mở PrepVI để tham gia đúng giờ.",
+    },
+    "FEEDBACK_READY": {
       subject: "Bạn đã nhận được phản hồi",
       text: "Mở PrepVI để xem phản hồi riêng tư và hành động tiếp theo.",
     },
+    "BOOKING_REMINDER_24H": {
+      subject: "Nhắc lịch phỏng vấn sau 24 giờ",
+      text: "Mở PrepVI để kiểm tra lịch và link phòng họp.",
+    },
+    "BOOKING_REMINDER_1H": {
+      subject: "Nhắc lịch phỏng vấn sau 1 giờ",
+      text: "Mở PrepVI để kiểm tra lịch và link phòng họp.",
+    },
   };
-  return templates[job.event_type.toLowerCase().replaceAll("_", ".")] ?? {
+  return templates[job.event_type] ?? templates[job.event_type.toLowerCase().replaceAll("_", ".")] ?? {
     subject: "Cập nhật từ PrepVI",
     text: "Mở PrepVI để xem cập nhật mới nhất.",
   };
 }
 
 async function processNotification({ poolInstance, transporter, environment, job }) {
+  const logBase = { outboxId: job.id, eventType: job.event_type, aggregateType: job.aggregate_type, aggregateId: job.aggregate_id, channel: job.channel, attemptCount: job.attempt_count };
   try {
     const content = await notificationContent(poolInstance, environment, job);
     const active = await poolInstance.query("SELECT status FROM notification_outbox WHERE id = $1", [job.id]);
@@ -210,6 +269,7 @@ async function processNotification({ poolInstance, transporter, environment, job
           [job.id],
         );
       });
+      console.log(JSON.stringify({ event: "notification.sent", ...logBase, status: "SENT" }));
       return;
     }
     const result = await transporter.sendMail({
@@ -226,17 +286,22 @@ async function processNotification({ poolInstance, transporter, environment, job
        WHERE id = $1 AND status = 'PROCESSING'`,
       [job.id, result.messageId],
     );
+    console.log(JSON.stringify({ event: "notification.sent", ...logBase, status: "SENT" }));
   } catch (error) {
-    const retryMinutes = job.attempt_count === 1 ? 1 : job.attempt_count === 2 ? 5 : null;
+    const { retryable, errorClass } = classifyNotificationError(error);
+    const retryMinutes = retryable && job.attempt_count === 1 ? 1 : retryable && job.attempt_count === 2 ? 5 : null;
     await withTransaction(poolInstance, async (client) => {
       await client.query(
         `UPDATE notification_outbox SET status = $2,
            available_at = CASE WHEN $2 = 'RETRY' THEN scheduled_for + ($3 || ' minutes')::interval ELSE available_at END,
            last_error_class = $4, locked_at = NULL, locked_until = NULL
          WHERE id = $1 AND status = 'PROCESSING'`,
-        [job.id, retryMinutes ? "RETRY" : "DEAD", retryMinutes ?? 0, error.name],
+        [job.id, retryMinutes ? "RETRY" : "DEAD", retryMinutes ?? 0, errorClass],
       );
-      if (!retryMinutes) {
+      if (retryMinutes) {
+        console.log(JSON.stringify({ event: "notification.retry_scheduled", ...logBase, status: "RETRY", retryMinutes, errorClass }));
+      } else {
+        console.log(JSON.stringify({ event: "notification.dead", ...logBase, status: "DEAD", errorClass }));
         await createOperationCase(client, {
           caseType: "NOTIFICATION_DEAD",
           targetType: "NOTIFICATION_OUTBOX",
@@ -245,7 +310,10 @@ async function processNotification({ poolInstance, transporter, environment, job
           restrictedMetadata: {
             aggregateType: job.aggregate_type,
             aggregateId: job.aggregate_id,
-            errorClass: error.name,
+            eventType: job.event_type,
+            channel: job.channel,
+            errorClass,
+            attemptCount: job.attempt_count,
           },
         });
       }

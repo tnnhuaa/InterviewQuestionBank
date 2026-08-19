@@ -3,6 +3,7 @@ import { withTransaction } from "../../platform/db/transaction.js";
 import { writeAudit } from "../../platform/audit.js";
 import { findIdempotentResult, saveIdempotentResult } from "../../platform/idempotency.js";
 import { enqueueNotification } from "../../platform/outbox.js";
+import { enqueueBookingNotification } from "../bookings/service.js";
 import { featureByJobKind } from "../ai/jobs.js";
 
 const actionsByType = {
@@ -27,7 +28,8 @@ async function cancelReminders(client, bookingId) {
   );
 }
 
-async function scheduleReminders(client, booking, recipients) {
+async function scheduleReminders(client, booking, recipients, remindersEnabled) {
+  if (!remindersEnabled) return;
   for (const milestone of [{ code: "24H", hours: 24 }, { code: "1H", hours: 1 }]) {
     const scheduledFor = new Date(new Date(booking.starts_at).getTime() - milestone.hours * 3_600_000);
     if (scheduledFor <= new Date()) continue;
@@ -73,6 +75,19 @@ function caseDto(row) {
       maxAttempts: row.ai_max_attempts,
       model: row.ai_model,
     } : undefined,
+    notificationJob: row.no_event_type ? {
+      id: row.target_id,
+      eventType: row.no_event_type,
+      aggregateType: row.no_aggregate_type,
+      aggregateId: row.no_aggregate_id,
+      channel: row.no_channel,
+      status: row.no_status,
+      attemptCount: row.no_attempt_count,
+      lastErrorClass: row.no_last_error_class,
+      occurredAt: row.no_occurred_at,
+      scheduledFor: row.no_scheduled_for,
+      sentAt: row.no_sent_at,
+    } : undefined,
   };
 }
 
@@ -95,9 +110,15 @@ export function createOperationsService({ pool, environment }) {
   async function getCase(id) {
     const result = await pool.query(
       `SELECT oc.*, aj.kind AS ai_kind, aj.status AS ai_status, aj.error_code AS ai_error_code,
-              aj.attempt_count AS ai_attempt_count, aj.max_attempts AS ai_max_attempts, aj.model AS ai_model
+              aj.attempt_count AS ai_attempt_count, aj.max_attempts AS ai_max_attempts, aj.model AS ai_model,
+              no.event_type AS no_event_type, no.aggregate_type AS no_aggregate_type, no.aggregate_id AS no_aggregate_id,
+              no.channel AS no_channel, no.status AS no_status, no.attempt_count AS no_attempt_count,
+              no.last_error_class AS no_last_error_class, no.occurred_at AS no_occurred_at,
+              no.scheduled_for AS no_scheduled_for, no.sent_at AS no_sent_at
        FROM operation_cases oc LEFT JOIN ai_jobs aj
          ON oc.case_type = 'AI_JOB_FAILED' AND oc.target_type = 'AI_JOB' AND aj.id = oc.target_id
+       LEFT JOIN notification_outbox no
+         ON oc.case_type = 'NOTIFICATION_DEAD' AND oc.target_type = 'NOTIFICATION_OUTBOX' AND no.id = oc.target_id
        WHERE oc.id = $1`,
       [id],
     );
@@ -200,6 +221,16 @@ export function createOperationsService({ pool, environment }) {
           await client.query("UPDATE bookings SET state = 'CANCELLED', version = version + 1, updated_at = now() WHERE id = $1", [row.target_id]);
           await client.query("INSERT INTO booking_transitions (booking_id, from_state, to_state, actor_id, action, reason) VALUES ($1,$2,'CANCELLED',$3,'ADMIN_APPROVE_LATE_CANCEL',$4)", [row.target_id, booking.rows[0].state, actorId, input.reason]);
           await cancelReminders(client, row.target_id);
+          await enqueueBookingNotification(client, {
+            booking: { id: row.target_id, version: booking.rows[0].version + 1 },
+            recipientUserId: booking.rows[0].student_id,
+            eventType: "BOOKING_CANCELLED",
+          });
+          await enqueueBookingNotification(client, {
+            booking: { id: row.target_id, version: booking.rows[0].version + 1 },
+            recipientUserId: booking.rows[0].mentor_user_id,
+            eventType: "BOOKING_CANCELLED",
+          });
         } else {
           const proposedSlotId = row.restricted_metadata?.proposedSlotId;
           const proposed = await client.query(
@@ -217,8 +248,18 @@ export function createOperationsService({ pool, environment }) {
              WHERE id = $1 RETURNING *`,
             [row.target_id, proposedSlotId, proposed.rows[0].starts_at, proposed.rows[0].ends_at, proposed.rows[0].source_timezone],
           );
-          await scheduleReminders(client, changed.rows[0], [booking.rows[0].student_id, booking.rows[0].mentor_user_id]);
+          await scheduleReminders(client, changed.rows[0], [booking.rows[0].student_id, booking.rows[0].mentor_user_id], environment.notifications.remindersEnabled);
           await client.query("INSERT INTO booking_transitions (booking_id, from_state, to_state, actor_id, action, reason) VALUES ($1,$2,'CONFIRMED',$3,'ADMIN_APPROVE_LATE_RESCHEDULE',$4)", [row.target_id, booking.rows[0].state, actorId, input.reason]);
+          await enqueueBookingNotification(client, {
+            booking: changed.rows[0],
+            recipientUserId: booking.rows[0].student_id,
+            eventType: "BOOKING_RESCHEDULE_ACCEPTED",
+          });
+          await enqueueBookingNotification(client, {
+            booking: changed.rows[0],
+            recipientUserId: booking.rows[0].mentor_user_id,
+            eventType: "BOOKING_RESCHEDULE_ACCEPTED",
+          });
         }
       } else if (input.action === "CONFIRM_NO_SHOW") {
         const booking = await client.query(
@@ -356,13 +397,19 @@ export function createOperationsService({ pool, environment }) {
   }
 
   async function notifications(userId) {
-    const result = await pool.query(
-      `SELECT id, event_type AS "eventType", title, body, resource_type AS "resourceType",
-              resource_id AS "resourceId", read_at AS "readAt", created_at AS "createdAt"
-       FROM in_app_notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50`,
-      [userId],
-    );
-    return { items: result.rows, unread: result.rows.filter((row) => !row.readAt).length };
+    const [items, unreadResult] = await Promise.all([
+      pool.query(
+        `SELECT id, event_type AS "eventType", title, body, resource_type AS "resourceType",
+                resource_id AS "resourceId", read_at AS "readAt", created_at AS "createdAt"
+         FROM in_app_notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50`,
+        [userId],
+      ),
+      pool.query(
+        `SELECT count(*)::int AS unread FROM in_app_notifications WHERE user_id = $1 AND read_at IS NULL`,
+        [userId],
+      ),
+    ]);
+    return { items: items.rows, unread: unreadResult.rows[0].unread };
   }
 
   async function markNotificationRead(userId, notificationId) {

@@ -1033,7 +1033,15 @@ paths:
   /notifications:
     get:
       operationId: listNotifications
-      responses: { "200": { $ref: "#/components/responses/Success" } }
+      responses:
+        "200":
+          description: Current user's recent in-app notifications and unread count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationListResponse"
+        "401":
+          $ref: "#/components/responses/Error"
   /notifications/{notificationId}/read:
     parameters:
       [
@@ -1046,7 +1054,17 @@ paths:
       ]
     post:
       operationId: readNotification
-      responses: { "200": { $ref: "#/components/responses/Success" } }
+      responses:
+        "200":
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationReadResult"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
   /admin/operation-cases:
     get:
       operationId: listOperationCases
@@ -1267,6 +1285,35 @@ components:
         application/json:
           schema: { type: object, additionalProperties: true }
   schemas:
+    InAppNotification:
+      type: object
+      additionalProperties: false
+      required: [id, eventType, title, body, resourceType, resourceId, readAt, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        eventType: { type: string }
+        title: { type: string }
+        body: { type: string }
+        resourceType: { type: [string, "null"] }
+        resourceId: { type: [string, "null"], format: uuid }
+        readAt: { type: [string, "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+    NotificationListResponse:
+      type: object
+      additionalProperties: false
+      required: [items, unread]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/InAppNotification" }
+        unread: { type: integer, minimum: 0 }
+    NotificationReadResult:
+      type: object
+      additionalProperties: false
+      required: [id, readAt]
+      properties:
+        id: { type: string, format: uuid }
+        readAt: { type: string, format: date-time }
     Recovery:
       type: object
       required: [kind, retryable, retryAfterSeconds]

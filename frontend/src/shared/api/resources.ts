@@ -369,6 +369,19 @@ export interface OperationCase {
     maxAttempts: number;
     model: string;
   };
+  notificationJob?: {
+    id: string;
+    eventType: string;
+    aggregateType: string;
+    aggregateId: string;
+    channel: string;
+    status: string;
+    attemptCount: number;
+    lastErrorClass: string | null;
+    occurredAt: string;
+    scheduledFor: string;
+    sentAt: string | null;
+  };
 }
 export interface OperationReport {
   id: string;
@@ -985,18 +998,24 @@ export const adminApi = {
     }),
 };
 
+export interface InAppNotification {
+  id: string;
+  eventType: string;
+  title: string;
+  body: string;
+  resourceType: string | null;
+  resourceId: string | null;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export interface NotificationListResponse {
+  items: InAppNotification[];
+  unread: number;
+}
+
 export const notificationsApi = {
-  list: () =>
-    apiFetch<{
-      items: Array<{
-        id: string;
-        title: string;
-        body: string;
-        readAt?: string;
-        createdAt: string;
-      }>;
-      unread: number;
-    }>("/notifications"),
+  list: () => apiFetch<NotificationListResponse>("/notifications"),
   read: (id: string) =>
-    apiFetch(`/notifications/${id}/read`, { method: "POST" }),
+    apiFetch<{ id: string; readAt: string }>(`/notifications/${id}/read`, { method: "POST" }),
 };
