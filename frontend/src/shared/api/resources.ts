@@ -297,6 +297,7 @@ export type BookingStatus =
   | "CANCELLED"
   | "COMPLETED"
   | "NO_SHOW";
+
 export interface Booking {
   id: string;
   studentId: string;
@@ -316,7 +317,10 @@ export interface Booking {
   correctedText?: string;
   topicNames: string[];
   selectedTopicIds?: string[];
-  questionGroups?: Array<{ id: string; title: string }>;
+  questionGroups?: Array<{
+    id: string;
+    title: string;
+  }>;
   roleSummary?: string;
   senioritySummary?: string;
   preparationPlanVersion?: number;
@@ -324,12 +328,14 @@ export interface Booking {
   meetingLink?: string;
   meetingLinkVersion?: number;
   version: number;
+
   meetingRecovery?: {
     id: string;
     summary: string;
     deadline: string;
     version: number;
   };
+
   participantCases?: Array<{
     id: string;
     type: "LATE_CHANGE" | "NO_SHOW";
@@ -337,7 +343,23 @@ export interface Booking {
     version: number;
     requestedBy: string;
   }>;
-  operationCase?: { id: string; status: string; version: number };
+
+  transitionHistory?: Array<{
+    id: string;
+    fromState: string | null;
+    toState: string;
+    action: string;
+    reason: string | null;
+    occurredAt: string;
+    actorName: string;
+  }>;
+
+  operationCase?: {
+    id: string;
+    status: string;
+    version: number;
+  };
+
   pendingProposal?: {
     id: string;
     proposed_slot_id: string;
@@ -348,6 +370,7 @@ export interface Booking {
     source_timezone: string;
   };
 }
+
 export interface OperationCase {
   id: string;
   type: string;
@@ -810,14 +833,20 @@ export const mentorsApi = {
 };
 
 export const bookingsApi = {
-  list: (filters: Record<string, string | number | undefined> = {}) =>
-    apiFetch<Page<Booking>>(`/bookings${toQuery(filters)}`),
-  create: (input: Record<string, unknown>) =>
+  list: (
+    filters: Record<string, string | number | undefined> = {},
+  ) => apiFetch<Page<Booking>>(`/bookings${toQuery(filters)}`),
+
+  create: (
+    input: Record<string, unknown>,
+    idempotencyKey: string = createIdempotencyKey(),
+  ) =>
     apiFetch<Booking>("/bookings", {
       method: "POST",
       json: input,
-      headers: { "Idempotency-Key": createIdempotencyKey() },
-    }),
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),  
+  
   get: (id: string) => apiFetch<Booking>(`/bookings/${id}`),
   transition: (id: string, input: Record<string, unknown>) =>
     apiFetch<Booking>(`/bookings/${id}/transitions`, {

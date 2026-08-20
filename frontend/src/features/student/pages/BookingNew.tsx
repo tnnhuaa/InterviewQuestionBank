@@ -1,11 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { bookingsApi, mentorsApi, preparationPlansApi, jobDescriptionsApi, questionsApi, studentProfileApi } from "@/shared/api/resources";
 import AuthNavbar from "@/shared/components/AuthNavbar";
 import ErrorPanel from "@/shared/components/ErrorPanel";
+import { prepareBookingRequest, type BookingRequestAttempt } from "@/features/student/booking-request";
+import { createIdempotencyKey } from "@/shared/api/client";
 
 const schema = z.object({
   context: z.string().min(1, "Chọn JD hoặc kế hoạch"),
@@ -25,6 +28,7 @@ export default function BookingNew() {
   const slotId = params.get("slotId") ?? "";
   const initialPlanId = params.get("planId") ?? "";
   const navigate = useNavigate();
+  const requestAttempt = useRef<BookingRequestAttempt | null>(null);
   const mentor = useQuery({ queryKey: ["mentor", mentorId], queryFn: () => mentorsApi.get(mentorId), enabled: Boolean(mentorId) });
   const plans = useQuery({ queryKey: ["plans"], queryFn: preparationPlansApi.list });
   const jds = useQuery({ queryKey: ["job-descriptions"], queryFn: jobDescriptionsApi.list });
@@ -47,7 +51,7 @@ export default function BookingNew() {
       const [kind, id] = values.context.split(":");
       const planTopicIds = selectedPlan.data?.items.map((item) => item.topicId).filter((topicId): topicId is string => Boolean(topicId)) ?? [];
       const selectedTopicIds = [...new Set(kind === "plan" ? planTopicIds : values.selectedTopicIds)];
-      return bookingsApi.create({
+      const input = {
         mentorId,
         slotId,
         goal: values.goal,
@@ -55,7 +59,9 @@ export default function BookingNew() {
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         selectedTopicIds,
         ...(kind === "plan" ? { preparationPlanId: id, preparationPlanVersion: selectedPlan.data!.version } : { jobDescriptionId: id }),
-      });
+      };
+      requestAttempt.current = prepareBookingRequest(requestAttempt.current, input, createIdempotencyKey);
+      return bookingsApi.create(input, requestAttempt.current.idempotencyKey);
     },
     onSuccess: (booking) => navigate(`/bookings/${booking.id}`, { replace: true }),
   });
