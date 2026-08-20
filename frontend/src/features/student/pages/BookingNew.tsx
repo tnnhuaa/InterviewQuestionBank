@@ -137,6 +137,10 @@ export default function BookingNew() {
   };
 
   const slot = mentor.data?.nextSlots.find((item) => item.id === slotId);
+  const activePlans = plans.data?.items.filter((plan) => plan.status === "ACTIVE") ?? [];
+  const usableJobDescriptions = jds.data?.items.filter(
+    (jd) => jd.status === "CONFIRMED" || jd.status === "ANALYZED",
+  ) ?? [];
   const dependenciesReady = Boolean(
     mentor.data &&
       slot &&
@@ -181,24 +185,34 @@ export default function BookingNew() {
           </div>
 
           <label className="block text-xs font-semibold text-ink-secondary">
-            Ngữ cảnh chuẩn bị
+            Nội dung dùng cho buổi phỏng vấn
             <select {...form.register("context")} className="mt-1.5 w-full rounded-lg border border-edge bg-canvas px-3 py-2.5 text-sm">
-              <option value="">Chọn một mục</option>
-              {plans.data?.items.map((plan) => (
-                <option key={plan.id} value={`plan:${plan.id}`}>Kế hoạch {plan.id.slice(0, 8)} · v{plan.version}</option>
-              ))}
-              {jds.data?.items
-                .filter((jd) => jd.status === "CONFIRMED" || jd.status === "ANALYZED")
-                .map((jd) => (
-                  <option key={jd.id} value={`jd:${jd.id}`}>JD {jd.id.slice(0, 8)} · {jd.status}</option>
+              <option value="">Chọn JD hoặc kế hoạch của bạn</option>
+              {activePlans.length ? <optgroup label="Kế hoạch luyện tập">
+                {activePlans.map((plan) => (
+                  <option key={plan.id} value={`plan:${plan.id}`}>
+                    {plan.title} · {plan.topics.slice(0, 3).join(", ") || "chưa có chủ đề"}
+                  </option>
                 ))}
+              </optgroup> : null}
+              {usableJobDescriptions.length ? <optgroup label="Mô tả công việc (JD)">
+                {usableJobDescriptions.map((jd) => (
+                  <option key={jd.id} value={`jd:${jd.id}`}>
+                    {jd.title} · cập nhật {new Date(jd.updatedAt).toLocaleDateString("vi-VN")}
+                  </option>
+                ))}
+              </optgroup> : null}
             </select>
             {form.formState.errors.context ? <span className="mt-1 block text-xs text-danger">{form.formState.errors.context.message}</span> : null}
+            <span className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs font-normal text-ink-muted">
+              Chỉ hiển thị dữ liệu thuộc tài khoản của bạn và đủ điều kiện đặt lịch.
+              <Link to={routes.studentPreparationContexts} className="font-semibold text-primary">Quản lý JD và kế hoạch →</Link>
+            </span>
           </label>
 
           {contextKind === "plan" ? (
             <div className="rounded-lg border border-edge bg-canvas-subtle p-4">
-              <p className="text-xs font-semibold text-ink-secondary">Chủ đề từ plan v{selectedPlan.data?.version ?? "…"}</p>
+              <p className="text-xs font-semibold text-ink-secondary">Chủ đề từ kế hoạch v{selectedPlan.data?.version ?? "…"}</p>
               <p className="mt-2 text-sm text-ink">
                 {[...new Set(selectedPlan.data?.items.map((item) => item.topic).filter(Boolean))].join(", ") || "Plan chưa có chủ đề hợp lệ"}
               </p>

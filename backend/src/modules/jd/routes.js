@@ -1,18 +1,18 @@
 import { Router } from "express";
-import multer from "multer";
 import { z } from "zod";
 import { requireRole } from "../../middleware/auth.js";
 import { asyncHandler } from "../../shared/async-handler.js";
+import { singleUpload } from "../../shared/single-upload.js";
 import { parse } from "../../shared/validation.js";
 import { createJdService } from "./service.js";
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { files: 1, fileSize: 10 * 1024 * 1024 } });
+const uploadDocument = singleUpload("file", { fileSize: 10 * 1024 * 1024 });
 
 export function createJdRouter({ pool, storage, environment }) {
   const router = Router();
   const service = createJdService({ pool, storage, environment });
 
-  router.post("/job-descriptions", requireRole("STUDENT"), upload.single("file"), asyncHandler(async (request, response) => {
+  router.post("/job-descriptions", requireRole("STUDENT"), uploadDocument, asyncHandler(async (request, response) => {
     const result = request.file
       ? await service.createFromFile(request.auth.user.id, request.file, request.get("Idempotency-Key"))
       : await service.createFromText(
@@ -29,6 +29,29 @@ export function createJdRouter({ pool, storage, environment }) {
 
   router.get("/job-descriptions/:jobDescriptionId", requireRole("STUDENT"), asyncHandler(async (request, response) => {
     response.json(await service.get(request.auth.user.id, request.params.jobDescriptionId));
+  }));
+
+  router.patch("/job-descriptions/:jobDescriptionId", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const input = parse(z.object({
+      title: z.string().trim().min(1).max(120),
+      version: z.number().int().positive(),
+    }), request.body);
+    response.json(await service.updateJobDescription(
+      request.auth.user.id,
+      request.params.jobDescriptionId,
+      input,
+      request.correlationId,
+    ));
+  }));
+
+  router.delete("/job-descriptions/:jobDescriptionId", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const { version } = parse(z.object({ version: z.number().int().positive() }), request.body);
+    response.json(await service.archiveJobDescription(
+      request.auth.user.id,
+      request.params.jobDescriptionId,
+      version,
+      request.correlationId,
+    ));
   }));
 
   router.post("/job-descriptions/:jobDescriptionId/extract", requireRole("STUDENT"), asyncHandler(async (request, response) => {
@@ -145,6 +168,29 @@ export function createJdRouter({ pool, storage, environment }) {
 
   router.get("/preparation-plans/:planId", requireRole("STUDENT"), asyncHandler(async (request, response) => {
     response.json(await service.getPlan(request.auth.user.id, request.params.planId));
+  }));
+
+  router.patch("/preparation-plans/:planId", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const input = parse(z.object({
+      title: z.string().trim().min(1).max(120),
+      version: z.number().int().positive(),
+    }), request.body);
+    response.json(await service.updatePlan(
+      request.auth.user.id,
+      request.params.planId,
+      input,
+      request.correlationId,
+    ));
+  }));
+
+  router.delete("/preparation-plans/:planId", requireRole("STUDENT"), asyncHandler(async (request, response) => {
+    const { version } = parse(z.object({ version: z.number().int().positive() }), request.body);
+    response.json(await service.archivePlan(
+      request.auth.user.id,
+      request.params.planId,
+      version,
+      request.correlationId,
+    ));
   }));
 
   router.patch("/preparation-plans/:planId/items/:itemId", requireRole("STUDENT"), asyncHandler(async (request, response) => {

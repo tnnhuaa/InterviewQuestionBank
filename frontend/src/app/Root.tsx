@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { AppProvider, useApp } from "@/app/AppContext";
 import { canAccessPath, postLoginPath, requiredRoleForPath } from "@/app/access";
+import NotFound from "@/app/NotFound";
 import { routes } from "@/app/routePaths";
 import DemoBar from "@/shared/components/DemoBar";
 
@@ -16,7 +17,7 @@ function RouteAccess() {
   }
   if (required && !user) return <Navigate to={routes.login} replace state={{ returnTo: pathname }} />;
   if (required && user && !canAccessPath(user, pathname)) {
-    return <Navigate to={routes.permissionDenied} replace state={{ deniedPath: pathname }} />;
+    return <NotFound />;
   }
   return <Outlet key={user?.id ?? "public"} />;
 }

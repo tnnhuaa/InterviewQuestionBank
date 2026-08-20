@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { routes } from "@/app/routePaths";
 import { ApiError, createIdempotencyKey } from "@/shared/api/client";
 import { jobDescriptionsApi, type JobDescription } from "@/shared/api/resources";
 import AuthNavbar from "@/shared/components/AuthNavbar";
@@ -41,5 +42,6 @@ export default function JDOCRReview() {
     {processing && <div className="mt-6 rounded-xl border border-notice/20 bg-notice-soft p-6"><p className="text-sm font-semibold text-ink">Đang trích xuất văn bản</p><p className="mt-1 text-xs text-ink-secondary">Worker xử lý tối đa hai job đồng thời. Trang tự cập nhật mỗi 2 giây.</p></div>}
     {jd.data?.status === "FAILED" && <div className="mt-6 rounded-xl border border-danger/20 bg-danger-soft p-6"><p className="text-sm font-semibold text-ink">Không thể trích xuất tự động</p><p className="mt-1 text-xs text-ink-secondary">Bạn có thể thử lại, tải tệp khác hoặc dán văn bản thủ công.</p>{retry.error && <div className="mt-4"><ErrorPanel error={retry.error} onRetry={() => retryKey && retry.mutate(retryKey)} /></div>}<div className="mt-4 flex gap-2"><button disabled={retry.isPending} onClick={() => { const key = retryKey ?? createIdempotencyKey(); setRetryKey(key); retry.mutate(key); }} className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-on-primary disabled:opacity-50">Thử lại an toàn</button><Link to="/job-descriptions/new" className="rounded-md border border-edge bg-panel px-4 py-2 text-xs font-medium text-ink-secondary">Dán/tải nội dung khác</Link></div></div>}
     {jd.data && ["READY_FOR_REVIEW", "CONFIRMED", "ANALYZED"].includes(jd.data.status) && <div className="mt-6 rounded-xl border border-edge bg-canvas-subtle p-6"><ReviewEditor key={`${jd.data.id}:${jd.data.correctedVersion}`} jd={jd.data} /></div>}
+    {jd.data?.status === "ARCHIVED" && <div className="mt-6 rounded-xl border border-edge bg-panel p-6"><div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-sm font-semibold text-ink">{jd.data.title}</h2><p className="mt-1 text-xs text-ink-muted">JD đã được lưu trữ; nội dung chỉ còn ở chế độ xem lịch sử.</p></div><Link to={routes.studentPreparationContexts} className="text-xs font-semibold text-primary">Quay lại danh sách</Link></div><pre className="mt-5 max-h-[560px] overflow-auto whitespace-pre-wrap rounded-lg bg-canvas-subtle p-4 text-sm leading-6 text-ink-secondary">{jd.data.correctedText ?? jd.data.extractedText ?? "Không có nội dung đã lưu."}</pre></div>}
   </main></div>;
 }

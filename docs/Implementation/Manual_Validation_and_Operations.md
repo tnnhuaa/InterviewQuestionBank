@@ -93,7 +93,7 @@ Run the following once with every AI flag `false`, then again with the intended 
 
 1. Submit Vietnamese, English and mixed-language JDs. Confirm every Gemini requirement includes an exact evidence span and only an active taxonomy topic.
 2. Embed prompt-injection text in the JD and Mentor session notes. Confirm it is treated as untrusted data and does not add unknown topic, Question or Mentor IDs.
-3. Confirm requirements below confidence `0.75` block matching until Student selects accept, edit or unmapped. Matching remains `40/30/15/15`, threshold `60`, with deterministic tie-break.
+3. Xác nhận rằng yêu cầu có độ tin cậy dưới `0,75` sẽ chặn bước tìm câu hỏi cho đến khi Student chấp nhận, chỉnh sửa hoặc giữ chưa ánh xạ. Quy tắc tính điểm vẫn là `40/30/15/15`, ngưỡng phù hợp `60` điểm và thứ tự phân xử cố định.
 4. Generate Question/Mentor explanations. Confirm all candidate IDs already belong to the hard-filtered set, score/order are unchanged, and UI labels deterministic reason separately from Gemini explanation.
 5. Simulate timeout, `429`, provider `503`, invalid JSON/schema and invalid evidence/candidate references. Confirm retry is bounded, final failure uses fallback or creates an operation case, and support details contain no raw input.
 6. Confirm feedback session notes exist only as encrypted `ai_job_private_inputs`, are deleted after success/final fallback, and are removed by the 24-hour retention cleanup if abandoned.

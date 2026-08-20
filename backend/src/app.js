@@ -59,6 +59,7 @@ export function createApp({
   if (environment.openApiValidation) {
     app.use(openApiMiddleware({
       apiSpec: fileURLToPath(new URL("../openapi/openapi.yaml", import.meta.url)),
+      fileUploader: { limits: { files: 1, fileSize: 10 * 1024 * 1024 } },
       validateRequests: true,
       validateSecurity: false,
       validateResponses: {

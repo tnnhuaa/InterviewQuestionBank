@@ -647,7 +647,7 @@ Design review là gate bắt buộc trước khi chấp nhận architecture cho 
 | OCR quality phụ thuộc file/image | Direct extraction trước; supported-format limits; corpus benchmark; confidence/error state và manual correction bắt buộc |
 | Extraction sai kéo theo mapping sai | Chỉ analyze corrected text đã xác nhận; version/hash; hiển thị requirement nguồn và cho rerun |
 | Taxonomy/alias thiếu cho vị trí pilot | Giới hạn pilot role; golden dataset; review alias/version trước demo; không fallback sang AI âm thầm |
-| Mapping trả kết quả không liên quan | Rule-based explainable score; chỉ Published/active taxonomy; precision@10 review và threshold/version gate |
+| Mapping trả kết quả không liên quan | Điểm theo quy tắc có thể giải thích; chỉ dùng câu hỏi đã xuất bản và taxonomy đang hoạt động; rà soát precision@10 cùng cổng kiểm soát theo ngưỡng/phiên bản |
 | JD chứa PII/thông tin công ty | Private storage, least privilege, log redaction, file auto-delete, Student delete và retention review |
 | Double booking | DB constraint, transaction, lock và concurrency test |
 | Broken object authorization | Central policy, default deny, matrix integration tests |

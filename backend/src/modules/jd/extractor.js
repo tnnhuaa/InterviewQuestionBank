@@ -1,8 +1,12 @@
 import { createCanvas } from "@napi-rs/canvas";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { createWorker } from "tesseract.js";
 
 const MIN_DIRECT_TEXT_CHARACTERS = 50;
+const OCR_CACHE_PATH = path.join(os.tmpdir(), "prepvi-tesseract");
 
 function extractionError(code, cause) {
   return Object.assign(new Error(code, cause ? { cause } : undefined), { code });
@@ -28,9 +32,13 @@ async function withTimeout(operation, timeoutMs) {
 
 async function createOcrSession(languages, timeoutMs) {
   let worker;
+  await fs.mkdir(OCR_CACHE_PATH, { recursive: true });
+  const workerPromise = createWorker(languages, undefined, { cachePath: OCR_CACHE_PATH });
   try {
-    worker = await createWorker(languages);
+    worker = await withTimeout(workerPromise, timeoutMs);
   } catch (error) {
+    void workerPromise.then((createdWorker) => createdWorker.terminate()).catch(() => undefined);
+    if (error?.code === "OCR_TIMEOUT") throw error;
     const languageDataMissing = /traineddata|language|lang path/i.test(error?.message ?? "");
     throw extractionError(languageDataMissing ? "OCR_LANGUAGE_DATA_UNAVAILABLE" : "EXTRACTION_PROVIDER_FAILURE", error);
   }
@@ -45,15 +53,21 @@ async function createOcrSession(languages, timeoutMs) {
 }
 
 async function readPdf(buffer) {
-  const document = await getDocument({ data: new Uint8Array(buffer), isEvalSupported: false }).promise;
-  if (document.numPages > 5) throw new Error("PDF_PAGE_LIMIT");
-  const pages = [];
-  for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
-    const page = await document.getPage(pageNumber);
-    const content = await page.getTextContent();
-    pages.push(content.items.map((item) => item.str).join(" ").trim());
+  const loadingTask = getDocument({ data: new Uint8Array(buffer), isEvalSupported: false });
+  try {
+    const document = await loadingTask.promise;
+    if (document.numPages > 5) throw new Error("PDF_PAGE_LIMIT");
+    const pages = [];
+    for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
+      const page = await document.getPage(pageNumber);
+      const content = await page.getTextContent();
+      pages.push(content.items.map((item) => item.str).join(" ").trim());
+    }
+    return { document, loadingTask, text: pages.join("\n\n").trim() };
+  } catch (error) {
+    await loadingTask.destroy();
+    throw error;
   }
-  return { document, text: pages.join("\n\n").trim() };
 }
 
 async function renderPdfPage(document, pageNumber) {
@@ -91,7 +105,7 @@ export async function extractDocument({ buffer, mimeType, ocr }) {
         await session.close();
       }
     } finally {
-      await pdf.document.destroy();
+      await pdf.loadingTask.destroy();
     }
   }
   const session = await createOcrSession(ocr.languages, timeoutMs);

@@ -39,7 +39,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [demoRole, setDemoRole] = useState<Role | null>(null);
   const session = useQuery<SessionUser | null>({
     queryKey: sessionQueryKey,
-    queryFn: () => apiFetch<SessionUser>("/me"),
+    queryFn: ({ signal }) => apiFetch<SessionUser>("/me", { signal }),
     retry: false,
     staleTime: Infinity,
     gcTime: Infinity,

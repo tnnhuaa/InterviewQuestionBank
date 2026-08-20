@@ -50,6 +50,14 @@ export function errorHandler(error, request, response, next) {
     appError = error;
   } else if (mappedDependencyError) {
     appError = mappedDependencyError;
+  } else if (error instanceof SyntaxError && error?.status === 400 && "body" in error) {
+    appError = new AppError({
+      status: 400,
+      code: "INVALID_JSON",
+      message: "Nội dung JSON không hợp lệ. Hãy kiểm tra định dạng yêu cầu rồi gửi lại.",
+      recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
+      cause: error,
+    });
   } else if (Number.isInteger(error?.status) && error.status >= 400 && error.status < 500 && Array.isArray(error.errors)) {
     const fieldErrors = {};
     for (const issue of error.errors) {
@@ -73,6 +81,14 @@ export function errorHandler(error, request, response, next) {
       message: error.code === "LIMIT_FILE_SIZE"
         ? "Tệp vượt quá giới hạn 10 MB. Hãy chọn tệp nhỏ hơn."
         : "Không thể nhận tệp đã chọn. Hãy chọn lại một tệp hợp lệ.",
+      recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
+      cause: error,
+    });
+  } else if (/multipart|unexpected end of form|boundary not found/i.test(error?.message ?? "")) {
+    appError = new AppError({
+      status: 422,
+      code: "INVALID_UPLOAD",
+      message: "Không thể đọc dữ liệu upload. Hãy chọn lại tệp và chờ upload hoàn tất trước khi tiếp tục.",
       recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
       cause: error,
     });

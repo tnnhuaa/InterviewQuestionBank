@@ -1,6 +1,6 @@
 import { pool } from "./pool.js";
 
-export const EXPECTED_SCHEMA_MIGRATION = "008_mentor_verification_hardening";
+export const EXPECTED_SCHEMA_MIGRATION = "009_preparation_context_management";
 
 export async function checkConnection() {
   let client;

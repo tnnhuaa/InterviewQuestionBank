@@ -21,7 +21,7 @@ const roleNavigation: Record<Exclude<Role, "public">, NavLink[]> = {
     { to: routes.questions, label: "Câu hỏi" },
     { to: routes.mentors, label: "Mentor" },
     { to: `${routes.studentDashboard}#bookings`, label: "Lịch phỏng vấn" },
-    { to: routes.jobDescriptionNew, label: "JD của tôi" },
+    { to: routes.studentPreparationContexts, label: "JD & kế hoạch" },
   ],
   mentor: [
     { to: routes.mentorBookings, label: "Lịch đặt" },

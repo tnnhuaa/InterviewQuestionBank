@@ -24,12 +24,12 @@ export interface MentorSearchContext {
   emptyReason: MentorSearchEmptyReason;
 }
 
-export interface MentorSearchResponse extends Page<Mentor> {
+export interface MentorSearchResponse extends Page<PublicMentor> {
   searchContext: MentorSearchContext;
 }
 
 export interface PlanMentorCandidateResponse
-  extends Page<Mentor & {
+  extends Page<PublicMentor & {
     topicOverlap: number;
     positionFit: number;
     matchReasons: string[];
@@ -88,6 +88,7 @@ export interface Question {
 
 export interface JobDescription {
   id: string;
+  title: string;
   sourceType: "PASTED_TEXT" | "PDF" | "IMAGE";
   status:
     | "DRAFT"
@@ -95,7 +96,8 @@ export interface JobDescription {
     | "READY_FOR_REVIEW"
     | "CONFIRMED"
     | "ANALYZED"
-    | "FAILED";
+    | "FAILED"
+    | "ARCHIVED";
   extractedText?: string;
   correctedText?: string;
   correctedVersion: number;
@@ -108,6 +110,8 @@ export interface JobDescription {
     attemptCount: number;
     errorCode?: string;
   };
+  createdAt: string;
+  updatedAt: string;
   version: number;
 }
 
@@ -167,9 +171,12 @@ export interface Match {
 }
 export interface PreparationPlan {
   id: string;
+  title: string;
   jobDescriptionId: string;
   matchingVersion: string;
   status: string;
+  createdAt: string;
+  updatedAt: string;
   version: number;
   items: Array<{
     id: string;
@@ -187,15 +194,13 @@ export interface PreparationPlan {
   }>;
 }
 
-export interface Mentor {
+export interface PublicMentor {
   id: string;
-  userId: string;
   displayName: string;
   headline: string;
   bio: string;
   timezone: string;
-  verificationStatus: "DRAFT" | "PENDING" | "APPROVED" | "REJECTED";
-  publicRating: number;
+  publicRating: number | null;
   expertise: string[];
   positionExpertise?: string[];
   topicIds?: string[];
@@ -508,6 +513,24 @@ export interface StudentDashboard {
     mentorName: string;
   }>;
 }
+
+export interface PreparationPlanSummary {
+  id: string;
+  title: string;
+  jobDescriptionId: string;
+  jobDescriptionTitle: string;
+  matchingVersion: string;
+  status: "ACTIVE" | "COMPLETED" | "INVALIDATED" | "ARCHIVED";
+  topics: string[];
+  createdAt: string;
+  updatedAt: string;
+  version: number;
+}
+
+export interface Mentor extends PublicMentor {
+  userId: string;
+  verificationStatus: "DRAFT" | "PENDING" | "APPROVED" | "REJECTED";
+}
 export interface QuestionImportRow {
   id: string;
   rowNumber: number;
@@ -638,6 +661,16 @@ export const jobDescriptionsApi = {
     });
   },
   get: (id: string) => apiFetch<JobDescription>(`/job-descriptions/${id}`),
+  update: (id: string, input: { title: string; version: number }) =>
+    apiFetch<JobDescription>(`/job-descriptions/${id}`, {
+      method: "PATCH",
+      json: input,
+    }),
+  archive: (id: string, version: number) =>
+    apiFetch<JobDescription>(`/job-descriptions/${id}`, {
+      method: "DELETE",
+      json: { version },
+    }),
   startExtraction: (id: string, idempotencyKey: string) =>
     apiFetch<JobDescription>(`/job-descriptions/${id}/extract`, {
       method: "POST",
@@ -738,15 +771,7 @@ export const jobDescriptionsApi = {
 };
 
 export const preparationPlansApi = {
-  list: () =>
-    apiFetch<
-      Page<
-        Pick<
-          PreparationPlan,
-          "id" | "jobDescriptionId" | "matchingVersion" | "status" | "version"
-        >
-      >
-    >("/preparation-plans"),
+  list: () => apiFetch<Page<PreparationPlanSummary>>("/preparation-plans"),
   create: (input: {
     jobDescriptionId: string;
     matchingVersion: string;
@@ -757,6 +782,16 @@ export const preparationPlansApi = {
       json: input,
     }),
   get: (id: string) => apiFetch<PreparationPlan>(`/preparation-plans/${id}`),
+  update: (id: string, input: { title: string; version: number }) =>
+    apiFetch<PreparationPlanSummary>(`/preparation-plans/${id}`, {
+      method: "PATCH",
+      json: input,
+    }),
+  archive: (id: string, version: number) =>
+    apiFetch<{ id: string; status: "ARCHIVED" }>(`/preparation-plans/${id}`, {
+      method: "DELETE",
+      json: { version },
+    }),
   updateItem: (
     planId: string,
     itemId: string,
@@ -807,7 +842,7 @@ export const aiApi = {
 export const mentorsApi = {
   list: (filters: MentorSearchFilters = {}) =>
     apiFetch<MentorSearchResponse>(`/mentors${toQuery(filters as Record<string, string | number | undefined>)}`),
-  get: (id: string) => apiFetch<Mentor>(`/mentors/${id}`),
+  get: (id: string) => apiFetch<PublicMentor>(`/mentors/${id}`),
   ownProfile: () => apiFetch<Mentor>("/mentor-profile"),
   saveProfile: (input: Record<string, unknown>) =>
     apiFetch<Mentor>("/mentor-profile", { method: "PUT", json: input }),

@@ -4,13 +4,15 @@ import { createJdService } from "../jd/service.js";
 import { AiProviderError, hashAiValue } from "./provider.js";
 import { createAgendaDraftHandler, createFeedbackDraftHandler } from "./draft-handlers.js";
 
+const maxAiRequirements = 20;
+
 const requirementOutput = z.object({
   requirements: z.array(z.object({
     evidence: z.string().trim().min(1).max(1000),
     requirementType: z.enum(["ROLE", "SENIORITY", "SKILL", "TECHNOLOGY", "REQUIREMENT"]),
     topicSlug: z.string().trim().min(1).nullable(),
     confidence: z.number().min(0).max(1),
-  })).min(1).max(50),
+  })).min(1).max(maxAiRequirements),
 });
 
 const jdAnalysisSchema = {
@@ -21,7 +23,7 @@ const jdAnalysisSchema = {
     requirements: {
       type: "array",
       minItems: 1,
-      maxItems: 50,
+      maxItems: maxAiRequirements,
       items: {
         type: "object",
         additionalProperties: false,
