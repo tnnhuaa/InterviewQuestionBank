@@ -1,6 +1,6 @@
 import { pool } from "./pool.js";
 
-export const EXPECTED_SCHEMA_MIGRATION = "005_gemini_ai_assistance";
+export const EXPECTED_SCHEMA_MIGRATION = "008_mentor_verification_hardening";
 
 export async function checkConnection() {
   let client;

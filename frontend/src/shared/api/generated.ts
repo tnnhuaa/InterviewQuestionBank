@@ -1104,7 +1104,9 @@ export interface paths {
     "/bookings/{bookingId}/meeting-link-failures": {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
             path: {
                 bookingId: components["parameters"]["BookingId"];
             };
@@ -1649,6 +1651,31 @@ export interface components {
             /** Format: date-time */
             endsAt: string;
             version: number;
+            /** Format: uri */
+            meetingLink?: string;
+            meetingLinkVersion?: number;
+            /** Format: date-time */
+            meetingLinkUpdatedAt?: string;
+            meetingLinkPolicy?: components["schemas"]["MeetingLinkPolicy"];
+        };
+        MeetingLinkPolicy: {
+            /** @enum {string} */
+            state: "AVAILABLE" | "MISSING" | "OUTSIDE_WINDOW" | "EXPIRED" | "INVALID_BOOKING_STATE";
+            canView: boolean;
+            canEdit: boolean;
+            canReportBroken: boolean;
+            canReportMissing: boolean;
+            /** Format: date-time */
+            editDeadline?: string;
+            /** Format: date-time */
+            replacementDeadline?: string;
+            /** Format: uuid */
+            activeFailureCaseId?: string;
+        };
+        MeetingLinkFailureInput: {
+            /** @enum {string} */
+            kind: "BROKEN" | "MISSING";
+            reason: string;
         };
         AiJob: {
             /** Format: uuid */
@@ -3284,15 +3311,25 @@ export interface operations {
     reportMeetingLinkFailure: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
             path: {
                 bookingId: components["parameters"]["BookingId"];
             };
             cookie?: never;
         };
-        requestBody: components["requestBodies"]["JsonInput"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MeetingLinkFailureInput"];
+            };
+        };
         responses: {
             202: components["responses"]["Success"];
+            404: components["responses"]["Error"];
+            409: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     getInterviewAgendaDraft: {

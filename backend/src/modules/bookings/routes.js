@@ -84,8 +84,17 @@ export function createBookingsRouter({ pool, environment }) {
   }));
 
   router.post("/bookings/:bookingId/meeting-link-failures", requireAuth, asyncHandler(async (request, response) => {
-    const input = parse(z.object({ reason: z.string().trim().min(3).max(1000) }), request.body);
-    response.status(202).json(await service.reportMeetingLinkFailure(request.auth.user, request.params.bookingId, input, request.correlationId));
+    const input = parse(z.object({
+      kind: z.enum(["BROKEN", "MISSING"]),
+      reason: z.string().trim().min(3).max(1000),
+    }), request.body);
+    response.status(202).json(await service.reportMeetingLinkFailure(
+      request.auth.user,
+      request.params.bookingId,
+      input,
+      request.get("Idempotency-Key"),
+      request.correlationId,
+    ));
   }));
 
   router.post("/bookings/:bookingId/agenda-drafts", requireRole("MENTOR"), asyncHandler(async (request, response) => {

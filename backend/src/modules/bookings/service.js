@@ -18,7 +18,9 @@ const bookingNotificationContent = {
   BOOKING_RESCHEDULE_ACCEPTED: { title: "Giờ phỏng vấn mới đã được xác nhận", body: "Mở lịch để kiểm tra thời gian mới." },
   BOOKING_RESCHEDULE_REJECTED: { title: "Đề xuất đổi giờ không được chấp nhận", body: "Mở lịch để xem thời gian hiện tại và lựa chọn tiếp theo." },
   BOOKING_COMPLETED: { title: "Buổi phỏng vấn đã hoàn tất", body: "Mở lịch để xem phản hồi và bước tiếp theo." },
+  MEETING_LINK_FAILURE_REPORTED: { title: "Link phòng phỏng vấn cần được thay", body: "Mở buổi phỏng vấn và thay link trong vòng 15 phút." },
   MEETING_LINK_READY: { title: "Link phòng phỏng vấn đã sẵn sàng", body: "Mở chi tiết lịch để tham gia đúng giờ." },
+  MEETING_LINK_RECOVERY_EXPIRED: { title: "Thời hạn thay link đã hết", body: "Mở lịch để chọn đổi giờ hoặc chờ Admin hỗ trợ." },
   FEEDBACK_READY: { title: "Mentor đã gửi feedback", body: "Mở lịch hẹn để xem nhận xét và bước tiếp theo." },
 };
 
@@ -62,6 +64,42 @@ function bookingDto(row) {
   };
 }
 
+function meetingLinkPolicy({ row, actor, link, recovery }) {
+  const now = Date.now();
+  const startsAt = new Date(row.starts_at).getTime();
+  const endsAt = new Date(row.ends_at).getTime();
+  const editDeadline = new Date(startsAt - 2 * 3_600_000);
+  const replacementDeadline = recovery?.deadline ? new Date(recovery.deadline) : null;
+  const isParticipant = row.student_id === actor.id || row.mentor_user_id === actor.id;
+  const isMentor = row.mentor_user_id === actor.id;
+  const validState = ["CONFIRMED", "COMPLETED"].includes(row.state);
+  const withinViewWindow = Boolean(
+    link && now >= new Date(link.available_from).getTime() && now <= new Date(link.expires_at).getTime(),
+  );
+
+  let state = "MISSING";
+  if (!validState) state = "INVALID_BOOKING_STATE";
+  else if (!link) state = "MISSING";
+  else if (now > new Date(link.expires_at).getTime()) state = "EXPIRED";
+  else if (!withinViewWindow) state = "OUTSIDE_WINDOW";
+  else state = "AVAILABLE";
+
+  const activeFailure = Boolean(recovery);
+  return {
+    state,
+    canView: isParticipant && state === "AVAILABLE",
+    canEdit: isMentor && row.state === "CONFIRMED"
+      && (now <= editDeadline.getTime() || Boolean(replacementDeadline && now <= replacementDeadline.getTime())),
+    canReportBroken: isParticipant && row.state === "CONFIRMED" && Boolean(link)
+      && now <= endsAt && !activeFailure,
+    canReportMissing: isParticipant && row.state === "CONFIRMED" && !link
+      && now >= editDeadline.getTime() && now <= endsAt && !activeFailure,
+    editDeadline: editDeadline.toISOString(),
+    ...(replacementDeadline ? { replacementDeadline: replacementDeadline.toISOString() } : {}),
+    ...(recovery ? { activeFailureCaseId: recovery.id } : {}),
+  };
+}
+
 const bookingProjection = `
   SELECT b.*, su.display_name AS student_name, mu.display_name AS mentor_name,
     mp.user_id AS mentor_user_id,
@@ -92,7 +130,12 @@ function bookingNotificationKey({ eventType, bookingId, bookingVersion, recipien
   return ["BOOKING", eventType, bookingId, bookingVersion, recipientUserId, channel].join(":");
 }
 
-export async function enqueueBookingNotification(client, { booking, recipientUserId, eventType }) {
+export async function enqueueBookingNotification(client, {
+  booking,
+  recipientUserId,
+  eventType,
+  deduplicationVersion = booking.version,
+}) {
   const content = bookingNotificationContent[eventType];
   if (!content) throw new Error(`Unknown booking notification event type: ${eventType}`);
   const outbox = await enqueueNotification(client, {
@@ -102,7 +145,7 @@ export async function enqueueBookingNotification(client, { booking, recipientUse
     recipientUserId,
     channel: "EMAIL",
     payload: { bookingId: booking.id },
-    deduplicationKey: bookingNotificationKey({ eventType, bookingId: booking.id, bookingVersion: booking.version, recipientUserId }),
+    deduplicationKey: bookingNotificationKey({ eventType, bookingId: booking.id, bookingVersion: deduplicationVersion, recipientUserId }),
   });
   await createInAppNotification(client, {
     userId: recipientUserId,
@@ -206,18 +249,11 @@ export function createBookingsService({ pool, environment }) {
     const row = await getParticipantRow(pool, actor, bookingId);
     const result = bookingDto(row);
     const isParticipant = row.student_id === actor.id || row.mentor_user_id === actor.id;
-    if (isParticipant) {
-      const link = await pool.query(
-         `SELECT encrypted_url, version FROM meeting_links
-         WHERE booking_id = $1 AND now() >= available_from AND now() <= expires_at
-           AND $2 = ANY(ARRAY['CONFIRMED','COMPLETED'])`,
-        [bookingId, row.state],
-      );
-      if (link.rowCount) {
-        result.meetingLink = decryptPrivateValue(link.rows[0].encrypted_url, environment.sessionSecret);
-        result.meetingLinkVersion = link.rows[0].version;
-      }
-    }
+    const linkResult = await pool.query(
+      `SELECT encrypted_url, version, available_from, expires_at, updated_at
+       FROM meeting_links WHERE booking_id = $1`,
+      [bookingId],
+    );
     const proposal = await pool.query(
       `SELECT brp.id, brp.proposed_slot_id, brp.proposed_by, brp.reason, brp.status,
               s.starts_at, s.ends_at, s.source_timezone
@@ -233,7 +269,17 @@ export function createBookingsService({ pool, environment }) {
          AND status IN ('OPEN','IN_PROGRESS') ORDER BY created_at DESC LIMIT 1`,
       [bookingId],
     );
-    if (recovery.rowCount) result.meetingRecovery = recovery.rows[0];
+    const activeRecovery = recovery.rows[0] ?? null;
+    const link = linkResult.rows[0] ?? null;
+    result.meetingLinkPolicy = meetingLinkPolicy({ row, actor, link, recovery: activeRecovery });
+    if (isParticipant && result.meetingLinkPolicy.canView) {
+      result.meetingLink = decryptPrivateValue(link.encrypted_url, environment.sessionSecret);
+    }
+    if (isParticipant && link) {
+      result.meetingLinkVersion = link.version;
+      result.meetingLinkUpdatedAt = link.updated_at;
+    }
+    if (activeRecovery) result.meetingRecovery = activeRecovery;
     const participantCases = await pool.query(
       `SELECT id, case_type AS type, public_summary AS summary, version,
               coalesce(restricted_metadata->>'requestedBy', restricted_metadata->>'reportedBy') AS "requestedBy"
@@ -592,27 +638,121 @@ export function createBookingsService({ pool, environment }) {
         );
       }
       await writeAudit(client, { actorId: actor.id, action: "MEETING_LINK_SAVED", targetType: "BOOKING", targetId: bookingId, correlationId });
-      await enqueueBookingNotification(client, { booking: row, recipientUserId: row.student_id, eventType: "MEETING_LINK_READY" });
+      await enqueueBookingNotification(client, {
+        booking: row,
+        recipientUserId: row.student_id,
+        eventType: "MEETING_LINK_READY",
+        deduplicationVersion: `LINK:${result.rows[0].version}`,
+      });
       return { bookingId, url: input.url, version: result.rows[0].version };
     });
   }
 
-  async function reportMeetingLinkFailure(actor, bookingId, input, correlationId) {
+  async function reportMeetingLinkFailure(actor, bookingId, input, idempotencyKey, correlationId) {
     return withTransaction(pool, async (client) => {
       const row = await getParticipantRow(client, actor, bookingId, true);
       if (row.state !== "CONFIRMED") throw notFoundError();
+      const operation = "REPORT_MEETING_LINK_FAILURE";
+      const idempotency = await findIdempotentResult(client, {
+        actorId: actor.id,
+        operation,
+        key: idempotencyKey,
+        input: { bookingId, ...input },
+      });
+      if (idempotency.cached?.response_body) return idempotency.cached.response_body;
+
+      const active = await client.query(
+        `SELECT id, status, public_summary AS summary, version,
+                restricted_metadata->>'replacementDeadline' AS deadline
+         FROM operation_cases
+         WHERE case_type = 'MEETING_LINK_FAILED' AND target_type = 'BOOKING' AND target_id = $1
+           AND status IN ('OPEN','IN_PROGRESS')
+         ORDER BY created_at DESC LIMIT 1`,
+        [bookingId],
+      );
+      if (active.rowCount) {
+        const body = {
+          operationCase: active.rows[0],
+          recovery: { kind: "WAIT", retryable: false, retryAfterSeconds: 900 },
+        };
+        await saveIdempotentResult(client, {
+          actorId: actor.id,
+          operation,
+          key: idempotencyKey,
+          digest: idempotency.digest,
+          status: 202,
+          body,
+          resourceId: active.rows[0].id,
+        });
+        return body;
+      }
+
+      const link = await client.query(
+        "SELECT booking_id FROM meeting_links WHERE booking_id = $1 FOR UPDATE",
+        [bookingId],
+      );
+      const now = Date.now();
+      const startsAt = new Date(row.starts_at).getTime();
+      const endsAt = new Date(row.ends_at).getTime();
+      if (input.kind === "BROKEN" && (!link.rowCount || now > endsAt)) {
+        throw new AppError({
+          status: 422,
+          code: "MEETING_LINK_BROKEN_REPORT_INVALID",
+          message: "Chỉ có thể báo link hỏng khi booking có link và buổi phỏng vấn chưa kết thúc.",
+          recovery: { kind: "NONE", retryable: false, retryAfterSeconds: null },
+        });
+      }
+      if (input.kind === "MISSING" && (link.rowCount || now < startsAt - 2 * 3_600_000 || now > endsAt)) {
+        throw new AppError({
+          status: 422,
+          code: "MEETING_LINK_MISSING_REPORT_INVALID",
+          message: "Chỉ có thể báo thiếu link từ hai giờ trước giờ bắt đầu đến khi buổi phỏng vấn kết thúc.",
+          recovery: { kind: "WAIT", retryable: false, retryAfterSeconds: null },
+        });
+      }
+      const replacementDeadline = new Date(now + 15 * 60_000);
       const operationCase = await createOperationCase(client, {
         caseType: "MEETING_LINK_FAILED", targetType: "BOOKING", targetId: row.id,
         publicSummary: "Link phòng họp đang được kiểm tra. Mentor có 15 phút để thay link.",
-        restrictedMetadata: { reportedBy: actor.id, reason: input.reason, replacementDeadline: new Date(Date.now() + 15 * 60_000) },
+        restrictedMetadata: {
+          reportedBy: actor.id,
+          reason: input.reason,
+          kind: input.kind,
+          replacementDeadline,
+        },
       });
-      await client.query(
-        `UPDATE meeting_links SET failure_reported_at = now(), recovery_deadline = now() + interval '15 minutes',
-           updated_at = now(), version = version + 1 WHERE booking_id = $1`,
-        [bookingId],
-      );
+      if (link.rowCount) {
+        await client.query(
+          `UPDATE meeting_links SET failure_reported_at = now(), recovery_deadline = $2,
+             updated_at = now(), version = version + 1 WHERE booking_id = $1`,
+          [bookingId, replacementDeadline],
+        );
+      }
       await writeAudit(client, { actorId: actor.id, action: "MEETING_LINK_FAILURE_REPORTED", targetType: "BOOKING", targetId: row.id, reason: input.reason, correlationId });
-      return { operationCase, recovery: { kind: "WAIT", retryable: false, retryAfterSeconds: 900 } };
+      await enqueueBookingNotification(client, {
+        booking: row,
+        recipientUserId: row.mentor_user_id,
+        eventType: "MEETING_LINK_FAILURE_REPORTED",
+        deduplicationVersion: `RECOVERY:${operationCase.id}`,
+      });
+      const body = {
+        operationCase: {
+          ...operationCase,
+          summary: "Link phòng họp đang được kiểm tra. Mentor có 15 phút để thay link.",
+          deadline: replacementDeadline.toISOString(),
+        },
+        recovery: { kind: "WAIT", retryable: false, retryAfterSeconds: 900 },
+      };
+      await saveIdempotentResult(client, {
+        actorId: actor.id,
+        operation,
+        key: idempotencyKey,
+        digest: idempotency.digest,
+        status: 202,
+        body,
+        resourceId: operationCase.id,
+      });
+      return body;
     });
   }
 

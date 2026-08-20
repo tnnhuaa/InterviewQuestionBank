@@ -907,11 +907,26 @@ paths:
           "409": { $ref: "#/components/responses/Error" },
         }
   /bookings/{bookingId}/meeting-link-failures:
-    parameters: [{ $ref: "#/components/parameters/BookingId" }]
+    parameters:
+      [
+        { $ref: "#/components/parameters/BookingId" },
+        { $ref: "#/components/parameters/IdempotencyKey" },
+      ]
     post:
       operationId: reportMeetingLinkFailure
-      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
-      responses: { "202": { $ref: "#/components/responses/Success" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MeetingLinkFailureInput" }
+      responses:
+        {
+          "202": { $ref: "#/components/responses/Success" },
+          "404": { $ref: "#/components/responses/Error" },
+          "409": { $ref: "#/components/responses/Error" },
+          "422": { $ref: "#/components/responses/Error" },
+          "503": { $ref: "#/components/responses/Error" },
+        }
   /bookings/{bookingId}/agenda-drafts:
     parameters: [{ $ref: "#/components/parameters/BookingId" }]
     get:
@@ -1482,6 +1497,31 @@ components:
         startsAt: { type: string, format: date-time }
         endsAt: { type: string, format: date-time }
         version: { type: integer }
+        meetingLink: { type: string, format: uri }
+        meetingLinkVersion: { type: integer, minimum: 1 }
+        meetingLinkUpdatedAt: { type: string, format: date-time }
+        meetingLinkPolicy: { $ref: "#/components/schemas/MeetingLinkPolicy" }
+    MeetingLinkPolicy:
+      type: object
+      required: [state, canView, canEdit, canReportBroken, canReportMissing]
+      properties:
+        state:
+          type: string
+          enum: [AVAILABLE, MISSING, OUTSIDE_WINDOW, EXPIRED, INVALID_BOOKING_STATE]
+        canView: { type: boolean }
+        canEdit: { type: boolean }
+        canReportBroken: { type: boolean }
+        canReportMissing: { type: boolean }
+        editDeadline: { type: string, format: date-time }
+        replacementDeadline: { type: string, format: date-time }
+        activeFailureCaseId: { type: string, format: uuid }
+    MeetingLinkFailureInput:
+      type: object
+      required: [kind, reason]
+      additionalProperties: false
+      properties:
+        kind: { type: string, enum: [BROKEN, MISSING] }
+        reason: { type: string, minLength: 3, maxLength: 1000 }
     AiJob:
       type: object
       required:

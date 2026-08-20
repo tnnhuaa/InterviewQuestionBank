@@ -323,6 +323,17 @@ export interface Booking {
   scheduleVersion?: number;
   meetingLink?: string;
   meetingLinkVersion?: number;
+  meetingLinkUpdatedAt?: string;
+  meetingLinkPolicy?: {
+    state: "AVAILABLE" | "MISSING" | "OUTSIDE_WINDOW" | "EXPIRED" | "INVALID_BOOKING_STATE";
+    canView: boolean;
+    canEdit: boolean;
+    canReportBroken: boolean;
+    canReportMissing: boolean;
+    editDeadline?: string;
+    replacementDeadline?: string;
+    activeFailureCaseId?: string;
+  };
   version: number;
   meetingRecovery?: {
     id: string;
@@ -837,10 +848,15 @@ export const bookingsApi = {
     }),
   meetingLink: (id: string, input: { url: string; version?: number }) =>
     apiFetch(`/bookings/${id}/meeting-link`, { method: "PUT", json: input }),
-  reportLink: (id: string, reason: string) =>
+  reportLink: (
+    id: string,
+    input: { kind: "BROKEN" | "MISSING"; reason: string },
+    idempotencyKey: string,
+  ) =>
     apiFetch(`/bookings/${id}/meeting-link-failures`, {
       method: "POST",
-      json: { reason },
+      json: input,
+      headers: { "Idempotency-Key": idempotencyKey },
     }),
   startAgendaDraft: (id: string) =>
     apiFetch<AiJob>(`/bookings/${id}/agenda-drafts`, {

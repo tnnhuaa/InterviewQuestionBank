@@ -9,6 +9,7 @@ import { createPrivateStorage } from "../platform/storage/private-storage.js";
 import { createOneTimeToken } from "../platform/security/tokens.js";
 import { extractDocument } from "../modules/jd/extractor.js";
 import { claimAiJob, createAiJobHandlers, createAiProvider, processAiJob } from "../modules/ai/index.js";
+import { enqueueBookingNotification } from "../modules/bookings/service.js";
 
 const pollIntervalMs = 2000;
 const retentionIntervalMs = 60_000;
@@ -233,6 +234,14 @@ async function notificationContent(poolInstance, environment, job) {
       subject: "Link phòng phỏng vấn đã sẵn sàng",
       text: "Mở PrepVI để tham gia đúng giờ.",
     },
+    "MEETING_LINK_FAILURE_REPORTED": {
+      subject: "Link phòng phỏng vấn cần được thay",
+      text: "Mở PrepVI và thay link trong vòng 15 phút.",
+    },
+    "MEETING_LINK_RECOVERY_EXPIRED": {
+      subject: "Thời hạn thay link đã hết",
+      text: "Mở PrepVI để chọn đổi giờ hoặc chờ Admin hỗ trợ.",
+    },
     "FEEDBACK_READY": {
       subject: "Bạn đã nhận được phản hồi",
       text: "Mở PrepVI để xem phản hồi riêng tư và hành động tiếp theo.",
@@ -388,16 +397,34 @@ async function cleanupExpiredAiPrivateInputs(poolInstance) {
 }
 
 async function escalateExpiredMeetingLinkFailures(poolInstance) {
-  const result = await poolInstance.query(
-    `UPDATE operation_cases SET
-       public_summary = 'Mentor chưa thay link trong 15 phút. Hai bên có thể chọn reschedule hoặc chờ Admin hỗ trợ.',
-       updated_at = now(), version = version + 1
-     WHERE case_type = 'MEETING_LINK_FAILED' AND status IN ('OPEN','IN_PROGRESS')
-       AND (restricted_metadata->>'replacementDeadline')::timestamptz <= now()
-       AND public_summary NOT LIKE 'Mentor chưa thay link%'
-     RETURNING id`,
-  );
-  return result.rowCount;
+  return withTransaction(poolInstance, async (client) => {
+    const result = await client.query(
+      `WITH escalated AS (
+         UPDATE operation_cases SET
+           public_summary = 'Mentor chưa thay link trong 15 phút. Hai bên có thể chọn reschedule hoặc chờ Admin hỗ trợ.',
+           updated_at = now(), version = version + 1
+         WHERE case_type = 'MEETING_LINK_FAILED' AND status IN ('OPEN','IN_PROGRESS')
+           AND (restricted_metadata->>'replacementDeadline')::timestamptz <= now()
+           AND public_summary NOT LIKE 'Mentor chưa thay link%'
+         RETURNING id, target_id
+       )
+       SELECT b.*, mp.user_id AS mentor_user_id, e.id AS recovery_case_id
+       FROM escalated e
+       JOIN bookings b ON b.id = e.target_id
+       JOIN mentor_profiles mp ON mp.id = b.mentor_id`,
+    );
+    for (const booking of result.rows) {
+      for (const recipientUserId of [booking.student_id, booking.mentor_user_id]) {
+        await enqueueBookingNotification(client, {
+          booking,
+          recipientUserId,
+          eventType: "MEETING_LINK_RECOVERY_EXPIRED",
+          deduplicationVersion: `RECOVERY:${booking.recovery_case_id}`,
+        });
+      }
+    }
+    return result.rowCount;
+  });
 }
 
 export function startWorker({ poolInstance = pool, environment = getEnvironment() } = {}) {
