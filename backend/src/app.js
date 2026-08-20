@@ -70,7 +70,7 @@ export function createApp({
       ignoreUndocumented: true,
     }));
   }
-  app.use("/api/v1", createStatusRouter({ checkDatabase }));
+  app.use("/api/v1", createStatusRouter({ checkDatabase, storage }));
   app.use("/api/v1", rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 300,
