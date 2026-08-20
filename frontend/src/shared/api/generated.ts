@@ -3229,6 +3229,8 @@ export interface operations {
         responses: {
             201: components["responses"]["Booking"];
             409: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     getBooking: {

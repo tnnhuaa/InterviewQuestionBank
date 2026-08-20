@@ -822,11 +822,11 @@ export const mentorsApi = {
 export const bookingsApi = {
   list: (filters: Record<string, string | number | undefined> = {}) =>
     apiFetch<Page<Booking>>(`/bookings${toQuery(filters)}`),
-  create: (input: Record<string, unknown>) =>
+  create: (input: Record<string, unknown>, idempotencyKey: string) =>
     apiFetch<Booking>("/bookings", {
       method: "POST",
       json: input,
-      headers: { "Idempotency-Key": createIdempotencyKey() },
+      headers: { "Idempotency-Key": idempotencyKey },
     }),
   get: (id: string) => apiFetch<Booking>(`/bookings/${id}`),
   transition: (id: string, input: Record<string, unknown>) =>

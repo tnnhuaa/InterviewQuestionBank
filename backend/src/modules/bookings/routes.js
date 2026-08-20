@@ -61,8 +61,8 @@ export function createBookingsRouter({ pool, environment }) {
       preparationPlanVersion: z.number().int().positive().optional(),
       selectedTopicIds: z.array(z.guid()).min(1).max(30),
       goal: z.string().trim().min(10).max(1000), interviewType: z.string().trim().min(2).max(100), timezone: z.string().max(80).optional(),
-    }).refine((value) => Boolean(value.jobDescriptionId || value.preparationPlanId), {
-      message: "Cần chọn JD hoặc kế hoạch chuẩn bị", path: ["preparationPlanId"],
+    }).refine((value) => Boolean(value.jobDescriptionId) !== Boolean(value.preparationPlanId), {
+      message: "Cần chọn chính xác một trong JD hoặc kế hoạch chuẩn bị", path: ["preparationPlanId"],
     }).refine((value) => !value.preparationPlanId || value.preparationPlanVersion !== undefined, {
       message: "Thiếu phiên bản kế hoạch", path: ["preparationPlanVersion"],
     }), request.body);

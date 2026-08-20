@@ -869,6 +869,8 @@ paths:
         {
           "201": { $ref: "#/components/responses/Booking" },
           "409": { $ref: "#/components/responses/Error" },
+          "422": { $ref: "#/components/responses/Error" },
+          "503": { $ref: "#/components/responses/Error" },
         }
   /bookings/{bookingId}:
     parameters: [{ $ref: "#/components/parameters/BookingId" }]
