@@ -185,7 +185,7 @@ export function AppNavbar({ publicMode = false }: { publicMode?: boolean }) {
               {profileOpen && (
                 <div className="absolute right-0 top-full mt-2 w-48 overflow-hidden rounded-xl border border-edge bg-panel py-1 shadow-lg">
                   {authenticatedRole === "student" && <Link to={routes.studentProfile} className="block w-full px-4 py-2.5 text-left text-sm text-ink-secondary transition-colors hover:bg-canvas hover:text-ink">Hồ sơ của tôi</Link>}
-                  <button type="button" onClick={async () => { setProfileOpen(false); await logout(); navigate(routes.login); }} className="w-full px-4 py-2.5 text-left text-sm text-danger transition-colors hover:bg-danger-soft">Đăng xuất</button>
+                  <button type="button" onClick={async () => { setProfileOpen(false); await logout(); }} className="w-full px-4 py-2.5 text-left text-sm text-danger transition-colors hover:bg-danger-soft">Đăng xuất</button>
                 </div>
               )}
             </div>

@@ -17,6 +17,7 @@ function lazyPage(importer: () => Promise<DefaultPageModule>) {
 const pages = {
   homepage: lazyPage(() => import("@/features/public/pages/Homepage")),
   login: lazyPage(() => import("@/features/public/pages/Login")),
+  permissionDenied: lazyPage(() => import("@/features/public/pages/PermissionDenied")),
   register: lazyPage(() => import("@/features/public/pages/Register")),
   forgotPassword: lazyPage(() => import("@/features/public/pages/ForgotPassword")),
   verifyEmail: async () => ({ Component: (await import("@/features/public/pages/TokenAction")).VerifyEmail }),
@@ -67,6 +68,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to={routes.home} replace /> },
       { path: routes.home, lazy: pages.homepage },
       { path: routes.login, lazy: pages.login },
+      { path: routes.permissionDenied, lazy: pages.permissionDenied },
       { path: routes.register, lazy: pages.register },
       { path: routes.forgotPassword, lazy: pages.forgotPassword },
       { path: routes.verifyEmail, lazy: pages.verifyEmail },

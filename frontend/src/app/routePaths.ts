@@ -1,6 +1,7 @@
 export const routes = {
   home: "/homepage",
   login: "/login",
+  permissionDenied: "/permission-denied",
   register: "/register",
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
