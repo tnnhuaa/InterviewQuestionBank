@@ -611,29 +611,31 @@ export const questionsApi = {
 
 export const jobDescriptionsApi = {
   list: () => apiFetch<Page<JobDescription>>("/job-descriptions"),
-  createFromText: (text: string) =>
+  createFromText: (text: string, idempotencyKey: string) =>
     apiFetch<JobDescription>("/job-descriptions", {
       method: "POST",
       json: { text },
+      headers: { "Idempotency-Key": idempotencyKey },
     }),
-  upload: (file: File) => {
+  upload: (file: File, idempotencyKey: string) => {
     const body = new FormData();
     body.append("file", file);
     return apiFetch<JobDescription>("/job-descriptions", {
       method: "POST",
       body,
+      headers: { "Idempotency-Key": idempotencyKey },
     });
   },
   get: (id: string) => apiFetch<JobDescription>(`/job-descriptions/${id}`),
-  startExtraction: (id: string) =>
+  startExtraction: (id: string, idempotencyKey: string) =>
     apiFetch<JobDescription>(`/job-descriptions/${id}/extract`, {
       method: "POST",
-      headers: { "Idempotency-Key": createIdempotencyKey() },
+      headers: { "Idempotency-Key": idempotencyKey },
     }),
-  retryExtraction: (id: string) =>
+  retryExtraction: (id: string, idempotencyKey: string) =>
     apiFetch<JobDescription>(`/job-descriptions/${id}/extraction-retries`, {
       method: "POST",
-      headers: { "Idempotency-Key": createIdempotencyKey() },
+      headers: { "Idempotency-Key": idempotencyKey },
     }),
   saveCorrectedText: (id: string, correctedText: string, version: number) =>
     apiFetch<JobDescription>(`/job-descriptions/${id}/text`, {

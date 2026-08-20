@@ -14,10 +14,11 @@ export function createJdRouter({ pool, storage, environment }) {
 
   router.post("/job-descriptions", requireRole("STUDENT"), upload.single("file"), asyncHandler(async (request, response) => {
     const result = request.file
-      ? await service.createFromFile(request.auth.user.id, request.file)
+      ? await service.createFromFile(request.auth.user.id, request.file, request.get("Idempotency-Key"))
       : await service.createFromText(
         request.auth.user.id,
         parse(z.object({ text: z.string().min(1).max(50000) }), request.body).text,
+        request.get("Idempotency-Key"),
       );
     response.status(201).json(result);
   }));

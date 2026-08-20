@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ApiError } from "@/shared/api/client";
+import { ApiError, createIdempotencyKey } from "@/shared/api/client";
 import { jobDescriptionsApi, type JobDescription } from "@/shared/api/resources";
 import AuthNavbar from "@/shared/components/AuthNavbar";
 import ErrorPanel from "@/shared/components/ErrorPanel";
@@ -33,12 +33,13 @@ function ReviewEditor({ jd }: { jd: JobDescription }) {
 export default function JDOCRReview() {
   const { jobDescriptionId = "" } = useParams();
   const jd = useQuery({ queryKey: ["jd", jobDescriptionId], queryFn: () => jobDescriptionsApi.get(jobDescriptionId), enabled: Boolean(jobDescriptionId), refetchInterval: (query) => ["DRAFT", "EXTRACTING"].includes(query.state.data?.status ?? "") ? 2000 : false });
-  const retry = useMutation({ mutationFn: () => jobDescriptionsApi.retryExtraction(jobDescriptionId), onSuccess: () => jd.refetch() });
+  const [retryKey, setRetryKey] = useState<string | null>(null);
+  const retry = useMutation({ mutationFn: (key: string) => jobDescriptionsApi.retryExtraction(jobDescriptionId, key), onSuccess: () => { setRetryKey(null); void jd.refetch(); } });
   const processing = jd.data && ["DRAFT", "EXTRACTING"].includes(jd.data.status);
   return <div className="min-h-screen bg-canvas"><AuthNavbar /><main className="mx-auto max-w-[980px] px-6 py-8"><JDFlowStepper currentStep={2} /><h1 className="mt-8 text-[22px] font-semibold text-ink">Kiểm tra nội dung JD</h1><p className="mt-1 text-sm text-ink-secondary">Bạn luôn cần đọc, sửa nếu cần và xác nhận trước khi hệ thống tạo dữ liệu dẫn xuất.</p>
     {jd.isLoading && <p className="mt-8 text-sm text-ink-muted">Đang đọc trạng thái xử lý…</p>}{jd.error && <div className="mt-5"><ErrorPanel error={jd.error} onRetry={() => jd.refetch()} /></div>}
     {processing && <div className="mt-6 rounded-xl border border-notice/20 bg-notice-soft p-6"><p className="text-sm font-semibold text-ink">Đang trích xuất văn bản</p><p className="mt-1 text-xs text-ink-secondary">Worker xử lý tối đa hai job đồng thời. Trang tự cập nhật mỗi 2 giây.</p></div>}
-    {jd.data?.status === "FAILED" && <div className="mt-6 rounded-xl border border-danger/20 bg-danger-soft p-6"><p className="text-sm font-semibold text-ink">Không thể trích xuất tự động</p><p className="mt-1 text-xs text-ink-secondary">Bạn có thể thử lại, tải tệp khác hoặc dán văn bản thủ công.</p>{retry.error && <div className="mt-4"><ErrorPanel error={retry.error} /></div>}<div className="mt-4 flex gap-2"><button onClick={() => retry.mutate()} className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-on-primary">Thử lại an toàn</button><Link to="/job-descriptions/new" className="rounded-md border border-edge bg-panel px-4 py-2 text-xs font-medium text-ink-secondary">Dán/tải nội dung khác</Link></div></div>}
+    {jd.data?.status === "FAILED" && <div className="mt-6 rounded-xl border border-danger/20 bg-danger-soft p-6"><p className="text-sm font-semibold text-ink">Không thể trích xuất tự động</p><p className="mt-1 text-xs text-ink-secondary">Bạn có thể thử lại, tải tệp khác hoặc dán văn bản thủ công.</p>{retry.error && <div className="mt-4"><ErrorPanel error={retry.error} onRetry={() => retryKey && retry.mutate(retryKey)} /></div>}<div className="mt-4 flex gap-2"><button disabled={retry.isPending} onClick={() => { const key = retryKey ?? createIdempotencyKey(); setRetryKey(key); retry.mutate(key); }} className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-on-primary disabled:opacity-50">Thử lại an toàn</button><Link to="/job-descriptions/new" className="rounded-md border border-edge bg-panel px-4 py-2 text-xs font-medium text-ink-secondary">Dán/tải nội dung khác</Link></div></div>}
     {jd.data && ["READY_FOR_REVIEW", "CONFIRMED", "ANALYZED"].includes(jd.data.status) && <div className="mt-6 rounded-xl border border-edge bg-canvas-subtle p-6"><ReviewEditor key={`${jd.data.id}:${jd.data.correctedVersion}`} jd={jd.data} /></div>}
   </main></div>;
 }

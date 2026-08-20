@@ -83,7 +83,7 @@ export function createJdService({ pool, storage, environment }) {
     return result.rows[0];
   }
 
-  async function createFromText(studentId, text) {
+  async function createFromText(studentId, text, key) {
     const cleaned = text.trim();
     if (!cleaned || cleaned.length > 50000) {
       throw new AppError({
@@ -94,23 +94,43 @@ export function createJdService({ pool, storage, environment }) {
         recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
       });
     }
-    const result = await pool.query(
-      `INSERT INTO job_descriptions (
-         student_id, source_type, status, extracted_text, corrected_text,
-         corrected_version, extraction_method, extraction_version
-       ) VALUES ($1, 'PASTED_TEXT', 'READY_FOR_REVIEW', $2, $2, 1, 'PASTED_TEXT', 'extract-v1')
-       RETURNING *`,
-      [studentId, cleaned],
-    );
-    await pool.query(
-      `INSERT INTO jd_text_versions (job_description_id, version, corrected_text, created_by)
-       VALUES ($1, 1, $2, $3)`,
-      [result.rows[0].id, cleaned, studentId],
-    );
-    return jdDto(result.rows[0]);
+    return withTransaction(pool, async (client) => {
+      const operation = "CREATE_TEXT_JD";
+      const state = await findIdempotentResult(client, {
+        actorId: studentId,
+        operation,
+        key,
+        input: { textHash: sha256(cleaned), length: cleaned.length },
+      });
+      if (state.cached?.response_body) return state.cached.response_body;
+      const result = await client.query(
+        `INSERT INTO job_descriptions (
+           student_id, source_type, status, extracted_text, corrected_text,
+           corrected_version, extraction_method, extraction_version
+         ) VALUES ($1, 'PASTED_TEXT', 'READY_FOR_REVIEW', $2, $2, 1, 'PASTED_TEXT', 'extract-v1')
+         RETURNING *`,
+        [studentId, cleaned],
+      );
+      await client.query(
+        `INSERT INTO jd_text_versions (job_description_id, version, corrected_text, created_by)
+         VALUES ($1, 1, $2, $3)`,
+        [result.rows[0].id, cleaned, studentId],
+      );
+      const body = jdDto(result.rows[0]);
+      await saveIdempotentResult(client, {
+        actorId: studentId,
+        operation,
+        key,
+        digest: state.digest,
+        status: 201,
+        body,
+        resourceId: body.id,
+      });
+      return body;
+    });
   }
 
-  async function createFromFile(studentId, file) {
+  async function createFromFile(studentId, file, key) {
     if (!file?.buffer?.length) {
       throw new AppError({
         status: 422,
@@ -137,34 +157,56 @@ export function createJdService({ pool, storage, environment }) {
         recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
       });
     }
-    const quota = await pool.query(
-      `SELECT count(*)::int AS count FROM job_descriptions
-       WHERE student_id = $1 AND source_type IN ('PDF','IMAGE')
-         AND created_at >= now() - interval '24 hours'`,
-      [studentId],
-    );
-    if (quota.rows[0].count >= 20) {
-      throw new AppError({
-        status: 429,
-        code: "JD_UPLOAD_QUOTA_REACHED",
-        message: "Bạn đã dùng hết 20 lượt upload trong 24 giờ. Có thể dán nội dung JD để tiếp tục ngay.",
-        recovery: { kind: "PASTE_TEXT", retryable: false, retryAfterSeconds: 3600 },
-      });
-    }
     if (detected.mime === "application/pdf") await validatePdf(file.buffer);
-    const objectKey = await storage.put(file.buffer, { contentType: detected.mime });
+    const contentHash = sha256(file.buffer);
+    let objectKey = null;
     try {
-      const result = await pool.query(
-        `INSERT INTO job_descriptions (
-           student_id, source_type, original_file_ref, original_mime_type,
-           original_size_bytes, original_content_hash, original_delete_after, status
-         ) VALUES ($1, $2, $3, $4, $5, $6, now() + interval '24 hours', 'DRAFT')
-         RETURNING *`,
-        [studentId, sourceType, objectKey, detected.mime, file.size, sha256(file.buffer)],
-      );
-      return jdDto(result.rows[0]);
+      return await withTransaction(pool, async (client) => {
+        const operation = "CREATE_FILE_JD";
+        const state = await findIdempotentResult(client, {
+          actorId: studentId,
+          operation,
+          key,
+          input: { contentHash, size: file.size, mimeType: detected.mime },
+        });
+        if (state.cached?.response_body) return state.cached.response_body;
+        const quota = await client.query(
+          `SELECT count(*)::int AS count FROM job_descriptions
+           WHERE student_id = $1 AND source_type IN ('PDF','IMAGE')
+             AND created_at >= now() - interval '24 hours'`,
+          [studentId],
+        );
+        if (quota.rows[0].count >= 20) {
+          throw new AppError({
+            status: 429,
+            code: "JD_UPLOAD_QUOTA_REACHED",
+            message: "Bạn đã dùng hết 20 lượt upload trong 24 giờ. Có thể dán nội dung JD để tiếp tục ngay.",
+            recovery: { kind: "PASTE_TEXT", retryable: false, retryAfterSeconds: 3600 },
+          });
+        }
+        objectKey = await storage.put(file.buffer, { contentType: detected.mime });
+        const result = await client.query(
+          `INSERT INTO job_descriptions (
+             student_id, source_type, original_file_ref, original_mime_type,
+             original_size_bytes, original_content_hash, original_delete_after, status
+           ) VALUES ($1, $2, $3, $4, $5, $6, now() + interval '24 hours', 'DRAFT')
+           RETURNING *`,
+          [studentId, sourceType, objectKey, detected.mime, file.size, contentHash],
+        );
+        const body = jdDto(result.rows[0]);
+        await saveIdempotentResult(client, {
+          actorId: studentId,
+          operation,
+          key,
+          digest: state.digest,
+          status: 201,
+          body,
+          resourceId: body.id,
+        });
+        return body;
+      });
     } catch (error) {
-      await storage.delete(objectKey);
+      if (objectKey) await storage.delete(objectKey);
       throw error;
     }
   }
@@ -203,6 +245,40 @@ export function createJdService({ pool, storage, environment }) {
         input,
       });
       if (state.cached?.response_body) return state.cached.response_body;
+      if (["PENDING", "PROCESSING"].includes(jd.job_status)) {
+        const body = jdDto(jd);
+        await saveIdempotentResult(client, {
+          actorId: studentId,
+          operation: "START_EXTRACTION",
+          key,
+          digest: state.digest,
+          status: 202,
+          body,
+          resourceId: id,
+        });
+        return body;
+      }
+      if (jd.job_status === "SUCCEEDED" || ["READY_FOR_REVIEW", "CONFIRMED", "ANALYZED"].includes(jd.status)) {
+        const body = jdDto(jd);
+        await saveIdempotentResult(client, {
+          actorId: studentId,
+          operation: "START_EXTRACTION",
+          key,
+          digest: state.digest,
+          status: 200,
+          body,
+          resourceId: id,
+        });
+        return body;
+      }
+      if (jd.job_status === "FAILED") {
+        throw new AppError({
+          status: 409,
+          code: "EXTRACTION_RETRY_REQUIRED",
+          message: "Lần trích xuất trước đã thất bại. Hãy dùng thao tác thử lại an toàn hoặc dán văn bản thủ công.",
+          recovery: { kind: "RETRY_SAFE", retryable: true, retryAfterSeconds: null },
+        });
+      }
       const job = await client.query(
         `INSERT INTO extraction_jobs (job_description_id, input_hash, extraction_version)
          VALUES ($1, $2, 'extract-v1')
@@ -235,23 +311,58 @@ export function createJdService({ pool, storage, environment }) {
   }
 
   async function retryExtraction(studentId, id, key) {
-    const current = await getOwned(studentId, id);
-    if (current.job_status !== "FAILED") return startExtraction(studentId, id, key);
-    if (current.attempt_count >= 2) {
-      throw new AppError({
-        status: 409,
-        code: "EXTRACTION_RETRY_LIMIT",
-        message: "Đã hết lượt xử lý tự động. Bạn có thể dán nội dung JD để tiếp tục.",
-        recovery: { kind: "PASTE_TEXT", retryable: false, retryAfterSeconds: null },
+    return withTransaction(pool, async (client) => {
+      const current = await getOwned(studentId, id, client);
+      const operation = "RETRY_EXTRACTION";
+      const state = await findIdempotentResult(client, {
+        actorId: studentId,
+        operation,
+        key,
+        input: { id, jobId: current.job_id, attemptCount: current.attempt_count },
       });
-    }
-    await pool.query(
-      `UPDATE extraction_jobs SET status = 'PENDING', error_code = NULL, available_at = now()
-       WHERE id = $1`,
-      [current.job_id],
-    );
-    await pool.query("UPDATE job_descriptions SET status = 'EXTRACTING' WHERE id = $1", [id]);
-    return get(studentId, id);
+      if (state.cached?.response_body) return state.cached.response_body;
+      if (current.job_status !== "FAILED") {
+        const body = jdDto(current);
+        await saveIdempotentResult(client, {
+          actorId: studentId,
+          operation,
+          key,
+          digest: state.digest,
+          status: 202,
+          body,
+          resourceId: id,
+        });
+        return body;
+      }
+      if (current.attempt_count >= environment.ocr.maxAttempts) {
+        throw new AppError({
+          status: 409,
+          code: "EXTRACTION_RETRY_LIMIT",
+          message: "Đã hết lượt xử lý tự động. Bạn có thể dán nội dung JD để tiếp tục.",
+          recovery: { kind: "PASTE_TEXT", retryable: false, retryAfterSeconds: null },
+        });
+      }
+      await client.query(
+        `UPDATE extraction_jobs SET status = 'PENDING', error_code = NULL, available_at = now()
+         WHERE id = $1`,
+        [current.job_id],
+      );
+      const updated = await client.query(
+        "UPDATE job_descriptions SET status = 'EXTRACTING', updated_at = now(), version = version + 1 WHERE id = $1 RETURNING *",
+        [id],
+      );
+      const body = jdDto({ ...updated.rows[0], job_id: current.job_id, job_status: "PENDING", attempt_count: current.attempt_count, error_code: null });
+      await saveIdempotentResult(client, {
+        actorId: studentId,
+        operation,
+        key,
+        digest: state.digest,
+        status: 202,
+        body,
+        resourceId: id,
+      });
+      return body;
+    });
   }
 
   async function saveCorrectedText(studentId, id, { correctedText, version }) {

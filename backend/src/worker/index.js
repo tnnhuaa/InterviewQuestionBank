@@ -14,8 +14,15 @@ const pollIntervalMs = 2000;
 const retentionIntervalMs = 60_000;
 
 function extractionErrorCode(error) {
-  const knownCodes = new Set(["EMPTY_EXTRACTION", "OCR_TIMEOUT", "PDF_PAGE_LIMIT"]);
-  return knownCodes.has(error?.message) ? error.message : "EXTRACTION_PROVIDER_FAILURE";
+  const knownCodes = new Set([
+    "EXTRACTION_EMPTY_OUTPUT",
+    "OCR_TIMEOUT",
+    "OCR_LANGUAGE_DATA_UNAVAILABLE",
+    "PDF_PAGE_LIMIT",
+    "EXTRACTION_PROVIDER_FAILURE",
+  ]);
+  const code = error?.code ?? error?.message;
+  return knownCodes.has(code) ? code : "EXTRACTION_PROVIDER_FAILURE";
 }
 
 function classifyNotificationError(error) {
@@ -65,7 +72,7 @@ async function processExtractionJob({ poolInstance, storage, environment, job })
   try {
     const buffer = await storage.get(job.original_file_ref);
     const result = await extractDocument({ buffer, mimeType: job.original_mime_type, ocr: environment.ocr });
-    if (!result.text.trim()) throw new Error("EMPTY_EXTRACTION");
+    if (!result.text.trim()) throw Object.assign(new Error("EXTRACTION_EMPTY_OUTPUT"), { code: "EXTRACTION_EMPTY_OUTPUT" });
     await withTransaction(poolInstance, async (client) => {
       const updated = await client.query(
         `UPDATE job_descriptions SET extracted_text = $2,

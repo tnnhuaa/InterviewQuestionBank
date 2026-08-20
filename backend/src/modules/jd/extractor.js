@@ -4,10 +4,20 @@ import { createWorker } from "tesseract.js";
 
 const MIN_DIRECT_TEXT_CHARACTERS = 50;
 
+function extractionError(code, cause) {
+  return Object.assign(new Error(code, cause ? { cause } : undefined), { code });
+}
+
+function ensureExtractedText(text) {
+  const cleaned = text.trim();
+  if (!cleaned) throw extractionError("EXTRACTION_EMPTY_OUTPUT");
+  return cleaned;
+}
+
 async function withTimeout(operation, timeoutMs) {
   let timeoutId;
   const timeout = new Promise((resolve, reject) => {
-    timeoutId = setTimeout(() => reject(new Error("OCR_TIMEOUT")), timeoutMs);
+    timeoutId = setTimeout(() => reject(extractionError("OCR_TIMEOUT")), timeoutMs);
   });
   try {
     return await Promise.race([operation, timeout]);
@@ -17,7 +27,13 @@ async function withTimeout(operation, timeoutMs) {
 }
 
 async function createOcrSession(languages, timeoutMs) {
-  const worker = await createWorker(languages);
+  let worker;
+  try {
+    worker = await createWorker(languages);
+  } catch (error) {
+    const languageDataMissing = /traineddata|language|lang path/i.test(error?.message ?? "");
+    throw extractionError(languageDataMissing ? "OCR_LANGUAGE_DATA_UNAVAILABLE" : "EXTRACTION_PROVIDER_FAILURE", error);
+  }
   return {
     async recognize(image) {
       return withTimeout(worker.recognize(image), timeoutMs);
@@ -53,31 +69,35 @@ export async function extractDocument({ buffer, mimeType, ocr }) {
   const timeoutMs = ocr.timeoutSeconds * 1000;
   if (mimeType === "application/pdf") {
     const pdf = await readPdf(buffer);
-    if (pdf.text.length >= MIN_DIRECT_TEXT_CHARACTERS) {
-      return { text: pdf.text, method: "DIRECT_PDF", confidence: 1 };
-    }
-    const session = await createOcrSession(ocr.languages, timeoutMs);
     try {
-      const pages = [];
-      const confidences = [];
-      for (let pageNumber = 1; pageNumber <= pdf.document.numPages; pageNumber += 1) {
-        const result = await session.recognize(await renderPdfPage(pdf.document, pageNumber));
-        pages.push(result.data.text.trim());
-        confidences.push(result.data.confidence / 100);
+      if (pdf.text.length >= MIN_DIRECT_TEXT_CHARACTERS) {
+        return { text: ensureExtractedText(pdf.text), method: "DIRECT_PDF", confidence: 1 };
       }
-      return {
-        text: pages.join("\n\n").trim(),
-        method: "OCR",
-        confidence: confidences.reduce((sum, value) => sum + value, 0) / confidences.length,
-      };
+      const session = await createOcrSession(ocr.languages, timeoutMs);
+      try {
+        const pages = [];
+        const confidences = [];
+        for (let pageNumber = 1; pageNumber <= pdf.document.numPages; pageNumber += 1) {
+          const result = await session.recognize(await renderPdfPage(pdf.document, pageNumber));
+          pages.push(result.data.text.trim());
+          confidences.push(result.data.confidence / 100);
+        }
+        return {
+          text: ensureExtractedText(pages.join("\n\n")),
+          method: "OCR",
+          confidence: confidences.reduce((sum, value) => sum + value, 0) / confidences.length,
+        };
+      } finally {
+        await session.close();
+      }
     } finally {
-      await session.close();
+      await pdf.document.destroy();
     }
   }
   const session = await createOcrSession(ocr.languages, timeoutMs);
   try {
     const result = await session.recognize(buffer);
-    return { text: result.data.text.trim(), method: "OCR", confidence: result.data.confidence / 100 };
+    return { text: ensureExtractedText(result.data.text), method: "OCR", confidence: result.data.confidence / 100 };
   } finally {
     await session.close();
   }

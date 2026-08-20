@@ -338,6 +338,7 @@ paths:
       responses: { "200": { $ref: "#/components/responses/Page" } }
     post:
       operationId: createJobDescription
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
       requestBody:
         required: true
         content:
