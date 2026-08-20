@@ -121,7 +121,7 @@ export interface Requirement {
   effective_topic_id?: string;
   topic_name?: string;
   confidence?: number;
-  source?: "GEMINI";
+  source: "GEMINI" | "RULE_BASED";
   decision?: "ACCEPTED" | "EDITED" | "UNMAPPED";
   decision_topic_id?: string;
 }
@@ -651,6 +651,10 @@ export const jobDescriptionsApi = {
     apiFetch<{
       jobDescriptionId: string;
       analysisVersion: number;
+      analysisSource: "GEMINI" | "RULE_BASED";
+      fallbackUsed: boolean;
+      aiJobId: string | null;
+      fallbackErrorCode: string | null;
       requirements: Requirement[];
     }>(`/job-descriptions/${id}/analyze`, {
       method: "POST",
@@ -667,6 +671,10 @@ export const jobDescriptionsApi = {
     apiFetch<{
       jobDescriptionId: string;
       analysisVersion: number;
+      analysisSource: "GEMINI" | "RULE_BASED";
+      fallbackUsed: boolean;
+      aiJobId: string | null;
+      fallbackErrorCode: string | null;
       requirements: Requirement[];
     }>(`/job-descriptions/${id}/analysis${toQuery({ analysisVersion })}`),
   normalizations: (

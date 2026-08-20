@@ -426,7 +426,7 @@ paths:
     post:
       operationId: analyzeJobDescription
       requestBody: { $ref: "#/components/requestBodies/JsonInput" }
-      responses: { "200": { $ref: "#/components/responses/Success" } }
+      responses: { "200": { $ref: "#/components/responses/JobDescriptionAnalysis" } }
   /job-descriptions/{jobDescriptionId}/analysis-jobs:
     parameters:
       [
@@ -454,7 +454,7 @@ paths:
             schema: { type: integer, minimum: 1 },
           },
         ]
-      responses: { "200": { $ref: "#/components/responses/Success" } }
+      responses: { "200": { $ref: "#/components/responses/JobDescriptionAnalysis" } }
   /job-descriptions/{jobDescriptionId}/requirement-normalizations:
     parameters: [{ $ref: "#/components/parameters/JobDescriptionId" }]
     put:
@@ -1443,6 +1443,32 @@ components:
         correctedText: { type: [string, "null"] }
         correctedVersion: { type: integer }
         version: { type: integer }
+    JobDescriptionRequirement:
+      type: object
+      required: [id, raw_text, requirement_type, source]
+      properties:
+        id: { type: string, format: uuid }
+        raw_text: { type: string }
+        source_start: { type: [integer, "null"] }
+        source_end: { type: [integer, "null"] }
+        requirement_type: { type: string }
+        normalized_topic_id: { type: [string, "null"], format: uuid }
+        effective_topic_id: { type: [string, "null"], format: uuid }
+        topic_name: { type: [string, "null"] }
+        confidence: { type: [number, "null"] }
+        source: { type: string, enum: [GEMINI, RULE_BASED] }
+    JobDescriptionAnalysis:
+      type: object
+      required: [jobDescriptionId, analysisVersion, analysisSource, fallbackUsed, requirements]
+      properties:
+        jobDescriptionId: { type: string, format: uuid }
+        analysisVersion: { type: integer, minimum: 1 }
+        analysisSource: { type: string, enum: [GEMINI, RULE_BASED] }
+        fallbackUsed: { type: boolean }
+        aiJobId: { type: [string, "null"], format: uuid }
+        fallbackErrorCode: { type: [string, "null"] }
+        requirements:
+          { type: array, items: { $ref: "#/components/schemas/JobDescriptionRequirement" } }
     Booking:
       type: object
       required: [id, mentorId, slotId, status, startsAt, endsAt, version]
@@ -1983,6 +2009,15 @@ components:
           {
             application/json:
               { schema: { $ref: "#/components/schemas/JobDescription" } },
+          },
+      }
+    JobDescriptionAnalysis:
+      {
+        description: Versioned JD requirement analysis with safe provenance,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/JobDescriptionAnalysis" } },
           },
       }
     Booking:

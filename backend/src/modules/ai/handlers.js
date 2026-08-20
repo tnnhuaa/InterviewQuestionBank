@@ -172,6 +172,7 @@ function createJdAnalysisHandler({ pool, environment }) {
         jd.corrected_version,
         job.correlation_id,
         `ai-fallback-${job.id}`,
+        { fallbackUsed: true, aiJobId: job.id, errorCode: error?.code ?? "AI_PROVIDER_FAILURE" },
       );
       return { result, fallbackUsed: true, errorCode: error?.code ?? "AI_PROVIDER_FAILURE" };
     }

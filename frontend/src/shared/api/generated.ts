@@ -1608,6 +1608,34 @@ export interface components {
             correctedVersion: number;
             version: number;
         };
+        JobDescriptionRequirement: {
+            /** Format: uuid */
+            id: string;
+            raw_text: string;
+            source_start?: number | null;
+            source_end?: number | null;
+            requirement_type: string;
+            /** Format: uuid */
+            normalized_topic_id?: string | null;
+            /** Format: uuid */
+            effective_topic_id?: string | null;
+            topic_name?: string | null;
+            confidence?: number | null;
+            /** @enum {string} */
+            source: "GEMINI" | "RULE_BASED";
+        };
+        JobDescriptionAnalysis: {
+            /** Format: uuid */
+            jobDescriptionId: string;
+            analysisVersion: number;
+            /** @enum {string} */
+            analysisSource: "GEMINI" | "RULE_BASED";
+            fallbackUsed: boolean;
+            /** Format: uuid */
+            aiJobId?: string | null;
+            fallbackErrorCode?: string | null;
+            requirements: components["schemas"]["JobDescriptionRequirement"][];
+        };
         Booking: {
             /** Format: uuid */
             id: string;
@@ -1987,6 +2015,15 @@ export interface components {
             };
             content: {
                 "application/json": components["schemas"]["JobDescription"];
+            };
+        };
+        /** @description Versioned JD requirement analysis with safe provenance */
+        JobDescriptionAnalysis: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["JobDescriptionAnalysis"];
             };
         };
         /** @description Booking projection */
@@ -2683,7 +2720,7 @@ export interface operations {
         };
         requestBody: components["requestBodies"]["JsonInput"];
         responses: {
-            200: components["responses"]["Success"];
+            200: components["responses"]["JobDescriptionAnalysis"];
         };
     };
     startAiJobDescriptionAnalysis: {
@@ -2717,7 +2754,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["Success"];
+            200: components["responses"]["JobDescriptionAnalysis"];
         };
     };
     saveRequirementNormalizations: {

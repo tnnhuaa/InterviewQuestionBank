@@ -513,7 +513,7 @@ export function createJdService({ pool, storage, environment }) {
     });
   }
 
-  async function analyze(studentId, id, correctedTextVersion, correlationId, key) {
+  async function analyze(studentId, id, correctedTextVersion, correlationId, key, provenance = {}) {
     return withTransaction(pool, async (client) => {
       const jd = await getOwned(studentId, id, client);
       const idempotency = await findIdempotentResult(client, {
@@ -575,7 +575,13 @@ export function createJdService({ pool, storage, environment }) {
           [id, analysisVersion, item.matchedTerm, sourceStart >= 0 ? sourceStart : null,
             sourceStart >= 0 ? sourceStart + String(item.matchedTerm).length : null,
             item.type ?? "SKILL", item.topic?.id ?? null,
-            item.topic ? 0.95 : 0.75, { rule: item.topic ? "taxonomy_alias" : "pilot_dictionary" }],
+             item.topic ? 0.95 : 0.75, {
+               source: "RULE_BASED",
+               rule: item.topic ? "taxonomy_alias" : "pilot_dictionary",
+               fallbackUsed: Boolean(provenance.fallbackUsed),
+               ...(provenance.aiJobId ? { aiJobId: provenance.aiJobId } : {}),
+               ...(provenance.errorCode ? { fallbackErrorCode: provenance.errorCode } : {}),
+             }],
         );
         requirements.push(result.rows[0]);
       }
@@ -703,7 +709,10 @@ export function createJdService({ pool, storage, environment }) {
     if (!version) throw notFoundError();
     const result = await pool.query(
       `SELECT r.id, r.raw_text, r.source_start, r.source_end, r.requirement_type,
-              r.normalized_topic_id, r.confidence, r.rule_evidence->>'source' AS source,
+              r.normalized_topic_id, r.confidence, coalesce(r.rule_evidence->>'source', 'RULE_BASED') AS source,
+              coalesce((r.rule_evidence->>'fallbackUsed')::boolean, false) AS fallback_used,
+              r.rule_evidence->>'aiJobId' AS ai_job_id,
+              r.rule_evidence->>'fallbackErrorCode' AS fallback_error_code,
               coalesce((SELECT o.topic_id FROM requirement_normalization_overrides o
                         WHERE o.requirement_id = r.id ORDER BY mapping_input_version DESC LIMIT 1), r.normalized_topic_id) AS effective_topic_id,
               t.name AS topic_name, d.decision, d.selected_topic_id AS decision_topic_id
@@ -714,7 +723,23 @@ export function createJdService({ pool, storage, environment }) {
        WHERE r.job_description_id = $1 AND r.analysis_version = $2 ORDER BY r.id`,
       [id, version, studentId],
     );
-    return { jobDescriptionId: id, analysisVersion: version, requirements: result.rows };
+    const metadata = result.rows[0] ?? {};
+    const requirements = result.rows.map((item) => {
+      const requirement = { ...item };
+      delete requirement.fallback_used;
+      delete requirement.ai_job_id;
+      delete requirement.fallback_error_code;
+      return requirement;
+    });
+    return {
+      jobDescriptionId: id,
+      analysisVersion: version,
+      analysisSource: requirements.some((item) => item.source === "GEMINI") ? "GEMINI" : "RULE_BASED",
+      fallbackUsed: result.rows.some((item) => item.fallback_used),
+      aiJobId: metadata.ai_job_id ?? null,
+      fallbackErrorCode: metadata.fallback_error_code ?? null,
+      requirements,
+    };
   }
 
   async function match(studentId, id, analysisVersion, correlationId, key) {
