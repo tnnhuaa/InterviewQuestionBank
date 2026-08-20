@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { findIdempotentResult } from "../src/platform/idempotency.js";
+import { describe, expect, it, vi } from "vitest";
+import { findIdempotentResult, requestHash, saveIdempotentResult } from "../src/platform/idempotency.js";
 
 const actorId = "00000000-0000-0000-0000-000000000001";
 
@@ -37,5 +37,39 @@ describe("booking idempotency", () => {
     await expect(findIdempotentResult(fakeClient({ request_hash: original.digest }), {
       actorId, operation: "BOOKING_CREATE", key: "booking-key", input: { ...input, goal: "Luyện TypeScript" },
     })).rejects.toMatchObject({ status: 409, code: "IDEMPOTENCY_KEY_REUSED" });
+  });
+
+  it("rejects a mutation without an idempotency key before querying the database", async () => {
+    const client = { query: async () => { throw new Error("must not query"); } };
+
+    await expect(findIdempotentResult(client, {
+      actorId, operation: "BOOKING_CREATE", key: "", input,
+    })).rejects.toMatchObject({ status: 400, code: "IDEMPOTENCY_KEY_REQUIRED" });
+  });
+
+  it("hashes empty and equivalent inputs deterministically", () => {
+    expect(requestHash()).toBe(requestHash({}));
+    expect(requestHash(input)).toBe(requestHash({ ...input }));
+    expect(requestHash(input)).not.toBe(requestHash({ ...input, goal: "Luyện TypeScript" }));
+  });
+
+  it("persists the original response and resource reference", async () => {
+    const query = vi.fn().mockResolvedValue({ rowCount: 1 });
+    const body = { id: "booking-1" };
+
+    await saveIdempotentResult({ query }, {
+      actorId,
+      operation: "BOOKING_CREATE",
+      key: "booking-key",
+      digest: "digest-1",
+      status: 201,
+      body,
+      resourceId: "booking-1",
+    });
+
+    expect(query).toHaveBeenCalledOnce();
+    expect(query.mock.calls[0][1]).toEqual([
+      actorId, "BOOKING_CREATE", "booking-key", "digest-1", 201, body, "booking-1",
+    ]);
   });
 });

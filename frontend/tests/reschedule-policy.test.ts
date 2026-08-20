@@ -12,5 +12,6 @@ describe("isRescheduleProposalRecipient", () => {
 
   it("hides the response actions until participant data is available", () => {
     expect(isRescheduleProposalRecipient("student-1", undefined)).toBe(false);
+    expect(isRescheduleProposalRecipient(undefined, "mentor-1")).toBe(false);
   });
 });

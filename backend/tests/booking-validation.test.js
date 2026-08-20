@@ -29,10 +29,36 @@ describe("create booking validation", () => {
     expect(createBookingSchema.safeParse(withoutContext).success).toBe(false);
   });
 
+  it("rejects a request that mixes JD and preparation-plan contexts", () => {
+    const mixedContext = {
+      ...validDirectBooking,
+      preparationPlanId: ids.preparationPlanId,
+      preparationPlanVersion: 1,
+    };
+
+    const result = createBookingSchema.safeParse(mixedContext);
+
+    expect(result.success).toBe(false);
+    expect(result.error.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: ["preparationPlanId"] }),
+    ]));
+  });
+
   it("requires the version when booking from a preparation plan", () => {
     const planBooking = { ...validDirectBooking, jobDescriptionId: undefined };
 
     expect(createBookingSchema.safeParse({ ...planBooking, preparationPlanId: ids.preparationPlanId }).success).toBe(false);
     expect(createBookingSchema.safeParse({ ...planBooking, preparationPlanId: ids.preparationPlanId, preparationPlanVersion: 1 }).success).toBe(true);
+  });
+
+  it.each([
+    ["selectedTopicIds", { ...validDirectBooking, selectedTopicIds: [] }],
+    ["goal", { ...validDirectBooking, goal: "too short" }],
+    ["interviewType", { ...validDirectBooking, interviewType: " " }],
+  ])("rejects invalid %s input", (field, input) => {
+    const result = createBookingSchema.safeParse(input);
+
+    expect(result.success).toBe(false);
+    expect(result.error.issues.some((issue) => issue.path[0] === field)).toBe(true);
   });
 });

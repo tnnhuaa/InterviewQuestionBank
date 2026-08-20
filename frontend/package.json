@@ -8,6 +8,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:unit": "vitest run --config vitest.unit.config.js",
+    "test:unit:coverage": "vitest run --config vitest.unit.config.js --coverage",
     "build": "vite build"
   },
   "dependencies": {

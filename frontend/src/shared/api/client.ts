@@ -1,7 +1,9 @@
 import createClient from "openapi-fetch";
 import type { paths } from "./generated";
 
-const API_BASE_URL = "/api/v1";
+const API_BASE_URL = typeof window === "undefined"
+  ? "http://localhost/api/v1"
+  : "/api/v1";
 let csrfToken: string | null = null;
 let csrfRequest: Promise<string | null> | null = null;
 
@@ -29,7 +31,11 @@ export class ApiError extends Error {
   }
 }
 
-export const openapi = createClient<paths>({ baseUrl: API_BASE_URL, credentials: "include" });
+export const openapi = createClient<paths>({
+  baseUrl: API_BASE_URL,
+  credentials: "include",
+  fetch: (...args) => fetch(...args),
+});
 
 export function setCsrfToken(value: string | null) {
   csrfToken = value;
@@ -63,7 +69,13 @@ async function refreshCsrf() {
 
 async function ensureCsrf(method: string) {
   if (["GET", "HEAD", "OPTIONS"].includes(method) || csrfToken) return;
-  await refreshCsrf();
+  const refreshedToken = await refreshCsrf();
+  if (!refreshedToken) {
+    throw new ApiError("Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại.", 401, {
+      code: "SESSION_REQUIRED",
+      recovery: { kind: "NONE", retryable: false, retryAfterSeconds: null },
+    });
+  }
 }
 
 interface FetchOptions extends RequestInit { json?: unknown }

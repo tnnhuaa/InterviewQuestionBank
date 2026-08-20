@@ -8,6 +8,8 @@
     "start": "node src/server.js",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:unit": "vitest run --config vitest.unit.config.js",
+    "test:unit:coverage": "vitest run --config vitest.unit.config.js --coverage",
     "build": "node scripts/build.js",
     "worker": "node src/worker/index.js",
     "worker:dev": "node --watch src/worker/index.js",

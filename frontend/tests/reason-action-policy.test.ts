@@ -6,7 +6,9 @@ describe("actionRequiresReason", () => {
     expect(actionRequiresReason("CANCEL")).toBe(true);
     expect(actionRequiresReason("PROPOSE_RESCHEDULE")).toBe(true);
     expect(actionRequiresReason("REJECT")).toBe(true);
+    expect(actionRequiresReason("REPORT_NO_SHOW")).toBe(true);
     expect(actionRequiresReason("CONFIRM")).toBe(false);
+    expect(actionRequiresReason("")).toBe(false);
     expect(actionRequiresReason(null)).toBe(false);
   });
 });

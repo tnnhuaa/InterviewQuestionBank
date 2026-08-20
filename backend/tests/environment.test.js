@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getEnvironment } from "../src/config/environment.js";
+import { getEnvironment, validateEnvironment } from "../src/config/environment.js";
 
 describe("getEnvironment", () => {
   it("normalizes environment values", () => {
@@ -33,5 +33,47 @@ describe("getEnvironment", () => {
       dbPoolMax: 5,
       notifications: { remindersEnabled: false },
     });
+  });
+
+  it("enables Gemini features by default only in development with an API key", () => {
+    const enabled = getEnvironment({ NODE_ENV: "development", GEMINI_API_KEY: "  test-key  " });
+    const production = getEnvironment({ NODE_ENV: "production", GEMINI_API_KEY: "test-key" });
+
+    expect(enabled.ai).toMatchObject({ enabled: true, apiKey: "test-key" });
+    expect(Object.values(enabled.ai.features).every(Boolean)).toBe(true);
+    expect(production.ai.enabled).toBe(false);
+  });
+
+  it("accepts a complete production configuration", () => {
+    const environment = getEnvironment({
+      NODE_ENV: "production",
+      DATABASE_URL: "postgresql://example.test/prepvi",
+      DATABASE_SSL: "true",
+      FRONTEND_ORIGIN: "https://prepvi.example.test",
+      SESSION_SECRET: "a".repeat(32),
+      AI_ENABLED: "true",
+      AI_PROVIDER: "gemini",
+      GEMINI_API_KEY: "test-key",
+      GEMINI_TEMPERATURE: "0.2",
+    });
+
+    expect(() => validateEnvironment(environment)).not.toThrow();
+  });
+
+  it.each([
+    [{ NODE_ENV: "preview" }, "NODE_ENV must be development, test, or production"],
+    [{ NODE_ENV: "test", GEMINI_TEMPERATURE: "1.1" }, "GEMINI_TEMPERATURE must be between 0 and 1"],
+  ])("rejects invalid environment constraints", (source, message) => {
+    expect(() => validateEnvironment(getEnvironment(source))).toThrow(message);
+  });
+
+  it("reports every missing dependency required by an enabled AI deployment", () => {
+    const environment = getEnvironment({
+      NODE_ENV: "production",
+      AI_ENABLED: "true",
+      AI_PROVIDER: "other",
+    });
+
+    expect(() => validateEnvironment(environment)).toThrow(/DATABASE_URL.*SESSION_SECRET.*AI_PROVIDER=gemini.*GEMINI_API_KEY/);
   });
 });

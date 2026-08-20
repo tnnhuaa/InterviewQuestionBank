@@ -35,4 +35,39 @@ describe("scoreQuestionMatch", () => {
       seniorityRequirements: [{ raw_text: "Intern" }],
     }).roleScore).toBe(0);
   });
+
+  it("normalizes Vietnamese accents and awards entry-level points for an internship", () => {
+    const result = scoreQuestionMatch({
+      requirementText: "Quản lý trạng thái React",
+      candidate: { ...candidate, title: "Quản lý trạng thái React" },
+      ruleSet,
+      roleRequirements: [{ raw_text: "Frontend" }],
+      seniorityRequirements: [{ raw_text: "Thực tập" }],
+    });
+
+    expect(result.keywordScore).toBe(30);
+    expect(result.seniorityScore).toBe(15);
+  });
+
+  it("does not award entry-level points to a hard question", () => {
+    expect(scoreQuestionMatch({
+      requirementText: "React rendering",
+      candidate: { ...candidate, difficulty: "HARD" },
+      ruleSet,
+      roleRequirements: [],
+      seniorityRequirements: [{ raw_text: "Junior" }],
+    }).seniorityScore).toBe(0);
+  });
+
+  it("uses the full keyword component when requirement text has no searchable words", () => {
+    const result = scoreQuestionMatch({
+      requirementText: "JS",
+      candidate,
+      ruleSet,
+      roleRequirements: [{ raw_text: "UI" }],
+      seniorityRequirements: [],
+    });
+
+    expect(result).toMatchObject({ keywordScore: 30, roleScore: 0, seniorityScore: 0, score: 70 });
+  });
 });

@@ -25,6 +25,8 @@ jobs:
         run: npm ci
       - name: Lint
         run: npm run lint
+      - name: Unit tests and coverage thresholds
+        run: npm run test:unit:coverage
       - name: Typecheck
         run: npm run typecheck
       - name: OpenAPI drift

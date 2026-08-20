@@ -19,4 +19,13 @@ describe("prepareBookingRequest", () => {
 
     expect(changed.idempotencyKey).toBe("booking-key-2");
   });
+
+  it("creates the first attempt without mutating submitted data", () => {
+    const input = { mentorId: "mentor-1", selectedTopicIds: ["topic-1"] };
+
+    const attempt = prepareBookingRequest(null, input, () => "booking-key-1");
+
+    expect(JSON.parse(attempt.payload)).toEqual(input);
+    expect(input).toEqual({ mentorId: "mentor-1", selectedTopicIds: ["topic-1"] });
+  });
 });
