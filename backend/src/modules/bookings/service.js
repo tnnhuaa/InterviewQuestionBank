@@ -9,6 +9,19 @@ import { createAiJob } from "../ai/jobs.js";
 
 const terminalStates = new Set(["REJECTED", "CANCELLED", "COMPLETED", "NO_SHOW"]);
 
+const bookingNotificationContent = {
+  BOOKING_REQUESTED: { title: "Có yêu cầu đặt lịch mới", body: "Mở yêu cầu để xác nhận, từ chối hoặc đề xuất giờ khác." },
+  BOOKING_CONFIRMED: { title: "Lịch luyện phỏng vấn đã được xác nhận", body: "Mở lịch để kiểm tra thời gian và thông tin buổi luyện." },
+  BOOKING_REJECTED: { title: "Yêu cầu đặt lịch chưa được chấp nhận", body: "Mở lịch để xem trạng thái và chọn khung giờ khác." },
+  BOOKING_CANCELLED: { title: "Lịch luyện phỏng vấn đã được hủy", body: "Mở lịch để xem trạng thái hoặc chọn lịch khác." },
+  BOOKING_RESCHEDULE_PROPOSED: { title: "Có đề xuất đổi giờ", body: "Mở lịch để chấp nhận hoặc từ chối giờ mới." },
+  BOOKING_RESCHEDULE_ACCEPTED: { title: "Giờ phỏng vấn mới đã được xác nhận", body: "Mở lịch để kiểm tra thời gian mới." },
+  BOOKING_RESCHEDULE_REJECTED: { title: "Đề xuất đổi giờ không được chấp nhận", body: "Mở lịch để xem thời gian hiện tại và lựa chọn tiếp theo." },
+  BOOKING_COMPLETED: { title: "Buổi phỏng vấn đã hoàn tất", body: "Mở lịch để xem phản hồi và bước tiếp theo." },
+  MEETING_LINK_READY: { title: "Link phòng phỏng vấn đã sẵn sàng", body: "Mở chi tiết lịch để tham gia đúng giờ." },
+  FEEDBACK_READY: { title: "Mentor đã gửi feedback", body: "Mở lịch hẹn để xem nhận xét và bước tiếp theo." },
+};
+
 function conflict(code, message, recoveryKind = "RETRY_SAFE") {
   return new AppError({
     status: 409,
@@ -75,22 +88,30 @@ const bookingProjection = `
   LEFT JOIN meeting_links ml ON ml.booking_id = b.id
 `;
 
-async function notify(client, booking, recipientUserId, eventType, title, body) {
-  await createInAppNotification(client, {
-    userId: recipientUserId,
-    eventType,
-    title,
-    body,
-    resourceType: "BOOKING",
-    resourceId: booking.id,
-  });
-  await enqueueNotification(client, {
+function bookingNotificationKey({ eventType, bookingId, bookingVersion, recipientUserId, channel = "EMAIL" }) {
+  return ["BOOKING", eventType, bookingId, bookingVersion, recipientUserId, channel].join(":");
+}
+
+export async function enqueueBookingNotification(client, { booking, recipientUserId, eventType }) {
+  const content = bookingNotificationContent[eventType];
+  if (!content) throw new Error(`Unknown booking notification event type: ${eventType}`);
+  const outbox = await enqueueNotification(client, {
     eventType,
     aggregateType: "BOOKING",
     aggregateId: booking.id,
     recipientUserId,
+    channel: "EMAIL",
     payload: { bookingId: booking.id },
-    deduplicationKey: `${eventType}:${booking.id}:${booking.version}:${recipientUserId}`,
+    deduplicationKey: bookingNotificationKey({ eventType, bookingId: booking.id, bookingVersion: booking.version, recipientUserId }),
+  });
+  await createInAppNotification(client, {
+    userId: recipientUserId,
+    eventType,
+    title: content.title,
+    body: content.body,
+    resourceType: "BOOKING",
+    resourceId: booking.id,
+    sourceOutboxId: outbox.id,
   });
 }
 
@@ -133,7 +154,8 @@ async function cancelPendingReminders(client, bookingId, scheduleVersion = null)
   );
 }
 
-async function scheduleReminders(client, booking, recipientUserIds) {
+async function scheduleReminders(client, booking, recipientUserIds, remindersEnabled) {
+  if (!remindersEnabled) return;
   const milestones = [
     { code: "24H", offsetMs: 24 * 3_600_000 },
     { code: "1H", offsetMs: 3_600_000 },
@@ -376,7 +398,7 @@ export function createBookingsService({ pool, environment }) {
          VALUES ($1, NULL, 'PENDING', $2, 'CREATE')`,
         [booking.id, studentId],
       );
-      await notify(client, booking, s.mentor_user_id, "BOOKING_REQUESTED", "Có yêu cầu đặt lịch mới", "Một học viên đang chờ bạn xác nhận lịch.");
+      await enqueueBookingNotification(client, { booking, recipientUserId: s.mentor_user_id, eventType: "BOOKING_REQUESTED" });
       await writeAudit(client, { actorId: studentId, action: "BOOKING_CREATED", targetType: "BOOKING", targetId: booking.id, correlationId });
       const refreshed = await client.query(`${bookingProjection} WHERE b.id = $1`, [booking.id]);
       const body = bookingDto(refreshed.rows[0]);
@@ -524,12 +546,26 @@ export function createBookingsService({ pool, environment }) {
         );
       }
       const recipient = isStudent ? row.mentor_user_id : row.student_id;
-      if (nextState !== row.state) await notify(client, { ...row, version: row.version + 1 }, recipient, `BOOKING_${nextState}`, "Lịch phỏng vấn đã cập nhật", `Trạng thái mới: ${nextState}.`);
+      if (nextState !== row.state) {
+        const actionEventMap = {
+          CONFIRM: "BOOKING_CONFIRMED",
+          REJECT: "BOOKING_REJECTED",
+          CANCEL: "BOOKING_CANCELLED",
+          PROPOSE_RESCHEDULE: "BOOKING_RESCHEDULE_PROPOSED",
+          ACCEPT_RESCHEDULE: "BOOKING_RESCHEDULE_ACCEPTED",
+          REJECT_RESCHEDULE: "BOOKING_RESCHEDULE_REJECTED",
+          COMPLETE: "BOOKING_COMPLETED",
+        };
+        const eventType = actionEventMap[input.action];
+        if (eventType) {
+          await enqueueBookingNotification(client, { booking: { ...row, version: row.version + 1 }, recipientUserId: recipient, eventType });
+        }
+      }
       await writeAudit(client, { actorId: actor.id, action: `BOOKING_${input.action}`, targetType: "BOOKING", targetId: row.id, reason: input.reason, correlationId, metadata: operationCase ? { operationCaseId: operationCase.id } : {} });
       const refreshed = await client.query(`${bookingProjection} WHERE b.id = $1`, [row.id]);
       if (nextState === "CONFIRMED" && ["CONFIRM", "ACCEPT_RESCHEDULE"].includes(input.action)) {
         await cancelPendingReminders(client, row.id);
-        await scheduleReminders(client, refreshed.rows[0], [row.student_id, row.mentor_user_id]);
+        await scheduleReminders(client, refreshed.rows[0], [row.student_id, row.mentor_user_id], environment.notifications.remindersEnabled);
       } else if (nextState === "CANCELLED") {
         await cancelPendingReminders(client, row.id);
       }
@@ -574,7 +610,7 @@ export function createBookingsService({ pool, environment }) {
         );
       }
       await writeAudit(client, { actorId: actor.id, action: "MEETING_LINK_SAVED", targetType: "BOOKING", targetId: bookingId, correlationId });
-      await notify(client, row, row.student_id, "MEETING_LINK_READY", "Link phòng phỏng vấn đã sẵn sàng", "Mở chi tiết lịch để tham gia đúng giờ.");
+      await enqueueBookingNotification(client, { booking: row, recipientUserId: row.student_id, eventType: "MEETING_LINK_READY" });
       return { bookingId, url: input.url, version: result.rows[0].version };
     });
   }
@@ -804,7 +840,7 @@ export function createBookingsService({ pool, environment }) {
           [input.draftId],
         );
       }
-      await notify(client, row, row.student_id, "FEEDBACK_READY", "Mentor đã gửi feedback", "Mở lịch hẹn để xem nhận xét và bước tiếp theo.");
+      await enqueueBookingNotification(client, { booking: row, recipientUserId: row.student_id, eventType: "FEEDBACK_READY" });
       await writeAudit(client, { actorId: actor.id, action: "FEEDBACK_CREATED", targetType: "BOOKING", targetId: bookingId, correlationId });
       return {
         id: result.rows[0].id,
@@ -960,6 +996,11 @@ export function createBookingsService({ pool, environment }) {
           [bookingId, booking.state, actor.id, input.reason],
         );
         await cancelPendingReminders(client, bookingId);
+        await enqueueBookingNotification(client, {
+          booking: { id: bookingId, version: booking.version + 1 },
+          recipientUserId: requestedBy,
+          eventType: "BOOKING_CANCELLED",
+        });
       } else if (input.action === "APPROVE" && operationCase.restricted_metadata?.requestedAction === "RESCHEDULE") {
         const proposedSlotId = operationCase.restricted_metadata.proposedSlotId;
         const proposed = await client.query(
@@ -977,12 +1018,17 @@ export function createBookingsService({ pool, environment }) {
            WHERE id = $1 RETURNING *`,
           [bookingId, proposedSlotId, proposed.rows[0].starts_at, proposed.rows[0].ends_at, proposed.rows[0].source_timezone],
         );
-        await scheduleReminders(client, changed.rows[0], [booking.student_id, booking.mentor_user_id]);
+        await scheduleReminders(client, changed.rows[0], [booking.student_id, booking.mentor_user_id], environment.notifications.remindersEnabled);
         await client.query(
           `INSERT INTO booking_transitions(booking_id, from_state, to_state, actor_id, action, reason)
            VALUES ($1,$2,'CONFIRMED',$3,'PARTICIPANT_APPROVE_LATE_RESCHEDULE',$4)`,
           [bookingId, booking.state, actor.id, input.reason],
         );
+        await enqueueBookingNotification(client, {
+          booking: changed.rows[0],
+          recipientUserId: requestedBy,
+          eventType: "BOOKING_RESCHEDULE_ACCEPTED",
+        });
       }
       const status = input.action === "APPROVE" ? "RESOLVED" : "DISMISSED";
       const resolved = await client.query(

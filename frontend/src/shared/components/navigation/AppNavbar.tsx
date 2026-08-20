@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Bell, CaretDown, List, X } from "@phosphor-icons/react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -50,6 +50,11 @@ function homeForRole(role: Role) {
   return routes.home;
 }
 
+function bookingRouteForRole(role: Role, bookingId: string) {
+  if (role === "mentor") return routes.mentorBooking(bookingId);
+  return routes.booking(bookingId);
+}
+
 export function AppNavbar({ publicMode = false }: { publicMode?: boolean }) {
   const { role, user, logout } = useApp();
   const queryClient = useQueryClient();
@@ -62,14 +67,31 @@ export function AppNavbar({ publicMode = false }: { publicMode?: boolean }) {
   const authenticatedRole = role === "public" ? "student" : role;
   const links = publicMode ? publicNavigation : roleNavigation[authenticatedRole];
   const identity = { name: user?.displayName ?? authenticatedRole, initials: (user?.displayName ?? authenticatedRole).split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase() };
-  const notifications = useQuery({ queryKey: ["notifications"], queryFn: notificationsApi.list, enabled: notificationsOpen && !publicMode });
-  const markRead = useMutation({ mutationFn: notificationsApi.read, onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }) });
+
+  const notifications = useQuery({
+    queryKey: ["notifications"],
+    queryFn: notificationsApi.list,
+    enabled: !publicMode,
+    refetchInterval: 30_000,
+  });
+  const markRead = useMutation({
+    mutationFn: notificationsApi.read,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+  });
 
   useEffect(() => {
     setMobileOpen(false);
     setProfileOpen(false);
     setNotificationsOpen(false);
   }, [pathname]);
+
+  const handleNotificationClick = useCallback((notificationId: string, resourceType: string | null, resourceId: string | null) => {
+    markRead.mutate(notificationId);
+    setNotificationsOpen(false);
+    if (resourceType === "BOOKING" && resourceId) {
+      navigate(bookingRouteForRole(authenticatedRole, resourceId));
+    }
+  }, [markRead, navigate, authenticatedRole]);
 
   function startPractice() {
     navigate(routes.login);
@@ -127,7 +149,23 @@ export function AppNavbar({ publicMode = false }: { publicMode?: boolean }) {
               {notificationsOpen && (
                 <div className="absolute right-0 top-full mt-2 w-72 rounded-xl border border-edge bg-panel p-4 shadow-lg">
                   <p className="text-sm font-semibold text-ink">Thông báo</p>
-                  <div className="mt-2 max-h-72 space-y-2 overflow-auto">{notifications.isLoading && <p className="text-xs text-ink-muted">Đang tải…</p>}{notifications.data?.items.map((item) => <button key={item.id} onClick={() => markRead.mutate(item.id)} className="w-full rounded-md bg-canvas p-2 text-left"><span className="block text-xs font-medium text-ink">{item.title}</span><span className="mt-0.5 block text-[11px] text-ink-muted">{item.body}</span></button>)}{notifications.data?.items.length === 0 && <p className="text-xs text-ink-muted">Không có thông báo.</p>}</div>
+                  <div className="mt-2 max-h-72 space-y-2 overflow-auto">
+                    {notifications.isLoading && <p className="text-xs text-ink-muted">Đang tải…</p>}
+                    {notifications.data?.items.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => handleNotificationClick(item.id, item.resourceType, item.resourceId)}
+                        className={cn(
+                          "w-full rounded-md p-2 text-left transition-colors",
+                          item.readAt ? "bg-transparent" : "bg-canvas",
+                        )}
+                      >
+                        <span className="block text-xs font-medium text-ink">{item.title}</span>
+                        <span className="mt-0.5 block text-[11px] text-ink-muted">{item.body}</span>
+                      </button>
+                    ))}
+                    {notifications.data?.items.length === 0 && <p className="text-xs text-ink-muted">Không có thông báo.</p>}
+                  </div>
                 </div>
               )}
             </div>

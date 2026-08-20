@@ -47,11 +47,23 @@ Các event MVP: `booking.requested`, `booking.confirmed`, `booking.reschedule_pr
 - Worker claim batch bằng transaction/row locking; nhiều worker không xử lý đồng thời một job.
 - Provider adapter nhận `deduplication_key` làm idempotency key nếu provider hỗ trợ.
 - Thành công ghi `SENT` và provider message ID.
-- Timeout/5xx/network error được retry bằng exponential backoff có jitter.
-- Lỗi validation/permanent provider error chuyển `DEAD` không retry vô hạn.
-- Sau tối đa 5 lần thử, job chuyển `DEAD` và xuất hiện trong operational queue để admin/manual resend.
+- Temporary/transient failures (network timeout, connection reset, temporary DNS, temporary SMTP 4xx) được retry theo policy bên dưới.
+- Permanent failures (authentication failure, invalid recipient, permanent SMTP 5xx rejection) chuyển `DEAD` ngay mà không retry vô hạn.
+- Lỗi classify bằng `classifyNotificationError()` — prefer retry nếu uncertain vì retry count đã bị giới hạn cứng.
+- Sau tối đa 3 lần thử (initial + 2 retries), job chuyển `DEAD` và xuất hiện trong operational queue để admin/manual resend.
 
-Lịch retry mặc định cho pilot: khoảng 1, 5, 15, 60 và 360 phút; worker có jitter và có thể cấu hình bằng environment variable.
+Lịch retry hiện hành (R1 theo BR-09 / AC-19-01):
+
+```text
+attempt 1 = initial send
+→ failure: RETRY at scheduled_for + 1 minute
+→ attempt 2 failure: RETRY at scheduled_for + 5 minutes
+→ attempt 3 failure: DEAD
+```
+
+Lưu ý: ADR ban đầu ghi pilot policy 1/5/15/60/360 phút đã bị thay thế bởi policy 1/5 phút cho R1.
+
+US-22 scheduled reminders (nếu extension được bật) dùng cùng delivery policy.
 
 ### 3.3 PII, logging và template
 

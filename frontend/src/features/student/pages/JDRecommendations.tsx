@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { aiApi, jobDescriptionsApi, preparationPlansApi, type PreparationPlan, type PracticeStatus } from "@/shared/api/resources";
+import { aiApi, jobDescriptionsApi, preparationPlansApi, type PreparationPlan, type PracticeStatus, type PlanMentorCandidateFilters } from "@/shared/api/resources";
 import AuthNavbar from "@/shared/components/AuthNavbar";
 import ErrorPanel from "@/shared/components/ErrorPanel";
 import JDFlowStepper from "@/shared/components/JDFlowStepper";
@@ -32,8 +32,22 @@ function PlanItem({ plan, item }: { plan: PreparationPlan; item: PreparationPlan
 function PlanView({ planId }: { planId: string }) {
   const queryClient = useQueryClient();
   const [aiJobId, setAiJobId] = useState("");
+  const [availFrom, setAvailFrom] = useState("");
+  const [availTo, setAvailTo] = useState("");
+
   const plan = useQuery({ queryKey: ["plan", planId], queryFn: () => preparationPlansApi.get(planId) });
-  const candidates = useQuery({ queryKey: ["plan-mentor-candidates", planId], queryFn: () => preparationPlansApi.mentorCandidates(planId), enabled: plan.data?.status === "ACTIVE" });
+
+  const candidateFilters: PlanMentorCandidateFilters = {
+    availableFrom: availFrom ? new Date(availFrom).toISOString() : undefined,
+    availableTo: availTo ? new Date(availTo).toISOString() : undefined,
+  };
+
+  const candidates = useQuery({
+    queryKey: ["plan-mentor-candidates", planId, candidateFilters.availableFrom, candidateFilters.availableTo],
+    queryFn: () => preparationPlansApi.mentorCandidates(planId, candidateFilters),
+    enabled: plan.data?.status === "ACTIVE",
+  });
+
   const capabilities = useQuery({ queryKey: ["ai-capabilities"], queryFn: aiApi.capabilities });
   const startExplanations = useMutation({ mutationFn: () => preparationPlansApi.startRecommendationExplanations(planId), onSuccess: (job) => setAiJobId(job.id) });
   const explanationJob = useQuery({ queryKey: ["ai-job", aiJobId], queryFn: () => aiApi.getJob(aiJobId), enabled: Boolean(aiJobId), refetchInterval: (query) => ["PENDING", "PROCESSING"].includes(query.state.data?.status ?? "") ? 1500 : false });
@@ -42,12 +56,104 @@ function PlanView({ planId }: { planId: string }) {
     void queryClient.invalidateQueries({ queryKey: ["plan", planId] });
     void queryClient.invalidateQueries({ queryKey: ["plan-mentor-candidates", planId] });
   }, [explanationJob.data?.status, planId, queryClient]);
+
   if (plan.error) return <ErrorPanel error={plan.error} onRetry={() => plan.refetch()} />;
   if (plan.isLoading) return <p className="text-sm text-ink-muted">Đang tải kế hoạch…</p>;
   if (!plan.data) return null;
   const explanationEnabled = capabilities.data?.enabled && capabilities.data.features.recommendationExplanation;
   const explanationRunning = ["PENDING", "PROCESSING"].includes(explanationJob.data?.status ?? "");
-  return <div className="space-y-8">{plan.data.status !== "ACTIVE" && <div className="rounded-xl border border-notice/30 bg-notice-soft p-5 text-sm text-notice-ink">Kế hoạch này đã {plan.data.status.toLowerCase()}. Hãy xác nhận lại JD và tạo plan mới trước khi đặt lịch.</div>}{plan.data.status === "ACTIVE" && <section className="rounded-xl border border-edge bg-canvas-subtle p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-ink">Giải thích gợi ý bằng Gemini</h2><p className="mt-1 text-xs text-ink-muted">AI chỉ diễn giải candidate đã qua bộ lọc; không đổi điểm, thứ tự hoặc điều kiện đặt lịch.</p></div><button disabled={!explanationEnabled || startExplanations.isPending || explanationRunning} onClick={() => startExplanations.mutate()} className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-on-primary disabled:opacity-50">{explanationRunning ? "Đang tạo giải thích…" : "Tạo giải thích AI"}</button></div>{capabilities.data && !explanationEnabled && <p className="mt-3 text-xs text-ink-muted">Tính năng đang tắt; các lý do deterministic bên dưới vẫn đầy đủ.</p>}{explanationJob.data?.status === "SUCCEEDED_WITH_FALLBACK" && <p className="mt-3 text-xs text-notice-ink">Gemini không khả dụng. Hệ thống giữ nguyên lý do deterministic để bạn tiếp tục.</p>}{startExplanations.error && <div className="mt-4"><ErrorPanel error={startExplanations.error} /></div>}{explanationJob.error && <div className="mt-4"><ErrorPanel error={explanationJob.error} onRetry={() => explanationJob.refetch()} /></div>}</section>}<section><h2 className="mb-3 text-sm font-semibold text-ink">Câu hỏi và next actions</h2><div className="space-y-3">{plan.data.items.map((item) => <PlanItem key={`${item.id}:${item.version}`} plan={plan.data} item={item} />)}</div></section><section><div className="mb-3"><h2 className="text-sm font-semibold text-ink">Mentor phù hợp với kế hoạch</h2><p className="mt-1 text-xs text-ink-muted">Backend kiểm tra lại expertise được duyệt và future slot; thứ tự kết quả deterministic.</p></div>{candidates.error ? <ErrorPanel error={candidates.error} onRetry={() => candidates.refetch()} /> : candidates.isLoading ? <p className="text-sm text-ink-muted">Đang tìm Mentor theo topic…</p> : candidates.data?.items.length ? <div className="grid gap-4 md:grid-cols-2">{candidates.data.items.map((mentor) => <article key={mentor.id} className="rounded-xl border border-edge bg-panel p-5"><h3 className="text-sm font-semibold text-ink">{mentor.displayName}</h3><p className="mt-1 text-xs text-ink-muted">{mentor.headline}</p><div className="mt-3 rounded-md bg-canvas-subtle p-3"><p className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted">Xếp hạng deterministic</p><ul className="mt-1 space-y-1">{mentor.matchReasons?.map((reason) => <li key={reason} className="text-xs text-ink-secondary">• {reason}</li>)}</ul></div>{mentor.aiExplanation && <div className="mt-2 rounded-md border border-primary/15 bg-primary-soft p-3"><p className="text-[11px] font-semibold uppercase tracking-wide text-primary">Giải thích được Gemini hỗ trợ</p><p className="mt-1 text-xs leading-5 text-ink-secondary">{mentor.aiExplanation}</p></div>}<div className="mt-4 flex flex-wrap gap-2">{mentor.nextSlots.map((slot) => <Link key={slot.id} to={`/bookings/new?mentorId=${mentor.id}&slotId=${slot.id}&planId=${planId}`} className="rounded-md border border-primary/30 px-3 py-2 text-xs font-medium text-primary">{new Date(slot.startsAt).toLocaleString("vi-VN")}</Link>)}</div></article>)}</div> : <div className="rounded-xl border border-dashed border-edge p-8 text-center"><p className="text-sm text-ink">Chưa có Mentor phù hợp trong khoảng hiện tại.</p><div className="mt-3 flex justify-center gap-4"><Link to="/mentors" className="text-xs font-medium text-primary">Tìm Mentor thủ công</Link><Link to="/questions" className="text-xs text-ink-secondary">Tiếp tục tự luyện</Link></div></div>}</section></div>;
+  const searchCtx = candidates.data?.searchContext;
+
+  return (
+    <div className="space-y-8">
+      {plan.data.status !== "ACTIVE" && <div className="rounded-xl border border-notice/30 bg-notice-soft p-5 text-sm text-notice-ink">Kế hoạch này đã {plan.data.status.toLowerCase()}. Hãy xác nhận lại JD và tạo plan mới trước khi đặt lịch.</div>}
+      {plan.data.status === "ACTIVE" && <section className="rounded-xl border border-edge bg-canvas-subtle p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-ink">Giải thích gợi ý bằng Gemini</h2><p className="mt-1 text-xs text-ink-muted">AI chỉ diễn giải candidate đã qua bộ lọc; không đổi điểm, thứ tự hoặc điều kiện đặt lịch.</p></div><button disabled={!explanationEnabled || startExplanations.isPending || explanationRunning} onClick={() => startExplanations.mutate()} className="rounded-md bg-primary px-4 py-2 text-xs font-medium text-on-primary disabled:opacity-50">{explanationRunning ? "Đang tạo giải thích…" : "Tạo giải thích AI"}</button></div>{capabilities.data && !explanationEnabled && <p className="mt-3 text-xs text-ink-muted">Tính năng đang tắt; các lý do deterministic bên dưới vẫn đầy đủ.</p>}{explanationJob.data?.status === "SUCCEEDED_WITH_FALLBACK" && <p className="mt-3 text-xs text-notice-ink">Gemini không khả dụng. Hệ thống giữ nguyên lý do deterministic để bạn tiếp tục.</p>}{startExplanations.error && <div className="mt-4"><ErrorPanel error={startExplanations.error} /></div>}{explanationJob.error && <div className="mt-4"><ErrorPanel error={explanationJob.error} onRetry={() => explanationJob.refetch()} /></div>}</section>}
+
+      <section>
+        <h2 className="mb-3 text-sm font-semibold text-ink">Câu hỏi và next actions</h2>
+        <div className="space-y-3">{plan.data.items.map((item) => <PlanItem key={`${item.id}:${item.version}`} plan={plan.data} item={item} />)}</div>
+      </section>
+
+      <section>
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-ink">Mentor phù hợp với kế hoạch</h2>
+          <p className="mt-1 text-xs text-ink-muted">Backend kiểm tra approved expertise trùng chủ đề kế hoạch và lịch trống tương lai.</p>
+        </div>
+
+        {plan.data.status === "ACTIVE" && (
+          <div className="mb-4 flex flex-wrap items-end gap-4">
+            <label className="text-xs font-semibold text-ink-secondary">
+              Lịch rảnh từ
+              <input
+                type="datetime-local"
+                value={availFrom}
+                onChange={(e) => { setAvailFrom(e.target.value); }}
+                className="mt-1 block rounded-lg border border-edge bg-panel px-3 py-2 text-sm font-normal"
+              />
+            </label>
+            <label className="text-xs font-semibold text-ink-secondary">
+              đến
+              <input
+                type="datetime-local"
+                value={availTo}
+                onChange={(e) => { setAvailTo(e.target.value); }}
+                className="mt-1 block rounded-lg border border-edge bg-panel px-3 py-2 text-sm font-normal"
+              />
+            </label>
+          </div>
+        )}
+
+        {candidates.error && <div className="mb-4"><ErrorPanel error={candidates.error} onRetry={() => candidates.refetch()} /></div>}
+        {candidates.isLoading && <p className="text-sm text-ink-muted">Đang tải mentor phù hợp…</p>}
+
+        {candidates.data && candidates.data.items.length === 0 && (
+          <div className="rounded-xl border border-dashed border-edge p-8 text-center text-sm text-ink-muted">
+            {searchCtx?.emptyReason === "NO_MATCHING_MENTOR" ? (
+              <>
+                <p className="font-semibold text-ink">Chưa có Mentor đã duyệt có expertise trùng với chủ đề trong kế hoạch này.</p>
+                <p className="mt-2">Bạn có thể tiếp tục tự luyện, mở Question Bank, hoặc dùng tìm Mentor thủ công.</p>
+                <Link to="/mentors" className="mt-3 inline-block text-xs font-medium text-primary">Tìm Mentor thủ công →</Link>
+              </>
+            ) : searchCtx?.emptyReason === "NO_AVAILABLE_SLOT" ? (
+              <>
+                <p className="font-semibold text-ink">Có Mentor phù hợp với chủ đề kế hoạch, nhưng chưa có lịch rảnh trong khoảng đã chọn.</p>
+                <p className="mt-2">Hãy mở rộng khoảng thời gian.</p>
+              </>
+            ) : (
+              <p>Chưa có mentor phù hợp.</p>
+            )}
+          </div>
+        )}
+
+        {candidates.data && candidates.data.items.length > 0 && (
+          <div className="space-y-4">
+            {candidates.data.items.map((mentor) => (
+              <article key={mentor.id} className="rounded-xl border border-edge bg-panel p-5">
+                <div className="flex items-start gap-4">
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-semibold text-primary">{mentor.displayName?.slice(0, 2).toUpperCase()}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-ink">{mentor.displayName}</h3>
+                      <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary">{mentor.topicOverlap} chủ đề khớp</span>
+                    </div>
+                    <p className="mt-0.5 text-sm text-ink-secondary">{mentor.headline}</p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">{mentor.matchReasons?.map((r, i) => <span key={i} className="rounded-full border border-edge bg-canvas-subtle px-2 py-0.5 text-xs text-ink-secondary">{r}</span>)}</div>
+                    {mentor.aiExplanation && <div className="mt-2 rounded-md border border-primary/15 bg-primary-soft p-3"><p className="text-[11px] font-semibold uppercase tracking-wide text-primary">Giải thích AI</p><p className="mt-1 text-xs leading-5 text-ink-secondary">{mentor.aiExplanation}</p></div>}
+                    {mentor.nextSlots?.length > 0 && (
+                      <div className="mt-3 border-t border-edge pt-3">
+                        <p className="text-xs font-semibold text-ink-secondary">Lịch trống:</p>
+                        <div className="mt-1 flex flex-wrap gap-2">{mentor.nextSlots.map((slot) => <Link key={slot.id} to={`/bookings/new?mentorId=${mentor.id}&slotId=${slot.id}&planId=${planId}`} className="rounded-md border border-edge bg-canvas-subtle px-2.5 py-1.5 text-xs text-ink hover:border-primary">{new Date(slot.startsAt).toLocaleString("vi-VN")}</Link>)}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
 }
 
 export default function JDRecommendations() {

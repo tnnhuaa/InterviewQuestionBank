@@ -86,6 +86,9 @@ export function getEnvironment(source = process.env) {
       circuitBreakerResetSeconds: toPositiveInteger(source.GEMINI_CIRCUIT_BREAKER_RESET_SECONDS, 60),
       resultRetentionDays: toPositiveInteger(source.AI_RESULT_RETENTION_DAYS, 30),
     },
+    notifications: {
+      remindersEnabled: toBoolean(source.BOOKING_REMINDERS_ENABLED, false),
+    },
   };
 }
 
