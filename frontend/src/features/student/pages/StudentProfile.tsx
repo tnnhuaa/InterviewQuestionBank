@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { toast } from "react-hot-toast";
 import { studentProfileApi } from "@/shared/api/resources";
 import AuthNavbar from "@/shared/components/AuthNavbar";
 import ErrorPanel from "@/shared/components/ErrorPanel";
@@ -37,7 +38,10 @@ export default function StudentProfile() {
       interviewDate: values.interviewDate || null,
       version: profile.data!.version,
     }),
-    onSuccess: (data) => queryClient.setQueryData(["student-profile"], data),
+    onSuccess: (data) => {
+      queryClient.setQueryData(["student-profile"], data);
+      toast.success("Lưu hồ sơ thành công");
+    },
   });
 
   return <div className="min-h-screen bg-canvas"><AuthNavbar /><main className="mx-auto max-w-[760px] px-6 py-8">

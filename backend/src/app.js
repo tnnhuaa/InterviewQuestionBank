@@ -93,7 +93,7 @@ export function createApp({
   app.use(createCsrfMiddleware());
   app.use("/api/v1", createIdentityRouter({ pool, environment }));
   app.use("/api/v1", createQuestionsRouter({ pool }));
-  app.use("/api/v1", createJdRouter({ pool, storage, environment }));
+  app.use("/api/v1", createJdRouter({ pool, storage, environment, aiProvider }));
   app.use("/api/v1", createMentorsRouter({ pool, storage, environment }));
   app.use("/api/v1", createBookingsRouter({ pool, environment }));
   app.use("/api/v1", createOperationsRouter({ pool, environment }));
