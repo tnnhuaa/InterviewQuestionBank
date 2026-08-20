@@ -647,6 +647,14 @@ export const jobDescriptionsApi = {
       body,
     });
   },
+  extractFromFile: (file: File) => {
+    const body = new FormData();
+    body.append("file", file);
+    return apiFetch<JobDescription>("/job-descriptions/extract-from-file", {
+      method: "POST",
+      body,
+    });
+  },
   get: (id: string) => apiFetch<JobDescription>(`/job-descriptions/${id}`),
   startExtraction: (id: string) =>
     apiFetch<JobDescription>(`/job-descriptions/${id}/extract`, {

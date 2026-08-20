@@ -1,4 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import { AppProvider, useApp } from "@/app/AppContext";
 import { canAccessPath, postLoginPath, requiredRoleForPath } from "@/app/access";
 import { routes } from "@/app/routePaths";
@@ -22,5 +23,11 @@ function RouteAccess() {
 }
 
 export default function Root() {
-  return <AppProvider>{import.meta.env.VITE_ENABLE_DEMO_TOOLS === "true" && <DemoBar />}<RouteAccess /></AppProvider>;
+  return (
+    <AppProvider>
+      {import.meta.env.VITE_ENABLE_DEMO_TOOLS === "true" && <DemoBar />}
+      <Toaster position="bottom-center" />
+      <RouteAccess />
+    </AppProvider>
+  );
 }
