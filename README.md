@@ -62,3 +62,4 @@ Các bước tạo App Password cho Gmail:
 3. Chọn app = `Mail` (hoặc `Other`), thiết bị = `Other` → sinh ra mật khẩu 16 ký tự.
 4. Dùng mật khẩu đó cho secret `SMTP_PASSWORD`.
 5. Thêm các secret ở bảng trên, rồi chạy thử workflow để kiểm tra email nhận được.
+End
