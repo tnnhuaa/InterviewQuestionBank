@@ -67,3 +67,71 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [quality, secret-scan]
+    steps:
+      - name: Send CI email notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_HOST }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          secure: true
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          from: ${{ secrets.NOTIFY_FROM }}
+          to: ${{ secrets.NOTIFY_TO }}
+          subject: >-
+            [CI] ${{ github.repository }} /
+            ${{ github.ref_name }} /
+            ${{ needs.quality.result == 'success' && needs.secret-scan.result == 'success' && 'SUCCESS' || 'FAILURE' }}
+          html: |
+            <html>
+              <body style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #1f2937;">
+                <h2 style="margin-bottom: 4px;">
+                  CI: ${{ needs.quality.result == 'success' && needs.secret-scan.result == 'success' && 'SUCCESS' || 'FAILURE' }}
+                </h2>
+                <p style="margin-top: 0; color: #6b7280;">Workflow: <strong>CI</strong> &middot; GitHub Actions</p>
+
+                <table style="border-collapse: collapse; width: 100%; max-width: 560px;">
+                  <tr>
+                    <td style="padding: 8px 0; width: 160px; font-weight: bold;">Repository</td>
+                    <td style="padding: 8px 0;"><code>${{ github.repository }}</code></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Branch</td>
+                    <td style="padding: 8px 0;"><code>${{ github.ref_name }}</code></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Commit SHA</td>
+                    <td style="padding: 8px 0;"><code>${{ github.sha }}</code></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Pushed by</td>
+                    <td style="padding: 8px 0;">${{ github.actor }}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Job: quality</td>
+                    <td style="padding: 8px 0;"><code>${{ needs.quality.result }}</code></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Job: secret-scan</td>
+                    <td style="padding: 8px 0;"><code>${{ needs.secret-scan.result }}</code></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Run link</td>
+                    <td style="padding: 8px 0;">
+                      <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">
+                        View run #${{ github.run_id }}
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin-top: 16px; color: #9ca3af; font-size: 12px;">
+                  Sent by GitHub Actions workflow <code>.github/workflows/ci.yml</code>.
+                </p>
+              </body>
+            </html>
