@@ -87,7 +87,7 @@ jobs:
             [CI] ${{ github.repository }} /
             ${{ github.ref_name }} /
             ${{ needs.quality.result == 'success' && needs.secret-scan.result == 'success' && 'SUCCESS' || 'FAILURE' }}
-          html: |
+          html_body: |
             <html>
               <body style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #1f2937;">
                 <h2 style="margin-bottom: 4px;">
