@@ -5,11 +5,11 @@
 This document consolidates the printed material required for the PrepVI Continuous Integration presentation:
 
 - the CI model and the tool used by each component;
-- the current build workflow and build-script excerpts;
+- the CI workflow implemented on `feat/add-workflow-noti` and the relevant build-script excerpts;
 - developer workstation setup and source-build instructions;
 - captured GitHub Actions, email-notification, link-navigation, job-detail, and branch-ruleset screenshots.
 
-The five screenshots are loaded from the local `img` directory. The email and notification screenshots were captured from Pull Request #16 on the `feat/add-workflow-noti` branch. They prove the behavior of that feature branch; they do not by themselves prove that the notification change has been merged into the currently checked-out workflow. Complete the privacy and consistency checks in Section 8 before printing.
+The five screenshots are loaded from the local `img` directory. The email and notification screenshots were captured from Pull Request #16 on the `feat/add-workflow-noti` branch. The workflow reproduced in Section 2 was verified against `origin/feat/add-workflow-noti` at commit `23ce115`. This evidence proves the behavior of that feature branch; it does not by itself prove that the change has been merged into `main`. Complete the privacy and consistency checks in Section 8 before printing.
 
 ## 1. Continuous Integration model
 
@@ -24,16 +24,21 @@ flowchart LR
     G --> H[PostgreSQL 17<br/>migration replay + reference seed]
     H --> I[Vite frontend build<br/>backend import validation]
     C --> J[Secret-scan job<br/>Gitleaks + full Git history]
-    I --> K[GitHub Actions result<br/>Pass or Fail + logs]
+    I --> K[Notify job<br/>needs both jobs + always]
     J --> K
-    K --> L[GitHub web notification<br/>and account email notification]
+    K --> L["dawidd6/action-send-mail@v3"]
+    L --> M[SMTP server<br/>configured by GitHub Secrets]
+    M --> N[Result email<br/>job results + Actions run link]
+    I --> O[GitHub Actions<br/>status and logs]
+    J --> O
+    K --> O
 ~~~
 
 ### 1.1 Input, process, and output
 
 - **Input:** a Git commit pushed to any branch or a Pull Request event, together with the versioned source code and `package-lock.json`.
-- **Process:** GitHub Actions checks out the repository, installs locked dependencies, runs quality/build/database checks, and scans Git history for secrets.
-- **Output:** a Pass/Fail workflow result and step logs in GitHub Actions. The currently printed workflow does not contain a separate email-sending action. Section 6 separately records custom email evidence captured from the notification feature branch.
+- **Process:** GitHub Actions checks out the repository, installs locked dependencies, runs quality/build/database checks, scans Git history for secrets, and then runs the notification job regardless of the two preceding job results.
+- **Output:** a Pass/Fail workflow result and step logs in GitHub Actions, plus a custom result email containing the two job results and a link to the corresponding Actions run.
 
 ### 1.2 Component and tool mapping
 
@@ -52,13 +57,16 @@ flowchart LR
 | Backend build validation | Node.js dynamic imports | Confirm required backend entry modules load successfully |
 | Secret scanning | Gitleaks | Scan complete Git history for committed secrets |
 | Result interface | GitHub Actions/Checks | Display status and logs for each job and step |
-| Notification | GitHub web/email notification | Notify the subscribed account of workflow activity/results |
+| Notification orchestrator | `notify`, `needs: [quality, secret-scan]`, `if: always()` | Run after both verification jobs and attempt notification even when one fails |
+| Email action | `dawidd6/action-send-mail@v3` | Construct and send the custom HTML result email |
+| Email transport | SMTP configured through six GitHub Actions secrets | Authenticate the sender without storing credentials in the repository |
+| Email destination | `NOTIFY_TO` and the generated Actions run URL | Deliver the result and allow the recipient to open the matching run |
 
-## 2. Current CI workflow
+## 2. CI workflow on `feat/add-workflow-noti`
 
-Source: [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml)
+Reference source: `origin/feat/add-workflow-noti:.github/workflows/ci.yml`, commit `23ce115`.
 
-The following is the current build workflow to be printed with the submission:
+The following is the feature-branch workflow to be printed with the submission:
 
 ~~~yaml
 name: CI
@@ -130,17 +138,86 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [quality, secret-scan]
+    steps:
+      - name: Send CI email notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_HOST }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          secure: true
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          from: ${{ secrets.NOTIFY_FROM }}
+          to: ${{ secrets.NOTIFY_TO }}
+          subject: >-
+            [CI] ${{ github.repository }} /
+            ${{ github.ref_name }} /
+            ${{ needs.quality.result == 'success' && needs.secret-scan.result == 'success' && 'SUCCESS' || 'FAILURE' }}
+          html_body: |
+            <html>
+              <body style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #1f2937;">
+                <h2 style="margin-bottom: 4px;">
+                  CI: ${{ needs.quality.result == 'success' && needs.secret-scan.result == 'success' && 'SUCCESS' || 'FAILURE' }}
+                </h2>
+                <p style="margin-top: 0; color: #6b7280;">Workflow: <strong>CI</strong> &middot; GitHub Actions</p>
+
+                <table style="border-collapse: collapse; width: 100%; max-width: 560px;">
+                  <tr>
+                    <td style="padding: 8px 0; width: 160px; font-weight: bold;">Repository</td>
+                    <td style="padding: 8px 0;"><code>${{ github.repository }}</code></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Branch</td>
+                    <td style="padding: 8px 0;"><code>${{ github.ref_name }}</code></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Commit SHA</td>
+                    <td style="padding: 8px 0;"><code>${{ github.sha }}</code></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Pushed by</td>
+                    <td style="padding: 8px 0;">${{ github.actor }}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Job: quality</td>
+                    <td style="padding: 8px 0;"><code>${{ needs.quality.result }}</code></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Job: secret-scan</td>
+                    <td style="padding: 8px 0;"><code>${{ needs.secret-scan.result }}</code></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold;">Run link</td>
+                    <td style="padding: 8px 0;">
+                      <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">
+                        View run #${{ github.run_id }}
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin-top: 16px; color: #9ca3af; font-size: 12px;">
+                  Sent by GitHub Actions workflow <code>.github/workflows/ci.yml</code>.
+                </p>
+              </body>
+            </html>
 ~~~
 
 ### 2.1 Pass and fail rules
 
-The workflow passes only when both `quality` and `secret-scan` succeed. A non-zero exit code fails the current step and its job. A failed job prevents the workflow from being treated as a successful integration result. The developer uses the failed step's log, reproduces the corresponding command locally, corrects the source/configuration, and pushes a new commit.
+The email subject reports `SUCCESS` only when both `quality` and `secret-scan` succeed; otherwise it reports `FAILURE`. Because `notify` has `if: always()` and depends on both jobs, it still attempts to run after either verification job fails. A non-zero exit code fails the current step and its job. The complete workflow run is successful only when `quality`, `secret-scan`, and `notify` all succeed. If the mail action fails, the `notify` job and therefore the overall run can fail even when both verification jobs passed. The developer uses the failed step's log, reproduces the corresponding command locally, corrects the source/configuration, and pushes a new commit.
 
-### 2.2 Current limitations
+### 2.2 Known limitations
 
 - The repository has an `npm test` command and test files, but the workflow above does **not** call `npm test`; automated tests must not be presented as a current CI gate.
 - The workflow does not deploy the application, so it implements Continuous Integration rather than Continuous Delivery.
-- The currently checked-out workflow does not contain an email action. The custom email screenshots in Section 6 came from Pull Request #16 on `feat/add-workflow-noti`; the printed workflow must be refreshed after that change is merged if it is to be presented as the current baseline.
+- The custom SMTP notification requires all six repository secrets to be configured. A missing or invalid SMTP setting can fail `notify` without indicating a source-code quality failure.
+- This attachment documents the feature-branch implementation. It must not be described as merged into `main` until repository history confirms that merge.
 - Branch protection is configured outside this repository file and requires a GitHub settings screenshot if it is presented as an enforced merge gate.
 
 ## 3. Package build scripts
@@ -301,7 +378,7 @@ CI additionally replays migrations and reference seed operations on its disposab
 npm run test
 ~~~
 
-This runs workspace test commands. It is a valid local verification command, but the current `.github/workflows/ci.yml` does not invoke it, so the local result is not evidence of a current automated CI test gate.
+This runs workspace test commands. It is a valid local verification command, but the feature-branch `.github/workflows/ci.yml` does not invoke it, so the local result is not evidence of an automated CI test gate in the demonstrated workflow.
 
 ### 5.7 Troubleshooting
 
@@ -372,7 +449,7 @@ The screenshot shows an Active ruleset targeting `main`, requiring a Pull Reques
 | --- | --- | --- |
 | Successful Pull Request checks | The notification feature branch completed its configured push and PR checks | That the feature branch has been merged into the current baseline |
 | Quality-job details | The listed workflow steps ran for that job | Product acceptance or production readiness |
-| Custom CI email | The notification feature branch sent a result email with job and commit context | That the current checked-out `ci.yml` contains the same notification implementation |
+| Custom CI email | The notification feature branch sent a result email with job and commit context | That the notification implementation has been merged into `main` |
 | Email link navigation | `View run` opens the Actions run whose identifier is shown in the email | That all future links or recipients are configured correctly |
 | Main-branch ruleset | The active rule targets `main` and requires Pull Requests | That a specific CI check is enforced; the screenshot explicitly shows no required check selected |
 | Printed scripts | The repository defines the shown commands | That a particular run succeeded |
@@ -387,5 +464,5 @@ The screenshot shows an Active ruleset targeting `main`, requiring a Pull Reques
 - [ ] Personal email addresses in `img/github-email-notification.png` have been redacted before printing.
 - [ ] The demonstrated commit identifier is consistent across the workflow and email screenshots.
 - [ ] No screenshot contains a token, `.env` value, real database credential, private JD, or unnecessary personal information.
-- [ ] The printed CI workflow matches the current `.github/workflows/ci.yml`.
+- [x] The printed CI workflow matches `origin/feat/add-workflow-noti:.github/workflows/ci.yml` at commit `23ce115`.
 - [ ] The developer setup/build commands have been checked on the intended workstation.
