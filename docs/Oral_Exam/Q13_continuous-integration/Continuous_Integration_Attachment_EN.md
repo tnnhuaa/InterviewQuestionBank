@@ -7,9 +7,9 @@ This document consolidates the printed material required for the PrepVI Continuo
 - the CI model and the tool used by each component;
 - the current build workflow and build-script excerpts;
 - developer workstation setup and source-build instructions;
-- placeholders for the GitHub Actions, email-notification, job-detail, and branch-protection screenshots.
+- captured GitHub Actions, email-notification, link-navigation, job-detail, and branch-ruleset screenshots.
 
-The four screenshots are intentionally referenced from the local `img` directory and will be supplied later. Before printing, replace every placeholder with the corresponding screenshot and complete the checklist in Section 8.
+The five screenshots are loaded from the local `img` directory. The email and notification screenshots were captured from Pull Request #16 on the `feat/add-workflow-noti` branch. They prove the behavior of that feature branch; they do not by themselves prove that the notification change has been merged into the currently checked-out workflow. Complete the privacy and consistency checks in Section 8 before printing.
 
 ## 1. Continuous Integration model
 
@@ -33,7 +33,7 @@ flowchart LR
 
 - **Input:** a Git commit pushed to any branch or a Pull Request event, together with the versioned source code and `package-lock.json`.
 - **Process:** GitHub Actions checks out the repository, installs locked dependencies, runs quality/build/database checks, and scans Git history for secrets.
-- **Output:** a Pass/Fail workflow result and step logs in GitHub Actions. Email is provided by GitHub account notifications; the workflow does not contain a separate email-sending action.
+- **Output:** a Pass/Fail workflow result and step logs in GitHub Actions. The currently printed workflow does not contain a separate email-sending action. Section 6 separately records custom email evidence captured from the notification feature branch.
 
 ### 1.2 Component and tool mapping
 
@@ -140,7 +140,7 @@ The workflow passes only when both `quality` and `secret-scan` succeed. A non-ze
 
 - The repository has an `npm test` command and test files, but the workflow above does **not** call `npm test`; automated tests must not be presented as a current CI gate.
 - The workflow does not deploy the application, so it implements Continuous Integration rather than Continuous Delivery.
-- The workflow does not contain an email action. Any email screenshot must show a GitHub account notification, not an email sent directly by `ci.yml`.
+- The currently checked-out workflow does not contain an email action. The custom email screenshots in Section 6 came from Pull Request #16 on `feat/add-workflow-noti`; the printed workflow must be refreshed after that change is merged if it is to be presented as the current baseline.
 - Branch protection is configured outside this repository file and requires a GitHub settings screenshot if it is presented as an enforced merge gate.
 
 ## 3. Package build scripts
@@ -229,7 +229,7 @@ This script validates the backend application, environment configuration module,
 
 ## 5. Developer setup and source-build guide
 
-This section is the English, print-ready version of the team's [developer guide](Developer_Setup_and_Build_Guide.md).
+This section is the consolidated, English, print-ready developer setup and source-build guide for PrepVI.
 
 ### 5.1 Required tools
 
@@ -324,56 +324,67 @@ This runs workspace test commands. It is a valid local verification command, but
 
 ## 6. Screenshot evidence from `img`
 
-The image links below are placeholders. Add files using the exact names so the printed Markdown document loads them without further edits.
+The image links below load the evidence currently stored in `img`.
 
 ### 6.1 Successful GitHub Actions run
 
-Required file: `img/github-actions-success.png`
+Evidence file: `img/github-actions-success.png`
 
-The screenshot should show the repository, workflow name, commit/branch, conclusion, and both `quality` and `secret-scan` results.
+This Pull Request view shows that all six checks passed for the push and Pull Request events, including `quality`, `secret-scan`, and `notify` on the notification feature branch.
 
-![Successful GitHub Actions workflow run — image to be supplied](img/github-actions-success.png)
+![Successful CI checks on the notification feature Pull Request](img/github-actions-success.png)
 
 ### 6.2 Quality-job step details
 
-Required file: `img/github-actions-job-details.png`
+Evidence file: `img/github-actions-job-details.png`
 
-The screenshot should show the completed steps such as dependency installation, lint, typecheck, OpenAPI drift, migration replay, reference-seed verification, and build. Do not expose secret/environment values.
+The screenshot shows the successful `quality`, `secret-scan`, and `notify` jobs. The expanded `quality` job shows dependency installation, lint, typecheck, OpenAPI drift, migration replay, reference-seed verification, and build. No secret/environment value is displayed.
 
-![GitHub Actions quality-job details — image to be supplied](img/github-actions-job-details.png)
+![GitHub Actions quality-job details](img/github-actions-job-details.png)
 
 ### 6.3 GitHub email notification
 
-Required file: `img/github-email-notification.png`
+Evidence file: `img/github-email-notification.png`
 
-The screenshot should show the GitHub sender, repository/workflow context, status, and associated commit. Redact the private part of the email address and any unrelated message content.
+The screenshot shows a custom CI success email generated for the notification feature branch. It includes the repository, branch, commit SHA, triggering actor, `quality` and `secret-scan` results, and a `View run` hyperlink. **The captured image currently exposes personal email addresses; redact them before printing or submission.**
 
-![GitHub workflow email notification — image to be supplied](img/github-email-notification.png)
+![Custom CI result email from the notification feature branch](img/github-email-notification.png)
 
-### 6.4 Main-branch protection and required check
+### 6.4 Email link opens the corresponding Actions run
 
-Required file: `img/main-branch-protection.png`
+Evidence file: `img/github-action-click.png`
 
-Use this screenshot only if branch protection is actually enabled. It should show the `main` rule and the required CI status check without exposing unrelated repository settings.
+This screenshot shows the browser after selecting `View run` in the email. The Actions-run identifier in the browser URL matches the run link shown in the email, demonstrating navigation from the notification to its corresponding workflow run.
 
-![Main branch protection and required CI check — image to be supplied](img/main-branch-protection.png)
+![Email run link opened in GitHub Actions](img/github-action-click.png)
+
+### 6.5 Main-branch ruleset
+
+Evidence file: `img/main-branch-protection.png`
+
+The screenshot shows an Active ruleset targeting `main`, requiring a Pull Request, restricting deletion, and blocking force pushes. Although `Require status checks to pass` is selected, the settings also show `No checks have been added`. Therefore, this evidence does **not** prove that a specific CI check is currently enforced before merge.
+
+![Active main-branch ruleset without a selected required status check](img/main-branch-protection.png)
 
 ## 7. Evidence interpretation
 
 | Evidence | What it proves | What it does not prove by itself |
 | --- | --- | --- |
-| Successful workflow overview | The demonstrated commit completed configured CI jobs | That unconfigured tests or deployment occurred |
+| Successful Pull Request checks | The notification feature branch completed its configured push and PR checks | That the feature branch has been merged into the current baseline |
 | Quality-job details | The listed workflow steps ran for that job | Product acceptance or production readiness |
-| GitHub email | The account received a GitHub notification | That `ci.yml` contains a custom email action |
-| Branch-protection settings | CI is enforced as a merge gate for the shown branch/rule | That every historical merge used the current rule |
+| Custom CI email | The notification feature branch sent a result email with job and commit context | That the current checked-out `ci.yml` contains the same notification implementation |
+| Email link navigation | `View run` opens the Actions run whose identifier is shown in the email | That all future links or recipients are configured correctly |
+| Main-branch ruleset | The active rule targets `main` and requires Pull Requests | That a specific CI check is enforced; the screenshot explicitly shows no required check selected |
 | Printed scripts | The repository defines the shown commands | That a particular run succeeded |
 
 ## 8. Pre-print checklist
 
-- [ ] `img/github-actions-success.png` has been added and is readable.
-- [ ] `img/github-actions-job-details.png` has been added and is readable.
-- [ ] `img/github-email-notification.png` has been added and private information is redacted.
-- [ ] `img/main-branch-protection.png` has been added only if the rule is enabled.
+- [x] `img/github-actions-success.png` has been added and is readable.
+- [x] `img/github-actions-job-details.png` has been added and is readable.
+- [x] `img/github-email-notification.png` has been added and is readable.
+- [x] `img/github-action-click.png` has been added and is readable.
+- [x] `img/main-branch-protection.png` has been added and shows the active ruleset.
+- [ ] Personal email addresses in `img/github-email-notification.png` have been redacted before printing.
 - [ ] The demonstrated commit identifier is consistent across the workflow and email screenshots.
 - [ ] No screenshot contains a token, `.env` value, real database credential, private JD, or unnecessary personal information.
 - [ ] The printed CI workflow matches the current `.github/workflows/ci.yml`.

@@ -25,7 +25,7 @@ flowchart LR
     L --> M[GitHub notification / Email]
 ~~~
 
-Input là commit/PR. Runner checkout source, cài Node.js 24 và chạy npm ci. Job quality lần lượt chạy ESLint, TypeScript check, OpenAPI drift check, migration replay, reference seed verification và build. PostgreSQL 17-alpine là database tạm của CI. Song song, Gitleaks quét Git history. Một step trả exit code khác 0 làm job fail; tất cả đạt thì workflow pass. Kết quả hiện trên Pull Request/Actions và được GitHub gửi notification/email. Branch main được bảo vệ và yêu cầu CI check trước khi merge.
+Input là commit/PR. Runner checkout source, cài Node.js 24 và chạy npm ci. Job quality lần lượt chạy ESLint, TypeScript check, OpenAPI drift check, migration replay, reference seed verification và build. PostgreSQL 17-alpine là database tạm của CI. Song song, Gitleaks quét Git history. Một step trả exit code khác 0 làm job fail; tất cả đạt thì workflow pass. Kết quả hiện trên Pull Request/Actions và được GitHub gửi notification/email. Ruleset của main đang hoạt động và yêu cầu thay đổi đi qua Pull Request; tuy nhiên ảnh cấu hình cho thấy chưa chọn required CI check cụ thể.
 
 Tôi dùng CI để phát hiện sớm lỗi giữa frontend, backend, API contract, migration và build; tạo môi trường chung thay vì phụ thuộc máy cá nhân; đồng thời giảm nguy cơ commit secret. Workflow hiện chưa gọi npm run test, chưa deploy và không có email action riêng; email đến từ GitHub notification. Vì vậy đây là CI, chưa phải Continuous Delivery.
 
