@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" role="img" aria-labelledby="project-burndown-title project-burndown-desc">
+  <title id="project-burndown-title">Project Burndown tái dựng</title>
+  <desc id="project-burndown-desc">Biểu đồ so sánh số story point còn lại theo kế hoạch lý tưởng và dữ liệu Actual tái dựng từ Trello qua bốn tuần.</desc>
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap');</style>
+  </defs>
+  <rect width="1000" height="520" fill="#f5f5f5"/>
+  <text x="48" y="36" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="8" font-weight="500" letter-spacing="1.6">INTERVIEWQUESTIONBANK · R1</text>
+  <text x="48" y="68" fill="#2d3142" font-family="'Instrument Serif', serif" font-size="28">Project Burndown tái dựng</text>
+  <text x="48" y="92" fill="#4f5d75" font-family="'Geist', sans-serif" font-size="12">Story point còn lại · mốc tuần từ Reconstructed Kanban</text>
+  <text x="28" y="232" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="8" letter-spacing="1.2" transform="rotate(-90 28 232)">SP CÒN LẠI</text>
+  <g fill="none" stroke="rgba(45,49,66,0.12)" stroke-width="0.8">
+    <line x1="80" y1="112" x2="960" y2="112"/>
+    <line x1="80" y1="176" x2="960" y2="176"/>
+    <line x1="80" y1="240" x2="960" y2="240"/>
+    <line x1="80" y1="304" x2="960" y2="304"/>
+    <line x1="80" y1="368" x2="960" y2="368"/>
+  </g>
+  <g fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="8" text-anchor="end">
+    <text x="68" y="116">128</text>
+    <text x="68" y="180">96</text>
+    <text x="68" y="244">64</text>
+    <text x="68" y="308">32</text>
+    <text x="68" y="372">0</text>
+  </g>
+  <line x1="80" y1="100" x2="960" y2="368" stroke="#7c8f6f" stroke-width="1.2" stroke-dasharray="6 6"/>
+  <polyline points="80,100 300,168 520,236 740,304 960,358" fill="none" stroke="#eb6c36" stroke-width="2.4" stroke-linejoin="round"/>
+  <g fill="#eb6c36">
+    <circle cx="80" cy="100" r="4"/>
+    <circle cx="300" cy="168" r="4"/>
+    <circle cx="520" cy="236" r="4"/>
+    <circle cx="740" cy="304" r="4"/>
+    <circle cx="960" cy="358" r="4"/>
+  </g>
+  <g fill="#2d3142" font-family="'Geist Mono', monospace" font-size="8" text-anchor="middle">
+    <text x="80" y="88">134</text>
+    <text x="300" y="156">100</text>
+    <text x="520" y="224">66</text>
+    <text x="740" y="292">32</text>
+    <text x="960" y="346">5</text>
+  </g>
+  <g fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="8" text-anchor="middle">
+    <text x="80" y="396">Baseline</text>
+    <text x="300" y="396">W1 · 02/08</text>
+    <text x="520" y="396">W2 · 09/08</text>
+    <text x="740" y="396">W3 · 16/08</text>
+    <text x="960" y="396">W4 · 23/08</text>
+  </g>
+  <line x1="48" y1="432" x2="952" y2="432" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+  <text x="48" y="456" fill="#4f5d75" font-family="'Geist Mono', monospace" font-size="8" letter-spacing="1.6">LEGEND</text>
+  <line x1="144" y1="452" x2="176" y2="452" stroke="#eb6c36" stroke-width="2.4"/>
+  <circle cx="160" cy="452" r="4" fill="#eb6c36"/>
+  <text x="188" y="456" fill="#2d3142" font-family="'Geist', sans-serif" font-size="12">Actual tái dựng</text>
+  <line x1="352" y1="452" x2="384" y2="452" stroke="#7c8f6f" stroke-width="1.2" stroke-dasharray="6 6"/>
+  <text x="396" y="456" fill="#2d3142" font-family="'Geist', sans-serif" font-size="12">Ideal tuyến tính</text>
+  <text x="48" y="492" fill="#4f5d75" font-family="'Geist', sans-serif" font-size="12">Disclosure: dữ liệu theo tuần được tái dựng từ các cột Done của Trello, không phải burndown cập nhật hằng ngày.</text>
+</svg>
