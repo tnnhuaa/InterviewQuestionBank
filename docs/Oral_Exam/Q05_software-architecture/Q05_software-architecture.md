@@ -6,15 +6,16 @@
 
 **Câu trả lời viết tay trong không quá 10 phút:**
 
-Tài liệu Kiến trúc phần mềm mô tả cấu trúc, thành phần, cách giao tiếp, dữ liệu và quyết định kỹ thuật của PrepVI. Tôi tạo tài liệu để frontend, backend, database và dịch vụ ngoài cùng theo một định hướng, đồng thời kiểm soát bảo mật, phân quyền, chống trùng lịch và độ tin cậy.
+Trước tiên nhóm em xác định tài liệu Kiến trúc phần mềm phải mô tả cấu trúc, thành phần, cách giao tiếp, dữ liệu và quyết định kỹ thuật của PrepVI.
 
-Đầu vào để hình thành kiến trúc ban đầu gồm Charter, Vision & Scope, Backlog/acceptance criteria, NFR, Resource Plan, ràng buộc thời gian–chi phí–năng lực nhóm và prototype nghiệp vụ nếu có. Kiến thức đầu tiên là lựa chọn kiến trúc phải giải thích được style, stack, platform và framework. Vì vậy, tôi so sánh phương án trong ADR-001 rồi chọn modular monolith, React/Vite, Express và PostgreSQL vì phù hợp quy mô pilot và yêu cầu transaction.
+Những cái đầu vào mà nhóm đưa vào để hình thành kiến trúc ban đầu gồm Charter, Vision & Scope, Backlog/acceptance criteria, NFR, ràng buộc thời gian–chi phí–năng lực nhóm và prototype nghiệp vụ nếu có.
+Đầu tiên là lựa chọn kiến trúc phải giải thích được style, stack, platform và framework. Vì vậy, nhóm so sánh phương án trong ADR-001 rồi chọn modular monolith, React/Vite, Express và PostgreSQL vì phù hợp quy mô pilot và yêu cầu transaction.
 
-Kiến thức thứ hai là phân rã giải pháp phải làm rõ component, technology, dịch vụ ngoài, database, algorithm và pattern. Tôi viết bằng Markdown, vẽ Mermaid và phân rã PrepVI thành React SPA, Express API, module nghiệp vụ, PostgreSQL, worker/outbox, provider ngoài, JD extraction và matching. Matching dùng rule có phiên bản; Gemini chỉ hỗ trợ qua adapter/feature flag.
+Thứ hai là nhóm phân rã giải pháp phải làm rõ component, technology, dịch vụ ngoài, database, algorithm và pattern. Nhóm viết tài liệu bằng Markdown, vẽ Mermaid và phân rã PrepVI thành React SPA, Express API, module nghiệp vụ, PostgreSQL, worker/outbox, provider ngoài, JD extraction và matching.
 
-Từ baseline đó, nhóm xây dựng PoC theo các validation scenario. PoC, source, migration và test là bằng chứng để xác nhận giả định; nếu evidence khác baseline, tôi cập nhật sơ đồ, contract hoặc trạng thái ADR nhưng vẫn giữ lịch sử quyết định.
+Từ baseline đó, nhóm xây dựng PoC theo các validation scenario.Dùng các PoC, source, migration và test làm bằng chứng để xác nhận giả định; nếu các bằng chứng khác baseline, Nhóm cập nhật sơ đồ, contract hoặc trạng thái ADR nhưng vẫn giữ lịch sử quyết định.
 
-Tôi đánh giá tài liệu theo hai lớp. Trước hết, tôi dùng AI review một vòng rồi tự kiểm tra tính đầy đủ, nhất quán, khả thi và khả năng truy vết từ requirement/NFR đến sơ đồ và ADR. Sau đó, tôi đánh giá từng quyết định theo **Criteria → Evidence → Judgement**: criteria gồm không double booking, lỗi email không rollback booking và không lộ dữ liệu riêng tư; evidence gồm PoC, source, migration và test. Phần đủ bằng chứng được chấp nhận, phần chưa đủ giữ pending. Tôi dùng tài liệu để tổ chức module, thống nhất API/data boundary và hướng dẫn triển khai.
+Bởi vì nhóm có sử dụng AI để hỗ trợ tạo ra tài liệu này, nên nhóm có phương pháp đánh giá tài liệu theo hai lớp. Trước hết, Nhóm dùng AI review một vòng rồi tự kiểm tra tính đầy đủ, nhất quán, khả thi và khả năng truy vết từ requirement/NFR đến sơ đồ và ADR. Sau đó, nhóm đánh giá từng quyết định theo **Criteria → Evidence → Judgement**: criteria gồm không double booking, lỗi email không rollback booking và không lộ dữ liệu riêng tư; evidence gồm PoC, source, migration và test. Phần đủ bằng chứng được chấp nhận, phần chưa đủ giữ pending.
 
 ## 2. Câu hỏi thường gặp
 
@@ -35,13 +36,10 @@ Tôi đánh giá tài liệu theo hai lớp. Trước hết, tôi dùng AI revie
 
 **Các bước:**
 
-1. Review backlog và xác định architecture driver/NFR.
-2. Phân rã solution thành component, technology, integration, database, algorithm và pattern.
-3. So sánh architectural style, stack, platform và framework.
-4. Chọn modular monolith, React/Vite, Express và PostgreSQL; ghi lý do/trade-off trong ADR.
-5. Vẽ system context, container, module/data flow; xác định API, security và reliability boundary.
-6. Dùng kiến trúc và ADR làm baseline để nhóm xây dựng PoC/mã nguồn và thực hiện validation scenario.
-7. Đối chiếu evidence từ PoC/source/test với criteria; cập nhật sơ đồ, contract hoặc trạng thái ADR khi có khác biệt.
+1. Review yêu cầu, backlog và NFR để xác định architecture driver.
+2. So sánh phương án, chọn kiến trúc/stack và ghi lý do, trade-off trong ADR.
+3. Phân rã component, vẽ các sơ đồ và xác định API, data, security, reliability boundary.
+4. Dùng PoC/source/test để kiểm chứng; cập nhật tài liệu và ADR khi evidence khác baseline.
 
 ### 2.3 Tài liệu Kiến trúc phần mềm được đánh giá thế nào?
 
