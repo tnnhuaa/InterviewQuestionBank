@@ -1,4 +1,4 @@
-# Feasibility Study — Interview Practice Platform (v2)
+# Feasibility Study
 
 ## 1. Purpose
 
@@ -49,8 +49,8 @@ Kết luận chỉ được xem là mạnh khi có bằng chứng từ PoC, pilo
 |---|---|---|
 | Web CRUD/search/filter | Khả thi | Risk: taxonomy/filter sai khi multi-tag. Evidence: test với nhiều position/topic. Mitigation: versioned taxonomy và automated filter tests. |
 | Authentication/RBAC | Khả thi có điều kiện | Risk: object-level access leak. Evidence: negative authorization tests giữa các user. Mitigation: ownership checks tại service/API layer. |
-| JD intake/extraction | Khả thi có rủi ro | Risk: OCR/extraction sai hoặc file lỗi. Evidence: PoC trên PDF/PNG/JPEG ≤10 MB, PDF ≤5 trang. Mitigation: direct extraction trước, OCR VI/EN fallback, correction gate và safe failure. |
-| Requirement analysis/Question mapping | Khả thi có rủi ro | Risk: mapping thiếu/chệch. Evidence: 20 JD có nhãn, blind-set recall và precision@10 ≥80%. Mitigation: versioned taxonomy/alias/rules và traceable mapping reason. |
+| JD intake/extraction | Khả thi có rủi ro | Risk: OCR/extraction sai hoặc file lỗi. Evidence: PoC trên PDF/PNG/JPEG ≤10 MB. Mitigation: direct extraction trước, OCR VI/EN fallback, correction gate và safe failure. |
+| Requirement analysis/Question mapping | Khả thi có rủi ro | Risk: mapping thiếu/lệch. Evidence: 20 JD có nhãn, blind-set recall và precision@10 ≥80%. Mitigation: versioned taxonomy/alias/rules và traceable mapping reason. |
 | Preparation plan | Khả thi | Risk: plan mất trace hoặc user khác truy cập. Evidence: trace JD/requirement/Question version và authorization tests. Mitigation: immutable references/versioning phù hợp. |
 | Mentor verification | Khả thi | Risk: mentor không đủ độ tin cậy. Evidence: moderation workflow và audit. Mitigation: Approved-only participation trong pilot. |
 | Availability/booking | Khả thi có rủi ro | Risk: double booking khi concurrent requests. Evidence: concurrency PoC. Mitigation: transaction + unique constraint/idempotent transition. |
@@ -224,4 +224,4 @@ Validation đề xuất:
 
 MVP hiện có cơ sở tốt về technology/system, resource và operational feasibility, nhưng vẫn cần bằng chứng thực tế cho market demand, cultural acceptance, velocity và mapping quality. Economic feasibility đủ cho pilot nhỏ, nhưng chưa đủ dữ liệu để kết luận commercial ROI hoặc unit economics.
 
-Planning baseline được dùng cho điều phối nội bộ; phê duyệt chính thức vẫn cần chữ ký Sponsor Ngô Huy Biên và Ngô Ngọc Đăng Khoa.
+Planning baseline được dùng cho điều phối nội bộ, phê duyệt chính thức vẫn cần chữ ký Sponsor Ngô Huy Biên và Ngô Ngọc Đăng Khoa.
