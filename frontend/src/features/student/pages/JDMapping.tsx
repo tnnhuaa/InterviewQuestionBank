@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { aiApi, jobDescriptionsApi, questionsApi, type Requirement } from "@/shared/api/resources";
@@ -38,7 +38,11 @@ function RequirementCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-ink-muted">{item.requirement_type}</p>
-            {item.source === "GEMINI" && <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-medium text-primary">Gemini đề xuất</span>}
+            {item.source === "GEMINI" ? (
+              <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-medium text-primary">Gemini đề xuất</span>
+            ) : (
+              <span className="rounded-full bg-canvas-subtle px-2 py-0.5 text-[11px] font-medium text-ink-secondary">Phân tích quy tắc</span>
+            )}
             {item.decision && <span className="rounded-full bg-ok-soft px-2 py-0.5 text-[11px] font-medium text-ok">Đã xác nhận</span>}
           </div>
           <blockquote className="mt-2 border-l-2 border-edge pl-3 text-sm font-medium text-ink">{item.raw_text}</blockquote>
@@ -65,6 +69,7 @@ export default function JDMapping() {
   const [searchParams] = useSearchParams();
   const aiJobId = searchParams.get("aiJobId") ?? "";
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const aiJob = useQuery({
     queryKey: ["ai-job", aiJobId],
@@ -91,7 +96,10 @@ export default function JDMapping() {
   });
   const fallback = useMutation({
     mutationFn: () => jobDescriptionsApi.analyze(jobDescriptionId, jd.data!.correctedVersion),
-    onSuccess: () => navigate(`/job-descriptions/${jobDescriptionId}/mapping`, { replace: true }),
+    onSuccess: (result) => {
+      queryClient.setQueryData(["jd-analysis", jobDescriptionId], result);
+      navigate(`/job-descriptions/${jobDescriptionId}/mapping`, { replace: true });
+    },
   });
   const retryAi = useMutation({ mutationFn: () => aiApi.retry(aiJobId), onSuccess: () => aiJob.refetch() });
   const match = useMutation({
@@ -100,7 +108,7 @@ export default function JDMapping() {
   });
   const pendingHumanReview = analysis.data?.requirements.filter((item) => item.source === "GEMINI" && (item.confidence ?? 0) < 0.75 && !item.decision).length ?? 0;
 
-  return <div className="min-h-screen bg-canvas"><AuthNavbar /><main className="mx-auto max-w-[980px] px-6 py-8"><JDFlowStepper currentStep={3} /><h1 className="mt-8 text-[22px] font-semibold text-ink">Yêu cầu được nhận diện</h1><p className="mt-1 text-sm text-ink-secondary">Gemini chỉ đề xuất dựa trên đoạn trích từ JD. Bạn cần xác nhận trước khi hệ thống tìm câu hỏi; ngưỡng phù hợp sẽ không tự động bị hạ.</p>
+  return <div className="min-h-screen bg-canvas"><AuthNavbar /><main className="mx-auto max-w-[980px] px-6 py-8"><JDFlowStepper currentStep={3} /><h1 className="mt-8 text-[22px] font-semibold text-ink">Yêu cầu được nhận diện</h1><p className="mt-1 text-sm text-ink-secondary">Mỗi đề xuất đều dựa trên đoạn nguồn trong JD và được ghi rõ là do Gemini hoặc bộ quy tắc tạo ra. Bạn cần xác nhận trước khi hệ thống tìm câu hỏi; mức độ phù hợp tối thiểu sẽ không tự động bị hạ.</p>
     {waitingForAi && <div className="mt-6 rounded-xl border border-primary/20 bg-primary-soft p-6"><p className="text-sm font-semibold text-ink">Đang phân tích JD bằng Gemini</p><p className="mt-1 text-xs text-ink-secondary">Tác vụ chạy nền và trang tự cập nhật. Bạn có thể rời trang rồi quay lại mà không tạo tác vụ trùng.</p></div>}
     {aiJob.data?.status === "SUCCEEDED_WITH_FALLBACK" && <div className="mt-5 rounded-xl border border-notice/20 bg-notice-soft p-4 text-xs text-notice-ink">Gemini không trả kết quả an toàn sau các lượt thử. Hệ thống đã chuyển sang bộ phân tích quy tắc để bạn tiếp tục.</div>}
     {analysis.data && <div className={analysis.data.analysisSource === "GEMINI" ? "mt-5 rounded-xl border border-primary/20 bg-primary-soft p-4 text-xs text-primary" : "mt-5 rounded-xl border border-notice/20 bg-notice-soft p-4 text-xs text-notice-ink"}>{analysis.data.analysisSource === "GEMINI" ? "Kết quả phiên bản này được Gemini hỗ trợ và vẫn cần bạn xác nhận." : `Kết quả phiên bản này được tạo bởi bộ phân tích quy tắc.${analysis.data.fallbackErrorCode ? ` Gemini fallback: ${analysis.data.fallbackErrorCode}.` : " Gemini không được dùng cho phiên bản này."}`}</div>}

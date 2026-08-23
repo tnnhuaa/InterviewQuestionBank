@@ -43,20 +43,54 @@ export function createApp({
   checkDatabase = disconnectedCheck,
   environment = getEnvironment(),
   pool = databasePool,
-  storage = createPrivateStorage(environment.storage),
-  aiProvider = createAiProvider(environment),
+  storage,
+  aiProvider,
 } = {}) {
+  const defaultEnvironment = getEnvironment();
+  const resolvedEnvironment = {
+    ...defaultEnvironment,
+    ...environment,
+    // Unit/integration tests commonly provide a deliberately small environment
+    // object. Do not silently enable contract validation for those test doubles;
+    // callers can still opt in explicitly when the contract itself is under test.
+    openApiValidation: environment.openApiValidation
+      ?? (environment.nodeEnv === "test" ? false : defaultEnvironment.openApiValidation),
+    smtp: { ...defaultEnvironment.smtp, ...environment.smtp },
+    storage: { ...defaultEnvironment.storage, ...environment.storage },
+    ocr: { ...defaultEnvironment.ocr, ...environment.ocr },
+    ai: {
+      ...defaultEnvironment.ai,
+      ...environment.ai,
+      features: {
+        ...defaultEnvironment.ai.features,
+        ...environment.ai?.features,
+      },
+    },
+    notifications: {
+      ...defaultEnvironment.notifications,
+      ...environment.notifications,
+    },
+  };
+  const resolvedStorage = storage ?? createPrivateStorage(resolvedEnvironment.storage);
+  const resolvedAiProvider = aiProvider ?? createAiProvider(resolvedEnvironment);
   const app = express();
 
   app.disable("x-powered-by");
+  app.disable("etag");
   app.use(correlationMiddleware);
   app.use(requestLogMiddleware);
   app.use(helmet());
-  app.use(cors({ origin: environment.frontendOrigin, credentials: true }));
+  app.use(cors({ origin: resolvedEnvironment.frontendOrigin, credentials: true }));
+  app.use("/api/v1", (request, response, next) => {
+    void request;
+    response.set("Cache-Control", "private, no-store, max-age=0");
+    response.set("Pragma", "no-cache");
+    next();
+  });
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
-  if (environment.openApiValidation) {
+  if (resolvedEnvironment.openApiValidation) {
     app.use(openApiMiddleware({
       apiSpec: fileURLToPath(new URL("../openapi/openapi.yaml", import.meta.url)),
       fileUploader: { limits: { files: 1, fileSize: 10 * 1024 * 1024 } },
@@ -71,7 +105,7 @@ export function createApp({
       ignoreUndocumented: true,
     }));
   }
-  app.use("/api/v1", createStatusRouter({ checkDatabase, storage }));
+  app.use("/api/v1", createStatusRouter({ checkDatabase, storage: resolvedStorage }));
   app.use("/api/v1", rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 300,
@@ -89,18 +123,18 @@ export function createApp({
       }));
     },
   }));
-  app.use(createSessionMiddleware({ pool, environment }));
-  app.use(createOriginMiddleware(environment));
+  app.use(createSessionMiddleware({ pool, environment: resolvedEnvironment }));
+  app.use(createOriginMiddleware(resolvedEnvironment));
   app.use(createCsrfMiddleware());
-  app.use("/api/v1", createIdentityRouter({ pool, environment }));
+  app.use("/api/v1", createIdentityRouter({ pool, environment: resolvedEnvironment }));
   app.use("/api/v1", createQuestionsRouter({ pool }));
-  app.use("/api/v1", createJdRouter({ pool, storage, environment, aiProvider }));
-  app.use("/api/v1", createMentorsRouter({ pool, storage, environment }));
-  app.use("/api/v1", createBookingsRouter({ pool, environment }));
-  app.use("/api/v1", createOperationsRouter({ pool, environment }));
+  app.use("/api/v1", createJdRouter({ pool, storage: resolvedStorage, environment: resolvedEnvironment, aiProvider: resolvedAiProvider }));
+  app.use("/api/v1", createMentorsRouter({ pool, storage: resolvedStorage, environment: resolvedEnvironment }));
+  app.use("/api/v1", createBookingsRouter({ pool, environment: resolvedEnvironment }));
+  app.use("/api/v1", createOperationsRouter({ pool, environment: resolvedEnvironment }));
   app.use("/api/v1", createDashboardRouter({ pool }));
   app.use("/api/v1", createQuestionImportsRouter({ pool }));
-  app.use("/api/v1", createAiRouter({ pool, environment, provider: aiProvider }));
+  app.use("/api/v1", createAiRouter({ pool, environment: resolvedEnvironment, provider: resolvedAiProvider }));
   app.use(notFoundHandler);
   app.use(errorHandler);
 

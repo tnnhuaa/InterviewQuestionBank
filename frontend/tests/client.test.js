@@ -1,25 +1,32 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiError, apiFetch } from "../src/shared/api/client.js";
+import { ApiError, apiFetch, setCsrfToken } from "../src/shared/api/client.js";
 
 describe("apiFetch", () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    setCsrfToken(null);
+    vi.unstubAllGlobals();
+  });
+
+  function jsonResponse(body, status = 200) {
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   it("uses the relative API base URL", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ status: "ok" }),
-    });
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ status: "ok" }));
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(apiFetch("/health")).resolves.toEqual({ status: "ok" });
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/v1/health",
-      expect.objectContaining({ headers: { Accept: "application/json" } }),
-    );
+    const request = fetchMock.mock.calls[0][0];
+    expect(request.url).toMatch(/\/api\/v1\/health$/);
+    expect(request.cache).toBe("no-store");
+    expect(request.headers.get("Accept")).toBe("application/json");
   });
 
   it("throws a typed error for non-success responses", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 503 }));
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({}, 503)));
 
     const error = await apiFetch("/ready").catch((caughtError) => caughtError);
     expect(error).toBeInstanceOf(ApiError);
@@ -27,12 +34,9 @@ describe("apiFetch", () => {
   });
 
   it("serializes JSON requests and preserves custom headers", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 201,
-      json: async () => ({ id: "booking-1" }),
-    });
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ id: "booking-1" }, 201));
     vi.stubGlobal("fetch", fetchMock);
+    setCsrfToken("csrf-test-token");
 
     await apiFetch("/bookings", {
       method: "POST",
@@ -40,34 +44,29 @@ describe("apiFetch", () => {
       headers: { "Idempotency-Key": "request-1" },
     });
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/v1/bookings",
-      expect.objectContaining({
-        method: "POST",
-        body: JSON.stringify({ mentorId: "mentor-1" }),
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          "Idempotency-Key": "request-1",
-        },
-      }),
-    );
+    const request = fetchMock.mock.calls[0][0];
+    expect(request.url).toMatch(/\/api\/v1\/bookings$/);
+    expect(request.method).toBe("POST");
+    expect(await request.clone().json()).toEqual({ mentorId: "mentor-1" });
+    expect(request.headers.get("Accept")).toBe("application/json");
+    expect(request.headers.get("Content-Type")).toBe("application/json");
+    expect(request.headers.get("Idempotency-Key")).toBe("request-1");
+    expect(request.headers.get("X-CSRF-Token")).toBe("csrf-test-token");
   });
 
   it("exposes the structured API error envelope", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 422,
-        json: async () => ({
+      vi.fn().mockResolvedValue(
+        jsonResponse({
           message: "Please correct the highlighted fields",
           code: "VALIDATION_ERROR",
           correlationId: "correlation-1",
           fieldErrors: { startsAt: "This slot is no longer available" },
-        }),
-      }),
+        }, 422),
+      ),
     );
+    setCsrfToken("csrf-test-token");
 
     const error = await apiFetch("/bookings", { method: "POST", json: {} }).catch(
       (caughtError) => caughtError,

@@ -398,8 +398,11 @@ export function createBookingsService({ pool, environment }) {
         throw new AppError({
           status: 422,
           code: "MENTOR_EXPERTISE_MISMATCH",
-          message: "Mentor này không còn expertise được duyệt phù hợp với chủ đề đã chọn.",
-          recovery: { kind: "SELECT_ANOTHER_SLOT", retryable: false, retryAfterSeconds: null },
+          message: "Mentor này không có chuyên môn đã được duyệt phù hợp với chủ đề bạn chọn.",
+          fieldErrors: {
+            selectedTopicIds: "Hãy chọn chủ đề thuộc chuyên môn của Mentor hoặc quay lại chọn Mentor khác.",
+          },
+          recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
         });
       }
 

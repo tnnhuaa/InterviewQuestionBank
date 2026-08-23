@@ -30,6 +30,25 @@ async function withTimeout(operation, timeoutMs) {
   }
 }
 
+function remainingTimeout(deadline) {
+  return Math.max(1, deadline - Date.now());
+}
+
+async function settleCleanup(operation, timeoutMs = 5_000) {
+  let timeoutId;
+  const timeout = new Promise((resolve) => {
+    timeoutId = setTimeout(resolve, timeoutMs);
+  });
+  try {
+    await Promise.race([
+      Promise.resolve(operation).catch(() => undefined),
+      timeout,
+    ]);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 async function createOcrSession(languages, timeoutMs) {
   let worker;
   await fs.mkdir(OCR_CACHE_PATH, { recursive: true });
@@ -43,11 +62,11 @@ async function createOcrSession(languages, timeoutMs) {
     throw extractionError(languageDataMissing ? "OCR_LANGUAGE_DATA_UNAVAILABLE" : "EXTRACTION_PROVIDER_FAILURE", error);
   }
   return {
-    async recognize(image) {
-      return withTimeout(worker.recognize(image), timeoutMs);
+    async recognize(image, operationTimeoutMs = timeoutMs) {
+      return withTimeout(worker.recognize(image), operationTimeoutMs);
     },
     async close() {
-      await worker.terminate();
+      await settleCleanup(worker.terminate());
     },
   };
 }
@@ -81,18 +100,22 @@ async function renderPdfPage(document, pageNumber) {
 
 export async function extractDocument({ buffer, mimeType, ocr }) {
   const timeoutMs = ocr.timeoutSeconds * 1000;
+  const deadline = Date.now() + timeoutMs;
   if (mimeType === "application/pdf") {
     const pdf = await readPdf(buffer);
     try {
       if (pdf.text.length >= MIN_DIRECT_TEXT_CHARACTERS) {
         return { text: ensureExtractedText(pdf.text), method: "DIRECT_PDF", confidence: 1 };
       }
-      const session = await createOcrSession(ocr.languages, timeoutMs);
+      const session = await createOcrSession(ocr.languages, remainingTimeout(deadline));
       try {
         const pages = [];
         const confidences = [];
         for (let pageNumber = 1; pageNumber <= pdf.document.numPages; pageNumber += 1) {
-          const result = await session.recognize(await renderPdfPage(pdf.document, pageNumber));
+          const result = await session.recognize(
+            await renderPdfPage(pdf.document, pageNumber),
+            remainingTimeout(deadline),
+          );
           pages.push(result.data.text.trim());
           confidences.push(result.data.confidence / 100);
         }
@@ -108,9 +131,9 @@ export async function extractDocument({ buffer, mimeType, ocr }) {
       await pdf.loadingTask.destroy();
     }
   }
-  const session = await createOcrSession(ocr.languages, timeoutMs);
+  const session = await createOcrSession(ocr.languages, remainingTimeout(deadline));
   try {
-    const result = await session.recognize(buffer);
+    const result = await session.recognize(buffer, remainingTimeout(deadline));
     return { text: ensureExtractedText(result.data.text), method: "OCR", confidence: result.data.confidence / 100 };
   } finally {
     await session.close();

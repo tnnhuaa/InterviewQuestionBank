@@ -24,14 +24,17 @@ export function createStatusRouter({ checkDatabase, storage }) {
   router.get(["/ready", "/readiness"], async (request, response) => {
 
     try {
-      const database = await checkDatabase();
-      if (database === true) {
-        return response
-          .status(200)
-          .json({ status: "ready", database: "connected" });
-      }
+      const checkResult = await checkDatabase();
+      const database = checkResult === true
+        ? { ready: true, database: "connected", schema: "unknown" }
+        : checkResult;
       if (database === false) {
-        return response.status(503).json({ status: "not_ready", database: "disconnected" });
+        return notReady(
+          response,
+          request,
+          "DATABASE_UNAVAILABLE",
+          "Database provider đang tạm thời không khả dụng; chưa có mutation nghiệp vụ nào được thực hiện.",
+        );
       }
       if (!database || database.ready === false) {
         const schemaMissing = database?.code === "SCHEMA_NOT_READY";
@@ -63,10 +66,13 @@ export function createStatusRouter({ checkDatabase, storage }) {
         storage: "available",
       });
     } catch {
-      // Failed dependency checks are represented by the readiness response below.
+      return notReady(
+        response,
+        request,
+        "DATABASE_UNAVAILABLE",
+        "Database provider đang tạm thời không khả dụng; chưa có mutation nghiệp vụ nào được thực hiện.",
+      );
     }
-
-    return response.status(503).json({ status: "not_ready", database: "disconnected" });
   });
 
   return router;

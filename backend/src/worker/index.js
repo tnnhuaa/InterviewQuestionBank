@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import { getEnvironment } from "../config/environment.js";
 import { pool } from "../platform/db/pool.js";
 import { withTransaction } from "../platform/db/transaction.js";
+import { safeErrorDiagnostics } from "../platform/db/error-classification.js";
 import { createOperationCase } from "../platform/operations.js";
 import { createInAppNotification } from "../platform/outbox.js";
 import { createPrivateStorage } from "../platform/storage/private-storage.js";
@@ -45,7 +46,7 @@ function classifyNotificationError(error) {
   return { retryable: true, errorClass: name };
 }
 
-async function claimExtractionJob(poolInstance) {
+async function claimExtractionJob(poolInstance, leaseSeconds) {
   return withTransaction(poolInstance, async (client) => {
     const result = await client.query(
       `SELECT ej.*, jd.original_file_ref, jd.original_mime_type
@@ -60,9 +61,9 @@ async function claimExtractionJob(poolInstance) {
     const job = result.rows[0];
     await client.query(
       `UPDATE extraction_jobs SET status = 'PROCESSING', started_at = now(),
-         locked_at = now(), locked_until = now() + interval '5 minutes',
+         locked_at = now(), locked_until = now() + ($2 * interval '1 second'),
          attempt_count = attempt_count + 1 WHERE id = $1`,
-      [job.id],
+      [job.id, leaseSeconds],
     );
     return { ...job, attempt_count: job.attempt_count + 1 };
   });
@@ -454,7 +455,10 @@ export function startWorker({ poolInstance = pool, environment = getEnvironment(
     const escalatedLinks = await escalateExpiredMeetingLinkFailures(poolInstance);
     if (escalatedLinks) console.log(JSON.stringify({ event: "meeting_links.recovery_expired", count: escalatedLinks }));
     const extractionJobs = await Promise.all(
-      Array.from({ length: environment.ocr.concurrency }, () => claimExtractionJob(poolInstance)),
+      Array.from(
+        { length: environment.ocr.concurrency },
+        () => claimExtractionJob(poolInstance, environment.ocr.timeoutSeconds + 15),
+      ),
     );
     await Promise.all(extractionJobs.filter(Boolean).map((job) => processExtractionJob({ poolInstance, storage, environment, job })));
     if (environment.ai.enabled) {
@@ -480,11 +484,7 @@ export function startWorker({ poolInstance = pool, environment = getEnvironment(
       } catch (error) {
         console.error(JSON.stringify({
           event: "worker.tick_failed",
-          errorClass: error.name,
-          errorCode: error.code ?? "WORKER_TICK_FAILED",
-          errorMessage: error.message,
-          errorTable: error.table,
-          errorSchema: error.schema,
+          ...safeErrorDiagnostics(error),
         }));
       }
       await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));

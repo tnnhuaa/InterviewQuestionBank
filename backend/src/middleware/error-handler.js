@@ -1,15 +1,16 @@
 import { AppError } from "../shared/errors.js";
+import {
+  errorChain,
+  hasSchemaError,
+  isTransientDatabaseError,
+  safeErrorDiagnostics,
+} from "../platform/db/error-classification.js";
 
-const databaseUnavailableCodes = new Set([
-  "08000", "08001", "08003", "08004", "08006", "08007", "08P01",
-  "57P01", "57P02", "57P03", "53300", "53400", "58000", "58030",
-  "ECONNRESET", "ETIMEDOUT", "ENOTFOUND", "EAI_AGAIN",
-]);
-const schemaErrorCodes = new Set(["42P01", "42703"]);
 const storageUnavailableCodes = new Set(["EACCES", "ENOSPC", "EROFS"]);
 
 function dependencyError(error) {
-  if (schemaErrorCodes.has(error?.code)) {
+  const chain = errorChain(error);
+  if (hasSchemaError(error)) {
     return new AppError({
       status: 503,
       code: "SCHEMA_NOT_READY",
@@ -18,7 +19,19 @@ function dependencyError(error) {
       cause: error,
     });
   }
-  if (databaseUnavailableCodes.has(error?.code)) {
+  const storageProviderUnavailable = chain.some(
+    (item) => Number(item?.$metadata?.httpStatusCode) >= 500,
+  );
+  if (storageProviderUnavailable) {
+    return new AppError({
+      status: 503,
+      code: "STORAGE_UNAVAILABLE",
+      message: "Private storage đang tạm thời không khả dụng. Hãy giữ nguyên dữ liệu và thử lại sau.",
+      recovery: { kind: "RETRY_SAFE", retryable: true, retryAfterSeconds: 10 },
+      cause: error,
+    });
+  }
+  if (isTransientDatabaseError(error)) {
     return new AppError({
       status: 503,
       code: "DATABASE_UNAVAILABLE",
@@ -27,7 +40,10 @@ function dependencyError(error) {
       cause: error,
     });
   }
-  if (storageUnavailableCodes.has(error?.code) || Number(error?.$metadata?.httpStatusCode) >= 500) {
+  const fileStorageUnavailable = chain.some(
+    (item) => storageUnavailableCodes.has(item.code) && item.syscall !== "connect",
+  );
+  if (fileStorageUnavailable) {
     return new AppError({
       status: 503,
       code: "STORAGE_UNAVAILABLE",
@@ -97,15 +113,12 @@ export function errorHandler(error, request, response, next) {
   }
 
   if (process.env.NODE_ENV !== "test" && appError.status >= 500) {
+    const diagnostics = safeErrorDiagnostics(error);
     console.error(JSON.stringify({
       event: "http.error",
       correlationId: request.correlationId,
       code: appError.code,
-      errorClass: error.name,
-      errorMessage: error.message,
-      databaseCode: error.code,
-      errorTable: error.table,
-      errorConstraint: error.constraint,
+      ...diagnostics,
     }));
   }
 

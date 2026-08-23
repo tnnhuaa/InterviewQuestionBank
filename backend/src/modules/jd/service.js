@@ -42,6 +42,38 @@ function storageUnavailableError(cause) {
   });
 }
 
+function aiExtractionUnavailableError(cause) {
+  const providerCode = typeof cause?.code === "string" ? cause.code : "AI_PROVIDER_FAILURE";
+  const disabled = providerCode === "AI_DISABLED";
+  const invalidInput = providerCode === "AI_REQUEST_INVALID";
+  const retryAfterSeconds = Number.isInteger(cause?.retryAfterSeconds)
+    ? cause.retryAfterSeconds
+    : null;
+  return new AppError({
+    status: invalidInput ? 422 : 503,
+    code: providerCode,
+    message: disabled
+      ? "OCR bằng Gemini chưa được cấu hình. Hãy dùng luồng tải tệp tiêu chuẩn hoặc dán nội dung JD để tiếp tục."
+      : invalidInput
+        ? "Gemini không thể đọc tệp này. Hãy xuất lại PNG/JPEG/PDF hoặc dán nội dung JD."
+        : "Gemini đang tạm thời không thể trích xuất tệp. Bạn có thể thử lại hoặc dán nội dung JD để tiếp tục.",
+    recovery: {
+      kind: disabled || invalidInput ? "PASTE_TEXT" : "RETRY_SAFE",
+      retryable: !disabled && !invalidInput,
+      retryAfterSeconds,
+    },
+    cause,
+  });
+}
+
+async function extractTextWithAi(aiProvider, fileBuffer, mimeType) {
+  try {
+    return await aiProvider.extractTextFromFile({ buffer: fileBuffer, mimeType });
+  } catch (error) {
+    throw aiExtractionUnavailableError(error);
+  }
+}
+
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
 }
@@ -289,7 +321,7 @@ export function createJdService({ pool, storage, environment }) {
         recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
       });
     }
-    const detected = await fileTypeFromBuffer(file.buffer);
+    const detected = await detectDocumentType(file.buffer);
     const sourceType = allowedTypes.get(detected?.mime);
     if (!sourceType) {
       throw new AppError({
@@ -301,29 +333,36 @@ export function createJdService({ pool, storage, environment }) {
     }
 
     let extractedText = "";
+    let extractionMethod = "OCR";
 
     if (detected.mime === "application/pdf") {
       // PDF: thử trích text trực tiếp trước (pdfjs), nếu không có thì dùng Gemini vision
       if (detected.mime === "application/pdf") await validatePdf(file.buffer);
       const { getDocument: getPdfDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
-      const pdfDoc = await getPdfDocument({ data: new Uint8Array(file.buffer), isEvalSupported: false }).promise;
+      const loadingTask = getPdfDocument({ data: new Uint8Array(file.buffer), isEvalSupported: false });
+      let pdfDoc;
       const pages = [];
-      for (let i = 1; i <= pdfDoc.numPages; i++) {
-        const page = await pdfDoc.getPage(i);
-        const content = await page.getTextContent();
-        pages.push(content.items.map((item) => item.str).join(" ").trim());
+      try {
+        pdfDoc = await loadingTask.promise;
+        for (let i = 1; i <= pdfDoc.numPages; i += 1) {
+          const page = await pdfDoc.getPage(i);
+          const content = await page.getTextContent();
+          pages.push(content.items.map((item) => item.str).join(" ").trim());
+        }
+      } finally {
+        await loadingTask.destroy();
       }
-      await pdfDoc.destroy().catch(() => {});
       const directText = pages.join("\n\n").trim();
       if (directText.length >= 50) {
         extractedText = directText;
+        extractionMethod = "DIRECT_PDF";
       } else {
         // PDF scan: dùng Gemini để OCR
-        extractedText = await aiProvider.extractTextFromFile({ buffer: file.buffer, mimeType: detected.mime });
+        extractedText = await extractTextWithAi(aiProvider, file.buffer, detected.mime);
       }
     } else {
       // Ảnh PNG/JPEG: gửi trực tiếp lên Gemini để OCR
-      extractedText = await aiProvider.extractTextFromFile({ buffer: file.buffer, mimeType: detected.mime });
+      extractedText = await extractTextWithAi(aiProvider, file.buffer, detected.mime);
     }
 
     if (!extractedText.trim()) {
@@ -335,23 +374,26 @@ export function createJdService({ pool, storage, environment }) {
       });
     }
 
-    const result = await pool.query(
-      `INSERT INTO job_descriptions (
-         student_id, source_type, original_mime_type,
-         original_size_bytes, original_content_hash,
-         extracted_text, corrected_text, corrected_version,
-         extraction_method, extraction_version,
-         status, updated_at
-       ) VALUES ($1, $2, $3, $4, $5, $6, $6, 1, 'OCR', 'extract-v1', 'READY_FOR_REVIEW', now())
-       RETURNING *`,
-      [studentId, sourceType, detected.mime, file.size, sha256(file.buffer), extractedText.trim()],
-    );
-    await pool.query(
-      `INSERT INTO jd_text_versions (job_description_id, version, corrected_text, created_by)
-       VALUES ($1, 1, $2, $3) ON CONFLICT DO NOTHING`,
-      [result.rows[0].id, extractedText.trim(), studentId],
-    );
-    return jdDto(result.rows[0]);
+    return withTransaction(pool, async (client) => {
+      const result = await client.query(
+        `INSERT INTO job_descriptions (
+           student_id, title, source_type, original_mime_type,
+           original_size_bytes, original_content_hash,
+           extracted_text, corrected_text, corrected_version,
+           extraction_method, extraction_version,
+           status, updated_at
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $7, 1, $8, 'extract-v1', 'READY_FOR_REVIEW', now())
+         RETURNING *`,
+        [studentId, defaultJdTitle(sourceType), sourceType, detected.mime, file.size,
+          sha256(file.buffer), extractedText.trim(), extractionMethod],
+      );
+      await client.query(
+        `INSERT INTO jd_text_versions (job_description_id, version, corrected_text, created_by)
+         VALUES ($1, 1, $2, $3)`,
+        [result.rows[0].id, extractedText.trim(), studentId],
+      );
+      return jdDto(result.rows[0]);
+    });
   }
 
   async function get(studentId, id) {

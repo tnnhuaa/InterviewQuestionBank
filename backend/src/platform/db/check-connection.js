@@ -1,4 +1,5 @@
 import { pool } from "./pool.js";
+import { safeErrorDiagnostics } from "./error-classification.js";
 
 export const EXPECTED_SCHEMA_MIGRATION = "009_preparation_context_management";
 
@@ -27,7 +28,10 @@ export async function checkConnection() {
     };
   } catch (error) {
     if (process.env.NODE_ENV !== "test") {
-      console.error(JSON.stringify({ event: "database.readiness_failed", errorClass: error.name }));
+      console.error(JSON.stringify({
+        event: "database.readiness_failed",
+        ...safeErrorDiagnostics(error),
+      }));
     }
     const schemaMissing = ["42P01", "42703"].includes(error?.code);
     return {
