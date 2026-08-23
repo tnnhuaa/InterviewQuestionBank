@@ -1,207 +1,177 @@
-# Nền tảng luyện phỏng vấn — Tầm nhìn và phạm vi dự án
+# Interview Practice Platform — Project Vision and Scope
 
-## 1. Mục đích tài liệu
+## 1. Document control
 
-Tài liệu xác định tầm nhìn sản phẩm, người dùng mục tiêu, vấn đề cần giải quyết, mục tiêu sản phẩm, ranh giới MVP, giả định, ràng buộc và hướng phát triển tương lai. Đây là đầu vào cho Danh sách công việc sản phẩm (Product Backlog), Quy trình Tương lai, nguyên mẫu, kiến trúc, PoC và UAT.
+| Item                 | Details                                                                        |
+| -------------------- | ------------------------------------------------------------------------------ |
+| Purpose              | Define the product direction, users, goals, MVP scope, assumptions, and limits |
+| Owner in the Charter | Hưng — Product Owner/Business Analyst                                          |
+| Main update          | JD-first revision in commit `7ca1f6e`, PR `#6`, 16 August 2026                 |
+| Status               | Internally updated; formal acceptance is not recorded                          |
 
-Theo Project Charter, Hưng là Product Owner/BA và chịu trách nhiệm tài liệu này. Hùng (UI/UX) được tham vấn về trải nghiệm/nghiên cứu; Trí (PoC/E2E) về kiểm chứng khả thi; Luân (Architecture/technical lead) về kiến trúc; Tuấn Anh (Trưởng nhóm / leadership & governance) về quản trị, tích hợp và readiness; Gia Thành (PM/Scrum Master, initiation & estimation) về baseline, ước lượng, lịch và rủi ro. Việc tham vấn không thay quyền sở hữu phạm vi và backlog của Product Owner.
+The Charter assigns Hùng to UI/UX, Trí to PoC/E2E, Luân to architecture, Tuấn Anh to governance, and Gia Thành to planning. These assignments do not prove that each person reviewed this document.
 
-## 2. Tổng quan sản phẩm
+## 2. Product overview
 
-Nền tảng luyện phỏng vấn là ứng dụng web giúp ứng viên Việt Nam chuyển một Mô tả công việc (JD) cụ thể thành kế hoạch ôn phỏng vấn có cấu trúc. Sau khi kiểm tra nội dung JD được trích xuất, người dùng nhận các yêu cầu đã chuẩn hóa, câu hỏi liên quan cùng lý do ánh xạ, rồi tự luyện hoặc chuyển kế hoạch chuẩn bị sang buổi phỏng vấn thử với Cố vấn và nhận phản hồi.
+The Interview Practice Platform helps Vietnamese candidates prepare for a specific job description (JD). The candidate reviews the extracted JD text, sees its main requirements, receives related interview questions, and creates a preparation plan. The candidate can then self-practise or book a mock interview with a Mentor.
 
-| Thành phần | Mô tả |
-|---|---|
-| Người dùng chính | Sinh viên năm cuối, người chuẩn bị thực tập, người mới tốt nghiệp/chuyển hướng ở cấp đầu vào |
-| Đầu vào chính | JD được dán dạng văn bản hoặc tải lên bằng tệp thuộc định dạng hỗ trợ |
-| Giá trị trước danh mục Cố vấn | Văn bản có thể kiểm tra/sửa, yêu cầu chuẩn hóa, ánh xạ câu hỏi có lý do và kế hoạch chuẩn bị |
-| Người cung cấp dịch vụ | Cố vấn có kinh nghiệm chuyên môn, phỏng vấn hoặc tuyển dụng |
-| Người vận hành | Quản trị viên/người kiểm duyệt nội dung |
-| Vòng lặp giá trị | JD → Kế hoạch chuẩn bị → Tự luyện/Cố vấn → Phản hồi → Cập nhật kế hoạch |
+| Item             | Description                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| Main users       | Final-year students, internship candidates, recent graduates, and entry-level career changers |
+| Main input       | JD text or a supported file                                                                   |
+| Main value       | Corrected JD text, clear requirements, related questions, and a preparation plan              |
+| Service provider | Approved Mentor                                                                               |
+| Operator         | Administrator/content moderator                                                               |
+| Value loop       | JD → Plan → Self-practice/Mentor → Feedback → Next action                                     |
 
-## 3. Tầm nhìn sản phẩm
+## 3. Vision and mission
 
-> Tạo một điểm đến đáng tin cậy để ứng viên ở cấp đầu vào hiểu một JD cụ thể đòi hỏi gì, biết cần luyện câu hỏi nào và có thể thực hành với Cố vấn trong cùng một vòng lặp chuẩn bị.
+### Vision
 
-## 4. Tuyên bố sứ mệnh
+> Give entry-level candidates one trusted place to understand a JD, find relevant questions, and practise with a Mentor.
 
-> Giúp ứng viên biến yêu cầu tuyển dụng thành kế hoạch ôn có thể giải thích, thực hành và cải thiện bằng phản hồi có cấu trúc.
+### Mission
 
-## 5. Định vị sản phẩm
+> Turn job requirements into a clear plan that candidates can practise and improve through feedback.
 
-### 5.1 Vị trí hiện tại
+### Positioning
 
-Ứng viên đọc JD rồi tự suy luận kiến thức cần ôn, tìm câu hỏi và Cố vấn trên nhiều nguồn, nhưng không biết yêu cầu nào đã được bao phủ hoặc phản hồi liên quan thế nào đến JD ban đầu.
+The product is for Vietnamese candidates preparing for internships or entry-level roles. It keeps a clear link from the JD to questions, practice sessions, feedback, and next actions.
 
-### 5.2 Vị trí MVP đề xuất
+This position is a hypothesis. The repository does not contain customer research that proves product–market fit.
 
-Một ứng dụng web nhận JD, trích xuất và cho phép sửa văn bản, phân tích yêu cầu, chuẩn hóa bộ phân loại, ánh xạ sang Ngân hàng câu hỏi và tạo kế hoạch chuẩn bị. Ngân hàng câu hỏi và danh mục Cố vấn hỗ trợ thực hành sau khi kế hoạch đã hình thành; cuộc họp vẫn dùng công cụ ngoài.
+## 4. Problem and opportunity
 
-### 5.3 Vị trí tương lai
+Candidates often have to:
 
-Sau khi chứng minh chất lượng trích xuất/ánh xạ và khả năng vận hành thử nghiệm, sản phẩm có thể bổ sung gợi ý ngữ nghĩa, phỏng vấn tự động, thanh toán, báo cáo tiến bộ nâng cao hoặc video tích hợp. Các khả năng này không thuộc MVP.
+- read and understand the JD without guidance;
+- search many sources for questions;
+- correct extraction or OCR errors themselves;
+- find and schedule Mentors through separate channels; and
+- turn free-form feedback into a new study plan.
 
-### 5.4 Tuyên bố định vị
+The opportunity is to connect these steps with one shared taxonomy and one preparation plan. The plan provides value before a Mentor booking and gives the Mentor enough context for the session.
 
-> Dành cho ứng viên Việt Nam chuẩn bị thực tập hoặc công việc cấp đầu vào, Nền tảng luyện phỏng vấn chuyển một JD cụ thể thành yêu cầu, câu hỏi liên quan và kế hoạch chuẩn bị có thể kiểm tra. Khác với việc tự ghép tài liệu và Cố vấn rời rạc, sản phẩm giữ liên kết từ JD → câu hỏi → buổi luyện → phản hồi → hành động tiếp theo.
+## 5. Target users
 
-## 6. Phát biểu vấn đề
+### Candidate
 
-### 6.1 Vấn đề chính
+A typical user is a student preparing within a few weeks for a Front-end Intern/Junior JD that mentions JavaScript, TypeScript, or React. The user needs clear requirements, relevant questions, and a practical study plan.
 
-Ứng viên đọc một JD cụ thể nhưng không biết cần ôn kiến thức, kỹ năng và câu hỏi nào để chuẩn bị phỏng vấn. Đây là giả thuyết sản phẩm cần được kiểm chứng bằng phỏng vấn khám phá; chưa được xem là kết quả nghiên cứu đã xác nhận.
+### Mentor
 
-### 6.2 Điểm khó khăn hiện tại
+The Mentor needs clear JD, topic, question, and session-goal context. The Mentor also needs simple availability and feedback tools.
 
-- Ứng viên phải tự suy luận yêu cầu, cấp bậc, kỹ năng và công nghệ từ JD.
-- Nội dung ôn tập rải rác; không có ánh xạ cho biết yêu cầu nào đã được bao phủ.
-- JD dạng file hoặc ảnh có thể trích xuất sai nhưng người dùng không có bước xác nhận rõ ràng.
-- Câu hỏi được tìm thấy thường thiếu lý do liên quan đến JD cụ thể.
-- Tìm Cố vấn và chốt lịch qua nhiều kênh tốn thời gian.
-- Cố vấn thường nhận yêu cầu thiếu JD, chủ đề và nhóm câu hỏi cần luyện.
-- Phản hồi rời rạc, khó chuyển thành hành động cập nhật kế hoạch ôn.
+### Administrator
 
-### 6.3 Cơ hội sản phẩm
+The Administrator manages taxonomy, questions, Mentor approval, bookings, reports, and audit records. Access to private data must follow the user's role and ownership.
 
-Nhập JD và kế hoạch chuẩn bị tạo giá trị trước khi người dùng cần Cố vấn. Bộ phân loại dùng chung nối yêu cầu gốc với Ngân hàng câu hỏi; lịch hẹn mang theo ngữ cảnh JD/kế hoạch; phản hồi quay lại cùng kế hoạch. Danh mục Cố vấn vì vậy là bước thực hành và kiểm chứng, không còn là điểm bắt đầu duy nhất.
+## 6. Product goals
 
-## 7. Người dùng mục tiêu
+The values below are targets. Current baselines are not recorded.
 
-### 7.1 Chân dung chính — Ứng viên chuẩn bị cho một JD cụ thể
+| ID     | Goal                               | Proposed measure                                                       |
+| ------ | ---------------------------------- | ---------------------------------------------------------------------- |
+| OBJ-01 | Confirm the JD preparation problem | At least 70% of a valid discovery sample confirms the problem          |
+| OBJ-02 | Complete JD intake and review      | At least 80% of valid users complete input, extraction, and correction |
+| OBJ-03 | Find expected requirements         | At least 80% recall on a labelled JD set                               |
+| OBJ-04 | Give useful question mappings      | At least 80% relevance; every result has source, topic, and reason     |
+| OBJ-05 | Start practice from the plan       | At least 80% open a question or Mentor flow from a valid plan          |
+| OBJ-06 | Complete reliable bookings         | At least 80% of confirmed bookings are completed                       |
+| OBJ-07 | Give useful feedback               | At least 90% includes strength, weakness, and next action              |
+| OBJ-08 | Improve user confidence            | Average usefulness at least 4/5 and confidence increase of 1/5         |
 
-| Thuộc tính | Mô tả |
-|---|---|
-| Ví dụ | An, sinh viên năm ba CNTT có JD Thực tập sinh/Lập trình viên Front-end mới vào nghề dùng JavaScript, TypeScript hoặc React và cần ứng tuyển trong ba tuần |
-| Mục tiêu | Biết yêu cầu nào cần ôn và chuyển chúng thành kế hoạch khả thi |
-| Hành vi hiện tại | Đọc JD, tìm từ khóa trên blog/video/cộng đồng, tự lưu câu hỏi |
-| Điểm khó khăn | Không biết mình hiểu JD đúng chưa và câu hỏi nào thực sự liên quan |
-| Nhu cầu | Văn bản có thể kiểm tra, yêu cầu/chủ đề chuẩn hóa, câu hỏi có lý do, Cố vấn đúng chuyên môn |
-| Thời điểm đạt giá trị | Xác nhận văn bản JD, hiểu ánh xạ và bắt đầu luyện từ kế hoạch chuẩn bị mà không cần tự tổng hợp lại |
+## 7. MVP scope
 
-### 7.2 Chân dung phụ — Người mới tốt nghiệp/chuyển hướng ở cấp đầu vào
+### In scope
 
-Cần hiểu kỳ vọng của vị trí mới, phát hiện khoảng trống kiến thức và thực hành trong bối cảnh gần phỏng vấn thật nhưng có mạng lưới hạn chế.
+- Accounts, authentication, and role-based access for Student, Mentor, and Administrator.
+- JD input by text, PDF, PNG, or JPEG.
+- Direct extraction and Vietnamese/English OCR fallback.
+- Student correction before analysis.
+- Requirement detection, shared taxonomy, and explainable question mapping.
+- Preparation plans and Question Bank functions.
+- Mentor profile, approval, expertise, and availability.
+- Booking with JD/plan context and slot-conflict protection.
+- External meeting links, notifications, feedback, reviews, audit, and basic administration.
 
-### 7.3 Chân dung phía cung — Cố vấn/người phỏng vấn
+### Out of scope
 
-Muốn chia sẻ kinh nghiệm và xây dựng uy tín; cần JD, chủ đề, câu hỏi và mục tiêu rõ ràng, lịch chủ động, công cụ quản lý đặt lịch và thang phản hồi đủ nhanh để sử dụng.
+- AI interviewer and automatic answer scoring.
+- Built-in calls, recording, or transcription.
+- Payment, escrow, refund, or payout.
+- Native mobile applications and applicant tracking.
+- A production-scale Mentor marketplace.
 
-### 7.4 Chân dung vận hành — Quản trị viên
+ADR-005 later added optional Gemini support behind feature flags and with manual/rule-based fallback. This does not add an AI interviewer or automatic scoring. The Vision and Scope has no later approved version for this change.
 
-Cần quản lý bộ phân loại/tên đồng nghĩa, câu hỏi, Cố vấn, lịch hẹn và báo cáo; giữ dấu vết kiểm toán mà không được xem toàn bộ dữ liệu JD riêng tư nếu không có thẩm quyền nghiệp vụ.
+## 8. Product boundary
 
-## 8. Mục tiêu sản phẩm và cách đo
-
-Mục tiêu cấp cao và yêu cầu chi tiết phải đóng góp trực tiếp vào mục tiêu sản phẩm. Các ngưỡng dưới đây là đề xuất; đường cơ sở phải được đo bằng khám phá, bộ JD thử nghiệm, kiểm thử khả dụng hoặc dữ liệu thử nghiệm trước khi dùng để kết luận.
-
-| Mã | Mục tiêu | Số đo/công thức | Đường cơ sở | Ngưỡng đề xuất | Nguồn đo | Chủ sở hữu |
-|---|---|---|---|---:|---|---|
-| OBJ-01 | Xác nhận khó khăn chuẩn bị theo JD | Người tham gia xác nhận khó khăn / mẫu hợp lệ | Chưa đo | ≥70% | Vòng khám phá | Người phụ trách nghiên cứu |
-| OBJ-02 | Nhập và kiểm tra JD thành công | Người hoàn tất dán/tải lên, trích xuất và xác nhận văn bản / lượt thử hợp lệ | Chưa đo | ≥80% | Khả dụng + sự kiện trích xuất | UX/PO |
-| OBJ-03 | Nhận diện đúng yêu cầu thử nghiệm | Yêu cầu mong đợi được phát hiện / tổng yêu cầu mong đợi trong bộ kiểm thử | Chưa đo | ≥80% | Bộ JD có nhãn | PO/Nội dung |
-| OBJ-04 | Ánh xạ liên quan và giải thích được | Kết quả liên quan / kết quả đã rà soát; kết quả đủ nguồn/chủ đề/lý do / tổng kết quả | Chưa đo | ≥80%; 100% | Chuyên gia rà soát + bản ghi ánh xạ | PO/Nội dung |
-| OBJ-05 | Bắt đầu luyện từ kế hoạch chuẩn bị | Người mở câu hỏi hoặc luồng Cố vấn từ kế hoạch / người có kế hoạch hợp lệ | Chưa đo | ≥80% | Sự kiện khả dụng/sản phẩm | UX/PO |
-| OBJ-06 | Đặt lịch có ngữ cảnh và đáng tin cậy | Lịch hợp lệ có JD/kế hoạch / lượt thử; `COMPLETED` / `CONFIRMED` | Chưa đo | ≥80%; ≥80% | Khả dụng + sự kiện đặt lịch | Vận hành |
-| OBJ-07 | Phản hồi có thể hành động | Phản hồi đủ điểm mạnh + điểm yếu + hành động tiếp theo / lịch `COMPLETED` | Chưa đo | ≥90% | Bản ghi phản hồi | PO |
-| OBJ-08 | Người học cảm nhận tiến bộ | Mức hữu ích trung bình; tự tin sau − trước | Chưa đo | ≥4/5; +1/5 | Khảo sát | Người phụ trách nghiên cứu |
-
-### 8.1 Ánh xạ mục tiêu sang năng lực
-
-| Mục tiêu | Năng lực | Cách kiểm chứng |
-|---|---|---|
-| OBJ-01 | Phát biểu vấn đề và bằng chứng khám phá | Ghi chú nghiên cứu + quyết định rà soát |
-| OBJ-02 | Nhập JD bằng văn bản/tệp, định tuyến trích xuất/OCR và hiệu chỉnh thủ công | TC-JD + tác vụ nguyên mẫu |
-| OBJ-03 | Phát hiện yêu cầu, tên đồng nghĩa và chuẩn hóa phân loại | Ca JD có nhãn + TC-MAP |
-| OBJ-04 | Ánh xạ câu hỏi có phiên bản và lý do | Chuyên gia rà soát độ liên quan + TC-MAP |
-| OBJ-05 | Kế hoạch chuẩn bị, Ngân hàng câu hỏi và tự luyện | Tác vụ nguyên mẫu + TC-PLAN/TC-Q |
-| OBJ-06 | Bàn giao từ kế hoạch sang Cố vấn, vòng đời đặt lịch và thông báo | PoC + TC-B/TC-N |
-| OBJ-07 | Thang phản hồi, quyền riêng tư và cập nhật kế hoạch | TC-F + KPI đầy đủ |
-| OBJ-08 | Vòng lặp phản hồi đến luyện tập và khảo sát | Đi qua quy trình + khảo sát |
-
-## 9. Phạm vi MVP
-
-Phát biểu phạm vi nêu rõ phần bao gồm, loại trừ, sản phẩm bàn giao, ràng buộc và giả định.
-
-### 9.1 Trong phạm vi
-
-- Tài khoản, xác thực và RBAC cho Sinh viên/Cố vấn/Quản trị viên.
-- Nhập JD bằng tối đa 50.000 ký tự văn bản hoặc một PDF/PNG/JPEG tối đa 10 MB; PDF tối đa 5 trang, PNG/JPEG là một ảnh.
-- Trích xuất văn bản trực tiếp cho tệp có chữ; OCR dự phòng cho ảnh hoặc PDF quét trong giới hạn thử nghiệm.
-- Hiển thị và cho Sinh viên sửa văn bản trước khi phân tích.
-- Nhận diện vị trí, cấp bậc, kỹ năng, công nghệ và yêu cầu chính; lưu bằng chứng gốc.
-- Chuẩn hóa từ khóa/tên đồng nghĩa theo bộ phân loại dùng chung.
-- Ánh xạ câu hỏi theo quy tắc có phiên bản; chỉ dùng câu hỏi `PUBLISHED` hợp lệ.
-- Mỗi kết quả có yêu cầu nguồn, chủ đề chuẩn hóa, điểm/lý do; kế hoạch chuẩn bị thuộc Sinh viên.
-- Ngân hàng câu hỏi: duyệt/tìm kiếm/lọc, chi tiết, đánh dấu và tiến độ cơ bản.
-- Hồ sơ Cố vấn, xác minh, chuyên môn và lịch rảnh.
-- Lịch hẹn tham chiếu JD hoặc kế hoạch chuẩn bị; Cố vấn chỉ xem ngữ cảnh tối thiểu cần thiết.
-- Vòng đời đặt lịch, liên kết họp ngoài hệ thống, thông báo, thang phản hồi, đánh giá và quản trị tối thiểu.
-
-### 9.2 Ngoài phạm vi
-
-- Người phỏng vấn tự động, chatbot phỏng vấn, chấm điểm tự động hoặc phân tích giọng nói/video.
-- Gợi ý ML/ngữ nghĩa; PoC dùng từ khóa, tên đồng nghĩa, bộ phân loại và tính điểm theo quy tắc.
-- OCR cho mọi định dạng, ngôn ngữ hoặc tài liệu không phải JD.
-- Gọi video, ghi hình và phiên âm tích hợp.
-- Thanh toán tự động, ký quỹ và chi trả Cố vấn.
-- Ứng dụng di động riêng, ATS/nộp đơn việc làm và danh mục Cố vấn quy mô vận hành thật.
-
-## 10. Ranh giới phạm vi
-
-| Năng lực | MVP | Tương lai |
-|---|---:|---:|
-| Nhập JD bằng văn bản/tệp | Có | Thêm nguồn tích hợp |
-| Trích xuất trực tiếp + OCR dự phòng giới hạn | Có | Mở rộng định dạng/ngôn ngữ sau đánh giá |
-| Hiệu chỉnh thủ công trước phân tích | Có | Hỗ trợ rà soát nâng cao |
-| Ánh xạ yêu cầu/câu hỏi theo quy tắc | Có | Gợi ý ngữ nghĩa/ML sau khi có bằng chứng |
-| Kế hoạch chuẩn bị và Ngân hàng câu hỏi | Có | Cá nhân hóa/phân tích nâng cao |
-| Hồ sơ/xác minh/đặt lịch Cố vấn | Có | Danh mục Cố vấn ở quy mô vận hành thật |
-| Liên kết họp ngoài hệ thống | Có | Video tích hợp |
-| Thang phản hồi và đánh giá | Có | Phân tích phản hồi nâng cao |
-| Thanh toán | Không | Thanh toán/ký quỹ/chi trả sau phê duyệt |
+| Capability                            | MVP |                     Future option |
+| ------------------------------------- | --: | --------------------------------: |
+| JD text/file input                    | Yes |                More input sources |
+| Direct extraction and limited OCR     | Yes |        More formats and languages |
+| Text correction before analysis       | Yes |             Better review support |
+| Rule-based question mapping           | Yes | Semantic support after validation |
+| Preparation plan and Question Bank    | Yes |            Personalised analytics |
+| Mentor profile, approval, and booking | Yes |                Larger marketplace |
+| External meeting link                 | Yes |                    Built-in video |
+| Feedback and review                   | Yes |        Advanced feedback analysis |
+| Payment                               |  No | Payment and payout after approval |
 
 ```mermaid
 flowchart LR
-    Student["Sinh viên"] -->|"Dán/tải JD; rà soát; luyện/đặt lịch"| System["Nền tảng luyện phỏng vấn"]
-    Mentor["Cố vấn"] -->|"Lịch rảnh; đặt lịch; phản hồi"| System
-    Admin["Quản trị viên"] -->|"Phân loại; kiểm duyệt; vận hành"| System
-    System --> Email["Nhà cung cấp email"]
-    System --> Meet["Nhà cung cấp cuộc họp ngoài hệ thống"]
-    System --> Store["Kho dữ liệu riêng tư / cơ sở dữ liệu"]
-    System --> OCR["Tiến trình OCR nội bộ cho bản quét Việt/Anh"]
+    Student["Student"] -->|"Submit JD; practise; book"| System["Interview Practice Platform"]
+    Mentor["Mentor"] -->|"Availability; session; feedback"| System
+    Admin["Administrator"] -->|"Content and operations"| System
+    System --> Email["Email provider"]
+    System --> Meet["External meeting provider"]
+    System --> Store["Private storage and PostgreSQL"]
+    System --> OCR["Vietnamese/English OCR worker"]
 ```
 
-Nền tảng là nguồn dữ liệu chuẩn cho trạng thái xử lý JD, văn bản hiệu chỉnh, yêu cầu chuẩn hóa, dữ liệu ánh xạ câu hỏi, kế hoạch chuẩn bị, vai trò người dùng, trạng thái câu hỏi, khung giờ, lịch hẹn và phản hồi. OCR nội bộ chỉ là phương pháp lấy văn bản tiếng Việt/Anh từ ảnh/PDF quét, không đồng nghĩa với toàn bộ phân tích JD. Email và nhà cung cấp cuộc họp là hệ thống liền kề; lỗi nhà cung cấp không được tự thay đổi lịch hẹn hoặc ghi nhận sai kết quả phân tích là thành công.
+The platform is the source of truth for JD processing, requirements, mappings, plans, questions, users, slots, bookings, and feedback. Email and meeting providers must not control booking state.
 
-Quy trình nghiệp vụ hiện tại là: đọc JD → tự suy luận nội dung cần ôn → tìm câu hỏi/tài liệu/Cố vấn trên nhiều nguồn → không biết yêu cầu nào đã được bao phủ → điều phối lịch ngoài hệ thống → nhận phản hồi rời rạc. Quy trình mục tiêu được mô tả trong [Quy trình Tương lai](Future_State_Workflow.md).
+## 9. Assumptions
 
-## 11. Giả định
+- The team can prepare 20 legal and de-identified Front-end Intern/Junior JDs.
+- The pilot Question Bank covers JavaScript, TypeScript, and React well enough.
+- Students will correct extracted text before analysis.
+- The pilot can recruit 12 Students and 4 approved volunteer Mentors.
+- Each Mentor can provide at least three time slots.
+- External meeting and hosting tools support a small pilot.
 
-- Có 20 JD Thực tập sinh/Lập trình viên Front-end mới vào nghề đã loại dữ liệu nhạy cảm và yêu cầu mong đợi: 12 hiệu chỉnh, 8 kiểm chứng mù.
-- Bộ phân loại, tên đồng nghĩa và câu hỏi `PUBLISHED` đủ bao phủ JavaScript, TypeScript và React trong phân khúc thử nghiệm.
-- Sinh viên sẵn sàng kiểm tra/sửa văn bản trước khi phân tích.
-- Có thể tuyển 12 Sinh viên và 4 Cố vấn `APPROVED`; mỗi Cố vấn tham gia tự nguyện, cung cấp ít nhất 3 khung giờ để tạo 12 lịch hẹn hợp lệ; thanh toán/chi trả không thuộc thử nghiệm.
-- Cố vấn chấp nhận xem ngữ cảnh tối thiểu và dùng thang phản hồi chung.
-- Công cụ họp ngoài và hạ tầng thử nghiệm đáp ứng luồng cơ bản.
+These are planning assumptions, not confirmed results.
 
-## 12. Ràng buộc
+## 10. Constraints
 
-- Đường cơ sở lập kế hoạch được chấp nhận cho 8 tuần: 6 thành viên × 16 giờ/tuần, khoảng 653 giờ sau dự phòng 15%; 134 SP ban đầu vẫn cần Nhóm phát triển ước lượng đồng thuận bằng Planning Poker và xác lập khoảng vận tốc trước khi cam kết chu kỳ sprint.
-- Đường cơ sở đầu vào: dán ≤50.000 ký tự hoặc một PDF/PNG/JPEG ≤10 MB; PDF ≤5 trang. Trích xuất trực tiếp chạy trước; OCR nội bộ tiếng Việt/Anh có thời hạn 60 giây, tối đa 2 lần chạy và 2 tác vụ đồng thời/tiến trình.
-- Chất lượng OCR phụ thuộc tệp/ảnh; Sinh viên hiệu chỉnh là cổng bắt buộc trước phân tích.
-- Ánh xạ chỉ có ý nghĩa trong bộ phân loại và Ngân hàng câu hỏi thử nghiệm; không tuyên bố bao phủ mọi nghề nghiệp.
-- JD có thể chứa dữ liệu cá nhân hoặc thông tin công ty; tệp gốc xóa trong 24 giờ, dữ liệu dẫn xuất sau 90 ngày không hoạt động, lịch sử lịch hẹn/phản hồi sau 180 ngày; yêu cầu xóa người dùng loại dữ liệu hoạt động trong 7 ngày và bản sao lưu trong 30 ngày.
-- Danh mục Cố vấn vẫn có rủi ro cung/cầu, nhưng kế hoạch chuẩn bị tạo giá trị trước đặt lịch.
-- Tích hợp bên thứ ba có hạn mức và gián đoạn.
+- Six members, eight weeks, and about 653 available hours after a 15% reserve.
+- Internal cash limit of VND 1,125,000.
+- JD input limit: 50,000 characters or one file up to 10 MB; PDF up to five pages.
+- OCR supports Vietnamese and English, with a 60-second timeout and two attempts.
+- Mapping quality only applies to the pilot taxonomy and Question Bank.
+- Private JD, Mentor, meeting, booking, and feedback data needs access and retention controls.
+- A major scope change needs impact analysis, re-estimation, and approval.
 
-## 13. Danh sách chức năng tương lai
+## 11. Creation, review, and use
 
-| Ứng viên chức năng | Lý do chưa thuộc MVP |
-|---|---|
-| Gợi ý câu hỏi bằng ngữ nghĩa/ML | Cần bộ dữ liệu, đường cơ sở chất lượng, rà soát quyền riêng tư và kiểm thử thiên lệch/kết quả bịa đặt |
-| Phỏng vấn tự động và chấm câu trả lời | Tăng đáng kể rủi ro về độ chính xác, tính công bằng và dữ liệu nhạy cảm |
-| OCR đa ngôn ngữ/đa định dạng quy mô lớn | Vượt mục tiêu PoC và tăng chi phí vận hành |
-| Ghi âm, phiên âm và phân tích giao tiếp | Tăng phạm vi kỹ thuật, yêu cầu đồng ý và lưu giữ dữ liệu |
-| Thanh toán, ký quỹ, hoàn tiền và chi trả Cố vấn | Cần chính sách, tuân thủ và vận hành tài chính |
-| Đồng bộ lịch hai chiều và video tích hợp | Liên kết ngoài hệ thống đã đáp ứng quy trình cốt lõi của MVP |
-| Thuê bao, buổi nhóm và hợp tác doanh nghiệp | Chỉ xem xét sau khi thử nghiệm xác nhận nhu cầu |
+| Stage           | Evidence                                                                                                          |
+| --------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Initial version | Added in commit `0743a68` on 13 August 2026                                                                       |
+| Main update     | Changed to JD-first in `7ca1f6e`, PR `#6`, Git author `Z3n`, on 16 August 2026                                    |
+| Review method   | Checked content, goal traceability, scope, measures, feasibility, resources, backlog, prototype, and architecture |
+| Main changes    | Added correction, taxonomy, explainable mapping, targets, constraints, and clear exclusions                       |
+| Use             | Source for the backlog, workflow, prototype, architecture, feasibility, resources, and implementation             |
+
+Git proves that the document changed. It does not prove Product Owner acceptance, customer validation, or Sponsor approval. Named review comments and signatures are not stored in the repository.
+
+## 12. References
+
+- [Project Proposal](../Project_Proposal/Project_Proposal_Draft.md)
+- [Product Backlog and Acceptance Criteria](Product_Backlog_and_Acceptance_Criteria.md)
+- [Current-State Workflow](Current_State_Workflow.md)
+- [Future-State Workflow](Future_State_Workflow.md)
+- [Project Charter](<../Project_Governance & Stakeholder/Project_Charter.md>)
+- [Feasibility Study](../Project_Feasibility/feasibility.md)
+- [Prototype Workflow](../Project_Prototype/Prototype_Workflow.md)
+- [Software Architecture](../Project_Architecture/software_architecture.md)

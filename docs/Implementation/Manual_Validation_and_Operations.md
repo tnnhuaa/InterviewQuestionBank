@@ -1,130 +1,161 @@
-# Hướng dẫn kiểm tra thủ công và vận hành PrepVI R1
+# PrepVI R1 — Manual Validation and Operations
 
-Automated-test implementation is intentionally outside this R1 release scope. Every release candidate must instead complete the following walkthroughs and attach screenshots, safe correlation IDs, database/audit/outbox observations, and the reviewer decision to the increment evidence.
+## 1. Current status
 
-## Environment bootstrap
+This guide explains local setup and manual release checks. It is not proof of a working Continuous Delivery pipeline or a real staging/pilot deployment.
 
-1. Copy `.env.example` and set strong `SESSION_SECRET`, `CSRF_SECRET`, `DEMO_SEED_PASSWORD`, and `ALLOW_NON_PRODUCTION_SEED=true` locally.
-2. Start PostgreSQL and Mailpit, then run migration → reference seed → demo seed → seed verify.
-3. Chạy API, worker và frontend bằng `npm run dev`. Xác nhận `/api/v1/health`, `/api/v1/ready` và Mailpit hoạt động.
-4. Use the three demo personas. Retrieve the password from the operator who set `DEMO_SEED_PASSWORD`; never copy it into evidence.
+The repository has:
 
-The expected migration chain for a new database is `001_r1_foundation → 002_complete_r1_flows → 003_dashboard_and_reminders → 004_question_bulk_import → 005_gemini_ai_assistance → 006_ai_private_draft_inputs → 007_ai_operations → 008_mentor_verification_hardening`. Keep `OPENAPI_VALIDATION=true` so the walkthrough covers both request and response contract enforcement.
+- GitHub Actions CI for install, lint, type check, OpenAPI drift, migration replay, reference-seed checks, build, and secret scan;
+- npm scripts, database migrations and seeds;
+- local PostgreSQL and Mailpit in Docker Compose;
+- environment examples and health/readiness endpoints; and
+- manual validation steps.
 
-## Walkthrough các luồng E2E trọng yếu
+The repository does not have:
 
-### Readiness và lỗi dependency
+- a deployment workflow or deployment script;
+- a versioned deployment artifact;
+- provider-specific deployment files;
+- a protected staging or production environment;
+- a deployed URL or deployment log; or
+- a deployment result email.
 
-1. Gọi `GET /api/v1/ready` sau khi migrate đầy đủ. Kết quả phải có migration `008_mentor_verification_hardening`, database `connected` và storage `available`.
-2. Trên một database local chưa migrate, xác nhận endpoint trả `503 SCHEMA_NOT_READY` và hướng dẫn chạy `npm run db:migrate`.
-3. Tạm dừng PostgreSQL local để xác nhận login, upload và booking trả `503 DATABASE_UNAVAILABLE`, không trả generic `500` và không lộ chuỗi kết nối.
-4. Cấu hình sai private storage local/S3 để xác nhận readiness trả `503 STORAGE_UNAVAILABLE` cùng hướng dẫn kiểm tra `STORAGE_DRIVER` và đường dẫn/bucket.
+Vercel, Render, and Neon are proposed in the architecture. The repository does not prove that the team selected or configured them.
 
-### US-01 — Auth và chuyển tài khoản
+## 2. Local release-candidate setup
 
-1. Login Student → logout → login lại bằng cùng tài khoản mà không refresh. Route guard phải tự đưa về home phù hợp.
-2. Lặp lại với Student → Mentor → Student, sau đó dùng back/forward. Header, query cache và dữ liệu riêng không được còn của account trước.
-3. Mở một route sai role khi đã login. UI phải hiện trang không đủ quyền; không được vòng lặp qua `/login`.
-4. Gây lỗi login và xác nhận password bị xóa khỏi form. Error không được phân biệt email, password hoặc trạng thái account nào sai.
+1. Record the full Git commit SHA.
+2. Run `npm ci`.
+3. Copy `.env.example` to the local environment file.
+4. Set strong `SESSION_SECRET`, `CSRF_SECRET`, and `DEMO_SEED_PASSWORD` values. Do not store or print real secrets.
+5. Run `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`.
+6. Start PostgreSQL and Mailpit with `npm run db:start`.
+7. Run:
 
-### US-25/US-27 — Upload, extraction và provenance
+   ```text
+   npm run db:migrate
+   npm run db:seed:reference
+   npm run db:seed:verify
+   ```
 
-1. Upload một file hợp lệ và ghi lại `jobDescriptionId`; tắt worker sau bước tạo JD rồi khởi động lại extraction.
-2. Bấm “Thử lại” nhiều lần. Tất cả request retry phải giữ một `Idempotency-Key`, dùng cùng JD và không tăng số bản ghi JD.
-3. Kiểm tra direct PDF, scanned PDF, PNG/JPEG, file rỗng/hỏng/mã hóa, PDF trên 5 trang và file trên 10 MB. Các lỗi phải chỉ rõ retry, re-upload hoặc paste text thủ công.
-4. Tắt Gemini hoặc mô phỏng timeout/quota/invalid output. Analysis phải hoàn tất bằng rule-based fallback, mỗi requirement có badge nguồn, `fallbackUsed=true` và `fallbackErrorCode` an toàn.
-5. Khi Gemini thành công, requirement hiển thị nguồn `GEMINI`; matching score, thứ tự và tie-break vẫn giữ deterministic.
+8. Start the API, worker, and frontend.
+9. Check `/api/v1/health`, `/api/v1/readiness`, and Mailpit.
+10. Complete the required user walkthroughs and record the result.
 
-### US-30 — Booking bằng JD hoặc Preparation Plan
+The migration order is:
 
-1. Đổi qua lại giữa JD và plan trong cùng form; topic/version của context trước phải được xóa trước khi cho submit.
-2. Với plan có topic, chờ Mentor, slot và plan tải xong rồi submit. Snapshot phải chứa đúng plan version và topic đã hiển thị.
-3. Với plan không có topic, nút submit phải bị khóa và UI phải cho quay lại Plan, Mapping hoặc Question Bank.
-4. Double-click và retry sau lỗi mạng phải dùng cùng `Idempotency-Key` và chỉ tạo một booking.
-5. Expertise mismatch/topic invalid trả `422`; version/slot conflict trả `409`; database thiếu schema được readiness chặn và trả `503` rõ ràng.
+```text
+001_r1_foundation
+→ 002_complete_r1_flows
+→ 003_dashboard_and_reminders
+→ 004_question_bulk_import
+→ 005_gemini_ai_assistance
+→ 006_ai_private_draft_inputs
+→ 007_ai_operations
+→ 008 migrations in repository order
+```
 
-### US-14 — Link họp và recovery
+Demo/load seeds require `ALLOW_NON_PRODUCTION_SEED=true`. Never run them in production. Never point `db:reset` at a shared or production database.
 
-1. Từ Booking Status, dùng nút nội bộ “Mở phiên phỏng vấn”. Link ngoài chỉ được hiển thị trong Session Detail khi `meetingLinkPolicy.canView=true`.
-2. Xác nhận booking cancelled/rejected/no-show không hiện form sửa link. Admin và người ngoài booking không nhận decrypted link; người ngoài nhận `404 RESOURCE_NOT_FOUND`.
-3. Báo `BROKEN` khi có link hoặc `MISSING` trong cửa sổ hai giờ. Retry phải giữ một `Idempotency-Key`; active case cũ được trả lại mà không reset deadline/audit.
-4. Kiểm tra Mentor nhận EMAIL và IN_APP `MEETING_LINK_FAILURE_REPORTED`, UI đếm ngược 15 phút và chỉ hiện form khi `canEdit=true`.
-5. Mentor thay link trong hạn: version tăng, active case được resolve và Student nhận `MEETING_LINK_READY`.
-6. Để hết hạn: worker gửi `MEETING_LINK_RECOVERY_EXPIRED` cho cả hai bên, Student thấy lựa chọn reschedule và operation case vẫn còn cho Admin.
+## 3. Required evidence
 
-If Docker Desktop is stopped, start it manually and rerun `npm run db:start`. If port 5432/1025/8025 is occupied, identify the owning local process and either stop it or change the local-only port mapping plus connection variables. Do not point `db:reset` at Neon.
+For each release candidate, record:
 
-## Persona walkthroughs
+- commit SHA and test date;
+- tester/reviewer name;
+- passed and failed steps;
+- screenshots without secrets or private data;
+- safe correlation IDs;
+- relevant database, audit, job, and outbox status;
+- open defects and their severity; and
+- final reviewer decision.
+
+Do not store passwords, tokens, raw JD text, meeting links, Mentor evidence, or private session notes in the evidence package.
+
+## 4. Main walkthroughs
 
 ### Student
 
-1. Register, verify through Mailpit, login, logout, forgot/reset, and confirm old sessions are revoked.
-2. Update Student goal/profile and deliberately submit a stale `version`; verify `VERSION_CONFLICT` instructs reload.
-3. Browse/filter questions. Toggle bookmark/practice, simulate offline, and verify optimistic state rolls back.
-4. Submit pasted JD; separately upload valid PDF, scanned PDF/image, invalid MIME, >10 MB, encrypted/corrupt/empty files, and a PDF over five pages.
-5. Observe polling and duplicate-submit protection. Retry failed extraction or paste text manually; verify the original private object is removed after success or by retention.
-6. Edit and confirm corrected text. Analyze, map an unmapped requirement, inspect evidence and `analysisVersion`, match, select up to ten questions, and create a real-ID plan.
-7. Select an approved Mentor slot. Confirm the booking references the Student-owned JD/plan, then exercise pending, confirmed, reschedule, cancel, link failure, completed, feedback apply, and review.
-8. Inspect the real Student dashboard aggregates, then confirm 24-hour/1-hour reminders are deduplicated, cancelled on schedule change, and skipped when their milestone has already passed.
+- Register, verify email, log in, log out, and reset the password.
+- Update the profile and check stale-version handling.
+- Browse questions, bookmark them, and update practice status.
+- Submit pasted text and supported JD files. Check invalid type, size, page count, encrypted, corrupt, and empty files.
+- Correct extracted text, analyse requirements, review mappings, and create a real preparation plan.
+- Book an approved Mentor slot and test confirm, reject, reschedule, cancel, meeting link, complete, feedback, and review.
+- Check dashboard values and reminder behaviour when enabled.
 
 ### Mentor
 
-1. Complete onboarding, profile/expertise, consent, and verification upload. Confirm profile/slot are not public before approval.
-2. After Admin approval, create slots in several timezones. Try past and overlapping slots and follow the field recovery instructions.
-3. Review booking context: only corrected text, topics/question groups, and goal may be visible.
-4. Confirm one of two competing requests for one slot; only one transaction may win. Exercise reject/reschedule and verify the old slot remains held until the proposal resolves.
-5. Create/update an HTTPS meeting link before the two-hour cutoff. Resolve a broken-link report within 15 minutes or leave it for operations/reschedule.
-6. Complete only after the end time and submit exactly one structured feedback.
-7. With Gemini flags enabled, create an agenda draft from a confirmed booking, edit it, and explicitly mark it used. After completion, enter non-sensitive session notes, generate a feedback draft, apply it only to untouched fields, edit/save it, then submit the official feedback once.
+- Complete profile, expertise, consent, and verification.
+- Confirm that the profile and slots are hidden before approval.
+- Create slots and reject past or overlapping times.
+- Review only the allowed JD/plan context.
+- Check that only one request can win the same slot.
+- Add or replace an HTTPS meeting link.
+- Complete a session and submit one structured feedback record.
 
-### Admin
+### Administrator
 
-1. Review Mentor evidence through the Admin-only five-minute signed link; approve/reject with reason and stale-version check.
-2. Moderate `DRAFT → IN_REVIEW → PUBLISHED → ARCHIVED`; verify invalid provenance/taxonomy cannot publish.
-3. Process failed extraction/notification, link failure, late change, no-show, dispute, and review moderation cases.
-4. Before every action, inspect impact preview. Verify only allowlisted actions appear, reason/idempotency/version are required, and no arbitrary state setter exists.
-5. Inspect audit records. Confirm password/token/JD text/meeting link/evidence never appears in errors, support details, logs, or audit metadata.
-6. Preview a mixed valid/invalid RFC 4180 CSV, filter row errors, download the error CSV, then commit only valid rows into `DRAFT`.
-7. Process an `AI_JOB_FAILED` case. Verify impact preview and safe job metadata, retry without changing business state, then create another case and disable only its feature. Confirm pending jobs of the same kind are cancelled, new jobs are blocked, and deterministic/manual flows remain available.
+- Review Mentor evidence using the protected signed link.
+- Approve or reject with a reason and version check.
+- Moderate questions through the allowed states.
+- Handle failed extraction/notification, meeting-link failure, no-show, dispute, and review cases.
+- Check impact preview, allowed actions, idempotency, version, reason, and audit records.
+- Preview a mixed CSV, download row errors, and import only valid rows.
+- Check AI job retry and feature-disable controls when Gemini is enabled.
 
-## Gemini hybrid walkthrough
+## 5. Gemini checks
 
-Run the following once with every AI flag `false`, then again with the intended feature enabled and `GEMINI_MODEL=gemini-3.5-flash-lite`. Never paste an API key into screenshots, logs or evidence.
+Run once with all AI flags disabled and once with the required flag enabled.
 
-1. Submit Vietnamese, English and mixed-language JDs. Confirm every Gemini requirement includes an exact evidence span and only an active taxonomy topic.
-2. Embed prompt-injection text in the JD and Mentor session notes. Confirm it is treated as untrusted data and does not add unknown topic, Question or Mentor IDs.
-3. Xác nhận rằng yêu cầu có độ tin cậy dưới `0,75` sẽ chặn bước tìm câu hỏi cho đến khi Student chấp nhận, chỉnh sửa hoặc giữ chưa ánh xạ. Quy tắc tính điểm vẫn là `40/30/15/15`, ngưỡng phù hợp `60` điểm và thứ tự phân xử cố định.
-4. Generate Question/Mentor explanations. Confirm all candidate IDs already belong to the hard-filtered set, score/order are unchanged, and UI labels deterministic reason separately from Gemini explanation.
-5. Simulate timeout, `429`, provider `503`, invalid JSON/schema and invalid evidence/candidate references. Confirm retry is bounded, final failure uses fallback or creates an operation case, and support details contain no raw input.
-6. Confirm feedback session notes exist only as encrypted `ai_job_private_inputs`, are deleted after success/final fallback, and are removed by the 24-hour retention cleanup if abandoned.
-7. Confirm another Student/Mentor cannot read an AI job or draft outside their owned JD/plan/booking.
-8. Record prompt/schema/model version, latency, token counts, fallback status, correlation ID and safe operation reference. Do not record raw prompt/response.
+- Every generated requirement must use an exact evidence span and active taxonomy topic.
+- Prompt-injection text must be treated as data.
+- Low-confidence requirements must wait for user review.
+- Gemini must not add unknown Question, Mentor, or topic IDs.
+- Gemini explanations must not change deterministic score or order.
+- Timeout, rate limit, provider error, invalid JSON, and invalid reference must use bounded retry and safe fallback.
+- Private draft input must be encrypted and deleted after success, final fallback, or expiry.
+- Logs and support data must not contain raw prompts or private input.
 
-## Failure and recovery matrix
+## 6. Failure and recovery
 
-| Situation | User recovery | Operator evidence |
-| --- | --- | --- |
-| Invalid field/file | Correct the named field, re-upload, or paste text | Error code + correlation ID, never request body |
-| `409` version/slot conflict | Reload latest resource or select another slot | Competing resource versions; exactly one booking winner |
-| `429` | Wait the displayed seconds | Rate-limit event without credentials |
-| Extraction failure | Safe retry twice, then paste/re-upload | Job attempts, operation case, private-file retention |
-| SMTP failure after commit | In-app state remains valid; wait/retry | Outbox attempts at 1/5 minutes, then `DEAD` case |
-| Meeting link failure | Mentor replaces within 15 minutes, otherwise reschedule/case | Case reference; never record the link |
-| Late cancel/reschedule/no-show | Wait for audited Admin decision | Impact preview, required reason, transition and audit |
-| Offline | Reconnect and explicitly retry idempotent requests | No duplicate mutation/resource |
-| Gemini unavailable/invalid output | Continue through rule-based analysis, deterministic reasons or manual form | AI job attempts, safe error code, fallback flag and operation case reference |
-| AI draft input expires | Re-enter non-sensitive session notes or continue manually | Encrypted input deletion; no notes in log/support details |
-| AI feature disabled by Admin | Continue deterministic/manual flow | Impact preview, required reason, feature control version and immutable audit |
+| Situation                | User action                               | Operator evidence                             |
+| ------------------------ | ----------------------------------------- | --------------------------------------------- |
+| Invalid field/file       | Correct and submit again                  | Safe error code and correlation ID            |
+| Version or slot conflict | Reload or choose another slot             | Resource versions and one booking winner      |
+| Rate limit               | Wait for the shown time                   | Rate-limit event without credentials          |
+| Extraction failure       | Retry twice, then paste/re-upload         | Attempts, case, and file retention status     |
+| SMTP failure             | Keep saved business state and retry email | Outbox attempts and final status              |
+| Meeting-link failure     | Replace link or reschedule                | Case reference without the link value         |
+| Offline                  | Reconnect and retry safely                | No duplicate resource                         |
+| Gemini failure           | Use rule-based or manual flow             | Safe error, fallback flag, and case reference |
 
-## Seed and release gates
+## 7. Release gates
 
-- Run reference seed twice and confirm checksum/counts do not change.
-- Confirm demo/load fail with `NODE_ENV=production` and without `ALLOW_NON_PRODUCTION_SEED=true`.
-- Confirm `db:seed:verify` reports zero invalid published questions, duplicate aliases, and orphan classifications.
-- Confirm `db:seed:verify` also reports four AI feature controls, zero expired private AI inputs, invalid AI explanations and invalid AI draft/job relations.
-- On staging, load seed must report exactly 1,000 load questions, 100 load mentors, 1,000 load slots, and 500 load bookings.
-- Capture JD corpus recall ≥80%, precision@10 ≥80%, deterministic result hash, non-OCR p95 ≤3s, and OCR p95 ≤45s.
-- Before pilot migration: backup, dry-run on a copy, document forward-fix, and perform restore drill. Pilot runs reference seed only.
-- Product Owner accepts all 30 story AC; no Critical/High defect; concurrency, RPO ≤24h, and RTO ≤4h evidence is attached.
+- Reference seed can run twice without changing checksums or counts.
+- Demo/load seed is blocked in production.
+- Seed verification finds no invalid published question, duplicate alias, or orphan classification.
+- Required Student, Mentor, and Administrator walkthroughs pass.
+- JD recall is at least 80% and precision@10 is at least 80% on the agreed set.
+- Product Owner accepts the required story criteria.
+- No Critical/High defect remains.
+- Backup, migration dry run, forward-fix plan, and restore drill are recorded before pilot data migration.
+- Required recovery targets are RPO ≤24 hours and RTO ≤4 hours.
 
-Operational dashboards should monitor latency/error rate, extraction queue depth, empty mapping rate, booking conflicts, outbox `DEAD`, unauthorized access, and retention cleanup. Direct database edits are not an operational action.
+Monitor latency, error rate, extraction queue, empty mappings, booking conflicts, dead outbox messages, unauthorised access, and retention cleanup. Do not use direct database edits as a normal operation.
+
+## 8. Information needed for a real deployment guide
+
+Before the team can claim Continuous Delivery, it must agree on:
+
+1. frontend, API, worker, database, storage, and email providers;
+2. account, environment, domain, and secret owners;
+3. deployment trigger and approval rules;
+4. artifact naming and versioning;
+5. same-origin `/api` routing;
+6. migration lock, backup, and forward-fix steps;
+7. smoke/UAT gates and rollback conditions; and
+8. monitoring and deployment notification channel.
+
+The first real deployment must record the environment, commit SHA, run ID, time, gate results, approver, deployed URL, and a redacted deployment notification.
