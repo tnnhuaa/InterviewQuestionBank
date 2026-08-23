@@ -4,7 +4,7 @@
 
 Tài liệu ghi lại các con số đường cơ sở lập kế hoạch được chọn để hoàn tất PD-01–PD-08 và giúp backlog đủ cụ thể để tinh chỉnh. Đây là **ước lượng có giả định**, chưa phải kết quả nghiên cứu hay đo kiểm đã quan sát. Mỗi con số chỉ trở thành đường cơ sở thực nghiệm sau khi thực hiện phương pháp kiểm chứng ở mục 4–6 và lưu bằng chứng.
 
-Trách nhiệm tuân theo Project Charter: Hưng (Product Owner/BA) sở hữu quyết định sản phẩm và giả định phạm vi; Gia Thành (PM/Scrum Master, initiation & estimation) điều phối hai estimate và baseline; Hùng (UI/UX) cung cấp bằng chứng trải nghiệm/nghiên cứu; Trí (PoC/E2E) cung cấp bằng chứng kiểm chứng; Luân (Architecture/technical lead) duyệt tác động kiến trúc/ADR; Tuấn Anh (Trưởng nhóm / leadership & governance) điều phối governance, configuration và readiness. Mỗi người chỉ phê duyệt trong thẩm quyền của vai trò chính.
+Trách nhiệm tuân theo Project Charter: Hưng (Product Owner / Business Analyst) sở hữu quyết định sản phẩm và giả định phạm vi; Gia Thành (Project Planning & Estimation Analyst / Full-stack Developer) lập hai estimate và phân tích baseline; Hùng (UI/UX Designer / Front-end Developer) cung cấp bằng chứng trải nghiệm/nghiên cứu; Trí (PoC / Integration & E2E Developer) cung cấp bằng chứng kiểm chứng; Luân (Architecture / Technical Lead) duyệt tác động kiến trúc/ADR; Tuấn Anh (Project Manager / Team Leader / Timekeeper) điều hành, quản lý thời gian, Kanban, configuration và readiness. Mỗi người chỉ phê duyệt trong thẩm quyền của vai trò chính.
 
 Đường cơ sở áp dụng cho thử nghiệm hẹp: **Thực tập sinh/Lập trình viên Front-end mới vào nghề tại Việt Nam**, trọng tâm JavaScript, TypeScript và React; JD có thể bằng tiếng Việt hoặc tiếng Anh.
 
@@ -29,12 +29,12 @@ Trách nhiệm tuân theo Project Charter: Hưng (Product Owner/BA) sở hữu q
 | Dự phòng | 768 × 15% | 115,2 giờ |
 | Năng lực cho phạm vi | 768 − 115,2 | khoảng 653 giờ |
 | R1 Bắt buộc | Tổng Điểm câu chuyện của 27 câu chuyện Bắt buộc | 134 SP |
-| Vận tốc cần thiết | 134 SP / 4 sprint | 33,5 SP/sprint |
+| Throughput cần thiết | 134 SP / 4 tuần execution tái dựng | 33,5 SP/tuần |
 | Tiền mặt trực tiếp | Tên miền 300.000 + hỗ trợ người tham gia 600.000 | 900.000 VNĐ |
 | Dự phòng tiền mặt | 900.000 × 25% | 225.000 VNĐ |
 | Trần tiền mặt | Tiền trực tiếp + dự phòng | 1.125.000 VNĐ |
 
-Năng lực không tự chứng minh backlog khả thi. Điểm câu chuyện là kích thước tương đối, không quy đổi trực tiếp sang giờ; 33,5 SP/sprint chỉ là thông lượng cần thiết để so với vận tốc thực tế. Working estimate 606 giờ và guardrail 650 giờ của thành viên 1 được lập từ 20 câu chuyện Bắt buộc cũ; phải cập nhật lại theo 27 câu chuyện/134 SP trước cam kết phát hành.
+Năng lực không tự chứng minh backlog khả thi. Điểm câu chuyện là kích thước tương đối, không quy đổi trực tiếp sang giờ; 33,5 SP/tuần chỉ là throughput cần thiết để so với dữ liệu Done thực tế. Working estimate 606 giờ và guardrail 650 giờ của thành viên 1 được lập từ 20 câu chuyện Bắt buộc cũ; phải cập nhật lại theo 27 câu chuyện/134 SP trước cam kết phát hành.
 
 ## 4. Phương pháp hiệu chỉnh số liệu sản phẩm và thử nghiệm
 
@@ -98,10 +98,10 @@ Năng lực không tự chứng minh backlog khả thi. Điểm câu chuyện l�
 ## 6. Phương pháp hiệu chỉnh ước lượng, năng lực và chi phí
 
 1. Nhóm phát triển thực hiện Planning Poker cho từng câu chuyện sau khi đạt Định nghĩa Sẵn sàng; dùng Fibonacci 1/2/3/5/8 và tách câu chuyện 8 SP nếu còn nhiều nguồn bất định.
-2. Sau 2–3 sprint, tính khoảng vận tốc từ SP đã hoàn thành và chấp nhận, không tính phần làm dở; dùng vận tốc chậm/nhanh để dựng đường “chắc chắn có/có thể có”.
+2. Sau 2–3 tuần có dữ liệu, tính khoảng throughput từ SP đã hoàn thành và chấp nhận, không tính phần làm dở; dùng throughput thấp/cao để dựng đường “chắc chắn có/có thể có”.
 3. Theo dõi công sức thực tế theo luồng công việc để kiểm tra năng lực khoảng 653 giờ, nhưng không dùng giờ để sửa Điểm câu chuyện bằng công thức cố định; đồng thời cập nhật cả hai estimate độc lập khi phạm vi thay đổi từ 20 lên 27 câu chuyện Bắt buộc.
 4. Người sở hữu chi phí thu trang giá/báo giá chính thức có ngày truy cập cho tên miền, máy chủ/lưu trữ, email và công cụ OCR nếu thay đường cơ sở nội bộ.
-5. Dự báo lại mỗi sprint; bắt buộc có yêu cầu thay đổi nếu dự báo vượt 8 tuần, khoảng 653 giờ hoặc 1.125.000 VNĐ.
+5. Dự báo lại mỗi tuần hoặc khi luồng thay đổi đáng kể; bắt buộc có yêu cầu thay đổi nếu dự báo vượt 8 tuần, khoảng 653 giờ hoặc 1.125.000 VNĐ.
 
 ## 7. Bằng chứng bắt buộc trước khi thay ước lượng
 
@@ -111,7 +111,7 @@ Năng lực không tự chứng minh backlog khả thi. Điểm câu chuyện l�
 - Báo cáo đánh giá ánh xạ với ví dụ nhầm lẫn, độ bao phủ, precision@10 và mã băm kiểm tra lặp lại.
 - Kịch bản khả dụng, kết quả tác vụ, ghi chú quan sát và mức nghiêm trọng của vấn đề.
 - Định nghĩa sự kiện đặt lịch/lời nhắc, bảng theo dõi/bản xuất và bản ghi quyết định.
-- Bản ghi Planning Poker, khoảng vận tốc sprint, công sức/chi phí thực tế và dự báo lại.
+- Bản ghi Planning Poker, khoảng throughput theo tuần, công sức/chi phí thực tế và dự báo lại.
 - Bản ghi phê duyệt tương ứng của PO, Kiến trúc, Quyền riêng tư/Vận hành và Nhà tài trợ.
 
 ## 8. Nguyên tắc áp dụng

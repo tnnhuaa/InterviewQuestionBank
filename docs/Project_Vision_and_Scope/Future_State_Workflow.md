@@ -4,7 +4,7 @@
 
 Trạng thái tương lai mô tả quy trình nghiệp vụ hộp đen của MVP: Sinh viên đưa một Mô tả công việc (JD) vào hệ thống, kiểm tra văn bản, nhận kế hoạch chuẩn bị có ánh xạ câu hỏi, rồi tự luyện hoặc đặt Cố vấn và dùng phản hồi để cập nhật kế hoạch. Trường/lược đồ/ràng buộc kỹ thuật thuộc tài liệu Kiến trúc.
 
-Theo phân công trong Project Charter, Hưng (Product Owner/BA) chịu trách nhiệm quy trình nghiệp vụ; Hùng (UI/UX) kiểm tra tính nhất quán trải nghiệm/nguyên mẫu; Trí (PoC/E2E) kiểm chứng khả thi đầu-cuối; Luân (Architecture/technical lead) kiểm tra ràng buộc kiến trúc; Tuấn Anh (Trưởng nhóm / leadership & governance) điều phối tích hợp/readiness; Gia Thành (PM/Scrum Master, initiation & estimation) theo dõi tác động đến baseline/lịch/rủi ro.
+Theo phân công trong Project Charter, Hưng (Product Owner / Business Analyst) chịu trách nhiệm quy trình nghiệp vụ; Hùng (UI/UX Designer / Front-end Developer) kiểm tra trải nghiệm/nguyên mẫu và giao diện; Trí (PoC / Integration & E2E Developer) kiểm chứng khả thi đầu-cuối; Luân (Architecture / Technical Lead) kiểm tra ràng buộc kiến trúc; Tuấn Anh (Project Manager / Team Leader / Timekeeper) điều phối thời gian, Kanban, tích hợp và readiness; Gia Thành (Project Planning & Estimation Analyst / Full-stack Developer) phân tích tác động đến baseline và tham gia implementation.
 
 ## 2. Kịch bản chính
 

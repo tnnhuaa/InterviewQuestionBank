@@ -4,7 +4,7 @@
 
 Tài liệu xác định tầm nhìn sản phẩm, người dùng mục tiêu, vấn đề cần giải quyết, mục tiêu sản phẩm, ranh giới MVP, giả định, ràng buộc và hướng phát triển tương lai. Đây là đầu vào cho Danh sách công việc sản phẩm (Product Backlog), Quy trình Tương lai, nguyên mẫu, kiến trúc, PoC và UAT.
 
-Theo Project Charter, Hưng là Product Owner/BA và chịu trách nhiệm tài liệu này. Hùng (UI/UX) được tham vấn về trải nghiệm/nghiên cứu; Trí (PoC/E2E) về kiểm chứng khả thi; Luân (Architecture/technical lead) về kiến trúc; Tuấn Anh (Trưởng nhóm / leadership & governance) về quản trị, tích hợp và readiness; Gia Thành (PM/Scrum Master, initiation & estimation) về baseline, ước lượng, lịch và rủi ro. Việc tham vấn không thay quyền sở hữu phạm vi và backlog của Product Owner.
+Theo Project Charter, Hưng là Product Owner / Business Analyst và chịu trách nhiệm tài liệu này. Hùng (UI/UX Designer / Front-end Developer) được tham vấn về trải nghiệm/nghiên cứu; Trí (PoC / Integration & E2E Developer) về kiểm chứng khả thi; Luân (Architecture / Technical Lead) về kiến trúc; Tuấn Anh (Project Manager / Team Leader / Timekeeper) về quản trị, thời gian, Kanban, tích hợp và readiness; Gia Thành (Project Planning & Estimation Analyst / Full-stack Developer) về baseline, ước lượng và tác động kế hoạch. Việc tham vấn không thay quyền sở hữu phạm vi và backlog của Product Owner.
 
 ## 2. Tổng quan sản phẩm
 
@@ -186,7 +186,7 @@ Quy trình nghiệp vụ hiện tại là: đọc JD → tự suy luận nội d
 
 ## 12. Ràng buộc
 
-- Đường cơ sở lập kế hoạch được chấp nhận cho 8 tuần: 6 thành viên × 16 giờ/tuần, khoảng 653 giờ sau dự phòng 15%; 134 SP ban đầu vẫn cần Nhóm phát triển ước lượng đồng thuận bằng Planning Poker và xác lập khoảng vận tốc trước khi cam kết chu kỳ sprint.
+- Đường cơ sở lập kế hoạch được chấp nhận cho 8 tuần: 6 thành viên × 16 giờ/tuần, khoảng 653 giờ sau dự phòng 15%; 134 SP ban đầu vẫn cần Nhóm phát triển ước lượng đồng thuận bằng Planning Poker và xác lập khoảng throughput trước khi cam kết phạm vi phát hành.
 - Đường cơ sở đầu vào: dán ≤50.000 ký tự hoặc một PDF/PNG/JPEG ≤10 MB; PDF ≤5 trang. Trích xuất trực tiếp chạy trước; OCR nội bộ tiếng Việt/Anh có thời hạn 60 giây, tối đa 2 lần chạy và 2 tác vụ đồng thời/tiến trình.
 - Chất lượng OCR phụ thuộc tệp/ảnh; Sinh viên hiệu chỉnh là cổng bắt buộc trước phân tích.
 - Ánh xạ chỉ có ý nghĩa trong bộ phân loại và Ngân hàng câu hỏi thử nghiệm; không tuyên bố bao phủ mọi nghề nghiệp.

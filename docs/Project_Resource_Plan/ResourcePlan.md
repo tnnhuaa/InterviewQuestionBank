@@ -12,20 +12,20 @@ Baseline này dùng để kiểm tra tính khả thi của MVP; không phải ca
 | Capacity danh nghĩa | 6 x 8 x 16 = 768 giờ |
 | Reserve | 15% = 115 giờ |
 | Capacity cam kết cho scope | **~653 giờ** |
-| Nhịp làm việc | Sprint 2 tuần; review/reforecast ở cuối mỗi sprint |
+| Nhịp làm việc | Kanban theo tuần; replenishment/review mỗi tuần hoặc khi cần chốt thay đổi |
 
-Reserve bảo vệ discovery, review, test, defect, tài liệu, học công nghệ và rủi ro. Một story chỉ được đưa vào sprint sau khi đạt Definition of Ready và có estimate của người thực hiện.
+Reserve bảo vệ discovery, review, test, defect, tài liệu, học công nghệ và rủi ro. Một story chỉ được kéo vào cột Ready sau khi đạt Definition of Ready và có estimate của người thực hiện.
 
 ## 2. Phân công và ownership
 
 | Thành viên | Capacity danh nghĩa | Ownership chính | Hỗ trợ / kiểm tra chéo |
 | --- | ---: | --- | --- |
-| Gia Thành | 128 giờ | PM/Scrum Master, initiation & estimation; plan, risk, cost/time/resource, release coordination | Review requirement, UAT, documentation |
-| Tuấn Anh | 128 giờ | Trưởng nhóm / leadership & governance; scope review, stakeholder alignment | Review chất lượng delivery, issue escalation và priority quyết định |
-| Hùng | 128 giờ | UI/UX; research, workflow, clickable prototype, usability evidence | UI acceptance và accessibility |
-| Hưng | 128 giờ | Product Owner/BA; scope, backlog, acceptance criteria, content/business rule | Discovery và UAT acceptance |
-| Trí | 128 giờ | PoC/E2E; seed data, integration tests, technical risk evidence | Core flow implementation |
-| Luân | 128 giờ | Architecture/technical lead; ADR, stack, security/consistency/reliability design | PoC technical review |
+| Tuấn Anh | 128 giờ | Project Manager / Team Leader / Timekeeper; phân vai, giao việc, deadline, Kanban, escalation và delivery | Review/merge, xác nhận Done, stakeholder alignment và quyết định điều hành |
+| Gia Thành | 128 giờ | Project Planning & Estimation Analyst / Full-stack Developer; charter, plan, cost/time/resource, estimates và implementation | Review requirement, UAT và tài liệu |
+| Hưng | 128 giờ | Product Owner / Business Analyst; scope, backlog, acceptance criteria, content/business rule | Discovery và UAT acceptance |
+| Luân | 128 giờ | Architecture / Technical Lead; ADR, stack, security/consistency/reliability design | PoC và implementation technical review |
+| Hùng | 128 giờ | UI/UX Designer / Front-end Developer; research, workflow, prototype, usability và giao diện | UI acceptance và accessibility |
+| Trí | 128 giờ | PoC / Integration & E2E Developer; seed data, integration tests và technical risk evidence | Core flow implementation |
 
 Mỗi người chịu trách nhiệm deliverable được giao trong WBS/backlog; ownership của Product, Architecture, Quality, Security/Privacy và Release không được để trống. Khi bắt đầu build MVP, các vai trò front-end, back-end, QA, DevOps và content được phân bổ theo work package thay vì giả định một người cho một chức danh cố định.
 
@@ -45,7 +45,7 @@ Mỗi người chịu trách nhiệm deliverable được giao trong WBS/backlog
 
 | Nhu cầu | Lựa chọn baseline | Mục đích / kiểm soát |
 | --- | --- | --- |
-| Backlog và quyết định | GitHub Issues/Projects hoặc công cụ tương đương | Story, acceptance, sprint, defect, decision log |
+| Backlog và quyết định | Trello Kanban/GitHub hoặc công cụ tương đương | Story, acceptance, trạng thái luồng, defect và decision log |
 | Repository | Git + GitHub, protected main, Pull Request review | Version control, review, traceability |
 | Design | Figma | Prototype, usability evidence, handoff |
 | CI/CD | GitHub Actions hoặc pipeline tương đương | Build, test, deploy; secret không nằm trong repo |
@@ -58,7 +58,7 @@ Tên nhà cung cấp runtime được chốt ở ADR-001 trong bảng Architectu
 
 ## 5. Quy tắc vận hành nguồn lực
 
-- Theo dõi actual effort, carry-over, blocker và velocity theo sprint; reforecast khi carry-over hoặc velocity thấp kéo dài hai sprint.
+- Theo dõi actual effort nếu có, blocker, WIP, cycle time và throughput theo tuần; reforecast khi công việc bị kẹt hoặc throughput thấp kéo dài hai tuần.
 - Ưu tiên cắt Should/Could trước; không cắt kiểm soát access, consistency, audit, test hay UAT của core loop.
 - Mọi thay đổi làm forecast vượt khoảng 653 giờ hoặc 1.125.000 VND cash budget cần change request và quyết định PO/Sponsor. Trong cửa sổ 8 tuần, chỉ core loop JD-to-feedback và các kiểm soát chất lượng bắt buộc được ưu tiên; Should/Could hoặc hạng mục không cần cho pilot phải được dời sau release.
 - Pair review cho booking concurrency, authorization, notification và deployment; tài liệu/ADR giảm phụ thuộc vào một người.
@@ -71,7 +71,7 @@ Tên nhà cung cấp runtime được chốt ở ADR-001 trong bảng Architectu
 | Phụ thuộc một thành viên | Chỉ một người xử lý blocker/domain | PR review, docs, pairing, WIP limit | Reassign và giảm scope không cốt lõi |
 | Thiếu mentor/student thử nghiệm | Không có lịch discovery/UAT | Tuyển và đặt lịch từ tuần 1 | Concierge pilot có kiểm soát |
 | Provider/quota lỗi | Alert quota/outage | Adapter, retry, monitor | In-app/manual notification |
-| Capacity thấp hơn forecast | Carry-over hai sprint | Re-estimate, bảo vệ reserve | Cắt Should/Could, xin quyết định Go/No-Go |
+| Capacity thấp hơn forecast | Công việc bị kẹt hoặc throughput thấp hai tuần | Re-estimate, bảo vệ reserve | Cắt Should/Could, xin quyết định Go/No-Go |
 
 ## 7. Tham chiếu
 

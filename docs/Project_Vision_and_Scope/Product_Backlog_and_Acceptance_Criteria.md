@@ -2,7 +2,7 @@
 
 ## 1. Mục đích
 
-Tài liệu chuyển phạm vi sản phẩm lấy JD làm điểm bắt đầu và quy trình mục tiêu đã phê duyệt thành Product Backlog có thứ tự và có thể kiểm thử. Theo Project Charter trên `main`, **Hưng là Product Owner/BA**, chịu trách nhiệm Vision & Scope, Product Backlog, acceptance criteria và Future-State Workflow; Product Owner sắp thứ tự backlog và chấp nhận story. Tài liệu xác định câu chuyện người dùng, độ ưu tiên, phụ thuộc, Điểm câu chuyện (Story Point), tiêu chí chấp nhận, yêu cầu chất lượng, truy vết và kiểm soát phát hành. Backlog phải đầy đủ và Product Owner phải sắp thứ tự ưu tiên theo giá trị.
+Tài liệu chuyển phạm vi sản phẩm lấy JD làm điểm bắt đầu và quy trình mục tiêu đã phê duyệt thành Product Backlog có thứ tự và có thể kiểm thử. Theo Project Charter trên `main`, **Hưng là Product Owner / Business Analyst**, chịu trách nhiệm Vision & Scope, Product Backlog, acceptance criteria và Future-State Workflow; Product Owner sắp thứ tự backlog và chấp nhận story. Tài liệu xác định câu chuyện người dùng, độ ưu tiên, phụ thuộc, Điểm câu chuyện (Story Point), tiêu chí chấp nhận, yêu cầu chất lượng, truy vết và kiểm soát phát hành. Backlog phải đầy đủ và Product Owner phải sắp thứ tự ưu tiên theo giá trị.
 
 ### 1.1 Vai trò áp dụng cho backlog
 
@@ -10,12 +10,12 @@ Bảng này áp dụng phân công từ Charter, không tạo vai trò mới và
 
 | Thành viên | Vai trò chính theo Charter | Trách nhiệm đối với backlog |
 |---|---|---|
-| Gia Thành | PM/Scrum Master, initiation & estimation | Điều phối refinement/Planning Poker, theo dõi estimate, lịch, risk và tác động baseline |
-| Hùng | UI/UX | Kiểm chứng workflow/usability và duy trì truy vết prototype với story/acceptance criteria |
-| Hưng | Product Owner/BA | Sở hữu và sắp thứ tự backlog, làm rõ yêu cầu, quyết định trade-off và chấp nhận/reject story |
-| Trí | PoC/E2E | Kiểm chứng tính khả thi, dữ liệu/test đầu-cuối và bằng chứng cho technical enabler |
-| Luân | Architecture/technical lead | Duyệt tác động kiến trúc, ADR, NFR và ràng buộc kỹ thuật/bảo mật |
-| Tuấn Anh | Trưởng nhóm / leadership & governance | Điều phối liên workstream, phê duyệt scope/priority, kiểm soát cấu hình/tài liệu và release readiness |
+| Tuấn Anh | Project Manager / Team Leader / Timekeeper | Điều hành nhóm, quản lý deadline và Kanban, xử lý blocker/escalation, review/merge và xác nhận Done |
+| Gia Thành | Project Planning & Estimation Analyst / Full-stack Developer | Chuẩn bị dữ liệu refinement/Planning Poker, cập nhật estimate và tác động baseline; tham gia implementation Full-stack |
+| Hưng | Product Owner / Business Analyst | Sở hữu và sắp thứ tự backlog, làm rõ yêu cầu, quyết định trade-off và chấp nhận/reject story |
+| Luân | Architecture / Technical Lead | Duyệt tác động kiến trúc, ADR, NFR và ràng buộc kỹ thuật/bảo mật |
+| Hùng | UI/UX Designer / Front-end Developer | Kiểm chứng workflow/usability, duy trì truy vết prototype và phát triển giao diện |
+| Trí | PoC / Integration & E2E Developer | Kiểm chứng tính khả thi, tích hợp, dữ liệu/test đầu-cuối và bằng chứng cho technical enabler |
 
 ### 1.2 Ranh giới bản phát hành
 
@@ -111,11 +111,11 @@ Lựa chọn R1 chỉ trở thành cam kết bàn giao sau khi Product Owner ph�
 - Điểm câu chuyện biểu thị kích thước tổng thể tương đối, không phải số giờ.
 - Ước lượng dùng dãy Fibonacci `1, 2, 3, 5, 8`; khoảng cách lớn hơn thể hiện độ bất định cao hơn. Đây là ước lượng ban đầu bằng so sánh/phân rã và cần xác nhận bằng Planning Poker.
 - Mỗi SP bao phủ một câu chuyện dọc hoàn chỉnh, gồm hiện thực, kiểm thử, tài liệu và bằng chứng chấp nhận. EN-01–EN-09 là cổng chất lượng/bàn giao đã nằm trong các câu chuyện liên quan; nếu lập lịch riêng cho một công việc hỗ trợ thì phải ước lượng riêng và kiểm tra lại để tránh tính hai lần.
-- `US-03 = 2 SP` là mốc cho phần lưu dữ liệu nhỏ; công việc đầu-cuối có giới hạn thường là `3–5 SP`; `8 SP` biểu thị độ bất định hoặc cần tách. US-01, US-12, US-13, US-19, US-23, US-25, US-27 và US-28 phải được xem xét tách trước khi cam kết sprint.
+- `US-03 = 2 SP` là mốc cho phần lưu dữ liệu nhỏ; công việc đầu-cuối có giới hạn thường là `3–5 SP`; `8 SP` biểu thị độ bất định hoặc cần tách. US-01, US-12, US-13, US-19, US-23, US-25, US-27 và US-28 phải được xem xét tách trước khi kéo vào Ready.
 
 | Nhóm backlog | Số câu chuyện | SP ban đầu | Cách diễn giải kế hoạch |
 |---|---:|---:|---|
-| R1 Bắt buộc | 27 | 134 | Cần trung bình `134 / 4 = 33,5 SP/sprint`; chỉ kết luận khả thi sau khi có khoảng vận tốc và lập lại đường cơ sở |
+| R1 Bắt buộc | 27 | 134 | Cần trung bình `134 / 4 = 33,5 SP/tuần` trong bốn tuần execution tái dựng; chỉ kết luận khả thi sau khi có khoảng throughput và lập lại đường cơ sở |
 | R1 Mở rộng | 2 | 8 | US-21 = 5, US-22 = 3; chỉ chọn khi phần Bắt buộc và dự phòng an toàn |
 | Tương lai/Có thể | 1 | 8 | US-23; không thuộc R1 |
 | Toàn bộ Product Backlog | 30 | 150 | Ước lượng kích thước tương đối đang chờ Nhóm phát triển xác nhận |
@@ -275,15 +275,15 @@ Các điều kiện này bảo đảm hạng mục chỉ được xem là hoàn 
 
 ## 9. Kế hoạch phát hành
 
-R1 dự kiến gồm bốn sprint, mỗi sprint hai tuần, từ 29/06/2026 đến 23/08/2026. Kế hoạch theo ngày cố định phải dùng PBI đã ước lượng/ưu tiên và khoảng vận tốc của nhóm.
+R1 dùng Kanban trong cửa sổ tám tuần từ 29/06/2026 đến 23/08/2026. Phần execution được tái dựng theo bốn tuần từ 27/07 đến 23/08; kế hoạch theo ngày cố định phải dùng PBI đã ước lượng/ưu tiên và khoảng throughput của nhóm.
 
 | Nhóm backlog | Câu chuyện | SP ban đầu | Ràng buộc kế hoạch |
 |---|---:|---:|---|
-| R1 Bắt buộc | US-01–US-20 và US-24–US-30 | 134 | Cần `33,5 SP/sprint`; chưa cam kết đến khi khoảng vận tốc và đường cơ sở năng lực xác nhận tính khả thi |
+| R1 Bắt buộc | US-01–US-20 và US-24–US-30 | 134 | Cần `33,5 SP/tuần` trong bốn tuần execution tái dựng; chưa cam kết đến khi khoảng throughput và đường cơ sở năng lực xác nhận tính khả thi |
 | R1 Mở rộng | US-21–US-22 | 8 | Chỉ chọn sau khi phần Bắt buộc và dự phòng an toàn |
 | Tương lai | US-23 | 8 | Không thuộc R1 |
 
-Đường “chắc chắn có/có thể có” chưa được đặt đến khi Nhóm phát triển xác nhận ước lượng và cung cấp vận tốc chậm/nhanh. Thay đổi lấy JD làm điểm bắt đầu tăng phạm vi Bắt buộc thêm 42 SP ban đầu; không được kế thừa kết luận khả thi cũ ở mức 92 SP nếu chưa ước lượng lại.
+Đường “chắc chắn có/có thể có” chưa được đặt đến khi Nhóm phát triển xác nhận ước lượng và cung cấp khoảng throughput thấp/cao. Thay đổi lấy JD làm điểm bắt đầu tăng phạm vi Bắt buộc thêm 42 SP ban đầu; không được kế thừa kết luận khả thi cũ ở mức 92 SP nếu chưa ước lượng lại.
 
 ### 9.1 Bản đồ câu chuyện
 
@@ -313,14 +313,14 @@ Các giá trị được chọn là ước lượng lập kế hoạch cho thử
 
 ## 11. Tinh chỉnh backlog và kiểm soát thay đổi
 
-Hưng với vai trò Product Owner/BA tổ chức tinh chỉnh ít nhất một lần mỗi sprint với đại diện Phát triển, Kiến trúc, UX và QA. Mỗi thay đổi được duyệt phải cập nhật câu chuyện, tiêu chí chấp nhận, thứ tự, phụ thuộc, ước lượng, truy vết, hợp đồng kiến trúc/nguyên mẫu và tác động phát hành liên quan.
+Hưng với vai trò Product Owner / Business Analyst tổ chức tinh chỉnh ít nhất mỗi tuần một lần hoặc khi cần bổ sung công việc vào Kanban, với đại diện Phát triển, Kiến trúc, UX và QA. Mỗi thay đổi được duyệt phải cập nhật câu chuyện, tiêu chí chấp nhận, thứ tự, phụ thuộc, ước lượng, truy vết, hợp đồng kiến trúc/nguyên mẫu và tác động phát hành liên quan.
 
-Một câu chuyện chỉ Sẵn sàng để chọn vào sprint khi:
+Một câu chuyện chỉ được kéo vào cột Ready khi:
 
 1. tác nhân, giá trị, ưu tiên, phụ thuộc và tiêu chí chấp nhận theo Điều kiện/Khi/Kết quả đã rõ;
 2. quy trình/nguyên mẫu và đầu vào kỹ thuật đã sẵn có;
 3. phần hiện thực tuân PD-01–PD-08, hoặc có bản ghi thay đổi đã duyệt và bằng chứng thay thế;
 4. Nhóm phát triển xác nhận ước lượng bằng dãy Fibonacci đã thống nhất;
-5. câu chuyện 8 điểm được tách hoặc được chấp nhận là ngoại lệ trong một sprint;
+5. câu chuyện 8 điểm được tách hoặc được chấp nhận là ngoại lệ trước khi kéo vào Ready;
 6. có dữ liệu kiểm thử và đầu ra mong đợi cho câu chuyện trích xuất/phân tích/ánh xạ;
-7. Product Owner, lập trình viên và QA đồng ý câu chuyện có thể hiện thực và kiểm thử trong sprint.
+7. Product Owner, lập trình viên và QA đồng ý câu chuyện có thể hiện thực và kiểm thử trong giới hạn WIP đã đặt.

@@ -25,7 +25,7 @@ Thị trường đã chứng minh nhu cầu đối với kho câu hỏi, peer pr
 | LeetCode Study Plans | Mạnh về coding | Không | Không | Chấm bài kỹ thuật | Luyện thuật toán/coding |
 | Mentori Vietnam | Nội dung nghề nghiệp | Có | Có/tuỳ dịch vụ | Tuỳ mentor | Mentoring rộng tại Việt Nam |
 | Mentora | Nội dung/lộ trình | Có | Có/tuỳ dịch vụ | Tuỳ chương trình | Mentoring và đào tạo |
-| Sản phẩm đề xuất | Ánh xạ từ JD, có lý do | Mentor đã duyệt | Có, gắn JD/plan | Rubric + next action | JD-first, entry-level Việt Nam |
+| Sản phẩm đề xuất | Ánh xạ từ JD, có lý do và deterministic guardrail | Mentor đã duyệt | Có, gắn JD/plan | Rubric + next action | JD-first, entry-level Việt Nam |
 
 ## 4. Đánh giá đối thủ
 
@@ -69,10 +69,12 @@ Thị trường đã chứng minh nhu cầu đối với kho câu hỏi, peer pr
 ## 6. Lợi thế cần chứng minh
 
 1. Người dùng chuyển JD thành text hiệu chỉnh và preparation plan dễ hơn cách tự tổng hợp.
-2. Requirement detection và Question mapping đạt ngưỡng trên blind JD, đồng thời giải thích được.
+2. Requirement detection và Question mapping đạt ngưỡng trên blind JD, giải thích được và vẫn hoạt động bằng rule/manual flow khi AI provider lỗi.
 3. Booking với mentor có tỷ lệ hoàn tất đủ cao khi mang theo JD/plan context.
 4. Feedback theo rubric tạo next action rõ hơn feedback tự do và quay lại đúng plan.
 5. Mức giá phù hợp cho sinh viên và đủ hấp dẫn mentor chỉ được nghiên cứu sau pilot miễn phí.
+
+Các giả thuyết này được truy vết sang Business Case, KPI và Go/Pivot/Stop criteria trong [Project Proposal](Project_Proposal_Draft.md); chúng chưa phải lợi thế đã được chứng minh.
 
 ## 7. Nguồn
 

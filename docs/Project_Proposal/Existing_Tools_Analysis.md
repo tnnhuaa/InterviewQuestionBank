@@ -47,7 +47,7 @@ Mỗi chuyển tiếp phụ thuộc vào thao tác thủ công. Dữ liệu về
 | Khả năng | Tổ hợp công cụ hiện tại | Interview Practice Platform MVP |
 |---|---|---|
 | JD intake/extraction | Đọc/copy/OCR thủ công bằng công cụ rời | Paste/file, direct extraction/OCR fallback và correction gate |
-| Requirement/Question mapping | Người học tự suy luận | Taxonomy/alias + versioned rule score, source/topic/reason |
+| Requirement/Question mapping | Người học tự suy luận | Taxonomy/alias + versioned rule score; Gemini hỗ trợ sau feature flag/validation; source/topic/reason |
 | Preparation plan | Notes/spreadsheet rời | Plan truy vết về JD/requirement/Question và next action |
 | Question taxonomy | Mỗi nguồn một cách phân loại | Một taxonomy theo vị trí/chủ đề/loại/mức độ |
 | Theo dõi luyện tập | Ghi chú thủ công | Bookmark và trạng thái luyện cơ bản |
@@ -59,7 +59,7 @@ Mỗi chuyển tiếp phụ thuộc vào thao tác thủ công. Dữ liệu về
 
 ## 6. Hàm ý cho business case
 
-MVP có giá trị ban đầu nếu giảm được ma sát từ JD đến preparation plan, kể cả khi người dùng chưa đặt Mentor. Nhóm phải đo task completion JD-to-plan, extraction success, blind-set recall/precision@10, plan activation, booking conversion/completion và feedback quality. Nếu plan hữu ích nhưng người dùng không chuyển sang Mentor, nhóm đánh giá lại value proposition/nguồn cung marketplace thay vì kết luận toàn bộ sản phẩm không có giá trị.
+MVP có giá trị ban đầu nếu giảm được ma sát từ JD đến preparation plan, kể cả khi người dùng chưa đặt Mentor. Nhóm phải đo task completion JD-to-plan, extraction success, blind-set recall/precision@10, plan activation, booking conversion/completion và feedback quality. Gemini chỉ là lớp hỗ trợ; rule/manual flow phải giữ được core value khi provider lỗi. Nếu plan hữu ích nhưng người dùng không chuyển sang Mentor, nhóm đánh giá lại value proposition/nguồn cung marketplace thay vì kết luận toàn bộ sản phẩm không có giá trị. Business case và logic đầu tư đầy đủ nằm trong [Project Proposal](Project_Proposal_Draft.md).
 
 ## 7. Giới hạn bằng chứng
 

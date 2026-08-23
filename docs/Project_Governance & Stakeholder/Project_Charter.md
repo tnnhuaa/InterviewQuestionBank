@@ -6,7 +6,8 @@
 | --- | --- |
 | Sponsor | Giảng viên Ngô Huy Biên và Ngô Ngọc Đăng Khoa (phê duyệt ở mốc Go/No-Go) |
 | Product Owner | Hưng - Vision, scope và backlog |
-| Project Manager / Scrum Master | Gia Thành - điều phối baseline, nguồn lực, tiến độ và rủi ro |
+| Project Manager / Team Leader / Timekeeper | Tuấn Anh - điều hành nhóm, quản lý thời gian, Kanban, escalation và delivery |
+| Project Planning & Estimation Analyst / Full-stack Developer | Gia Thành - lập baseline, nguồn lực, chi phí, ước lượng và tham gia implementation |
 | Nhóm thực hiện | Gia Thành, Hùng, Hưng, Trí, Luân, Tuấn Anh |
 | Phiên bản | 1.0 - planning baseline |
 | Ngày baseline | 14/08/2026 |
@@ -32,14 +33,14 @@ MVP bao gồm authentication/RBAC, JD ingestion, text extraction/OCR, requiremen
 
 | Thành viên | Vai trò chính | Trách nhiệm / đầu ra |
 | --- | --- | --- |
-| Gia Thành | PM/Scrum Master, initiation & estimation | Charter, Resource Plan, Cost-Time-Resources, hai estimate độc lập, theo dõi baseline |
-| Tuấn Anh | Trưởng nhóm / leadership & governance | Điều phối nhóm, phê duyệt scope/priority, hỗ trợ escalation, theo dõi độ sẵn sàng delivery |
-| Hùng | UI/UX | Clickable prototype, workflow và bằng chứng usability |
-| Hưng | Product Owner/BA | Vision & Scope, Product Backlog, acceptance criteria, Future-State Workflow |
-| Trí | PoC/E2E | PoC core flow, dữ liệu seed, test và kết quả năm rủi ro kỹ thuật |
-| Luân | Architecture/technical lead | Technology stack, ADR, architecture, hỗ trợ kỹ thuật cho PoC |
+| Tuấn Anh | Project Manager / Team Leader / Timekeeper | Phân vai, giao việc, quản lý deadline và Kanban, chốt quyết định, escalation, review/merge và xác nhận Done |
+| Gia Thành | Project Planning & Estimation Analyst / Full-stack Developer | Charter, Resource Plan, Cost-Time-Resources, hai estimate độc lập; phát triển mentor verification, availability, JD service và notification |
+| Hưng | Product Owner / Business Analyst | Vision & Scope, Product Backlog, acceptance criteria, Future-State Workflow và chấp nhận User Story |
+| Luân | Architecture / Technical Lead | Technology stack, ADR, architecture và hỗ trợ kỹ thuật cho PoC/implementation |
+| Hùng | UI/UX Designer / Front-end Developer | Clickable prototype, workflow, bằng chứng usability và giao diện front-end |
+| Trí | PoC / Integration & E2E Developer | PoC core flow, dữ liệu seed, tích hợp, kiểm thử đầu-cuối và bằng chứng rủi ro kỹ thuật |
 
-Sponsor phê duyệt charter, phạm vi baseline và thay đổi lớn. Trưởng nhóm hỗ trợ PM/PO trong điều phối, escalation và cam kết delivery. Product Owner ưu tiên backlog và chấp nhận story. PM/Scrum Master quản lý lịch, dependency, risk và escalation. Quyết định kỹ thuật phải tuân theo architecture/ADR đã được chấp nhận.
+Sponsor phê duyệt charter, phạm vi baseline và thay đổi lớn. Tuấn Anh giữ quyền điều hành dự án: phân vai, giao việc, quản lý deadline và luồng Kanban, xử lý escalation và chốt delivery. Gia Thành lập, phân tích và cập nhật dữ liệu planning/estimation để PM ra quyết định, đồng thời tham gia phát triển Full-stack. Product Owner ưu tiên backlog và chấp nhận User Story. Quyết định kỹ thuật phải tuân theo architecture/ADR đã được chấp nhận.
 
 ## 4. Giả định và ràng buộc
 

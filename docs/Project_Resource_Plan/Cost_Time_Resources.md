@@ -67,7 +67,7 @@ Reforecast và escalation khi forecast vượt 8 tuần, vượt khoảng 653 gi
 
 - Reserve 15% trong capacity và contingency 15% trong effort chỉ dùng cho rủi ro/uncertainty đã nêu; không tự động dùng để thêm scope.
 - Cash contingency chỉ do PM ghi nhận, Product Owner xác nhận và Sponsor phê duyệt khi phát sinh.
-- Theo dõi committed/actual cash, actual effort, forecast-to-complete và variance mỗi sprint.
+- Theo dõi committed/actual cash, actual effort nếu có, forecast-to-complete và variance theo tuần hoặc khi baseline thay đổi.
 - Nếu cần giữ deadline, cắt US-21–23 (Should/Could) trước. Không đưa AI, video hoặc payment vào MVP để "tăng giá trị" mà không rebaseline.
 
 ## 6. Tham chiếu phương pháp

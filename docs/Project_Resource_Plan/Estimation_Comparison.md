@@ -17,7 +17,7 @@ Tài liệu so sánh hai estimate độc lập cho **baseline 8 tuần**: core l
 | Team capacity | 6 người x 16 giờ x 8 tuần = 768 giờ nominal; 15% reserve = khoảng 653 giờ commitment | Resource Plan |
 | Contingency | 15% effort cho uncertainty ban đầu | Planning assumption; cone of uncertainty trong lecture |
 | Labor rate | 50.000 VND/giờ, chỉ là giá trị học thuật nội bộ | Planning assumption |
-| Historical-data limitation | Nhóm chưa có historical actuals của dự án tương tự; vì vậy không dùng estimation by analogy. Hệ số năng suất của phương pháp A là structured expert judgment và phải được recalibrate sau PoC/sprint đầu | Transparency note |
+| Historical-data limitation | Nhóm chưa có historical actuals của dự án tương tự; vì vậy không dùng estimation by analogy. Hệ số năng suất của phương pháp A là structured expert judgment và phải được recalibrate sau PoC/tuần delivery đầu | Transparency note |
 
 Các tham chiếu học phần: `docs/refs/05-2-introduction-to-software-estimation.md` (slide 006-007, 013-016, 020-024, 030-036, 040, 054), `docs/refs/06-software-project-planning.md` (slide 029 và 031) và `docs/refs/05-1-work-breakdown-structure.md` (slide 019, 025, 033). Chúng yêu cầu estimate size/duration/cost, dùng dữ liệu đếm được và WBS để tăng độ chính xác, đồng thời không nhầm estimate với commitment.
 
@@ -81,5 +81,5 @@ Chênh lệch planning estimate là **44 giờ (7,3% so với bottom-up)**. Top-
 
 1. Sau M2, dùng backlog/prototype được PO chấp nhận để review lại story count, rate judgment và các complexity factor của phương pháp A.
 2. Sau M3/M5, ghi actual effort của foundation và booking PoC; cập nhật productivity, PERT ranges và forecast.
-3. Cuối mỗi sprint, so actual/carry-over với 81,6 giờ/tuần capacity commitment. Một sprint thấp hơn forecast hoặc một critical PoC fail phải reforecast ngay vì buffer của kế hoạch 8 tuần rất nhỏ.
+3. Cuối mỗi tuần, so actual nếu có và số công việc Done với 81,6 giờ/tuần capacity commitment. Một tuần thấp hơn forecast hoặc một critical PoC fail phải reforecast ngay vì buffer của kế hoạch 8 tuần rất nhỏ.
 4. Chỉ đưa Should/Could vào plan khi Must backlog, reserve và Go/No-Go vẫn an toàn.

@@ -2,7 +2,7 @@
 
 ## 1. Executive summary
 
-MVP **khả thi có điều kiện** về kỹ thuật và vận hành nếu lấy luồng JD → extraction/correction → requirement analysis → Question mapping → preparation plan làm giá trị đầu vào; giữ Question Bank, mentor booking và feedback làm vòng thực hành; dùng công cụ họp ngoài; và hoàn thành PoC cho xử lý JD, mapping, concurrency, authorization và notification. Planning baseline là 8 tuần, khoảng 653 giờ capacity và trần tiền mặt 1.125.000 VNĐ; khả năng bàn giao chỉ được kết luận sau khi nhóm xác nhận 134 SP bằng Planning Poker, cập nhật hai estimate độc lập và có khoảng velocity thực tế.
+MVP **khả thi có điều kiện** về kỹ thuật và vận hành nếu lấy luồng JD → extraction/correction → requirement analysis → Question mapping → preparation plan làm giá trị đầu vào; giữ Question Bank, mentor booking và feedback làm vòng thực hành; dùng công cụ họp ngoài; và hoàn thành PoC cho xử lý JD, mapping, concurrency, authorization và notification. Planning baseline là 8 tuần, khoảng 653 giờ capacity và trần tiền mặt 1.125.000 VNĐ; khả năng bàn giao chỉ được kết luận sau khi nhóm xác nhận 134 SP bằng Planning Poker, cập nhật hai estimate độc lập và có khoảng throughput thực tế.
 
 ## 2. Technical feasibility
 
@@ -32,12 +32,12 @@ PoC bắt buộc:
 
 ## 3. Schedule và resource feasibility
 
-Trạng thái: **Có đường cơ sở lập kế hoạch; chưa có cam kết sprint**.
+Trạng thái: **Có đường cơ sở lập kế hoạch; chưa có cam kết delivery chính thức**.
 
 - Capacity: 6 thành viên × 16 giờ/tuần × 8 tuần = 768 giờ danh nghĩa; dự phòng 15% để lại khoảng 653 giờ cho scope.
-- Backlog: 27 story R1 Must = 134 SP; thông lượng cần thiết 33,5 SP/sprint chỉ là mốc so sánh.
-- Nhóm phải Planning Poker, tách/chấp nhận ngoại lệ cho story 8 SP, theo dõi velocity chậm/nhanh sau 2–3 sprint và dựng đường will-have/might-have trước khi cam kết fixed-date release.
-- Schedule được xem là khả thi khi Must backlog nằm trong khoảng velocity × 4 sprint và vẫn giữ reserve cho discovery, integration, defect, security/privacy và UAT.
+- Backlog: 27 story R1 Must = 134 SP; throughput cần thiết 33,5 SP/tuần trong bốn tuần execution tái dựng chỉ là mốc so sánh.
+- Nhóm phải Planning Poker, tách/chấp nhận ngoại lệ cho story 8 SP, theo dõi khoảng throughput sau 2–3 tuần có dữ liệu và dựng đường will-have/might-have trước khi cam kết fixed-date release.
+- Schedule được xem là khả thi khi Must backlog nằm trong khoảng throughput dự báo và vẫn giữ reserve cho discovery, integration, defect, security/privacy và UAT.
 
 ## 4. Operational và market feasibility
 
@@ -84,7 +84,7 @@ MVP khả thi có điều kiện nếu:
 | G3 Prototype | ≥80% task JD-to-plan và plan-to-booking hoàn tất | Luồng không hiểu hoặc cần hỗ trợ lớn |
 | G4 Technical | 7 PoC bắt buộc pass; blind recall/precision@10 ≥80% | Extraction/mapping không đạt, double booking hoặc access leak chưa kiểm soát |
 | G5 Supply | 4 Mentor Approved có ≥3 slot/người | Không tuyển được supply đúng phân khúc |
-| G6 Delivery | Must backlog nằm trong velocity range/capacity/budget | Core loop không thể hoàn tất trong baseline |
+| G6 Delivery | Must backlog nằm trong throughput range/capacity/budget | Core loop không thể hoàn tất trong baseline |
 | G7 Pilot | ≥10 Confirmed, ≥8 Completed; feedback hữu ích | Completion/value quá thấp sau một remediation cycle |
 
 Khuyến nghị hiện tại: **Proceed với thử nghiệm hẹp và PoC; chỉ Go cho phát hành khi các gate đạt**. Planning baseline dùng cho điều phối nội bộ; phê duyệt chính thức vẫn cần chữ ký Sponsor Ngô Huy Biên và Ngô Ngọc Đăng Khoa.

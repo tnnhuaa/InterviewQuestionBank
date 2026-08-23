@@ -21,12 +21,12 @@ Sponsor: **Giảng viên Ngô Huy Biên và Ngô Ngọc Đăng Khoa**; formal ap
 | ID | Stakeholder | Lợi ích/nhu cầu | Power | Interest | Chiến lược |
 |---|---|---|---|---|---|
 | ST-01 | Sponsor/giảng viên | Kết quả học tập, governance, chất lượng deliverable | Cao | Cao | Manage closely |
-| ST-02 | Gia Thành — PM/Scrum Master, initiation & estimation | Kế hoạch, ước lượng, delivery, risk và team health | Cao | Cao | Manage closely |
-| ST-03 | Hùng — UI/UX | Luồng người dùng, nguyên mẫu, khả dụng và bằng chứng nghiên cứu | Trung bình | Cao | Manage closely |
-| ST-04 | Hưng — Product Owner/BA | Giá trị sản phẩm, tầm nhìn, phạm vi, backlog và acceptance | Cao | Cao | Manage closely |
-| ST-05 | Trí — PoC/E2E | Tính khả thi kỹ thuật, PoC luồng cốt lõi, kiểm thử đầu-cuối và dữ liệu kiểm chứng | Trung bình | Cao | Manage closely |
-| ST-06 | Luân — Architecture/technical lead | Kiến trúc, ADR, công nghệ, ràng buộc kỹ thuật và hỗ trợ PoC | Cao trong kỹ thuật | Cao | Manage closely |
-| ST-07 | Tuấn Anh — Trưởng nhóm / leadership & governance | Điều phối nhóm, scope/priority governance, escalation, tích hợp sản phẩm, configuration/document control và delivery readiness | Cao trong delivery | Cao | Manage closely |
+| ST-02 | Gia Thành — Project Planning & Estimation Analyst / Full-stack Developer | Baseline, nguồn lực, chi phí, ước lượng và implementation Full-stack | Trung bình | Cao | Keep engaged |
+| ST-03 | Hùng — UI/UX Designer / Front-end Developer | Luồng người dùng, nguyên mẫu, khả dụng, bằng chứng nghiên cứu và giao diện | Trung bình | Cao | Manage closely |
+| ST-04 | Hưng — Product Owner / Business Analyst | Giá trị sản phẩm, tầm nhìn, phạm vi, backlog và acceptance | Cao | Cao | Manage closely |
+| ST-05 | Trí — PoC / Integration & E2E Developer | Tính khả thi kỹ thuật, PoC, tích hợp, kiểm thử đầu-cuối và dữ liệu kiểm chứng | Trung bình | Cao | Manage closely |
+| ST-06 | Luân — Architecture / Technical Lead | Kiến trúc, ADR, công nghệ, ràng buộc kỹ thuật và hỗ trợ PoC | Cao trong kỹ thuật | Cao | Manage closely |
+| ST-07 | Tuấn Anh — Project Manager / Team Leader / Timekeeper | Điều hành nhóm, quản lý deadline và Kanban, escalation, tích hợp, review/merge và delivery readiness | Cao | Cao | Manage closely |
 | ST-08 | Development team | Requirement rõ, môi trường và quyết định kịp thời | Trung bình | Cao | Keep engaged |
 | ST-09 | Sinh viên/ứng viên | JD được xử lý riêng tư, plan/mapping dễ hiểu và booking có ngữ cảnh | Trung bình | Cao | Co-design/test |
 | ST-10 | Mentor/HR | JD/topic cần luyện rõ, lịch kiểm soát được, uy tín và feedback phù hợp | Trung bình | Cao | Co-design/test |
@@ -49,37 +49,37 @@ Sponsor: **Giảng viên Ngô Huy Biên và Ngô Ngọc Đăng Khoa**; formal ap
 - Sắp xếp backlog, chấp nhận/reject story và quyết định trade-off.
 - Xác nhận Go/Pivot/Stop cùng Sponsor.
 
-### PM/Scrum Master, initiation & estimation
+### Project Planning & Estimation Analyst / Full-stack Developer
 
-- Duy trì kế hoạch, dependency, risk register và communication cadence.
-- Tổ chức sprint events và escalation.
-- Bảo đảm quyết định được ghi lại.
+- Lập và cập nhật Charter, Resource Plan, Cost–Time–Resources cùng hai estimate độc lập.
+- Phân tích capacity, baseline và tác động kế hoạch để cung cấp dữ liệu cho PM ra quyết định.
+- Tham gia phát triển Full-stack ở mentor verification, availability, JD service và notification.
 
-### UI/UX
+### UI/UX Designer / Front-end Developer
 
 - Duy trì luồng người dùng, clickable prototype và handoff bám theo backlog đã duyệt.
 - Thu thập bằng chứng nghiên cứu/khả dụng và nêu rõ điểm chưa được kiểm chứng.
 - Phối hợp với Product Owner để truy vết thay đổi nguyên mẫu về requirement và acceptance criteria.
 
-### PoC/E2E
+### PoC / Integration & E2E Developer
 
 - Thực hiện PoC luồng cốt lõi, dữ liệu seed, kiểm thử đầu-cuối và bằng chứng Pass/Fail cho rủi ro kỹ thuật.
 - Kiểm chứng extraction/mapping, booking concurrency, authorization và reliability theo gate đã duyệt.
 - Phối hợp với Architecture/technical lead; PoC không tự thay đổi phạm vi hoặc ADR.
 
-### Architecture/technical lead
+### Architecture / Technical Lead
 
 - Sở hữu technology stack, ADR, ranh giới hệ thống và các ràng buộc kỹ thuật/bảo mật.
 - Hướng dẫn kỹ thuật cho PoC và implementation, đồng thời ghi rõ quyết định Accepted/Pending/Rejected.
 - Đánh giá tác động kiến trúc của thay đổi backlog nhưng không thay quyền ưu tiên/acceptance của Product Owner.
 
-### Trưởng nhóm / leadership & governance
+### Project Manager / Team Leader / Timekeeper
 
-- Điều phối nhóm, dependency và WIP kỹ thuật giữa prototype, requirement, architecture, PoC và implementation.
-- Tham gia phê duyệt scope/priority cùng PO/PM, hỗ trợ escalation và theo dõi delivery readiness.
+- Phân vai, giao việc theo tuần, quản lý deadline và theo dõi luồng Kanban giữa prototype, requirement, architecture, PoC và implementation.
+- Chốt quyết định điều hành, phối hợp với Product Owner về scope/priority, xử lý escalation và theo dõi delivery readiness.
 - Thực hiện hoặc phân công phần tích hợp sản phẩm: repository foundation, CI quality gate, shared contracts và end-to-end integration.
 - Quản lý configuration/document workflow: đúng cây thư mục, owner/reviewer, version, link/evidence và consistency trước merge.
-- Tổ chức technical/document review và theo dõi action item đến khi đóng. Hưng với vai trò Product Owner/BA vẫn sắp thứ tự backlog và chấp nhận story; phê duyệt governance của Trưởng nhóm không thay quyền acceptance này.
+- Tổ chức technical/document review và theo dõi action item đến khi đóng. Hưng với vai trò Product Owner / Business Analyst vẫn sắp thứ tự backlog và chấp nhận story; quyết định điều hành của Project Manager không thay quyền acceptance này.
 
 ### Development team
 
@@ -115,7 +115,7 @@ Sponsor: **Giảng viên Ngô Huy Biên và Ngô Ngọc Đăng Khoa**; formal ap
 
 | Nhóm | Stakeholder | Cách quản lý |
 |---|---|---|
-| Power cao, Interest cao | Sponsor, Product Owner, PM/Scrum Master, Architecture/technical lead, Trưởng nhóm | Trao đổi thường xuyên; xin quyết định theo milestone và điều phối integration |
+| Power cao, Interest cao | Sponsor, Product Owner, Project Manager/Team Leader và Architecture/Technical Lead | Trao đổi thường xuyên; xin quyết định theo milestone và điều phối integration |
 | Power cao, Interest thấp | Nhà cung cấp hạ tầng/tích hợp | Theo dõi quota, outage, điều khoản; chuẩn bị fallback |
 | Power thấp/trung bình, Interest cao | Team, Student, Mentor, Admin | Đồng thiết kế, demo, research và UAT định kỳ |
 | Power thấp, Interest thấp | Công chúng/đối tác tương lai | Theo dõi; cập nhật khi phạm vi mở rộng |
@@ -134,11 +134,11 @@ Sponsor: **Giảng viên Ngô Huy Biên và Ngô Ngọc Đăng Khoa**; formal ap
 
 | Nội dung | Người tham gia | Nhịp | Kênh | Owner |
 |---|---|---|---|---|
-| Daily coordination | Nhóm dự án | Hằng ngày làm việc | Chat/stand-up | Scrum Master |
+| Kanban coordination | Nhóm dự án | Khi giao việc, phát sinh blocker hoặc cần chốt thay đổi | Messenger + Kanban | Tuấn Anh |
 | Integration/document-control review | Tuấn Anh và owner từng deliverable | Hai lần/tuần và trước merge | PR + checklist + action items | Tuấn Anh |
 | Backlog refinement | PO, BA, team | Mỗi tuần | Công cụ backlog | PO |
-| Sprint planning/review/retro | PO và team | Mỗi sprint | Meeting + backlog | Scrum Master |
-| Risk/change review | Sponsor, PO, PM, Trưởng nhóm | Mỗi tuần hoặc khi vượt ngưỡng | Risk/change log | PM |
+| Flow/replenishment review | PO và team | Mỗi tuần hoặc khi cần bổ sung/chốt công việc | Kanban + backlog | Tuấn Anh |
+| Risk/change review | Sponsor, PO và PM | Mỗi tuần hoặc khi vượt ngưỡng | Risk/change log | Tuấn Anh |
 | Student research | BA/UX và sinh viên | Theo research plan | Interview/test | Research owner |
 | Mentor review | PO/BA và mentor | Trước prototype, pilot | Interview/demo | PO |
 | Milestone report | Sponsor và nhóm | Mỗi milestone | Báo cáo ngắn | PM |
@@ -147,6 +147,6 @@ Sponsor: **Giảng viên Ngô Huy Biên và Ngô Ngọc Đăng Khoa**; formal ap
 
 - Mọi quyết định scope, acceptance và change phải được ghi trong nguồn dùng chung.
 - Không đưa dữ liệu cá nhân hoặc link họp vào kênh công khai.
-- Blocker ảnh hưởng sprint goal phải được nêu trong ngày làm việc.
+- Thành viên đưa blocker lên Messenger khi phát hiện để Tuấn Anh và nhóm chốt cách xử lý; nhóm không quy định thời gian phản hồi cố định.
 - Research note phải tách nhận định của nhóm khỏi lời/evidence của người tham gia.
 
