@@ -1,0 +1,308 @@
+﻿render_static_site.frontend: Refreshing state... [id=srv-da403pbtqb8s73fpnmig]
+render_web_service.api: Refreshing state... [id=srv-da402mjtqb8s73fplbcg]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  ~ update in-place
+
+Terraform will perform the following actions:
+
+  # render_static_site.frontend will be updated in-place
+  ~ resource "render_static_site" "frontend" {
+      ~ active_custom_domains         = [
+          - {
+              - domain_type       = "subdomain" -> null
+              - id                = "cdm-da4058f40ujc73chq86g" -> null
+              - name              = "prepvi.tinthanh.id.vn" -> null
+              - public_suffix     = "id.vn" -> null
+                # (1 unchanged attribute hidden)
+            },
+        ] -> (known after apply)
+      ~ auto_deploy_trigger           = "checksPass" -> (known after apply)
+      - env_vars                      = {
+          - "AI_AGENDA_DRAFT_ENABLED" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "AI_ENABLED" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "AI_FEEDBACK_DRAFT_ENABLED" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "AI_JD_ANALYSIS_ENABLED" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "AI_PROVIDER" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "AI_RECOMMENDATION_EXPLANATION_ENABLED" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "AI_RESULT_RETENTION_DAYS" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "AI_USER_DAILY_REQUEST_BUDGET" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "DATABASE_SSL" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "DATABASE_URL" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "DB_POOL_MAX" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "FRONTEND_ORIGIN" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_API_KEY" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_API_VERSION" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_CIRCUIT_BREAKER_FAILURE_THRESHOLD" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_CIRCUIT_BREAKER_RESET_SECONDS" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_CONCURRENCY" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_DAILY_INPUT_TOKEN_BUDGET" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_DAILY_REQUEST_BUDGET" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_MAX_ATTEMPTS" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_MAX_INPUT_TOKENS" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_MAX_OUTPUT_TOKENS" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_MODEL" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_RPM_BUDGET" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_TEMPERATURE" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_TIMEOUT_MS" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_TPM_BUDGET" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "NODE_ENV" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "PORT" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "SESSION_SECRET" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+        } -> null
+        id                            = "srv-da403pbtqb8s73fpnmig"
+        name                          = "InterviewQuestionBank-fe"
+      ~ notification_override         = {
+          ~ notifications_to_send         = "default" -> (known after apply)
+          ~ preview_notifications_enabled = "default" -> (known after apply)
+        } -> (known after apply)
+      ~ previews                      = {
+          ~ generation = "off" -> (known after apply)
+        } -> (known after apply)
+      ~ pull_request_previews_enabled = false -> (known after apply)
+      ~ slug                          = "interviewquestionbank-fe" -> (known after apply)
+        # (10 unchanged attributes hidden)
+    }
+
+  # render_web_service.api will be updated in-place
+  ~ resource "render_web_service" "api" {
+      + active_custom_domains         = (known after apply)
+      ~ env_vars                      = {
+          - "AI_AGENDA_DRAFT_ENABLED" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          ~ "AI_ENABLED" = {
+              ~ value          = (sensitive value)
+                # (1 unchanged attribute hidden)
+            },
+          - "AI_FEEDBACK_DRAFT_ENABLED" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "AI_JD_ANALYSIS_ENABLED" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "AI_PROVIDER" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "AI_RECOMMENDATION_EXPLANATION_ENABLED" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "AI_RESULT_RETENTION_DAYS" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "AI_USER_DAILY_REQUEST_BUDGET" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          ~ "DATABASE_SSL" = {
+              ~ value          = (sensitive value)
+                # (1 unchanged attribute hidden)
+            },
+          - "DB_POOL_MAX" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          ~ "FRONTEND_ORIGIN" = {
+              ~ value          = (sensitive value)
+                # (1 unchanged attribute hidden)
+            },
+          ~ "GEMINI_API_KEY" = {
+              - value          = (sensitive value) -> null
+                # (1 unchanged attribute hidden)
+            },
+          - "GEMINI_API_VERSION" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_CIRCUIT_BREAKER_FAILURE_THRESHOLD" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_CIRCUIT_BREAKER_RESET_SECONDS" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_CONCURRENCY" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_DAILY_INPUT_TOKEN_BUDGET" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_DAILY_REQUEST_BUDGET" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_MAX_ATTEMPTS" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_MAX_INPUT_TOKENS" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_MAX_OUTPUT_TOKENS" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_MODEL" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_RPM_BUDGET" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_TEMPERATURE" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_TIMEOUT_MS" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          - "GEMINI_TPM_BUDGET" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          ~ "NODE_ENV" = {
+              ~ value          = (sensitive value)
+                # (1 unchanged attribute hidden)
+            },
+          - "PORT" = {
+              - generate_value = false -> null
+              - value          = (sensitive value) -> null
+            },
+          + "SESSION_COOKIE_SECURE" = {
+              + generate_value = false
+              + value          = (sensitive value)
+            },
+            # (2 unchanged elements hidden)
+        }
+        id                            = "srv-da402mjtqb8s73fplbcg"
+      + log_stream_override           = (known after apply)
+      + max_shutdown_delay_seconds    = (known after apply)
+        name                          = "InterviewQuestionBank"
+      ~ notification_override         = {
+          ~ notifications_to_send         = "default" -> (known after apply)
+          ~ preview_notifications_enabled = "default" -> (known after apply)
+        } -> (known after apply)
+      + num_instances                 = (known after apply)
+      ~ previews                      = {
+          ~ generation = "off" -> (known after apply)
+        } -> (known after apply)
+      ~ pull_request_previews_enabled = false -> (known after apply)
+      ~ runtime_source                = {
+          ~ native_runtime = {
+              ~ auto_deploy_trigger = "checksPass" -> (known after apply)
+                # (5 unchanged attributes hidden)
+            }
+        }
+      ~ slug                          = "interviewquestionbank" -> (known after apply)
+        # (8 unchanged attributes hidden)
+    }
+
+Plan: 0 to add, 2 to change, 0 to destroy.
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.

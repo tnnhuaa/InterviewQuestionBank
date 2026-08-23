@@ -14,4 +14,13 @@ coverage/
 poc/.env
 poc_question/backend/.env
 .codegraph/
+
+# Terraform (IaaC) — state và secrets không commit
+infra/terraform.tfvars
+infra/.terraform/
+*.tfstate
+*.tfstate.*
+infra/crash.log
+infra/terraform.rc
+infra/.terraformrc
 docs/slides/
