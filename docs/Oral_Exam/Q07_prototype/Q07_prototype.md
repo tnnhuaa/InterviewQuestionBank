@@ -2,11 +2,15 @@
 
 ###  Trình bày quá trình hình thành và phương pháp đánh giá sản phẩm Bản mẫu (Prototype) của nhóm. (Sinh viên nộp kèm bản in phác thảo giao diện ban đầu cho hệ thống của nhóm.)
 
-Sau khi xác định được vấn đề chính là các ứng viên sau khi ứng tuyển thường không biết nên ôn tập nội dung nào để chuẩn bị cho buổi phỏng vấn, nhóm bắt đầu khảo sát các website và sản phẩm có chức năng tương tự trên thị trường. Nhóm sử dụng ChatGPT như một công cụ hỗ trợ tổng hợp và đối chiếu các sản phẩm dựa trên Project Proposal, sau đó các thành viên trực tiếp trải nghiệm các website, phân tích user flow và thảo luận để xác định cách các sản phẩm hiện có hỗ trợ người dùng luyện phỏng vấn.
+Sau khi xác định được vấn đề chính và bussiness case là các ứng viên sau khi ứng tuyển thường không biết nên ôn tập nội dung nào để chuẩn bị cho buổi phỏng vấn, nhóm bắt đầu khảo sát các website và sản phẩm có chức năng tương tự trên thị trường. Nhóm sử dụng ChatGPT như một công cụ hỗ trợ tổng hợp và đối chiếu các sản phẩm dựa trên Project Proposal, sau đó các thành viên trực tiếp trải nghiệm các website, phân tích user flow và thảo luận để xác định cách các sản phẩm hiện có hỗ trợ người dùng luyện phỏng vấn.
 
 Qua quá trình khảo sát, nhóm nhận thấy một user flow phổ biến là:
 
 **Chọn chủ đề phỏng vấn → Website cung cấp bộ câu hỏi theo chủ đề → Người dùng tiến hành luyện tập.**
+
+và user flow phụ:
+
+**Tìm cố vấn → Hồ sơ cố vấn → Yêu cầu đặt lịch → Trạng thái đặt lịch → Phiên phỏng vấn → Phản hồi phiên → Đánh giá cố vấn**
 
 Tuy nhiên, nhóm nhận thấy hạn chế của cách tiếp cận này là người dùng vẫn phải tự đọc Job Description (JD), tự xác định các kỹ năng hoặc chủ đề cần ôn và tiếp tục tự tìm các câu hỏi phù hợp. Quá trình này có thể mất nhiều thời gian, đặc biệt đối với các ứng viên chưa có nhiều kinh nghiệm chuẩn bị phỏng vấn.
 
