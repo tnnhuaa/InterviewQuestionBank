@@ -1,0 +1,24 @@
+# VÍ DỤ giá trị (KHÔNG chứa secret). Copy file này thành terraform.tfvars và điền giá trị thật.
+# terraform.tfvars ĐÃ được gitignore — không commit lên GitHub.
+
+# --- Xác thực Render ---
+render_api_key  = "rnd_xxx_xxx"        # thay bằng API key thật (bạn giữ account cấp)
+render_owner_id = "tea_xxxxxxxxxxxx"   # thay bằng owner/team ID
+
+# --- Cấu hình chung (đã khớp hạ tầng hiện có — ít khi cần đổi) ---
+region      = "oregon"
+api_plan    = "free"
+repo_url    = "https://github.com/tnnhuaa/InterviewQuestionBank"
+branch      = "main"
+
+# --- Env (non-sensitive) ---
+env_frontend_origin      = "https://interviewquestionbank-fe.onrender.com"
+env_ai_enabled           = "false"
+env_node_env             = "production"
+env_database_ssl         = "true"
+env_session_cookie_secure = "true"
+
+# --- Env (SENSITIVE) — điền giá trị thật, file này không commit ---
+env_database_url   = "postgresql://user:pass@host:5432/db?sslmode=require"
+env_session_secret = "thay-bang-chuoi-ngau-nhien-it-nhat-32-ky-tu"
+env_gemini_api_key = ""
