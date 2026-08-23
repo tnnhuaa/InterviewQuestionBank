@@ -13,61 +13,60 @@ Xây dựng một ứng dụng web (MVP) giúp ứng viên Việt Nam (sinh viê
 
 ## 2. Mục tiêu của công việc (Objectives of the work)
 - Hoàn thành phiên bản MVP của hệ thống trong vòng 8 tuần.
-- Đảm bảo quy trình xử lý JD (bao gồm trích xuất văn bản, phân tích yêu cầu và ánh xạ câu hỏi) đạt độ chính xác (Precision) và độ phủ (Recall) ≥ 80%.
-- Tổ chức chạy thử nghiệm (Pilot) thành công với tối thiểu 10 lịch hẹn (Booking) được xác nhận và 8 lịch hẹn hoàn thành.
-- Kiểm soát ngân sách tiền mặt tối đa cho dự án không vượt quá 1.125.000 VNĐ.
+- Đảm bảo quy trình xử lý JD (bao gồm trích xuất văn bản, phân tích yêu cầu và ánh xạ câu hỏi) đạt độ chính xác cao
 
 ## 3. Phạm vi công việc (Scope of work)
 ### 3.1. Các hạng mục trong phạm vi (In Scope)
-- Hệ thống phân quyền cho 3 vai trò: Student, Mentor, Admin.
-- Tính năng nhập JD: dán văn bản (tối đa 50.000 ký tự) hoặc tải tệp (PDF/PNG/JPEG tối đa 10MB).
-- Trích xuất văn bản và sử dụng OCR nội bộ (Việt/Anh) cho ảnh/scan. Cung cấp giao diện cho Student hiệu chỉnh và xác nhận văn bản JD.
-- Phân tích yêu cầu từ JD, chuẩn hóa phân loại (taxonomy) và ánh xạ (mapping) với Ngân hàng câu hỏi để tạo Kế hoạch chuẩn bị (Preparation Plan).
-- Quản lý Ngân hàng câu hỏi (tìm kiếm, lọc, đánh dấu).
-- Quản lý hồ sơ Mentor, xác minh và thiết lập lịch rảnh.
-- Luồng đặt lịch (Booking) kèm ngữ cảnh từ JD/Plan.
-- Tích hợp link họp ngoài hệ thống (Google Meet/Zoom) và thông báo qua Email.
-- Hệ thống đánh giá và phản hồi (Feedback) dựa trên rubric có sẵn.
+- **Trọng tâm:** 
+  - Tính năng nhập JD: dán văn bản hoặc tải tệp 
+  - Trích xuất văn bản và sử dụng OCR nội bộ  cho ảnh/scan. Cung cấp giao diện cho Student hiệu chỉnh và xác nhận văn bản JD.
+  - Phân tích yêu cầu từ JD, chuẩn hóa phân loại  và ánh xạ  với Ngân hàng câu hỏi để tạo Kế hoạch chuẩn bị .
+- **Luồng Mentor (Phát triển song song & tích hợp):**
+  - Hệ thống phân quyền cho 3 vai trò: Student, Mentor, Admin.
+  - Quản lý Ngân hàng câu hỏi (tìm kiếm, lọc, đánh dấu).
+  - Quản lý hồ sơ Mentor, xác minh và thiết lập lịch rảnh.
+  - Luồng đặt lịch (Booking) kèm ngữ cảnh từ JD/Plan.
+  - Tích hợp link họp ngoài hệ thống (Google Meet/Zoom) và thông báo qua Email.
+  - Hệ thống đánh giá và phản hồi (Feedback) dựa trên rubric có sẵn.
 
-### 3.2. Các hạng mục ngoài phạm vi (Out of Scope)
+### 3.2. Các hạng mục ngoài phạm vi 
 - Phỏng vấn tự động bằng AI, chấm điểm câu trả lời, phân tích giọng nói/video.
-- Gợi ý câu hỏi bằng mô hình học máy (Machine Learning recommendation).
+- Gợi ý câu hỏi bằng mô hình học máy
 - Gọi video, ghi âm, phiên âm trực tiếp trên nền tảng.
 - Cổng thanh toán, ký quỹ, tính hoa hồng và chi trả tự động.
-- Ứng dụng di động (Mobile App).
+- Ứng dụng di động 
 
-## 4. Địa điểm làm việc (Location of the work)
-Dự án được triển khai theo mô hình phân tán (Remote). Nhóm phát triển sử dụng các công cụ làm việc nhóm trực tuyến và quản lý mã nguồn qua GitHub. Máy chủ thử nghiệm sẽ được lưu trữ trên môi trường Cloud (Free tier/Education tier).
+## 4. Địa điểm làm việc 
+- Team: Làm việc tại Simple Coffee tại địa chỉ: 218 Lê Lai, Bến Thành, Hồ Chí Minh 70000, Việt Nam
+- Họp online qua google meet 
+- Giao tiếp qua messenger 
+- Quản lý công việc qua trello 
+- Lưu trữ mã nguồn và tài liệu trên github 
 
 ## 5. Thời gian thực hiện (Period of performance)
-- **Thời lượng:** 8 tuần.
-- **Ngày bắt đầu:** 29/06/2026.
-- **Ngày kết thúc:** 23/08/2026.
-- **Tổng dung lượng làm việc (Capacity):** Khoảng 653 giờ (sau khi trừ 15% dự phòng rủi ro từ tổng 768 giờ danh nghĩa).
+- **Khung thời gian học phần:** 8 tuần (29/06/2026 - 23/08/2026).
+  - *Giai đoạn 1 (29/06 - 24/07):* Thực hiện dự án cũ (Splitly), sau đó hủy bỏ do không khả thi.
+  - *Giai đoạn 2 (10/08 - 23/08):* Triển khai thực tế dự án InterviewQuestionBank (2 tuần execution).
+- **Tổng thời gian thực hiện :** Khoảng 653 giờ 
 
-## 6. Lịch trình giao nộp (Deliverables schedule)
-- **05/07/2026 (Discovery/Charter):** Bàn giao Problem evidence, Project Charter, Resource baseline.
-- **12/07/2026 (Prototype/Requirements):** Bàn giao Workflow, Product Backlog, Prototype (đã được PO phê duyệt).
-- **19/07/2026 (Foundation):** Bàn giao Kiến trúc hệ thống, Authentication, CI/CD, cơ sở dữ liệu.
-- **26/07/2026 (JD Intake & Analysis):** Bàn giao chức năng nhập JD, Extract/OCR, taxonomy mapping và preparation plan.
-- **09/08/2026 (Marketplace Core Loop):** Bàn giao hoàn chỉnh luồng Booking tới Feedback (E2E).
-- **23/08/2026 (UAT/Release):** Bàn giao Biên bản UAT, báo cáo kiểm thử (không còn lỗi Critical/High), hệ thống sẵn sàng cho Pilot.
+## 6. Lịch trình giao nộp 
 
-## 7. Tiêu chuẩn áp dụng (Applicable standards)
-- Sử dụng mô hình Agile/Scrum (2 tuần/sprint).
-- Đảm bảo quyền riêng tư và bảo mật: Xóa tệp JD gốc của người dùng trong vòng 24 giờ.
-- Luồng gửi thông báo (Notification) phải có cơ chế retry/outbox để không làm hỏng dữ liệu khi bên thứ 3 (Email provider) gặp lỗi.
+- **Tuần 1 (27/07 - 02/08) - Foundation & Prototype:** Khởi tạo kiến trúc, thiết kế nguyên mẫu, xác định Workflow và Product Backlog.
+- **Tuần 2 (03/08 - 09/08) - Candidate PoC:** Phát triển các tính năng lõi (JD Intake, OCR, trích xuất văn bản).
+- **Tuần 3 (10/08 - 16/08) - Mapping & Integration:** Hoàn thiện ánh xạ Ngân hàng câu hỏi (Taxonomy mapping), tạo Preparation Plan và kết hợp luồng Mentor.
+- **Tuần 4 (17/08 - 23/08) - UAT & Release:** Bàn giao hoàn chỉnh luồng Booking tới Feedback (E2E), báo cáo kiểm thử (không còn lỗi Critical/High), hệ thống sẵn sàng cho Pilot.
+
+## 7. Tiêu chuẩn áp dụng 
+- Sử dụng mô hình Kaban
 
 ## 8. Tiêu chí nghiệm thu (Acceptance criteria)
 - Hệ thống trích xuất và ánh xạ thành công bộ test 20 JD (có khử định danh) đạt Precision@10 và Recall ≥ 80%.
-- Toàn bộ luồng nghiệp vụ cốt lõi (Critical workflow) pass 100% các kịch bản kiểm thử (TC-JD, TC-MAP, TC-PLAN, TC-B, TC-SESSION, TC-F).
-- Kết thúc quá trình UAT không tồn tại lỗi (Defect) ở mức độ Critical hoặc High.
-- Đợt thử nghiệm Pilot đạt tối thiểu 10 lượt Booking được xác nhận (Confirmed) và 8 lượt hoàn thành (Completed) kèm phản hồi hợp lệ.
+- Toàn bộ luồng nghiệp vụ cốt lõi  pass 100% các kịch bản kiểm thử 
+- Kết thúc quá trình UAT không tồn tại lỗi  ở mức độ Critical hoặc High.
 
 ## 9. Các giả định (Assumptions)
 - Nguồn lực đảm bảo 6 thành viên đóng góp trung bình 16 giờ/người/tuần.
-- Tuyển đủ 12 Student và ít nhất 4 Mentor tham gia đợt Pilot hoàn toàn tự nguyện.
-- Ngân sách cho phép (Cash ceiling) ở mức 1.125.000 VNĐ là đủ để chi trả cho chi phí Domain và quà tri ân Pilot. Cấu hình Server/Database sẽ tận dụng các gói miễn phí.
+- Ngân sách cho phép  ở mức 1.125.000 VNĐ là đủ để chi trả cho chi phí Domain và quà tri ân Pilot. Cấu hình Server/Database  tận dụng các gói miễn phí 
 
 ## 10. Trách nhiệm các bên (Roles & Responsibilities)
 - **Gia Thành (PM/Scrum Master):** Lên lịch trình, theo dõi tiến độ, ước lượng và quản lý rủi ro.

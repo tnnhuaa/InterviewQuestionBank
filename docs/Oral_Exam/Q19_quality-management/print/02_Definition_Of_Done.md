@@ -1,10 +1,10 @@
 # ĐỊNH NGHĨA HOÀN THÀNH (DEFINITION OF DONE - DoD)
 **Dự án:** Hệ thống Luyện thi Phỏng vấn
 
-Để một User Story (Task) trên Jira được di chuyển sang cột **DONE**, phải thỏa mãn toàn bộ các điều kiện dưới đây:
+Để một User Story (Task) trên Kaban được di chuyển sang cột **DONE**, phải thỏa mãn toàn bộ các điều kiện dưới đây:
 
 ## 1. Khía cạnh Code & Kỹ thuật
-- [ ] Code đã được đẩy (push) lên nhánh riêng (feature-branch) trên Github.
+- [ ] Code đã được đẩy lên nhánh riêng trên Github.
 - [ ] Code không vi phạm các luật của linter (chạy qua lệnh `npm run lint` không báo lỗi đỏ).
 - [ ] Không chứa các console.log, comment rác, hoặc hard-code dữ liệu.
 
@@ -16,8 +16,7 @@
 ## 3. Khía cạnh Review & Quy trình
 - [ ] Đã tạo Pull Request (PR) hợp lệ lên nhánh `develop`.
 - [ ] Đã được ít nhất một thành viên khác trong team thực hiện Code Review và **Approve** PR.
-- [ ] Các xung đột mã nguồn (Merge Conflict) đã được giải quyết triệt để.
+- [ ] Các xung đột mã nguồn  đã được giải quyết triệt để.
 
 ## 4. Khía cạnh Tài liệu (Documentation)
-- [ ] Nếu chức năng có thêm API mới, tài liệu Swagger/Postman Collection đã được cập nhật.
 - [ ] Nếu thay đổi CSDL, các script migration đã được đính kèm.

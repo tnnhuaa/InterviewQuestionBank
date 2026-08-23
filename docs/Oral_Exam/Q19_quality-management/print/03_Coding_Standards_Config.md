@@ -1,10 +1,9 @@
 # CẤU HÌNH ĐẢM BẢO CODING STANDARDS
 **Dự án:** Hệ thống Luyện thi Phỏng vấn
 
-*Dưới đây là bản trích xuất cấu hình tự động bắt lỗi và ép chuẩn format mã nguồn được cả team thống nhất sử dụng.*
+
 
 ## 1. Cấu hình Prettier (`.prettierrc`)
-*Mục đích: Đảm bảo toàn bộ Dev trong dự án lưu file xong là code sẽ tự động format giống nhau 100%, tránh cãi nhau về việc xuống dòng hay dùng ngoặc kép.*
 
 ```json
 {

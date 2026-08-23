@@ -1,7 +1,7 @@
 # BIÊN BẢN PHẢN HỒI TỪ KHÁCH HÀNG (CUSTOMER FEEDBACK REPORT)
 **Dự án:** Hệ thống Luyện thi Phỏng vấn (Interview Practice Platform)
-**Giai đoạn:** User Acceptance Testing (UAT) - Sprint 3
-**Đại diện khách hàng:** Thầy / Khách hàng giả định
+**Giai đoạn:** User Acceptance Testing (UAT) 
+**Đại diện khách hàng:** Thầy 
 
 ## 1. Điểm Khách hàng Hài lòng (Satisfied)
 - Chức năng Upload JD và tự động trích xuất từ khóa hoạt động khá mượt mà.
