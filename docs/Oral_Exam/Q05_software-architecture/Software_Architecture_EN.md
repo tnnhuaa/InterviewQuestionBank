@@ -96,7 +96,6 @@ flowchart LR
     Student["Student<br/>[Person]"] -->|"Uploads/reviews JD; practices; books"| PrepVI["PrepVI<br/>[Software System]<br/>Interview preparation platform"]
     Mentor["Mentor<br/>[Person]"] -->|"Manages sessions and feedback"| PrepVI
     Admin["Administrator<br/>[Person]"] -->|"Verifies and moderates"| PrepVI
-    Operations["PO / Operations<br/>[Person]"] -->|"Reviews outcomes"| PrepVI
     PrepVI -->|"Assisted extraction and drafts<br/>HTTPS/JSON"| Gemini["Gemini API<br/>[External Software System]"]
     PrepVI -->|"Notifications<br/>HTTPS/API"| Email["Email Provider<br/>[External Software System]"]
     PrepVI -->|"Approved session links<br/>HTTPS"| Meeting["Meeting Provider<br/>[External Software System]"]
@@ -143,6 +142,7 @@ flowchart LR
 
     API -->|"Assisted extraction and drafts<br/>HTTPS/JSON"| Gemini["Gemini API<br/>[External Software System]"]
     API -->|"Notifications<br/>HTTPS/API"| Email["Email Provider<br/>[External Software System]"]
+    API -->|"Approved session links<br/>HTTPS"| Meeting["Meeting Provider<br/>[External Software System]"]
 ~~~
 
 The diagram shows logical runtime and data boundaries, not physical deployment nodes. Frontend and backend have independent build/deployment. JD extraction/OCR, AI assistance, and notification delivery are modules executed by the Express API; the C4 baseline has no separate worker flow. The PoC may use temporary private storage behind an adapter; the MVP/pilot replaces it with private object storage. Minimum environments are local, test/CI, staging/UAT, and production/pilot. Secrets do not belong in the repository. Migrations run from a controlled pipeline/job with one runner at a time and a backup/forward-fix plan.
