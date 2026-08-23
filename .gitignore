@@ -14,3 +14,4 @@ coverage/
 poc/.env
 poc_question/backend/.env
 .codegraph/
+docs/slides/

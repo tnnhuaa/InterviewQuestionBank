@@ -4,7 +4,7 @@ const db = require('../config/db');
 
 async function uploadJD(req, res) {
     console.log(`\n--- [START] API /upload-jd CALL ---`);
-    console.log(`[LOG] Nhận request upload file...`);
+    console.log(`[Step 1] Nhận input từ request upload file (JD)...`);
     try {
         if (!req.file) {
             console.log(`[ERROR] Không có file nào được gửi lên.`);
@@ -12,7 +12,7 @@ async function uploadJD(req, res) {
         }
 
         console.log(`[LOG] Định dạng file nhận được: ${req.file.mimetype}, Kích thước: ${req.file.size} bytes`);
-        
+
         let jdText = "";
         if (req.file.mimetype === 'application/pdf') {
             console.log(`[LOG] Đang trích xuất văn bản từ PDF...`);
@@ -40,11 +40,11 @@ async function uploadJD(req, res) {
             }
         }
 
-        console.log(`[LOG] Bắt đầu gọi service AI Extract...`);
+        console.log(`[Step 2] Gửi dữ liệu JD (text/ảnh) lên AI để phân tích...`);
         // 1. Extract Topics with AI
         const extraction = await extractJDTopics(jdText);
-        console.log(`[LOG] AI Extract hoàn tất. Tìm thấy chức danh: "${extraction.job_title}" và ${extraction.topics ? extraction.topics.length : 0} topics.`);
-
+        console.log(`[Step 3] AI trả kết quả về. Tìm thấy chức danh: "${extraction.job_title}" và ${extraction.topics ? extraction.topics.length : 0} topics.`);
+        console.log("Giá trị dữ liệu trả về: ", extraction);
         // 2. Create Session
         console.log(`[LOG] Đang lưu phiên làm việc (Session) mới vào Database...`);
         const sessionResult = await db.query(
@@ -57,18 +57,18 @@ async function uploadJD(req, res) {
         // 3. Process Topics and Mapping
         const finalTopics = [];
 
-        console.log(`[LOG] Bắt đầu quá trình Mapping vào Question Bank...`);
+        console.log(`[Step 4] Bắt đầu AI matching topics với Question Bank trong Database...`);
         for (let i = 0; i < extraction.topics.length; i++) {
             const topic = extraction.topics[i];
-            console.log(`[LOG]  -> Xử lý Topic: "${topic.name}" (Keywords: ${topic.keywords ? topic.keywords.join(', ') : 'none'})`);
-            
+            console.log(`[Step 4] -> Đang mapping Topic: "${topic.name}" (Keywords: ${topic.keywords ? topic.keywords.join(', ') : 'none'})`);
+
             // Insert Topic
             const topicResult = await db.query(
                 `INSERT INTO session_topics (session_id, name, description, order_index) VALUES ($1, $2, $3, $4) RETURNING *`,
                 [sessionId, topic.name, topic.description, i]
             );
             const savedTopic = topicResult.rows[0];
-            
+
             // Map questions from DB using tags/topic name
             const keywords = topic.keywords || [];
             let matchedQuestions = { rows: [] };
@@ -88,7 +88,7 @@ async function uploadJD(req, res) {
                 const topKeywords = keywords.slice(0, 3);
                 const conditions = topKeywords.map((_, idx) => `tags::text ILIKE $${idx + 1} OR topic ILIKE $${idx + 1}`).join(' OR ');
                 const values = topKeywords.map(kw => `%${kw}%`);
-                
+
                 matchedQuestions = await db.query(`
                     SELECT * FROM question_bank 
                     WHERE ${conditions}
@@ -96,10 +96,10 @@ async function uploadJD(req, res) {
                 `, values);
             }
 
-            console.log(`[LOG]    Tìm thấy ${matchedQuestions.rows.length} câu hỏi phù hợp trong DB cho Topic "${topic.name}".`);
+            console.log(`[Step 4] -> Tìm thấy ${matchedQuestions.rows.length} câu hỏi phù hợp trong DB cho Topic "${topic.name}".`);
 
             const questionsToSave = [];
-            
+
             if (matchedQuestions.rows.length > 0) {
                 for (let j = 0; j < matchedQuestions.rows.length; j++) {
                     const q = matchedQuestions.rows[j];
@@ -119,7 +119,7 @@ async function uploadJD(req, res) {
             });
         }
 
-        console.log(`[LOG] Gửi phản hồi thành công về Frontend. Dữ liệu Session hoàn tất.`);
+        console.log(`[Step 5] Trả/Hiển thị kết quả về Frontend thành công. Dữ liệu Session hoàn tất.`);
         console.log(`--- [END] API /upload-jd CALL ---\n`);
 
         res.status(200).json({
@@ -139,9 +139,9 @@ async function getSession(req, res) {
     try {
         const sessionRes = await db.query(`SELECT * FROM sessions WHERE id = $1`, [id]);
         if (sessionRes.rows.length === 0) return res.status(404).json({ error: "Not found" });
-        
+
         const session = sessionRes.rows[0];
-        
+
         const topicsRes = await db.query(`SELECT * FROM session_topics WHERE session_id = $1 ORDER BY order_index ASC`, [id]);
         const topics = topicsRes.rows;
 
@@ -149,7 +149,7 @@ async function getSession(req, res) {
             const qRes = await db.query(`SELECT * FROM session_questions WHERE session_topic_id = $1 ORDER BY order_index ASC`, [topics[i].id]);
             topics[i].questions = qRes.rows;
         }
-        
+
         session.topics = topics;
         res.json(session);
     } catch (err) {
