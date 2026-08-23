@@ -20,7 +20,11 @@ export default function MentorBookingDetail() {
   const [proposedSlotId, setProposedSlotId] = useState("");
   const transition = useMutation({
     mutationFn: (input: { action: string; reason?: string; proposedSlotId?: string }) => bookingsApi.transition(bookingId, { ...input, version: booking.data!.version }),
-    onSuccess: (data) => { setReason(""); setReasonAction(null); queryClient.setQueryData(["booking", bookingId], data); },
+    onSuccess: async () => {
+      setReason("");
+      setReasonAction(null);
+      await queryClient.invalidateQueries({ queryKey: ["booking", bookingId] });
+    },
   });
   const resolveCase = useMutation({
     mutationFn: ({ caseId, action, version }: { caseId: string; action: "APPROVE" | "DISMISS"; version: number }) => bookingsApi.resolveCase(bookingId, caseId, { action, reason, version }),

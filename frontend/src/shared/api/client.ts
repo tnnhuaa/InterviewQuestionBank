@@ -1,7 +1,9 @@
 import createClient from "openapi-fetch";
 import type { paths } from "./generated";
 
-const API_BASE_URL = "/api/v1";
+const API_BASE_URL = typeof window === "undefined"
+  ? "http://localhost/api/v1"
+  : "/api/v1";
 let csrfToken: string | null = null;
 let csrfRequest: Promise<string | null> | null = null;
 
@@ -29,7 +31,25 @@ export class ApiError extends Error {
   }
 }
 
-export const openapi = createClient<paths>({ baseUrl: API_BASE_URL, credentials: "include" });
+const dynamicFetch: typeof fetch = (input, init) => globalThis.fetch(input, init);
+
+export const openapi = createClient<paths>({
+  baseUrl: API_BASE_URL,
+  credentials: "include",
+  fetch: dynamicFetch,
+});
+
+function apiUnavailableError(cause?: unknown) {
+  void cause;
+  return new ApiError(
+    "API đang khởi động hoặc tạm thời mất kết nối. Hãy giữ nguyên dữ liệu và thử lại.",
+    503,
+    {
+      code: "API_UNAVAILABLE",
+      recovery: { kind: "RETRY_SAFE", retryable: true, retryAfterSeconds: 2 },
+    },
+  );
+}
 
 export function setCsrfToken(value: string | null) {
   csrfToken = value;
@@ -38,10 +58,16 @@ export function setCsrfToken(value: string | null) {
 async function refreshCsrf() {
   if (csrfRequest) return csrfRequest;
   csrfRequest = (async () => {
-    const response = await fetch(`${API_BASE_URL}/auth/csrf`, {
-      credentials: "include",
-      headers: { Accept: "application/json" },
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE_URL}/auth/csrf`, {
+        credentials: "include",
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+      });
+    } catch (error) {
+      throw apiUnavailableError(error);
+    }
     if (response.status === 401) return null;
     const payload = await response.json().catch(() => null) as Partial<ApiError> & { csrfToken?: string } | null;
     if (!response.ok) {
@@ -86,17 +112,23 @@ async function request<T>(path: string, options: FetchOptions, retriedCsrf: bool
   await ensureCsrf(method);
   const requestCsrfToken = csrfToken;
   const hasJsonBody = json !== undefined;
-  const result = await requestFromContract(method.toLowerCase(), path, {
-    ...requestInit,
-    ...(hasJsonBody || body ? { body: hasJsonBody ? json : body } : {}),
-    ...(body ? { bodySerializer: () => body } : {}),
-    headers: {
-      Accept: "application/json",
-      ...(hasJsonBody ? { "Content-Type": "application/json" } : {}),
-      ...(requestCsrfToken && !["GET", "HEAD", "OPTIONS"].includes(method) ? { "X-CSRF-Token": requestCsrfToken } : {}),
-      ...headers,
-    },
-  });
+  let result: OpenApiFetchResult;
+  try {
+    result = await requestFromContract(method.toLowerCase(), path, {
+      ...requestInit,
+      cache: "no-store",
+      ...(hasJsonBody || body ? { body: hasJsonBody ? json : body } : {}),
+      ...(body ? { bodySerializer: () => body } : {}),
+      headers: {
+        Accept: "application/json",
+        ...(hasJsonBody ? { "Content-Type": "application/json" } : {}),
+        ...(requestCsrfToken && !["GET", "HEAD", "OPTIONS"].includes(method) ? { "X-CSRF-Token": requestCsrfToken } : {}),
+        ...headers,
+      },
+    });
+  } catch (error) {
+    throw apiUnavailableError(error);
+  }
   if (!result.response.ok) {
     const payload = result.error as Partial<ApiError> | undefined;
     if (result.response.status === 403 && payload?.code === "CSRF_INVALID" && !retriedCsrf) {
@@ -107,6 +139,9 @@ async function request<T>(path: string, options: FetchOptions, retriedCsrf: bool
       return request<T>(path, options, true);
     }
     if (result.response.status === 401) csrfToken = null;
+    if (result.response.status >= 500 && !payload?.message) {
+      throw apiUnavailableError();
+    }
     throw new ApiError(
       payload?.message || `API request failed with status ${result.response.status}`,
       result.response.status,

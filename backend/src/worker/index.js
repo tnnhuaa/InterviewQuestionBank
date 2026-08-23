@@ -3,19 +3,28 @@ import nodemailer from "nodemailer";
 import { getEnvironment } from "../config/environment.js";
 import { pool } from "../platform/db/pool.js";
 import { withTransaction } from "../platform/db/transaction.js";
+import { safeErrorDiagnostics } from "../platform/db/error-classification.js";
 import { createOperationCase } from "../platform/operations.js";
 import { createInAppNotification } from "../platform/outbox.js";
 import { createPrivateStorage } from "../platform/storage/private-storage.js";
 import { createOneTimeToken } from "../platform/security/tokens.js";
 import { extractDocument } from "../modules/jd/extractor.js";
 import { claimAiJob, createAiJobHandlers, createAiProvider, processAiJob } from "../modules/ai/index.js";
+import { enqueueBookingNotification } from "../modules/bookings/service.js";
 
 const pollIntervalMs = 2000;
 const retentionIntervalMs = 60_000;
 
 function extractionErrorCode(error) {
-  const knownCodes = new Set(["EMPTY_EXTRACTION", "OCR_TIMEOUT", "PDF_PAGE_LIMIT"]);
-  return knownCodes.has(error?.message) ? error.message : "EXTRACTION_PROVIDER_FAILURE";
+  const knownCodes = new Set([
+    "EXTRACTION_EMPTY_OUTPUT",
+    "OCR_TIMEOUT",
+    "OCR_LANGUAGE_DATA_UNAVAILABLE",
+    "PDF_PAGE_LIMIT",
+    "EXTRACTION_PROVIDER_FAILURE",
+  ]);
+  const code = error?.code ?? error?.message;
+  return knownCodes.has(code) ? code : "EXTRACTION_PROVIDER_FAILURE";
 }
 
 function classifyNotificationError(error) {
@@ -37,7 +46,7 @@ function classifyNotificationError(error) {
   return { retryable: true, errorClass: name };
 }
 
-async function claimExtractionJob(poolInstance) {
+async function claimExtractionJob(poolInstance, leaseSeconds) {
   return withTransaction(poolInstance, async (client) => {
     const result = await client.query(
       `SELECT ej.*, jd.original_file_ref, jd.original_mime_type
@@ -52,9 +61,9 @@ async function claimExtractionJob(poolInstance) {
     const job = result.rows[0];
     await client.query(
       `UPDATE extraction_jobs SET status = 'PROCESSING', started_at = now(),
-         locked_at = now(), locked_until = now() + interval '5 minutes',
+         locked_at = now(), locked_until = now() + ($2 * interval '1 second'),
          attempt_count = attempt_count + 1 WHERE id = $1`,
-      [job.id],
+      [job.id, leaseSeconds],
     );
     return { ...job, attempt_count: job.attempt_count + 1 };
   });
@@ -65,7 +74,7 @@ async function processExtractionJob({ poolInstance, storage, environment, job })
   try {
     const buffer = await storage.get(job.original_file_ref);
     const result = await extractDocument({ buffer, mimeType: job.original_mime_type, ocr: environment.ocr });
-    if (!result.text.trim()) throw new Error("EMPTY_EXTRACTION");
+    if (!result.text.trim()) throw Object.assign(new Error("EXTRACTION_EMPTY_OUTPUT"), { code: "EXTRACTION_EMPTY_OUTPUT" });
     await withTransaction(poolInstance, async (client) => {
       const updated = await client.query(
         `UPDATE job_descriptions SET extracted_text = $2,
@@ -226,6 +235,14 @@ async function notificationContent(poolInstance, environment, job) {
       subject: "Link phòng phỏng vấn đã sẵn sàng",
       text: "Mở PrepVI để tham gia đúng giờ.",
     },
+    "MEETING_LINK_FAILURE_REPORTED": {
+      subject: "Link phòng phỏng vấn cần được thay",
+      text: "Mở PrepVI và thay link trong vòng 15 phút.",
+    },
+    "MEETING_LINK_RECOVERY_EXPIRED": {
+      subject: "Thời hạn thay link đã hết",
+      text: "Mở PrepVI để chọn đổi giờ hoặc chờ Admin hỗ trợ.",
+    },
     "FEEDBACK_READY": {
       subject: "Bạn đã nhận được phản hồi",
       text: "Mở PrepVI để xem phản hồi riêng tư và hành động tiếp theo.",
@@ -381,16 +398,34 @@ async function cleanupExpiredAiPrivateInputs(poolInstance) {
 }
 
 async function escalateExpiredMeetingLinkFailures(poolInstance) {
-  const result = await poolInstance.query(
-    `UPDATE operation_cases SET
-       public_summary = 'Mentor chưa thay link trong 15 phút. Hai bên có thể chọn reschedule hoặc chờ Admin hỗ trợ.',
-       updated_at = now(), version = version + 1
-     WHERE case_type = 'MEETING_LINK_FAILED' AND status IN ('OPEN','IN_PROGRESS')
-       AND (restricted_metadata->>'replacementDeadline')::timestamptz <= now()
-       AND public_summary NOT LIKE 'Mentor chưa thay link%'
-     RETURNING id`,
-  );
-  return result.rowCount;
+  return withTransaction(poolInstance, async (client) => {
+    const result = await client.query(
+      `WITH escalated AS (
+         UPDATE operation_cases SET
+           public_summary = 'Mentor chưa thay link trong 15 phút. Hai bên có thể chọn reschedule hoặc chờ Admin hỗ trợ.',
+           updated_at = now(), version = version + 1
+         WHERE case_type = 'MEETING_LINK_FAILED' AND status IN ('OPEN','IN_PROGRESS')
+           AND (restricted_metadata->>'replacementDeadline')::timestamptz <= now()
+           AND public_summary NOT LIKE 'Mentor chưa thay link%'
+         RETURNING id, target_id
+       )
+       SELECT b.*, mp.user_id AS mentor_user_id, e.id AS recovery_case_id
+       FROM escalated e
+       JOIN bookings b ON b.id = e.target_id
+       JOIN mentor_profiles mp ON mp.id = b.mentor_id`,
+    );
+    for (const booking of result.rows) {
+      for (const recipientUserId of [booking.student_id, booking.mentor_user_id]) {
+        await enqueueBookingNotification(client, {
+          booking,
+          recipientUserId,
+          eventType: "MEETING_LINK_RECOVERY_EXPIRED",
+          deduplicationVersion: `RECOVERY:${booking.recovery_case_id}`,
+        });
+      }
+    }
+    return result.rowCount;
+  });
 }
 
 export function startWorker({ poolInstance = pool, environment = getEnvironment() } = {}) {
@@ -420,7 +455,10 @@ export function startWorker({ poolInstance = pool, environment = getEnvironment(
     const escalatedLinks = await escalateExpiredMeetingLinkFailures(poolInstance);
     if (escalatedLinks) console.log(JSON.stringify({ event: "meeting_links.recovery_expired", count: escalatedLinks }));
     const extractionJobs = await Promise.all(
-      Array.from({ length: environment.ocr.concurrency }, () => claimExtractionJob(poolInstance)),
+      Array.from(
+        { length: environment.ocr.concurrency },
+        () => claimExtractionJob(poolInstance, environment.ocr.timeoutSeconds + 15),
+      ),
     );
     await Promise.all(extractionJobs.filter(Boolean).map((job) => processExtractionJob({ poolInstance, storage, environment, job })));
     if (environment.ai.enabled) {
@@ -446,11 +484,7 @@ export function startWorker({ poolInstance = pool, environment = getEnvironment(
       } catch (error) {
         console.error(JSON.stringify({
           event: "worker.tick_failed",
-          errorClass: error.name,
-          errorCode: error.code ?? "WORKER_TICK_FAILED",
-          errorMessage: error.message,
-          errorTable: error.table,
-          errorSchema: error.schema,
+          ...safeErrorDiagnostics(error),
         }));
       }
       await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));

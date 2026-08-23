@@ -127,7 +127,7 @@ Không lưu raw prompt/response trong application log. Database ưu tiên lưu n
 - Feature flags, Gemini adapter, prompt/schema registry và redaction.
 - Job runner có lease, retry tối đa hai lần, timeout, quota và circuit breaker.
 - OpenAPI contract cho job status, result metadata và recovery.
-- Error code: `AI_TIMEOUT`, `AI_QUOTA_EXCEEDED`, `AI_INVALID_OUTPUT`, `AI_DISABLED`, `AI_PROVIDER_FAILURE`.
+- Error code: `AI_TIMEOUT`, `AI_QUOTA_EXCEEDED`, `AI_INVALID_OUTPUT`, `AI_REQUEST_INVALID`, `AI_DISABLED`, `AI_PROVIDER_FAILURE`.
 
 ### Slice B — JD analysis
 
@@ -144,7 +144,7 @@ PATCH /job-descriptions/{id}/requirements/{requirementId}
 3. Gemini trích xuất requirement, evidence và taxonomy candidate.
 4. Backend validate và lưu normalized result.
 5. Student xác nhận low-confidence/unmapped requirement.
-6. Question matcher tiếp tục dùng scorer `40/30/15/15`, threshold `60` và deterministic tie-break.
+6. Bộ tìm câu hỏi tiếp tục dùng trọng số `40/30/15/15`, ngưỡng phù hợp `60` điểm và thứ tự phân xử cố định.
 7. Nếu Gemini lỗi, worker chạy analyzer rule-based hiện tại và trả `SUCCEEDED_WITH_FALLBACK`.
 
 ### Slice C — Smart Plan và Mentor explanation

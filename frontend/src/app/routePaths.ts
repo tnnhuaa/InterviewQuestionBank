@@ -8,6 +8,7 @@ export const routes = {
   acceptAdminInvite: "/accept-admin-invite",
   studentDashboard: "/student/dashboard",
   studentProfile: "/student/profile",
+  studentPreparationContexts: "/student/preparation-contexts",
   questions: "/questions",
   question: (questionId = ":questionId") => `/questions/${questionId}`,
   mentors: "/mentors",

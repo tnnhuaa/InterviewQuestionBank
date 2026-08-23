@@ -24,12 +24,12 @@ export interface MentorSearchContext {
   emptyReason: MentorSearchEmptyReason;
 }
 
-export interface MentorSearchResponse extends Page<Mentor> {
+export interface MentorSearchResponse extends Page<PublicMentor> {
   searchContext: MentorSearchContext;
 }
 
 export interface PlanMentorCandidateResponse
-  extends Page<Mentor & {
+  extends Page<PublicMentor & {
     topicOverlap: number;
     positionFit: number;
     matchReasons: string[];
@@ -88,6 +88,7 @@ export interface Question {
 
 export interface JobDescription {
   id: string;
+  title: string;
   sourceType: "PASTED_TEXT" | "PDF" | "IMAGE";
   status:
     | "DRAFT"
@@ -95,7 +96,8 @@ export interface JobDescription {
     | "READY_FOR_REVIEW"
     | "CONFIRMED"
     | "ANALYZED"
-    | "FAILED";
+    | "FAILED"
+    | "ARCHIVED";
   extractedText?: string;
   correctedText?: string;
   correctedVersion: number;
@@ -108,6 +110,8 @@ export interface JobDescription {
     attemptCount: number;
     errorCode?: string;
   };
+  createdAt: string;
+  updatedAt: string;
   version: number;
 }
 
@@ -121,7 +125,7 @@ export interface Requirement {
   effective_topic_id?: string;
   topic_name?: string;
   confidence?: number;
-  source?: "GEMINI";
+  source: "GEMINI" | "RULE_BASED";
   decision?: "ACCEPTED" | "EDITED" | "UNMAPPED";
   decision_topic_id?: string;
 }
@@ -167,9 +171,12 @@ export interface Match {
 }
 export interface PreparationPlan {
   id: string;
+  title: string;
   jobDescriptionId: string;
   matchingVersion: string;
   status: string;
+  createdAt: string;
+  updatedAt: string;
   version: number;
   items: Array<{
     id: string;
@@ -187,15 +194,13 @@ export interface PreparationPlan {
   }>;
 }
 
-export interface Mentor {
+export interface PublicMentor {
   id: string;
-  userId: string;
   displayName: string;
   headline: string;
   bio: string;
   timezone: string;
-  verificationStatus: "DRAFT" | "PENDING" | "APPROVED" | "REJECTED";
-  publicRating: number;
+  publicRating: number | null;
   expertise: string[];
   positionExpertise?: string[];
   topicIds?: string[];
@@ -327,6 +332,17 @@ export interface Booking {
   scheduleVersion?: number;
   meetingLink?: string;
   meetingLinkVersion?: number;
+  meetingLinkUpdatedAt?: string;
+  meetingLinkPolicy?: {
+    state: "AVAILABLE" | "MISSING" | "OUTSIDE_WINDOW" | "EXPIRED" | "INVALID_BOOKING_STATE";
+    canView: boolean;
+    canEdit: boolean;
+    canReportBroken: boolean;
+    canReportMissing: boolean;
+    editDeadline?: string;
+    replacementDeadline?: string;
+    activeFailureCaseId?: string;
+  };
   version: number;
 
   meetingRecovery?: {
@@ -520,6 +536,24 @@ export interface StudentDashboard {
     mentorName: string;
   }>;
 }
+
+export interface PreparationPlanSummary {
+  id: string;
+  title: string;
+  jobDescriptionId: string;
+  jobDescriptionTitle: string;
+  matchingVersion: string;
+  status: "ACTIVE" | "COMPLETED" | "INVALIDATED" | "ARCHIVED";
+  topics: string[];
+  createdAt: string;
+  updatedAt: string;
+  version: number;
+}
+
+export interface Mentor extends PublicMentor {
+  userId: string;
+  verificationStatus: "DRAFT" | "PENDING" | "APPROVED" | "REJECTED";
+}
 export interface QuestionImportRow {
   id: string;
   rowNumber: number;
@@ -634,17 +668,19 @@ export const questionsApi = {
 
 export const jobDescriptionsApi = {
   list: () => apiFetch<Page<JobDescription>>("/job-descriptions"),
-  createFromText: (text: string) =>
+  createFromText: (text: string, idempotencyKey: string) =>
     apiFetch<JobDescription>("/job-descriptions", {
       method: "POST",
       json: { text },
+      headers: { "Idempotency-Key": idempotencyKey },
     }),
-  upload: (file: File) => {
+  upload: (file: File, idempotencyKey: string) => {
     const body = new FormData();
     body.append("file", file);
     return apiFetch<JobDescription>("/job-descriptions", {
       method: "POST",
       body,
+      headers: { "Idempotency-Key": idempotencyKey },
     });
   },
   extractFromFile: (file: File) => {
@@ -656,15 +692,25 @@ export const jobDescriptionsApi = {
     });
   },
   get: (id: string) => apiFetch<JobDescription>(`/job-descriptions/${id}`),
-  startExtraction: (id: string) =>
+  update: (id: string, input: { title: string; version: number }) =>
+    apiFetch<JobDescription>(`/job-descriptions/${id}`, {
+      method: "PATCH",
+      json: input,
+    }),
+  archive: (id: string, version: number) =>
+    apiFetch<JobDescription>(`/job-descriptions/${id}`, {
+      method: "DELETE",
+      json: { version },
+    }),
+  startExtraction: (id: string, idempotencyKey: string) =>
     apiFetch<JobDescription>(`/job-descriptions/${id}/extract`, {
       method: "POST",
-      headers: { "Idempotency-Key": createIdempotencyKey() },
+      headers: { "Idempotency-Key": idempotencyKey },
     }),
-  retryExtraction: (id: string) =>
+  retryExtraction: (id: string, idempotencyKey: string) =>
     apiFetch<JobDescription>(`/job-descriptions/${id}/extraction-retries`, {
       method: "POST",
-      headers: { "Idempotency-Key": createIdempotencyKey() },
+      headers: { "Idempotency-Key": idempotencyKey },
     }),
   saveCorrectedText: (id: string, correctedText: string, version: number) =>
     apiFetch<JobDescription>(`/job-descriptions/${id}/text`, {
@@ -680,6 +726,10 @@ export const jobDescriptionsApi = {
     apiFetch<{
       jobDescriptionId: string;
       analysisVersion: number;
+      analysisSource: "GEMINI" | "RULE_BASED";
+      fallbackUsed: boolean;
+      aiJobId: string | null;
+      fallbackErrorCode: string | null;
       requirements: Requirement[];
     }>(`/job-descriptions/${id}/analyze`, {
       method: "POST",
@@ -696,6 +746,10 @@ export const jobDescriptionsApi = {
     apiFetch<{
       jobDescriptionId: string;
       analysisVersion: number;
+      analysisSource: "GEMINI" | "RULE_BASED";
+      fallbackUsed: boolean;
+      aiJobId: string | null;
+      fallbackErrorCode: string | null;
       requirements: Requirement[];
     }>(`/job-descriptions/${id}/analysis${toQuery({ analysisVersion })}`),
   normalizations: (
@@ -748,15 +802,7 @@ export const jobDescriptionsApi = {
 };
 
 export const preparationPlansApi = {
-  list: () =>
-    apiFetch<
-      Page<
-        Pick<
-          PreparationPlan,
-          "id" | "jobDescriptionId" | "matchingVersion" | "status" | "version"
-        >
-      >
-    >("/preparation-plans"),
+  list: () => apiFetch<Page<PreparationPlanSummary>>("/preparation-plans"),
   create: (input: {
     jobDescriptionId: string;
     matchingVersion: string;
@@ -767,6 +813,16 @@ export const preparationPlansApi = {
       json: input,
     }),
   get: (id: string) => apiFetch<PreparationPlan>(`/preparation-plans/${id}`),
+  update: (id: string, input: { title: string; version: number }) =>
+    apiFetch<PreparationPlanSummary>(`/preparation-plans/${id}`, {
+      method: "PATCH",
+      json: input,
+    }),
+  archive: (id: string, version: number) =>
+    apiFetch<{ id: string; status: "ARCHIVED" }>(`/preparation-plans/${id}`, {
+      method: "DELETE",
+      json: { version },
+    }),
   updateItem: (
     planId: string,
     itemId: string,
@@ -817,7 +873,7 @@ export const aiApi = {
 export const mentorsApi = {
   list: (filters: MentorSearchFilters = {}) =>
     apiFetch<MentorSearchResponse>(`/mentors${toQuery(filters as Record<string, string | number | undefined>)}`),
-  get: (id: string) => apiFetch<Mentor>(`/mentors/${id}`),
+  get: (id: string) => apiFetch<PublicMentor>(`/mentors/${id}`),
   ownProfile: () => apiFetch<Mentor>("/mentor-profile"),
   saveProfile: (input: Record<string, unknown>) =>
     apiFetch<Mentor>("/mentor-profile", { method: "PUT", json: input }),
@@ -841,20 +897,14 @@ export const mentorsApi = {
 };
 
 export const bookingsApi = {
-  list: (
-    filters: Record<string, string | number | undefined> = {},
-  ) => apiFetch<Page<Booking>>(`/bookings${toQuery(filters)}`),
-
-  create: (
-    input: Record<string, unknown>,
-    idempotencyKey: string = createIdempotencyKey(),
-  ) =>
+  list: (filters: Record<string, string | number | undefined> = {}) =>
+    apiFetch<Page<Booking>>(`/bookings${toQuery(filters)}`),
+  create: (input: Record<string, unknown>, idempotencyKey: string) =>
     apiFetch<Booking>("/bookings", {
       method: "POST",
       json: input,
       headers: { "Idempotency-Key": idempotencyKey },
-    }),  
-  
+    }),
   get: (id: string) => apiFetch<Booking>(`/bookings/${id}`),
   transition: (id: string, input: Record<string, unknown>) =>
     apiFetch<Booking>(`/bookings/${id}/transitions`, {
@@ -864,10 +914,15 @@ export const bookingsApi = {
     }),
   meetingLink: (id: string, input: { url: string; version?: number }) =>
     apiFetch(`/bookings/${id}/meeting-link`, { method: "PUT", json: input }),
-  reportLink: (id: string, reason: string) =>
+  reportLink: (
+    id: string,
+    input: { kind: "BROKEN" | "MISSING"; reason: string },
+    idempotencyKey: string,
+  ) =>
     apiFetch(`/bookings/${id}/meeting-link-failures`, {
       method: "POST",
-      json: { reason },
+      json: input,
+      headers: { "Idempotency-Key": idempotencyKey },
     }),
   startAgendaDraft: (id: string) =>
     apiFetch<AiJob>(`/bookings/${id}/agenda-drafts`, {

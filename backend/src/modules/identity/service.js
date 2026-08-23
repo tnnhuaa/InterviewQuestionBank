@@ -2,6 +2,7 @@ import argon2 from "argon2";
 import { AppError, notFoundError } from "../../shared/errors.js";
 import { createOneTimeToken, createOpaqueToken, hashToken, verifyOneTimeToken } from "../../platform/security/tokens.js";
 import { withTransaction } from "../../platform/db/transaction.js";
+import { queryWithTransientRetry } from "../../platform/db/retry.js";
 import { createInAppNotification, enqueueNotification } from "../../platform/outbox.js";
 import { writeAudit } from "../../platform/audit.js";
 
@@ -134,7 +135,8 @@ export function createIdentityService({ pool, environment }) {
   }
 
   async function login({ email, password, currentSessionId = null }) {
-    const result = await pool.query(
+    const result = await queryWithTransientRetry(
+      pool,
       `SELECT u.id, u.email, u.display_name, u.status, u.password_hash,
               coalesce(array_agg(ur.role_code) FILTER (WHERE ur.role_code IS NOT NULL), '{}') AS roles
        FROM users u LEFT JOIN user_roles ur ON ur.user_id = u.id

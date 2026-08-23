@@ -1,15 +1,12 @@
 import { Router } from "express";
-import multer from "multer";
 import { z } from "zod";
 import { requireRole } from "../../middleware/auth.js";
 import { asyncHandler } from "../../shared/async-handler.js";
+import { singleUpload } from "../../shared/single-upload.js";
 import { parse } from "../../shared/validation.js";
 import { createMentorsService } from "./service.js";
 
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { files: 1, fileSize: 10 * 1024 * 1024 },
-});
+const uploadEvidence = singleUpload("evidence", { fileSize: 10 * 1024 * 1024 });
 
 const uniqueGuidArray = z
   .array(z.guid())
@@ -97,7 +94,7 @@ export function createMentorsRouter({ pool, storage, environment }) {
   router.post(
     "/mentor-verifications",
     requireRole("MENTOR"),
-    upload.single("evidence"),
+    uploadEvidence,
     asyncHandler(async (request, response) => {
       const input = parse(verificationSubmissionSchema, request.body);
       response

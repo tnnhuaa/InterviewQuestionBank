@@ -37,7 +37,15 @@ function primaryRole(user: SessionUser | null, demoRole: Role | null): Role {
 export function AppProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [demoRole, setDemoRole] = useState<Role | null>(null);
-  const session = useQuery<SessionUser | null>({ queryKey: sessionQueryKey, queryFn: () => apiFetch<SessionUser>("/me"), retry: false });
+  const session = useQuery<SessionUser | null>({
+    queryKey: sessionQueryKey,
+    queryFn: ({ signal }) => apiFetch<SessionUser>("/me", { signal }),
+    retry: false,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
   const user = session.data ?? null;
   const value = useMemo<AppContextValue>(() => ({
     role: primaryRole(user, demoRole),
