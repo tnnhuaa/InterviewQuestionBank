@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
@@ -16,6 +16,7 @@ import {
 } from "@/shared/api/resources";
 import AuthNavbar from "@/shared/components/AuthNavbar";
 import ErrorPanel from "@/shared/components/ErrorPanel";
+import { prepareBookingRequest, type BookingRequestAttempt } from "@/features/student/booking-request";
 
 const schema = z.object({
   context: z.string().min(1, "Chọn JD hoặc kế hoạch"),
@@ -35,7 +36,8 @@ export default function BookingNew() {
   const navigate = useNavigate();
   const submissionLock = useRef(false);
   const previousContext = useRef("");
-  const [lastAttempt, setLastAttempt] = useState<BookingAttempt | null>(null);
+  const lastAttempt = useRef<BookingAttempt | null>(null);
+  const requestAttempt = useRef<BookingRequestAttempt | null>(null);
 
   const mentor = useQuery({
     queryKey: ["mentor", mentorId],
@@ -88,7 +90,8 @@ export default function BookingNew() {
     if (previousContext.current !== contextValue) {
       previousContext.current = contextValue;
       form.setValue("selectedTopicIds", [], { shouldValidate: false });
-      setLastAttempt(null);
+      lastAttempt.current = null;
+      requestAttempt.current = null;
     }
   }, [contextValue, form]);
 
@@ -111,9 +114,7 @@ export default function BookingNew() {
     const [kind, id] = values.context.split(":");
     const plan = kind === "plan" ? selectedPlan.data : undefined;
     if ((kind === "plan" && !plan) || !id) return;
-    const attempt: BookingAttempt = {
-      idempotencyKey: createIdempotencyKey(),
-      input: {
+    const input = {
         mentorId,
         slotId,
         goal: values.goal,
@@ -123,17 +124,21 @@ export default function BookingNew() {
         ...(kind === "plan"
           ? { preparationPlanId: id, preparationPlanVersion: plan!.version }
           : { jobDescriptionId: id }),
-      },
+    };
+    requestAttempt.current = prepareBookingRequest(requestAttempt.current, input, createIdempotencyKey);
+    const attempt: BookingAttempt = {
+      input,
+      idempotencyKey: requestAttempt.current.idempotencyKey,
     };
     submissionLock.current = true;
-    setLastAttempt(attempt);
+    lastAttempt.current = attempt;
     mutation.mutate(attempt);
   };
 
   const retry = () => {
-    if (!lastAttempt || submissionLock.current) return;
+    if (!lastAttempt.current || submissionLock.current) return;
     submissionLock.current = true;
-    mutation.mutate(lastAttempt);
+    mutation.mutate(lastAttempt.current);
   };
 
   const slot = mentor.data?.nextSlots.find((item) => item.id === slotId);

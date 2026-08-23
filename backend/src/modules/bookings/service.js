@@ -248,6 +248,24 @@ export function createBookingsService({ pool, environment }) {
   async function get(actor, bookingId) {
     const row = await getParticipantRow(pool, actor, bookingId);
     const result = bookingDto(row);
+    const transitions = await pool.query(
+      `SELECT bt.id, bt.from_state, bt.to_state, bt.action, bt.reason, bt.occurred_at,
+              u.display_name AS actor_name
+       FROM booking_transitions bt
+       JOIN users u ON u.id = bt.actor_id
+       WHERE bt.booking_id = $1
+       ORDER BY bt.occurred_at DESC, bt.id DESC`,
+      [bookingId],
+    );
+    result.transitionHistory = transitions.rows.map((transition) => ({
+      id: transition.id,
+      fromState: transition.from_state,
+      toState: transition.to_state,
+      action: transition.action,
+      reason: transition.reason,
+      occurredAt: transition.occurred_at,
+      actorName: transition.actor_name,
+    }));
     const isParticipant = row.student_id === actor.id || row.mentor_user_id === actor.id;
     const linkResult = await pool.query(
       `SELECT encrypted_url, version, available_from, expires_at, updated_at

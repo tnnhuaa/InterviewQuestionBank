@@ -1,0 +1,38 @@
+import { describe, expect, it } from "vitest";
+import { scoreQuestionMatch } from "../src/modules/jd/matcher.js";
+
+const ruleSet = {
+  exact_topic_weight: 40,
+  keyword_weight: 30,
+  role_weight: 15,
+  seniority_weight: 15,
+};
+
+const candidate = {
+  title: "React component rendering",
+  content: "React component state and props rendering lifecycle",
+  positions: ["frontend-intern"],
+  difficulty: "MEDIUM",
+};
+
+describe("scoreQuestionMatch", () => {
+  it("uses the approved 40/30/15/15 score components for a matching frontend intern question", () => {
+    expect(scoreQuestionMatch({
+      requirementText: "React component rendering",
+      candidate,
+      ruleSet,
+      roleRequirements: [{ raw_text: "Frontend" }],
+      seniorityRequirements: [{ raw_text: "Intern" }],
+    })).toEqual({ keywordScore: 30, roleScore: 15, seniorityScore: 15, score: 100 });
+  });
+
+  it("does not award role points merely because the question has an unrelated position", () => {
+    expect(scoreQuestionMatch({
+      requirementText: "React component rendering",
+      candidate: { ...candidate, positions: ["backend-intern"] },
+      ruleSet,
+      roleRequirements: [{ raw_text: "Frontend" }],
+      seniorityRequirements: [{ raw_text: "Intern" }],
+    }).roleScore).toBe(0);
+  });
+});

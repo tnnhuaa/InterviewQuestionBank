@@ -302,6 +302,7 @@ export type BookingStatus =
   | "CANCELLED"
   | "COMPLETED"
   | "NO_SHOW";
+
 export interface Booking {
   id: string;
   studentId: string;
@@ -321,7 +322,10 @@ export interface Booking {
   correctedText?: string;
   topicNames: string[];
   selectedTopicIds?: string[];
-  questionGroups?: Array<{ id: string; title: string }>;
+  questionGroups?: Array<{
+    id: string;
+    title: string;
+  }>;
   roleSummary?: string;
   senioritySummary?: string;
   preparationPlanVersion?: number;
@@ -340,12 +344,14 @@ export interface Booking {
     activeFailureCaseId?: string;
   };
   version: number;
+
   meetingRecovery?: {
     id: string;
     summary: string;
     deadline: string;
     version: number;
   };
+
   participantCases?: Array<{
     id: string;
     type: "LATE_CHANGE" | "NO_SHOW";
@@ -353,7 +359,23 @@ export interface Booking {
     version: number;
     requestedBy: string;
   }>;
-  operationCase?: { id: string; status: string; version: number };
+
+  transitionHistory?: Array<{
+    id: string;
+    fromState: string | null;
+    toState: string;
+    action: string;
+    reason: string | null;
+    occurredAt: string;
+    actorName: string;
+  }>;
+
+  operationCase?: {
+    id: string;
+    status: string;
+    version: number;
+  };
+
   pendingProposal?: {
     id: string;
     proposed_slot_id: string;
@@ -364,6 +386,7 @@ export interface Booking {
     source_timezone: string;
   };
 }
+
 export interface OperationCase {
   id: string;
   type: string;
@@ -658,6 +681,14 @@ export const jobDescriptionsApi = {
       method: "POST",
       body,
       headers: { "Idempotency-Key": idempotencyKey },
+    });
+  },
+  extractFromFile: (file: File) => {
+    const body = new FormData();
+    body.append("file", file);
+    return apiFetch<JobDescription>("/job-descriptions/extract-from-file", {
+      method: "POST",
+      body,
     });
   },
   get: (id: string) => apiFetch<JobDescription>(`/job-descriptions/${id}`),
