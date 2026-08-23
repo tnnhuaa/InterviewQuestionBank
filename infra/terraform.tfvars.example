@@ -20,5 +20,5 @@ env_session_cookie_secure = "true"
 
 # --- Env (SENSITIVE) — điền giá trị thật, file này không commit ---
 env_database_url   = "postgresql://user:pass@host:5432/db?sslmode=require"
-env_session_secret = "thay-bang-chuoi-ngau-nhien-it-nhat-32-ky-tu"
+env_session_secret = "" #32-ki-tu-ngau-nhien
 env_gemini_api_key = ""
