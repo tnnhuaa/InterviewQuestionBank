@@ -2,8 +2,8 @@
 
 | Attribute | Value |
 |---|---|
-| Version | 0.6 |
-| Last updated | 17/08/2026 |
+| Version | 0.7 |
+| Last updated | 23/08/2026 |
 | Architecture owner | Luân |
 | Status | Proposed architecture baseline for the MVP/pilot; progressively validated with PoC evidence |
 
@@ -102,7 +102,7 @@ flowchart LR
     PrepVI -->|"Approved session links<br/>HTTPS"| Meeting["Meeting Provider<br/>[External Software System]"]
 ~~~
 
-The diagram deliberately treats PrepVI as one software system. Applications, workers, and data stores inside PrepVI appear only in the Container diagram.
+The diagram deliberately treats PrepVI as one software system. Applications and data stores inside PrepVI appear only in the Container diagram.
 
 ### Trust boundaries
 
@@ -128,34 +128,24 @@ flowchart LR
         direction LR
         Web["React Web App<br/>[Container: React/Vite]<br/>Browser UI"]
 
-        subgraph Runtime["Application and worker containers"]
-            direction TB
-            API["Express API<br/>[Node.js/Express]<br/>Modular monolith"]
-            DocWorker["Extraction/OCR Worker<br/>[Node.js]"]
-            AIWorker["AI Job Worker<br/>[Node.js]"]
-            NotifyWorker["Notification Worker<br/>[Node.js]"]
-        end
+        API["Express API<br/>[Container: Node.js/Express]<br/>Modular monolith; synchronous processing"]
 
         subgraph Data["Data-store containers"]
             direction TB
-            DB[("PostgreSQL<br/>Business data, jobs,<br/>audit and outbox")]
+            DB[("PostgreSQL<br/>Business data<br/>and audit")]
             FileStore["Private File Storage<br/>Temporary JD files"]
         end
 
         Web -->|"HTTPS REST/JSON<br/>/api/v1"| API
         API -->|"Reads/writes<br/>SQL"| DB
-        API -->|"Stores files"| FileStore
-        DocWorker -->|"Extraction jobs<br/>SQL"| DB
-        DocWorker -->|"Reads/deletes files"| FileStore
-        AIWorker -->|"AI jobs<br/>SQL"| DB
-        NotifyWorker -->|"Outbox<br/>SQL"| DB
+        API -->|"Stores, reads and<br/>deletes JD files"| FileStore
     end
 
-    AIWorker -->|"HTTPS/JSON"| Gemini["Gemini API<br/>[External Software System]"]
-    NotifyWorker -->|"HTTPS/API"| Email["Email Provider<br/>[External Software System]"]
+    API -->|"Assisted extraction and drafts<br/>HTTPS/JSON"| Gemini["Gemini API<br/>[External Software System]"]
+    API -->|"Notifications<br/>HTTPS/API"| Email["Email Provider<br/>[External Software System]"]
 ~~~
 
-The diagram shows logical runtime and data boundaries, not physical deployment nodes. Frontend and backend have independent build/deployment. JD processing is a module/worker within the same modular-monolith codebase, not a microservice. A one-instance PoC may run a worker with the backend process and use temporary private storage behind an adapter; the MVP/pilot replaces it with private object storage. Minimum environments are local, test/CI, staging/UAT, and production/pilot. Secrets do not belong in the repository. Migrations run from a controlled pipeline/job with one runner at a time and a backup/forward-fix plan.
+The diagram shows logical runtime and data boundaries, not physical deployment nodes. Frontend and backend have independent build/deployment. JD extraction/OCR, AI assistance, and notification delivery are modules executed by the Express API; the C4 baseline has no separate worker flow. The PoC may use temporary private storage behind an adapter; the MVP/pilot replaces it with private object storage. Minimum environments are local, test/CI, staging/UAT, and production/pilot. Secrets do not belong in the repository. Migrations run from a controlled pipeline/job with one runner at a time and a backup/forward-fix plan.
 
 ### 5.1 Deployment profile and pilot cost
 
