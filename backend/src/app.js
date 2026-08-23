@@ -24,6 +24,7 @@ import { createQuestionImportsRouter } from "./modules/question-imports/index.js
 import { AppError } from "./shared/errors.js";
 import { createStatusRouter } from "./modules/system/status.routes.js";
 import { createAiProvider, createAiRouter } from "./modules/ai/index.js";
+import { jdRoute } from "./modules/jd-upload/jdRoute.js";
 
 const disconnectedCheck = async () => false;
 
@@ -100,6 +101,7 @@ export function createApp({
   app.use("/api/v1", createDashboardRouter({ pool }));
   app.use("/api/v1", createQuestionImportsRouter({ pool }));
   app.use("/api/v1", createAiRouter({ pool, environment, provider: aiProvider }));
+  app.use("/api/v1", jdRoute);
   app.use(notFoundHandler);
   app.use(errorHandler);
 
