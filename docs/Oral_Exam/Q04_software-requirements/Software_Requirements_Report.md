@@ -79,11 +79,32 @@ Traceability follows this chain:
 
 Private-object authorization, booking consistency and recovery behavior are treated as cross-cutting controls rather than isolated interface details.
 
-## 7. Change control
+## 7. Evaluation and review method
+
+The requirements baseline is evaluated against six controls:
+
+| Control | Review question | Required evidence |
+| --- | --- | --- |
+| Correctness and necessity | Does the item support a stated objective or stakeholder workflow? | objective/workflow trace |
+| Completeness | Are success, invalid input, authorization, conflict and recovery conditions covered? | Acceptance Criteria review |
+| Consistency | Are actors, states, rules and time limits consistent across artifacts? | cross-artifact review |
+| Feasibility | Can the team deliver it within architectural, provider, capacity and security constraints? | technical review, estimate or proof of concept |
+| Verifiability | Is the outcome observable and pass/fail? | test/manual scenario and expected result |
+| Traceability | Can the requirement be followed to implementation and evidence? | traceability chain |
+
+Git review and document history prove that an artifact changed and was reviewable. They do not prove formal Product Owner acceptance. The repository does not retain a signed baseline approval or complete story-indexed UAT package.
+
+## 8. Use during delivery
+
+The Product Backlog supplies ordered work to the Kanban flow. Refined items are pulled into Ready only when their value, Acceptance Criteria, dependencies and evidence needs are sufficiently clear. During implementation, stories and rules guide API, database, interface and recovery decisions; during validation, Acceptance Criteria define the observable basis for acceptance.
+
+When code, provider constraints or defects reveal a requirement change, the team must update the affected story, rules, release classification, traceability and validation impact. Implementation presence does not silently move an Extended or Future item into the Must baseline.
+
+## 9. Change control
 
 A proposed requirement change is recorded, classified and assessed before the release baseline is changed. The impact review covers business value, Story Points, dependency order, architecture, API/schema changes, security/privacy, test evidence and release timing. Extended and future work is not silently moved into R1 Must.
 
-## 8. Evidence
+## 10. Evidence
 
 ![Product Backlog release boundary displayed in GitHub](img/Q04-01-product-backlog-github.png)
 
@@ -93,14 +114,16 @@ A proposed requirement change is recorded, classified and assessed before the re
 
 **Figure 2.** The real GitHub history window for the Product Backlog artifact.
 
-## 9. Limitations
+## 11. Limitations
 
 - The repository does not contain a signed requirements-baseline approval.
 - Implementation presence is not equivalent to complete UAT or formal story acceptance.
 - Proposed quality targets must not be reported as achieved without a defined dataset and retained measurement.
 - The current release classification remains authoritative until a recorded scope decision changes it.
 
-## 10. Source artifacts
+## 12. Submission package and source artifacts
+
+The two required printed documents are this report and the [PrepVI User Guide](User_Guide.md). The versioned Product Backlog remains the detailed requirements source and may be printed as a supporting appendix.
 
 - [Product Backlog and Acceptance Criteria](../../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md)
 - [Project Vision and Scope](../../Project_Vision_and_Scope/Project_Vision_and_Scope.md)

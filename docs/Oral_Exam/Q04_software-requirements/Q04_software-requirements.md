@@ -1,12 +1,12 @@
 # Câu 04 - Yêu cầu phần mềm, Product Backlog và tiêu chí chấp nhận
 
-## 1. Câu hỏi trọng tâm
+## 1. Đề chính thức và các ý bắt buộc
 
-1. Yêu cầu phần mềm, câu chuyện người dùng, Product Backlog và tiêu chí chấp nhận là gì?
-2. Nhóm thu thập, phân loại, ưu tiên, ước lượng và kiểm chứng yêu cầu như thế nào?
-3. Nhóm viết tiêu chí chấp nhận để có thể kiểm thử ra sao?
-4. Yêu cầu chức năng, yêu cầu phi chức năng và quy tắc nghiệp vụ khác nhau thế nào?
-5. Nhóm duy trì khả năng truy vết và kiểm soát thay đổi Product Backlog như thế nào?
+> Trình bày quá trình hình thành và phương pháp đánh giá tài liệu Yêu cầu phần mềm (Software Requirements, hay Product Backlog) của nhóm.
+
+**Bản in đề yêu cầu:** tài liệu Yêu cầu phần mềm và tài liệu Hướng dẫn sử dụng hệ thống của nhóm.
+
+Khi trả lời phải bao phủ: nội dung chính của tài liệu; đầu vào; các bước hình thành; phương pháp đánh giá; lý do cần tài liệu; cách tài liệu được dùng và cập nhật trong dự án. Các phần còn lại của bản học giải thích thêm User Story, Acceptance Criteria (AC), Business Rule (BR), Non-functional Requirement (NFR), truy vết và kiểm soát thay đổi.
 
 > Product Backlog là danh sách yêu cầu và công việc sản phẩm được sắp thứ tự. Nhóm dùng Product Backlog làm đầu vào cho luồng Kanban; hạng mục đủ điều kiện được kéo từ Backlog sang Ready theo giới hạn công việc đang thực hiện (Work in Progress - WIP). Thuật ngữ này không có nghĩa nhóm vận hành theo Scrum.
 
@@ -55,7 +55,39 @@ Git chứng minh tài liệu đã thay đổi. Repository không lưu chữ ký 
 - Các mô-đun, tệp chuyển đổi cơ sở dữ liệu, tuyến API và màn hình trong mã nguồn tại `fd8a30b`.
 - Kết quả kiểm thử/UAT chỉ được coi là minh chứng chấp nhận khi được lưu riêng và liên kết với AC tương ứng.
 
-## 3. Phạm vi Product Backlog hiện hành
+## 3. Quá trình hình thành, đánh giá, sử dụng và cập nhật
+
+### Đầu vào và các bước hình thành
+
+1. Project Charter và Vision and Scope xác định vấn đề, mục tiêu, stakeholder, actor và ranh giới sản phẩm.
+2. Current-State/Future-State Workflow và prototype làm rõ hành trình nghiệp vụ, điểm đau và giao diện dự kiến.
+3. Nhóm chuyển nhu cầu thành User Story theo vai trò - nhu cầu - giá trị, sau đó nhóm theo năng lực sản phẩm.
+4. Nhóm bổ sung AC, BR, NFR, phụ thuộc, Story Point, phân loại phát hành và dữ liệu/minh chứng cần kiểm tra.
+5. Product Owner sắp thứ tự theo giá trị, rủi ro và phụ thuộc; nhóm phát triển đánh giá tính khả thi và ước lượng.
+6. Backlog được quản lý bằng Git; thay đổi cần xem xét tác động tới kiến trúc, API, cơ sở dữ liệu, giao diện, kiểm thử và đường cơ sở phát hành.
+
+### Phương pháp đánh giá tài liệu
+
+| Tiêu chí | Cách đánh giá | Ví dụ bằng chứng |
+|---|---|---|
+| Đúng và cần thiết | đối chiếu mục tiêu, quy trình nghiệp vụ và nhu cầu stakeholder | story nối được tới mục tiêu/quy trình |
+| Đầy đủ | kiểm tra luồng thành công, lỗi, quyền, dữ liệu và phục hồi | AC có trường hợp thành công, lỗi và biên |
+| Nhất quán | kiểm tra thuật ngữ, trạng thái, mốc thời gian và rule dùng chung | một tên vai trò/trạng thái trong backlog, API và UI |
+| Khả thi | nhóm phát triển/kiến trúc đánh giá phụ thuộc, PoC, chi phí và rủi ro | ước lượng, phụ thuộc, quyết định kiến trúc |
+| Có thể kiểm thử | AC phải có điều kiện và kết quả quan sát được | liên kết AC với kiểm thử/minh chứng thủ công |
+| Có thể truy vết | nối mục tiêu -> quy trình -> story -> quy tắc -> triển khai -> minh chứng | chuỗi truy vết ở mục 8 |
+
+Việc xem xét tài liệu và lịch sử Git chỉ chứng minh đã xem xét/thay đổi. Chấp nhận chính thức cần quyết định Product Owner/UAT; repository hiện không có chữ ký đường cơ sở đầy đủ, vì vậy không được tuyên bố toàn bộ backlog đã được nghiệm thu.
+
+### Tài liệu được dùng và cập nhật thế nào?
+
+- Product Backlog cung cấp hạng mục cho luồng Kanban; chỉ item đủ rõ mới được kéo sang Ready theo giới hạn WIP.
+- AC là cơ sở thiết kế kiểm thử/quy trình đi thử thủ công và quyết định chấp nhận; BR/NFR tạo ràng buộc dùng chung cho nhiều story.
+- Khi code cho US-21/22/23 xuất hiện nhưng release classification chưa đổi, backlog vẫn là nguồn chính thức về phạm vi.
+- Khi phát hiện lỗi E2E, thay đổi provider hoặc bổ sung AI hỗ trợ, nhóm phải cập nhật story/AC/rule/ADR và tác động kiểm thử; không chỉ sửa mã.
+- Sau mỗi lần làm rõ, xem xét hoặc quyết định thay đổi, Git lưu tác giả, thời điểm và phần khác biệt; đường cơ sở chỉ đổi sau quyết định có thẩm quyền.
+
+## 4. Phạm vi Product Backlog hiện hành
 
 | Phân loại phát hành | Câu chuyện | Story Point | Ý nghĩa |
 |---|---|---:|---|
@@ -65,7 +97,7 @@ Git chứng minh tài liệu đã thay đổi. Repository không lưu chữ ký 
 
 Câu chuyện 8 SP thể hiện độ lớn hoặc bất định cao và cần được nhóm phát triển cân nhắc tách trước khi đưa vào trạng thái Ready.
 
-## 4. Ví dụ cụ thể: US-30
+## 5. Ví dụ cụ thể: US-30
 
 **Câu chuyện:** Là Học viên (Student), tôi muốn gắn JD hoặc Preparation Plan của mình vào lịch hẹn để Người hướng dẫn (Mentor) nhận đúng ngữ cảnh luyện tập.
 
@@ -82,7 +114,7 @@ Câu chuyện 8 SP thể hiện độ lớn hoặc bất định cao và cần �
 
 Ví dụ này cho thấy một câu chuyện người dùng phải bao quát hành vi chức năng, bảo mật, quyền riêng tư, tính nhất quán và cách phục hồi khi xảy ra lỗi.
 
-## 5. Cách viết tiêu chí chấp nhận tốt
+## 6. Cách viết tiêu chí chấp nhận tốt
 
 Tiêu chí tốt phải:
 
@@ -99,7 +131,7 @@ Tiêu chí tốt phải:
 
 Tiêu chí chấp nhận là hợp đồng kiểm chứng, không phải tuyên bố tính năng đã hoàn thành. Muốn gọi một câu chuyện là Done vẫn cần minh chứng kiểm thử, đánh giá và quyết định chấp nhận phù hợp.
 
-## 6. Quy tắc nghiệp vụ và NFR tiêu biểu
+## 7. Quy tắc nghiệp vụ và NFR tiêu biểu
 
 - **BR-02:** một khung giờ chỉ có tối đa một lịch hẹn chiếm chỗ.
 - **BR-07:** chỉ câu hỏi `PUBLISHED` có phân loại và nguồn hợp lệ mới được công khai hoặc dùng cho đối sánh.
@@ -113,7 +145,7 @@ Tiêu chí chấp nhận là hợp đồng kiểm chứng, không phải tuyên 
 
 Các mục tiêu NFR chỉ được báo cáo là đạt khi có kết quả đo và bộ dữ liệu/rubric được lưu.
 
-## 7. Khả năng truy vết và kiểm soát thay đổi
+## 8. Khả năng truy vết và kiểm soát thay đổi
 
 Ví dụ chuỗi truy vết:
 
@@ -123,7 +155,7 @@ Chuỗi này trả lời yêu cầu đến từ đâu, câu chuyện nào triể
 
 Khi thay đổi phạm vi, nhóm phải cập nhật đồng thời câu chuyện/AC, thứ tự/phụ thuộc, ước lượng, ma trận truy vết, prototype/kiến trúc bị ảnh hưởng và tác động phát hành.
 
-## 8. Đối chiếu với mã nguồn tại `fd8a30b`
+## 9. Đối chiếu với mã nguồn tại baseline `fd8a30b`
 
 | Hạng mục | Hiện trạng mã nguồn | Cách trình bày đúng |
 |---|---|---|
@@ -136,7 +168,7 @@ Khi thay đổi phạm vi, nhóm phải cập nhật đồng thời câu chuyệ
 
 Nếu muốn chuyển US-21, US-22 hoặc US-23 vào phạm vi cơ sở, Product Owner phải ra quyết định và cập nhật Product Backlog, tác động bản phát hành cùng minh chứng chấp nhận.
 
-## 9. Câu hỏi phụ thường gặp
+## 10. Câu hỏi phụ thường gặp
 
 ### Ai ước lượng Story Point?
 
@@ -150,7 +182,7 @@ Các thành viên tham gia triển khai cùng ước lượng. Product Owner gi�
 
 AC mô tả điều kiện chấp nhận riêng của một câu chuyện. Definition of Done là chuẩn chung gồm đánh giá, kiểm thử/minh chứng, chuyển đổi cơ sở dữ liệu, tài liệu, bảo mật và khả năng phát hành.
 
-## 10. Minh chứng hình ảnh
+## 11. Minh chứng hình ảnh
 
 **Hình Q04-01 - Product Backlog được mở trực tiếp trên GitHub tại phần ranh giới bản phát hành.**
 
@@ -160,13 +192,27 @@ AC mô tả điều kiện chấp nhận riêng của một câu chuyện. Defin
 
 ![Lịch sử Product Backlog trên GitHub](img/Q04-02-backlog-history-github.png)
 
-## 11. Tài liệu in kèm
+## 12. Tài liệu in kèm
 
 - [Software Requirements Report](Software_Requirements_Report.md).
+- [PrepVI User Guide](User_Guide.md).
 - [Product Backlog and Acceptance Criteria](../../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md).
 - [Future-State Workflow](../../Project_Vision_and_Scope/Future_State_Workflow.md).
 
-## 12. Checklist tự học
+Hai tệp đầu là bản in tiếng Anh. Product Backlog là yêu cầu gốc có phiên bản; User Guide mô tả thao tác hiện có và ghi rõ giới hạn môi trường, không thay thế bằng ảnh prototype.
+
+## 13. Dàn ý trả lời trong 10 phút trên giấy A4
+
+1. Định nghĩa Software Requirements/Product Backlog và các thành phần User Story, AC, BR, NFR.
+2. Nêu đầu vào: Charter, Vision/Scope, quy trình nghiệp vụ, prototype, nhu cầu stakeholder và ràng buộc kiến trúc.
+3. Trình bày sáu bước hình thành từ nhu cầu tới backlog được sắp thứ tự.
+4. Nêu sáu tiêu chí đánh giá: đúng, đầy đủ, nhất quán, khả thi, kiểm thử được và truy vết được.
+5. Giải thích vì sao cần backlog: thống nhất phạm vi, làm đầu vào cho thiết kế/phát triển/kiểm thử và kiểm soát thay đổi.
+6. Nêu cách sử dụng/cập nhật trong Kanban và phân biệt code đã có với story đã được nghiệm thu.
+7. Dùng US-30 và chuỗi truy vết làm ví dụ.
+8. Chỉ minh chứng GitHub backlog/history và hai bản in bắt buộc.
+
+## 14. Checklist tự học
 
 - [ ] Giải thích được yêu cầu, câu chuyện người dùng, AC, BR và NFR.
 - [ ] Nêu đúng 27 Must/134 SP, 2 Extended/8 SP và 1 Future/8 SP.
@@ -174,3 +220,5 @@ AC mô tả điều kiện chấp nhận riêng của một câu chuyện. Defin
 - [ ] Phân biệt mã nguồn đã có với câu chuyện đã được nghiệm thu.
 - [ ] Nêu đúng lịch sử `0743a68 -> 7ca1f6e -> f0292a3`.
 - [ ] Không tuyên bố mục tiêu hoặc UAT chưa có minh chứng là đã đạt.
+- [ ] Trình bày được phương pháp đánh giá và cách tài liệu được dùng/cập nhật.
+- [ ] Mang đúng hai bản in: Requirements Report và User Guide.

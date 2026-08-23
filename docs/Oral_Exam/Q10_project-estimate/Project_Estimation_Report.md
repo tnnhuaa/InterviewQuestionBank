@@ -26,7 +26,21 @@ The estimation process supports:
 - cost and resource planning; and
 - re-estimation when scope or assumptions change.
 
-## 3. Shared assumptions
+## 3. Formation and evaluation process
+
+The estimate was formed from the historical Product Backlog, functional work packages, team availability, an eight-week planning window, direct-cost assumptions and explicit contingency. The team produced two independent views: a story-count-based top-down forecast and a work-package-based bottom-up three-point forecast.
+
+The document was evaluated by:
+
+1. checking arithmetic, units and contingency treatment;
+2. comparing the two methods for omissions or double counting;
+3. reconciling forecast effort with team capacity, schedule and cost constraints;
+4. reviewing scope and technical assumptions; and
+5. defining re-estimation triggers rather than treating the first estimate as a permanent commitment.
+
+The 7.3% method difference is a consistency signal, not proof of accuracy. Both methods can be wrong together when they share an obsolete scope or unsupported productivity assumption. Complete actual-effort records are not retained, so project-level Magnitude of Relative Error has not been validated.
+
+## 4. Shared assumptions
 
 | Input | Planning value |
 | --- | ---: |
@@ -41,7 +55,7 @@ The estimation process supports:
 
 The labor rate is an academic planning assumption. It is not a salary, supplier quotation or cash payment.
 
-## 4. Method A — top-down parametric estimate
+## 5. Method A — top-down parametric estimate
 
 The method counted 20 Must stories in the historical baseline and applied 26 hours per story as structured expert judgment. Complexity, exclusions and cross-cutting delivery overhead were recorded separately.
 
@@ -56,7 +70,7 @@ The method counted 20 Must stories in the historical baseline and applied 26 hou
 | 15% contingency | +85 |
 | Top-down forecast | **650** |
 
-## 5. Method B — bottom-up three-point estimate
+## 6. Method B — bottom-up three-point estimate
 
 The work was divided into functional and cross-cutting work packages. Each package used the PERT expected-value formula:
 
@@ -70,7 +84,7 @@ where `O` is optimistic effort, `M` is most likely effort and `P` is pessimistic
 | 15% contingency | +79 |
 | Bottom-up forecast | **606** |
 
-## 6. Comparison and planning decision
+## 7. Comparison and planning decision
 
 | Criterion | Top-down | Bottom-up |
 | --- | ---: | ---: |
@@ -81,7 +95,7 @@ where `O` is optimistic effort, `M` is most likely effort and `P` is pessimistic
 
 The comparison provides a range, not permission to add work. Remaining capacity protects integration, review, defects, documentation and uncertainty.
 
-## 7. Cost baseline
+## 8. Cost baseline
 
 | Cost component | Planning value |
 | --- | ---: |
@@ -91,11 +105,11 @@ The comparison provides a range, not permission to add work. Remaining capacity 
 
 Direct cash and reference labor value are reported separately to avoid presenting notional academic labor as an actual expense.
 
-## 8. Re-estimation control
+## 9. Re-estimation control
 
 Re-estimation is required when scope changes, a critical proof of concept fails, provider constraints change, actual capacity differs materially, or the forecast exceeds the eight-week/653-hour constraint. The current 27-story backlog must be traced into the work breakdown and recalculated before the historical estimates are treated as a release commitment.
 
-## 9. Evidence
+## 10. Evidence
 
 ![Estimation Comparison displayed in GitHub](img/Q10-01-estimation-comparison-github.png)
 
@@ -105,7 +119,7 @@ Re-estimation is required when scope changes, a critical proof of concept fails,
 
 **Figure 2.** The versioned cost, time and resource baseline opened in the real GitHub file view.
 
-## 10. Limitations
+## 11. Limitations
 
 - The project has no comparable historical actual-effort dataset.
 - Complete actual timesheets are not retained.
@@ -113,7 +127,7 @@ Re-estimation is required when scope changes, a critical proof of concept fails,
 - Story Points cannot be converted directly to hours. A Kanban forecast should use credible historical throughput, cycle-time, lead-time and Work in Progress data; the repository does not retain enough of that history.
 - The academic labor rate is not a market quote.
 
-## 11. Source artifacts
+## 12. Source artifacts
 
 - [Estimation Comparison](../../Project_Resource_Plan/Estimation_Comparison.md)
 - [Cost, Time and Resources](../../Project_Resource_Plan/Cost_Time_Resources.md)
