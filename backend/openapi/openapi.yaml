@@ -335,9 +335,10 @@ paths:
   /job-descriptions:
     get:
       operationId: listJobDescriptions
-      responses: { "200": { $ref: "#/components/responses/Page" } }
+      responses: { "200": { $ref: "#/components/responses/JobDescriptionPage" } }
     post:
       operationId: createJobDescription
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
       requestBody:
         required: true
         content:
@@ -373,6 +374,43 @@ paths:
         {
           "200": { $ref: "#/components/responses/JobDescription" },
           "404": { $ref: "#/components/responses/Error" },
+        }
+    patch:
+      operationId: updateJobDescription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [title, version]
+              properties:
+                title: { type: string, minLength: 1, maxLength: 120 }
+                version: { type: integer, minimum: 1 }
+      responses:
+        {
+          "200": { $ref: "#/components/responses/JobDescription" },
+          "404": { $ref: "#/components/responses/Error" },
+          "409": { $ref: "#/components/responses/Error" },
+        }
+    delete:
+      operationId: archiveJobDescription
+      description: Lưu trữ JD và các kế hoạch đang hoạt động liên quan; không xóa booking hoặc audit lịch sử.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [version]
+              properties: { version: { type: integer, minimum: 1 } }
+      responses:
+        {
+          "200": { $ref: "#/components/responses/JobDescription" },
+          "404": { $ref: "#/components/responses/Error" },
+          "409": { $ref: "#/components/responses/Error" },
         }
   /job-descriptions/{jobDescriptionId}/extract:
     parameters:
@@ -425,7 +463,7 @@ paths:
     post:
       operationId: analyzeJobDescription
       requestBody: { $ref: "#/components/requestBodies/JsonInput" }
-      responses: { "200": { $ref: "#/components/responses/Success" } }
+      responses: { "200": { $ref: "#/components/responses/JobDescriptionAnalysis" } }
   /job-descriptions/{jobDescriptionId}/analysis-jobs:
     parameters:
       [
@@ -453,7 +491,7 @@ paths:
             schema: { type: integer, minimum: 1 },
           },
         ]
-      responses: { "200": { $ref: "#/components/responses/Success" } }
+      responses: { "200": { $ref: "#/components/responses/JobDescriptionAnalysis" } }
   /job-descriptions/{jobDescriptionId}/requirement-normalizations:
     parameters: [{ $ref: "#/components/parameters/JobDescriptionId" }]
     put:
@@ -499,19 +537,56 @@ paths:
   /preparation-plans:
     get:
       operationId: listPreparationPlans
-      responses: { "200": { $ref: "#/components/responses/Page" } }
+      responses: { "200": { $ref: "#/components/responses/PreparationPlanPage" } }
     post:
       operationId: createPreparationPlan
       requestBody: { $ref: "#/components/requestBodies/JsonInput" }
-      responses: { "201": { $ref: "#/components/responses/Success" } }
+      responses: { "201": { $ref: "#/components/responses/PreparationPlanSummary" } }
   /preparation-plans/{planId}:
     parameters: [{ $ref: "#/components/parameters/PlanId" }]
     get:
       operationId: getPreparationPlan
       responses:
         {
+          "200": { $ref: "#/components/responses/PreparationPlan" },
+          "404": { $ref: "#/components/responses/Error" },
+        }
+    patch:
+      operationId: updatePreparationPlan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [title, version]
+              properties:
+                title: { type: string, minLength: 1, maxLength: 120 }
+                version: { type: integer, minimum: 1 }
+      responses:
+        {
+          "200": { $ref: "#/components/responses/PreparationPlanSummary" },
+          "404": { $ref: "#/components/responses/Error" },
+          "409": { $ref: "#/components/responses/Error" },
+        }
+    delete:
+      operationId: archivePreparationPlan
+      description: Lưu trữ kế hoạch để không còn dùng cho booking mới; dữ liệu lịch sử được giữ lại.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [version]
+              properties: { version: { type: integer, minimum: 1 } }
+      responses:
+        {
           "200": { $ref: "#/components/responses/Success" },
           "404": { $ref: "#/components/responses/Error" },
+          "409": { $ref: "#/components/responses/Error" },
         }
   /preparation-plans/{planId}/items/{itemId}:
     parameters:
@@ -868,6 +943,8 @@ paths:
         {
           "201": { $ref: "#/components/responses/Booking" },
           "409": { $ref: "#/components/responses/Error" },
+          "422": { $ref: "#/components/responses/Error" },
+          "503": { $ref: "#/components/responses/Error" },
         }
   /bookings/{bookingId}:
     parameters: [{ $ref: "#/components/parameters/BookingId" }]
@@ -904,11 +981,26 @@ paths:
           "409": { $ref: "#/components/responses/Error" },
         }
   /bookings/{bookingId}/meeting-link-failures:
-    parameters: [{ $ref: "#/components/parameters/BookingId" }]
+    parameters:
+      [
+        { $ref: "#/components/parameters/BookingId" },
+        { $ref: "#/components/parameters/IdempotencyKey" },
+      ]
     post:
       operationId: reportMeetingLinkFailure
-      requestBody: { $ref: "#/components/requestBodies/JsonInput" }
-      responses: { "202": { $ref: "#/components/responses/Success" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MeetingLinkFailureInput" }
+      responses:
+        {
+          "202": { $ref: "#/components/responses/Success" },
+          "404": { $ref: "#/components/responses/Error" },
+          "409": { $ref: "#/components/responses/Error" },
+          "422": { $ref: "#/components/responses/Error" },
+          "503": { $ref: "#/components/responses/Error" },
+        }
   /bookings/{bookingId}/agenda-drafts:
     parameters: [{ $ref: "#/components/parameters/BookingId" }]
     get:
@@ -1422,9 +1514,10 @@ components:
         version: { type: integer }
     JobDescription:
       type: object
-      required: [id, sourceType, status, correctedVersion, version]
+      required: [id, title, sourceType, status, correctedVersion, createdAt, updatedAt, version]
       properties:
         id: { type: string, format: uuid }
+        title: { type: string, minLength: 1, maxLength: 120 }
         sourceType: { type: string, enum: [PASTED_TEXT, PDF, IMAGE] }
         status:
           {
@@ -1437,11 +1530,92 @@ components:
                 CONFIRMED,
                 ANALYZED,
                 FAILED,
+                ARCHIVED,
               ],
           }
+        extractedText: { type: [string, "null"] }
         correctedText: { type: [string, "null"] }
         correctedVersion: { type: integer }
+        confirmedAt: { type: [string, "null"], format: date-time }
+        extractionMethod: { type: [string, "null"] }
+        extractionConfidence: { type: [number, "null"] }
+        processing:
+          type: [object, "null"]
+          additionalProperties: true
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
         version: { type: integer }
+    JobDescriptionPage:
+      type: object
+      additionalProperties: false
+      required: [items, pageInfo]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/JobDescription" } }
+        pageInfo: { $ref: "#/components/schemas/PageInfo" }
+    PreparationPlanSummary:
+      type: object
+      additionalProperties: false
+      required: [id, title, jobDescriptionId, matchingVersion, status, createdAt, updatedAt, version]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string, minLength: 1, maxLength: 120 }
+        jobDescriptionId: { type: string, format: uuid }
+        jobDescriptionTitle: { type: string }
+        matchingVersion: { type: string }
+        status: { type: string, enum: [ACTIVE, COMPLETED, INVALIDATED, ARCHIVED] }
+        topics: { type: array, items: { type: string } }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        version: { type: integer, minimum: 1 }
+    PreparationPlan:
+      type: object
+      additionalProperties: false
+      required: [id, title, jobDescriptionId, matchingVersion, status, createdAt, updatedAt, version, items]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string, minLength: 1, maxLength: 120 }
+        jobDescriptionId: { type: string, format: uuid }
+        matchingVersion: { type: string }
+        status: { type: string, enum: [ACTIVE, COMPLETED, INVALIDATED, ARCHIVED] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        version: { type: integer, minimum: 1 }
+        items:
+          type: array
+          items: { type: object, additionalProperties: true }
+    PreparationPlanPage:
+      type: object
+      additionalProperties: false
+      required: [items, pageInfo]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/PreparationPlanSummary" } }
+        pageInfo: { $ref: "#/components/schemas/PageInfo" }
+    JobDescriptionRequirement:
+      type: object
+      required: [id, raw_text, requirement_type, source]
+      properties:
+        id: { type: string, format: uuid }
+        raw_text: { type: string }
+        source_start: { type: [integer, "null"] }
+        source_end: { type: [integer, "null"] }
+        requirement_type: { type: string }
+        normalized_topic_id: { type: [string, "null"], format: uuid }
+        effective_topic_id: { type: [string, "null"], format: uuid }
+        topic_name: { type: [string, "null"] }
+        confidence: { type: [number, "null"] }
+        source: { type: string, enum: [GEMINI, RULE_BASED] }
+    JobDescriptionAnalysis:
+      type: object
+      required: [jobDescriptionId, analysisVersion, analysisSource, fallbackUsed, requirements]
+      properties:
+        jobDescriptionId: { type: string, format: uuid }
+        analysisVersion: { type: integer, minimum: 1 }
+        analysisSource: { type: string, enum: [GEMINI, RULE_BASED] }
+        fallbackUsed: { type: boolean }
+        aiJobId: { type: [string, "null"], format: uuid }
+        fallbackErrorCode: { type: [string, "null"] }
+        requirements:
+          { type: array, items: { $ref: "#/components/schemas/JobDescriptionRequirement" } }
     Booking:
       type: object
       required: [id, mentorId, slotId, status, startsAt, endsAt, version]
@@ -1453,6 +1627,31 @@ components:
         startsAt: { type: string, format: date-time }
         endsAt: { type: string, format: date-time }
         version: { type: integer }
+        meetingLink: { type: string, format: uri }
+        meetingLinkVersion: { type: integer, minimum: 1 }
+        meetingLinkUpdatedAt: { type: string, format: date-time }
+        meetingLinkPolicy: { $ref: "#/components/schemas/MeetingLinkPolicy" }
+    MeetingLinkPolicy:
+      type: object
+      required: [state, canView, canEdit, canReportBroken, canReportMissing]
+      properties:
+        state:
+          type: string
+          enum: [AVAILABLE, MISSING, OUTSIDE_WINDOW, EXPIRED, INVALID_BOOKING_STATE]
+        canView: { type: boolean }
+        canEdit: { type: boolean }
+        canReportBroken: { type: boolean }
+        canReportMissing: { type: boolean }
+        editDeadline: { type: string, format: date-time }
+        replacementDeadline: { type: string, format: date-time }
+        activeFailureCaseId: { type: string, format: uuid }
+    MeetingLinkFailureInput:
+      type: object
+      required: [kind, reason]
+      additionalProperties: false
+      properties:
+        kind: { type: string, enum: [BROKEN, MISSING] }
+        reason: { type: string, minLength: 3, maxLength: 1000 }
     AiJob:
       type: object
       required:
@@ -1617,12 +1816,24 @@ components:
         studentName: { type: string }
         createdAt: { type: string, format: date-time }
     PublicMentorDetail:
-      allOf:
-        - $ref: "#/components/schemas/PublicMentor"
-        - type: object
-          properties:
-            reviews:
-              { type: array, items: { $ref: "#/components/schemas/PublicReview" } }
+      type: object
+      additionalProperties: false
+      required:
+        [id, displayName, headline, bio, timezone, expertise, positionExpertise, nextSlots, version, reviews]
+      properties:
+        id: { type: string, format: uuid }
+        displayName: { type: string }
+        headline: { type: string }
+        bio: { type: string }
+        timezone: { type: string }
+        publicRating: { type: [number, "null"] }
+        expertise: { type: array, items: { type: string } }
+        positionExpertise: { type: array, items: { type: string } }
+        nextSlots:
+          { type: array, items: { $ref: "#/components/schemas/PublicAvailabilitySlot" } }
+        version: { type: integer, minimum: 1 }
+        reviews:
+          { type: array, items: { $ref: "#/components/schemas/PublicReview" } }
     MentorSearchContext:
       type: object
       additionalProperties: false
@@ -1642,17 +1853,26 @@ components:
         pageInfo: { $ref: "#/components/schemas/PageInfo" }
         searchContext: { $ref: "#/components/schemas/MentorSearchContext" }
     PlanMentorCandidate:
-      allOf:
-        - $ref: "#/components/schemas/PublicMentor"
-        - type: object
-          additionalProperties: false
-          required: [topicOverlap, positionFit, matchReasons]
-          properties:
-            topicOverlap: { type: integer, minimum: 0 }
-            positionFit: { type: integer, minimum: 0 }
-            matchReasons:
-              { type: array, items: { type: string } }
-            aiExplanation: { type: [string, "null"] }
+      type: object
+      additionalProperties: false
+      required:
+        [id, displayName, headline, bio, timezone, expertise, positionExpertise, nextSlots, version, topicOverlap, positionFit, matchReasons]
+      properties:
+        id: { type: string, format: uuid }
+        displayName: { type: string }
+        headline: { type: string }
+        bio: { type: string }
+        timezone: { type: string }
+        publicRating: { type: [number, "null"] }
+        expertise: { type: array, items: { type: string } }
+        positionExpertise: { type: array, items: { type: string } }
+        nextSlots:
+          { type: array, items: { $ref: "#/components/schemas/PublicAvailabilitySlot" } }
+        version: { type: integer, minimum: 1 }
+        topicOverlap: { type: integer, minimum: 0 }
+        positionFit: { type: integer, minimum: 0 }
+        matchReasons: { type: array, items: { type: string } }
+        aiExplanation: { type: [string, "null"] }
     PlanMentorCandidateResponse:
       type: object
       additionalProperties: false
@@ -1982,6 +2202,51 @@ components:
           {
             application/json:
               { schema: { $ref: "#/components/schemas/JobDescription" } },
+          },
+      }
+    JobDescriptionPage:
+      {
+        description: Danh sách JD riêng tư của Student,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/JobDescriptionPage" } },
+          },
+      }
+    PreparationPlan:
+      {
+        description: Kế hoạch chuẩn bị thuộc Student,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/PreparationPlan" } },
+          },
+      }
+    PreparationPlanSummary:
+      {
+        description: Thông tin nhận diện và vòng đời của kế hoạch chuẩn bị,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/PreparationPlanSummary" } },
+          },
+      }
+    PreparationPlanPage:
+      {
+        description: Danh sách kế hoạch hiện tại và lịch sử của Student,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/PreparationPlanPage" } },
+          },
+      }
+    JobDescriptionAnalysis:
+      {
+        description: Versioned JD requirement analysis with safe provenance,
+        content:
+          {
+            application/json:
+              { schema: { $ref: "#/components/schemas/JobDescriptionAnalysis" } },
           },
       }
     Booking:

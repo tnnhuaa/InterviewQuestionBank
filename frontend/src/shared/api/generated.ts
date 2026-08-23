@@ -550,10 +550,11 @@ export interface paths {
         get: operations["getJobDescription"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** @description Lưu trữ JD và các kế hoạch đang hoạt động liên quan; không xóa booking hoặc audit lịch sử. */
+        delete: operations["archiveJobDescription"];
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["updateJobDescription"];
         trace?: never;
     };
     "/job-descriptions/{jobDescriptionId}/extract": {
@@ -773,10 +774,11 @@ export interface paths {
         get: operations["getPreparationPlan"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** @description Lưu trữ kế hoạch để không còn dùng cho booking mới; dữ liệu lịch sử được giữ lại. */
+        delete: operations["archivePreparationPlan"];
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["updatePreparationPlan"];
         trace?: never;
     };
     "/preparation-plans/{planId}/items/{itemId}": {
@@ -1104,7 +1106,9 @@ export interface paths {
     "/bookings/{bookingId}/meeting-link-failures": {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
             path: {
                 bookingId: components["parameters"]["BookingId"];
             };
@@ -1600,13 +1604,97 @@ export interface components {
         JobDescription: {
             /** Format: uuid */
             id: string;
+            title: string;
             /** @enum {string} */
             sourceType: "PASTED_TEXT" | "PDF" | "IMAGE";
             /** @enum {string} */
-            status: "DRAFT" | "EXTRACTING" | "READY_FOR_REVIEW" | "CONFIRMED" | "ANALYZED" | "FAILED";
+            status: "DRAFT" | "EXTRACTING" | "READY_FOR_REVIEW" | "CONFIRMED" | "ANALYZED" | "FAILED" | "ARCHIVED";
+            extractedText?: string | null;
             correctedText?: string | null;
             correctedVersion: number;
+            /** Format: date-time */
+            confirmedAt?: string | null;
+            extractionMethod?: string | null;
+            extractionConfidence?: number | null;
+            processing?: {
+                [key: string]: unknown;
+            } | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
             version: number;
+        };
+        JobDescriptionPage: {
+            items: components["schemas"]["JobDescription"][];
+            pageInfo: components["schemas"]["PageInfo"];
+        };
+        PreparationPlanSummary: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            /** Format: uuid */
+            jobDescriptionId: string;
+            jobDescriptionTitle?: string;
+            matchingVersion: string;
+            /** @enum {string} */
+            status: "ACTIVE" | "COMPLETED" | "INVALIDATED" | "ARCHIVED";
+            topics?: string[];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            version: number;
+        };
+        PreparationPlan: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            /** Format: uuid */
+            jobDescriptionId: string;
+            matchingVersion: string;
+            /** @enum {string} */
+            status: "ACTIVE" | "COMPLETED" | "INVALIDATED" | "ARCHIVED";
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            version: number;
+            items: {
+                [key: string]: unknown;
+            }[];
+        };
+        PreparationPlanPage: {
+            items: components["schemas"]["PreparationPlanSummary"][];
+            pageInfo: components["schemas"]["PageInfo"];
+        };
+        JobDescriptionRequirement: {
+            /** Format: uuid */
+            id: string;
+            raw_text: string;
+            source_start?: number | null;
+            source_end?: number | null;
+            requirement_type: string;
+            /** Format: uuid */
+            normalized_topic_id?: string | null;
+            /** Format: uuid */
+            effective_topic_id?: string | null;
+            topic_name?: string | null;
+            confidence?: number | null;
+            /** @enum {string} */
+            source: "GEMINI" | "RULE_BASED";
+        };
+        JobDescriptionAnalysis: {
+            /** Format: uuid */
+            jobDescriptionId: string;
+            analysisVersion: number;
+            /** @enum {string} */
+            analysisSource: "GEMINI" | "RULE_BASED";
+            fallbackUsed: boolean;
+            /** Format: uuid */
+            aiJobId?: string | null;
+            fallbackErrorCode?: string | null;
+            requirements: components["schemas"]["JobDescriptionRequirement"][];
         };
         Booking: {
             /** Format: uuid */
@@ -1621,6 +1709,31 @@ export interface components {
             /** Format: date-time */
             endsAt: string;
             version: number;
+            /** Format: uri */
+            meetingLink?: string;
+            meetingLinkVersion?: number;
+            /** Format: date-time */
+            meetingLinkUpdatedAt?: string;
+            meetingLinkPolicy?: components["schemas"]["MeetingLinkPolicy"];
+        };
+        MeetingLinkPolicy: {
+            /** @enum {string} */
+            state: "AVAILABLE" | "MISSING" | "OUTSIDE_WINDOW" | "EXPIRED" | "INVALID_BOOKING_STATE";
+            canView: boolean;
+            canEdit: boolean;
+            canReportBroken: boolean;
+            canReportMissing: boolean;
+            /** Format: date-time */
+            editDeadline?: string;
+            /** Format: date-time */
+            replacementDeadline?: string;
+            /** Format: uuid */
+            activeFailureCaseId?: string;
+        };
+        MeetingLinkFailureInput: {
+            /** @enum {string} */
+            kind: "BROKEN" | "MISSING";
+            reason: string;
         };
         AiJob: {
             /** Format: uuid */
@@ -1738,8 +1851,19 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
-        PublicMentorDetail: components["schemas"]["PublicMentor"] & {
-            reviews?: components["schemas"]["PublicReview"][];
+        PublicMentorDetail: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+            headline: string;
+            bio: string;
+            timezone: string;
+            publicRating?: number | null;
+            expertise: string[];
+            positionExpertise: string[];
+            nextSlots: components["schemas"]["PublicAvailabilitySlot"][];
+            version: number;
+            reviews: components["schemas"]["PublicReview"][];
         };
         MentorSearchContext: {
             matchingMentorCount: number;
@@ -1752,7 +1876,18 @@ export interface components {
             pageInfo: components["schemas"]["PageInfo"];
             searchContext: components["schemas"]["MentorSearchContext"];
         };
-        PlanMentorCandidate: components["schemas"]["PublicMentor"] & {
+        PlanMentorCandidate: {
+            /** Format: uuid */
+            id: string;
+            displayName: string;
+            headline: string;
+            bio: string;
+            timezone: string;
+            publicRating?: number | null;
+            expertise: string[];
+            positionExpertise: string[];
+            nextSlots: components["schemas"]["PublicAvailabilitySlot"][];
+            version: number;
             topicOverlap: number;
             positionFit: number;
             matchReasons: string[];
@@ -1987,6 +2122,51 @@ export interface components {
             };
             content: {
                 "application/json": components["schemas"]["JobDescription"];
+            };
+        };
+        /** @description Danh sách JD riêng tư của Student */
+        JobDescriptionPage: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["JobDescriptionPage"];
+            };
+        };
+        /** @description Kế hoạch chuẩn bị thuộc Student */
+        PreparationPlan: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["PreparationPlan"];
+            };
+        };
+        /** @description Thông tin nhận diện và vòng đời của kế hoạch chuẩn bị */
+        PreparationPlanSummary: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["PreparationPlanSummary"];
+            };
+        };
+        /** @description Danh sách kế hoạch hiện tại và lịch sử của Student */
+        PreparationPlanPage: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["PreparationPlanPage"];
+            };
+        };
+        /** @description Versioned JD requirement analysis with safe provenance */
+        JobDescriptionAnalysis: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["JobDescriptionAnalysis"];
             };
         };
         /** @description Booking projection */
@@ -2563,13 +2743,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["Page"];
+            200: components["responses"]["JobDescriptionPage"];
         };
     };
     createJobDescription: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
             path?: never;
             cookie?: never;
         };
@@ -2603,6 +2785,51 @@ export interface operations {
         responses: {
             200: components["responses"]["JobDescription"];
             404: components["responses"]["Error"];
+        };
+    };
+    archiveJobDescription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jobDescriptionId: components["parameters"]["JobDescriptionId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    version: number;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["JobDescription"];
+            404: components["responses"]["Error"];
+            409: components["responses"]["Error"];
+        };
+    };
+    updateJobDescription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jobDescriptionId: components["parameters"]["JobDescriptionId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    title: string;
+                    version: number;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["JobDescription"];
+            404: components["responses"]["Error"];
+            409: components["responses"]["Error"];
         };
     };
     startExtraction: {
@@ -2681,7 +2908,7 @@ export interface operations {
         };
         requestBody: components["requestBodies"]["JsonInput"];
         responses: {
-            200: components["responses"]["Success"];
+            200: components["responses"]["JobDescriptionAnalysis"];
         };
     };
     startAiJobDescriptionAnalysis: {
@@ -2715,7 +2942,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["Success"];
+            200: components["responses"]["JobDescriptionAnalysis"];
         };
     };
     saveRequirementNormalizations: {
@@ -2790,7 +3017,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            200: components["responses"]["Page"];
+            200: components["responses"]["PreparationPlanPage"];
         };
     };
     createPreparationPlan: {
@@ -2802,7 +3029,7 @@ export interface operations {
         };
         requestBody: components["requestBodies"]["JsonInput"];
         responses: {
-            201: components["responses"]["Success"];
+            201: components["responses"]["PreparationPlanSummary"];
         };
     };
     getPreparationPlan: {
@@ -2816,8 +3043,53 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            200: components["responses"]["PreparationPlan"];
+            404: components["responses"]["Error"];
+        };
+    };
+    archivePreparationPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planId: components["parameters"]["PlanId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    version: number;
+                };
+            };
+        };
+        responses: {
             200: components["responses"]["Success"];
             404: components["responses"]["Error"];
+            409: components["responses"]["Error"];
+        };
+    };
+    updatePreparationPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                planId: components["parameters"]["PlanId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    title: string;
+                    version: number;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["PreparationPlanSummary"];
+            404: components["responses"]["Error"];
+            409: components["responses"]["Error"];
         };
     };
     updatePreparationPlanItem: {
@@ -3190,6 +3462,8 @@ export interface operations {
         responses: {
             201: components["responses"]["Booking"];
             409: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     getBooking: {
@@ -3243,15 +3517,25 @@ export interface operations {
     reportMeetingLinkFailure: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
             path: {
                 bookingId: components["parameters"]["BookingId"];
             };
             cookie?: never;
         };
-        requestBody: components["requestBodies"]["JsonInput"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MeetingLinkFailureInput"];
+            };
+        };
         responses: {
             202: components["responses"]["Success"];
+            404: components["responses"]["Error"];
+            409: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+            503: components["responses"]["Error"];
         };
     };
     getInterviewAgendaDraft: {

@@ -2,12 +2,31 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import { asyncHandler } from "../../shared/async-handler.js";
+import { AppError } from "../../shared/errors.js";
 import { parse } from "../../shared/validation.js";
 import { requireAuth, requireRole, sessionCookieName, sessionCookieOptions } from "../../middleware/auth.js";
 import { createIdentityService } from "./service.js";
 
 const password = z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự").max(128);
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: true, legacyHeaders: false });
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (request, response, next) => {
+    void response;
+    const resetTime = request.rateLimit?.resetTime?.getTime();
+    const retryAfterSeconds = Number.isFinite(resetTime)
+      ? Math.max(1, Math.ceil((resetTime - Date.now()) / 1000))
+      : 900;
+    next(new AppError({
+      status: 429,
+      code: "AUTH_RATE_LIMITED",
+      message: "Bạn đã thử thao tác xác thực quá nhiều lần. Hãy chờ rồi thử lại.",
+      recovery: { kind: "WAIT", retryable: true, retryAfterSeconds },
+    }));
+  },
+});
 
 export function createIdentityRouter({ pool, environment }) {
   const router = Router();

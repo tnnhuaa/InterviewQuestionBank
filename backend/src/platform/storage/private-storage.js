@@ -1,11 +1,17 @@
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, HeadBucketCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { randomUUID } from "node:crypto";
+import { constants as fsConstants } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 function localStorage(config) {
   const root = path.resolve(config.localPath);
   return {
+    async healthCheck() {
+      await fs.mkdir(root, { recursive: true });
+      await fs.access(root, fsConstants.R_OK | fsConstants.W_OK);
+      return true;
+    },
     async put(buffer) {
       await fs.mkdir(root, { recursive: true });
       const key = randomUUID();
@@ -37,6 +43,10 @@ function s3Storage(config) {
     forcePathStyle: Boolean(config.s3Endpoint),
   });
   return {
+    async healthCheck() {
+      await client.send(new HeadBucketCommand({ Bucket: config.s3Bucket }));
+      return true;
+    },
     async put(buffer, metadata = {}) {
       const key = randomUUID();
       await client.send(new PutObjectCommand({

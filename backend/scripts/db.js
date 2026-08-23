@@ -170,12 +170,41 @@ async function seedDemoUsers(client) {
     ["00000000-0000-0000-0000-000000000301", "admin.demo@prepvi.local", "Admin PrepVI", "ADMIN"],
   ];
   for (const [id, email, displayName, role] of users) {
-    await client.query(
-      `INSERT INTO users (id, email, password_hash, display_name, status, email_verified_at)
-       VALUES ($1, $2, $3, $4, 'ACTIVE', now())
-       ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name`,
-      [id, email, passwordHash, displayName],
+    const existing = await client.query(
+      "SELECT password_hash FROM users WHERE id = $1 FOR UPDATE",
+      [id],
     );
+    if (!existing.rowCount) {
+      await client.query(
+        `INSERT INTO users (id, email, password_hash, display_name, status, email_verified_at)
+         VALUES ($1, $2, $3, $4, 'ACTIVE', now())`,
+        [id, email, passwordHash, displayName],
+      );
+    } else {
+      let passwordMatches = false;
+      try {
+        passwordMatches = await argon2.verify(existing.rows[0].password_hash, password);
+      } catch {
+        passwordMatches = false;
+      }
+      await client.query(
+        `UPDATE users
+         SET email = $2,
+             display_name = $3,
+             status = 'ACTIVE',
+             email_verified_at = coalesce(email_verified_at, now()),
+             password_hash = CASE WHEN $5 THEN $4 ELSE password_hash END,
+             updated_at = CASE WHEN $5 THEN now() ELSE updated_at END
+         WHERE id = $1`,
+        [id, email, displayName, passwordHash, !passwordMatches],
+      );
+      if (!passwordMatches) {
+        await client.query(
+          "UPDATE sessions SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL",
+          [id],
+        );
+      }
+    }
     await client.query(
       "INSERT INTO user_roles (user_id, role_code) VALUES ($1, $2) ON CONFLICT DO NOTHING",
       [id, role],
@@ -201,12 +230,53 @@ async function seedDemoEvidence() {
   await fs.writeFile(path.join(root, key), onePixelPng, { flag: "w" });
 }
 
+async function refreshDemoTemporalFixtures(client) {
+  await client.query(`
+    UPDATE availability_slots AS slot
+    SET starts_at = fixture.starts_at,
+        ends_at = fixture.ends_at,
+        status = fixture.status,
+        updated_at = now(),
+        version = slot.version + 1
+    FROM (VALUES
+      ('00000000-0000-0000-0000-000000000421'::uuid, date_trunc('day', now()) + interval '2 days 09 hours', date_trunc('day', now()) + interval '2 days 10 hours', 'AVAILABLE'::text),
+      ('00000000-0000-0000-0000-000000000422'::uuid, date_trunc('day', now()) + interval '3 days 14 hours', date_trunc('day', now()) + interval '3 days 15 hours', 'AVAILABLE'::text),
+      ('00000000-0000-0000-0000-000000000423'::uuid, date_trunc('day', now()) + interval '4 days 09 hours', date_trunc('day', now()) + interval '4 days 10 hours', 'BOOKED'::text),
+      ('00000000-0000-0000-0000-000000000424'::uuid, date_trunc('day', now()) + interval '5 days 09 hours', date_trunc('day', now()) + interval '5 days 10 hours', 'AVAILABLE'::text),
+      ('00000000-0000-0000-0000-000000000425'::uuid, date_trunc('day', now()) - interval '3 days' + interval '09 hours', date_trunc('day', now()) - interval '3 days' + interval '10 hours', 'BOOKED'::text),
+      ('00000000-0000-0000-0000-000000000426'::uuid, date_trunc('day', now()) - interval '5 days' + interval '09 hours', date_trunc('day', now()) - interval '5 days' + interval '10 hours', 'BOOKED'::text),
+      ('00000000-0000-0000-0000-000000000427'::uuid, date_trunc('day', now()) - interval '7 days' + interval '09 hours', date_trunc('day', now()) - interval '7 days' + interval '10 hours', 'AVAILABLE'::text)
+    ) AS fixture(id, starts_at, ends_at, status)
+    WHERE slot.id = fixture.id
+  `);
+  await client.query(`
+    UPDATE bookings AS booking
+    SET starts_at = slot.starts_at,
+        ends_at = slot.ends_at,
+        source_timezone = slot.source_timezone,
+        updated_at = now(),
+        version = booking.version + 1
+    FROM availability_slots AS slot
+    WHERE booking.slot_id = slot.id
+      AND booking.id = ANY(ARRAY[
+        '00000000-0000-0000-0000-000000000961'::uuid,
+        '00000000-0000-0000-0000-000000000962'::uuid,
+        '00000000-0000-0000-0000-000000000963'::uuid,
+        '00000000-0000-0000-0000-000000000964'::uuid,
+        '00000000-0000-0000-0000-000000000965'::uuid,
+        '00000000-0000-0000-0000-000000000966'::uuid,
+        '00000000-0000-0000-0000-000000000967'::uuid
+      ])
+  `);
+}
+
 async function seed(client, dataset) {
   if (!["reference", "demo", "load"].includes(dataset)) {
     throw new Error("Seed dataset must be reference, demo, or load");
   }
   assertNonProductionSeedAllowed(dataset);
   const files = await listSqlFiles(path.join(databaseRoot, "seeds", dataset));
+  const pendingFiles = [];
   for (const file of files) {
     const version = path.basename(file, ".sql");
     const sql = await fs.readFile(file, "utf8");
@@ -225,13 +295,29 @@ async function seed(client, dataset) {
       console.log(`skip ${dataset} seed ${version}`);
       continue;
     }
+    pendingFiles.push({ version, sql, digest });
+  }
+
+  // Demo credentials are environment-owned fixtures rather than user data.
+  // Reconcile only the stable demo IDs on every invocation so a developer who
+  // already applied the dataset can still use the password documented for the
+  // current checkout. User-created rows are never selected by this operation.
+  if (dataset === "demo") {
+    await client.query("BEGIN");
+    try {
+      await seedDemoUsers(client);
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    }
+    await seedDemoEvidence();
+  }
+
+  for (const { version, sql, digest } of pendingFiles) {
     console.log(`apply ${dataset} seed ${version}`);
     await client.query("BEGIN");
     try {
-      if (dataset === "demo") {
-        await seedDemoUsers(client);
-        await seedDemoEvidence();
-      }
       await client.query(sql);
       if (dataset === "load") {
         const unusablePassword = await argon2.hash(randomBytes(48).toString("base64url"), { type: argon2.argon2id });
@@ -242,6 +328,18 @@ async function seed(client, dataset) {
         [dataset, version, digest],
       );
       await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    }
+  }
+
+  if (dataset === "demo") {
+    await client.query("BEGIN");
+    try {
+      await refreshDemoTemporalFixtures(client);
+      await client.query("COMMIT");
+      console.log("refresh demo temporal fixtures");
     } catch (error) {
       await client.query("ROLLBACK");
       throw error;

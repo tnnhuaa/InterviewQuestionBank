@@ -1,6 +1,7 @@
 import { createApp } from "./app.js";
 import { loadDatabaseCheck } from "./config/database-check.js";
 import { getEnvironment, validateEnvironment } from "./config/environment.js";
+import { safeErrorDiagnostics } from "./platform/db/error-classification.js";
 
 const environment = getEnvironment();
 validateEnvironment(environment);
@@ -17,7 +18,10 @@ function shutdown(signal) {
   console.log(`${signal} received; closing HTTP server`);
   server.close((error) => {
     if (error) {
-      console.error(error);
+      console.error(JSON.stringify({
+        event: "server.shutdown_failed",
+        ...safeErrorDiagnostics(error),
+      }));
       process.exitCode = 1;
     }
   });

@@ -16,11 +16,11 @@ export function hashAiValue(value) {
 }
 
 function providerError(error) {
-  import('fs').then(fs => fs.appendFileSync('gemini-debug.log', `[${new Date().toISOString()}] ${error?.name} ${error?.status} ${error?.message}\n${error?.stack}\n\n`)).catch(() => {});
   if (error?.name === "AbortError") return new AiProviderError("AI_TIMEOUT", { retryable: true, cause: error });
   const status = Number(error?.status ?? error?.code);
   if (status === 429) return new AiProviderError("AI_QUOTA_EXCEEDED", { retryable: true, retryAfterSeconds: 60, cause: error });
   if ([500, 502, 503, 504].includes(status)) return new AiProviderError("AI_PROVIDER_FAILURE", { retryable: true, cause: error });
+  if ([400, 422].includes(status)) return new AiProviderError("AI_REQUEST_INVALID", { retryable: false, cause: error });
   return new AiProviderError("AI_PROVIDER_FAILURE", { retryable: false, cause: error });
 }
 
@@ -83,12 +83,14 @@ export function createAiProvider(environment) {
         },
       };
     } catch (error) {
-      consecutiveFailures += 1;
-      if (consecutiveFailures >= settings.circuitBreakerFailureThreshold) {
-        openUntil = Date.now() + settings.circuitBreakerResetSeconds * 1000;
+      const mappedError = error instanceof AiProviderError ? error : providerError(error);
+      if (mappedError.retryable && ["AI_TIMEOUT", "AI_PROVIDER_FAILURE"].includes(mappedError.code)) {
+        consecutiveFailures += 1;
+        if (consecutiveFailures >= settings.circuitBreakerFailureThreshold) {
+          openUntil = Date.now() + settings.circuitBreakerResetSeconds * 1000;
+        }
       }
-      if (error instanceof AiProviderError) throw error;
-      throw providerError(error);
+      throw mappedError;
     } finally {
       clearTimeout(timeout);
     }
@@ -135,7 +137,6 @@ export function createAiProvider(environment) {
         consecutiveFailures = 0;
         return text;
       } catch (error) {
-        console.error("=== GEMINI API ERROR ===", error, error.message, error.stack);
         consecutiveFailures += 1;
         if (consecutiveFailures >= settings.circuitBreakerFailureThreshold) {
           openUntil = Date.now() + settings.circuitBreakerResetSeconds * 1000;
