@@ -171,7 +171,7 @@ Git proves that the document changed. It does not prove Product Owner acceptance
 - [Product Backlog and Acceptance Criteria](Product_Backlog_and_Acceptance_Criteria.md)
 - [Current-State Workflow](Current_State_Workflow.md)
 - [Future-State Workflow](Future_State_Workflow.md)
-- [Project Charter](<../Project_Governance & Stakeholder/Project_Charter.md>)
+- [Project Charter](../Project_Governance%20%26%20Stakeholder/Project_Charter.md)
 - [Feasibility Study](../Project_Feasibility/feasibility.md)
 - [Prototype Workflow](../Project_Prototype/Prototype_Workflow.md)
 - [Software Architecture](../Project_Architecture/software_architecture.md)

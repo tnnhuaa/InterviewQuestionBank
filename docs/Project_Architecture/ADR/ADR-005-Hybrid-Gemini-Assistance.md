@@ -1,75 +1,75 @@
 # ADR-005 — Hybrid Gemini Assistance
 
-| Thuộc tính | Giá trị |
+| Attribute | Value |
 |---|---|
-| Trạng thái | Accepted for implementation behind feature flags |
-| Ngày quyết định | 17/08/2026 |
-| Liên quan | US-27–US-30, US-10, US-15–US-16 |
+| Status | Accepted for implementation behind feature flags |
+| Decision date | 17/08/2026 |
+| Related items | US-27–US-30, US-10, US-15–US-16 |
 
-## 1. Bối cảnh
+## 1. Context
 
-Rule-based analysis và deterministic recommendation của ADR-004 đã tạo được luồng end-to-end, nhưng khả năng hiểu JD Việt/Anh trộn lẫn, giải thích recommendation và hỗ trợ Mentor soạn agenda/feedback còn hạn chế. Hệ thống cần thêm Gemini mà không chuyển nguồn chân lý hoặc mutation nghiệp vụ cho model.
+The rule-based analysis and deterministic recommendations from ADR-004 created an end-to-end flow, but support for mixed Vietnamese/English JDs, recommendation explanations, and Mentor agenda/feedback drafting remains limited. The system needs Gemini assistance without transferring the source of truth or business mutations to the model.
 
-## 2. Quyết định
+## 2. Decision
 
-Áp dụng kiến trúc hybrid:
+Use a hybrid architecture:
 
-- Gemini xử lý requirement extraction, taxonomy candidate, explanation, interview agenda draft và feedback draft.
-- PostgreSQL, authorization policy, active taxonomy, Published Question, Approved Mentor, deterministic scorer/ranking và booking transaction vẫn là nguồn chân lý.
-- Mọi Gemini output là untrusted input, bắt buộc structured JSON, schema validation và domain validation.
-- Question/Mentor ID chỉ được chấp nhận khi thuộc candidate set do backend cung cấp.
-- Student xác nhận requirement low-confidence/unmapped; Mentor review/edit agenda và feedback trước khi submit.
-- Provider failure luôn chuyển sang rule-based/manual flow và không rollback business state đã commit.
-- Không triển khai Gemini reranking, AI interviewer/scoring, recording hoặc transcript trong increment này.
+- Gemini handles requirement extraction, taxonomy candidates, explanations, interview-agenda drafts, and feedback drafts.
+- PostgreSQL, authorization policies, active taxonomy, Published Questions, Approved Mentors, deterministic scoring/ranking, and booking transactions remain the sources of truth.
+- Every Gemini output is untrusted input and requires structured JSON, schema validation, and domain validation.
+- A Question/Mentor ID is accepted only when it belongs to the candidate set supplied by the backend.
+- The Student confirms low-confidence/unmapped requirements; the Mentor reviews/edits agenda and feedback before submission.
+- Provider failure always falls back to rule-based/manual flow and never rolls back committed business state.
+- Gemini reranking, AI interviewer/scoring, recording, and transcripts are not implemented in this increment.
 
-## 3. Provider và model
+## 3. Provider and model
 
-- Provider adapter: `AiProvider`, implementation đầu tiên: `GeminiProvider` dùng SDK server-side `@google/genai`.
-- API version: `v1`.
-- Model đã chốt: `gemini-3.5-flash-lite`.
-- API key chỉ ở backend/secret manager; frontend không có biến `VITE_GEMINI_*`.
-- Model/prompt/schema version, input/output hash, latency, token metadata, status và correlation ID được lưu để vận hành; raw JD/prompt/response không vào application log.
+- Provider adapter: AiProvider; first implementation: GeminiProvider using the server-side @google/genai SDK.
+- API version: v1.
+- Selected model: gemini-3.5-flash-lite.
+- The API key exists only in the backend/secret manager; the frontend has no VITE_GEMINI_* variable.
+- Model/prompt/schema version, input/output hash, latency, token metadata, status, and correlation ID are stored for operations; raw JDs, prompts, and responses are not written to application logs.
 
-## 4. Job và failure policy
+## 4. Jobs and failure policy
 
-AI call chạy qua PostgreSQL job với lease và trạng thái `PENDING`, `PROCESSING`, `SUCCEEDED`, `SUCCEEDED_WITH_FALLBACK`, `FAILED`, `CANCELLED`.
+AI calls run as PostgreSQL jobs with a lease and states PENDING, PROCESSING, SUCCEEDED, SUCCEEDED_WITH_FALLBACK, FAILED, and CANCELLED.
 
-- Hai attempts tối đa, timeout và concurrency có cấu hình.
-- Quota ứng dụng thấp hơn provider quota; một Student không được chiếm toàn bộ quota.
-- Invalid JSON/schema/evidence/candidate ID bị loại bỏ trước khi ghi domain result.
-- Job hết retry tạo operation case có reference ID.
-- Circuit breaker cho phép tắt provider và giữ manual/rule-based flow.
+- At most two attempts, with configurable timeout and concurrency.
+- Application quota is lower than provider quota; one Student cannot consume the entire quota.
+- Invalid JSON/schema/evidence/candidate IDs are rejected before a domain result is written.
+- A job that exhausts retries creates an operation case with a reference ID.
+- A circuit breaker can disable the provider while preserving manual/rule-based flow.
 
 ## 5. Privacy
 
-- Chỉ gửi corrected text đã xác nhận hoặc booking snapshot tối thiểu.
-- Không gửi password/token, original JD file, verification evidence, email, meeting link, recording, transcript hoặc dữ liệu unrelated user.
-- Không dùng Google Search/Maps grounding cho các use case này.
-- Pilot chỉ bật sau khi review data-processing/retention và sử dụng billing configuration phù hợp dữ liệu thật.
+- Send only confirmed corrected text or the minimum booking snapshot.
+- Do not send passwords/tokens, original JD files, verification evidence, email addresses, meeting links, recordings, transcripts, or unrelated-user data.
+- Do not use Google Search/Maps grounding for these use cases.
+- Enable the pilot only after data-processing/retention review and with billing configuration suitable for real data.
 
-## 6. Hệ quả
+## 6. Consequences
 
-### Tích cực
+### Positive
 
-- Hiểu ngôn ngữ tự nhiên tốt hơn mà vẫn giữ deterministic eligibility và mutation.
-- UI có explanation/evidence rõ, cùng đường manual recovery khi provider lỗi.
-- Có thể đo chất lượng/cost theo từng prompt/model/schema version.
+- Better natural-language understanding while deterministic eligibility and mutations remain protected.
+- The UI provides clear explanations/evidence and a manual recovery path when the provider fails.
+- Quality and cost can be measured per prompt/model/schema version.
 
-### Tiêu cực
+### Negative
 
-- Thêm external dependency, latency, quota, chi phí và failure modes.
-- Gemini output không tuyệt đối deterministic; cần version/hash và human confirmation.
-- Cần vận hành AI job, redaction, circuit breaker và operation case.
+- Adds an external dependency, latency, quota, cost, and failure modes.
+- Gemini output is not fully deterministic; version/hash and human confirmation are required.
+- AI jobs, redaction, circuit breaker, and operation cases must be operated.
 
 ## 7. Release gate
 
-- Requirement recall và Question precision@10 không thấp hơn baseline, mục tiêu ban đầu `≥80%` trên corpus có nhãn.
-- Candidate eligibility `100%`: không trả Question chưa Published hoặc Mentor chưa Approved.
-- Provider failure vẫn hoàn thành được flow manual/rule-based.
-- Không lộ raw JD hoặc secret trong log/error/support details.
-- Feature flags mặc định tắt cho đến khi manual walkthrough tương ứng hoàn tất.
+- Requirement recall and Question precision@10 must not be below baseline; initial target is at least 80% on a labeled corpus.
+- Candidate eligibility must be 100%: never return an unpublished Question or unapproved Mentor.
+- Manual/rule-based flow must remain usable during provider failure.
+- Raw JDs or secrets must not appear in logs, errors, or support details.
+- Feature flags default to off until the corresponding manual walkthrough passes.
 
-## 8. Liên quan
+## 8. Related material
 
 - [ADR-004 — JD Processing and Question Matching Strategy](ADR-004-JD-Processing-and-Question-Matching.md)
 - [Software Architecture](../software_architecture.md)

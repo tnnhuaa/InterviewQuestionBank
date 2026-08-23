@@ -1,240 +1,240 @@
-# Đề xuất dự án — Interview Practice Platform
+# Project Proposal — Interview Practice Platform
 
-## 1. Thông tin kiểm soát
+## 1. Document control
 
-| Thuộc tính | Giá trị |
+| Attribute | Value |
 |---|---|
-| Tên dự án | Interview Practice Platform — tên làm việc |
-| Nhóm thực hiện | Gia Thành, Hùng, Hưng, Trí, Luân, Tuấn Anh |
+| Project name | Interview Practice Platform — working name |
+| Team | Gia Thành, Hùng, Hưng, Trí, Luân, Tuấn Anh |
 | Product Owner | Hưng |
 | Project Manager / Team Leader / Timekeeper | Tuấn Anh |
 | Project Planning & Estimation Analyst / Full-stack Developer | Gia Thành |
-| Sponsor phê duyệt | Giảng viên Ngô Huy Biên và Ngô Ngọc Đăng Khoa |
-| Thời gian đề xuất | 29/06/2026–23/08/2026 (8 tuần) |
-| Trần tiền mặt | 1.125.000 VNĐ |
-| Phiên bản | 0.4 — bản Proposal tinh gọn |
-| Ngày cập nhật | 21/08/2026 |
-| Trạng thái | Planning baseline nội bộ; chờ Sponsor phê duyệt chính thức |
+| Approving Sponsors | Lecturers Ngô Huy Biên and Ngô Ngọc Đăng Khoa |
+| Proposed period | 29/06/2026–23/08/2026 (8 weeks) |
+| Cash ceiling | 1,125,000 VND |
+| Version | 0.4 — streamlined proposal |
+| Last updated | 21/08/2026 |
+| Status | Internal planning baseline; awaiting formal Sponsor approval |
 
-Proposal giải thích vì sao dự án nên được thực hiện và nhóm dự kiến chứng minh giá trị đó như thế nào. [Project Vision and Scope](../Project_Vision_and_Scope/Project_Vision_and_Scope.md) và [Product Backlog and Acceptance Criteria](../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md) kiểm soát yêu cầu chi tiết. Kiến trúc và quyết định kỹ thuật thuộc các ADR liên quan.
+The proposal explains why the project should be done and how the team intends to prove that value. [Project Vision and Scope](../Project_Vision_and_Scope/Project_Vision_and_Scope.md) and [Product Backlog and Acceptance Criteria](../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md) control detailed requirements. Architecture and technical decisions belong to the relevant ADRs.
 
-## 2. Tóm tắt đề xuất
+## 2. Proposal summary
 
-Khi chuẩn bị cho một vị trí thực tập hoặc công việc đầu tiên, nhiều sinh viên bắt đầu từ một Job Description (JD) cụ thể nhưng phải tự tìm hiểu yêu cầu, gom câu hỏi từ nhiều nguồn và lập kế hoạch bằng ghi chú rời rạc. Nếu muốn mock interview, họ tiếp tục tìm người phù hợp, trao đổi lịch qua tin nhắn và nhận feedback không theo một cấu trúc chung. Vì vậy, ứng viên khó biết mình đã ôn đủ yêu cầu trong JD hay chưa và nên cải thiện điều gì tiếp theo.
+When preparing for an internship or a first job, many students start from a specific Job Description (JD) but must figure out the requirements themselves, gather questions from many sources, and build a plan from fragmented notes. If they want a mock interview, they continue to find a suitable person, negotiate schedules over messages, and receive feedback without a common structure. As a result, candidates cannot tell whether they have covered the JD requirements or what to improve next.
 
-Interview Practice Platform đề xuất một web MVP nối các bước này thành một quy trình duy nhất:
+Interview Practice Platform proposes a web MVP that connects these steps into one process:
 
 ```text
-JD → trích xuất/OCR → xác nhận văn bản → phân tích yêu cầu
-   → ánh xạ câu hỏi có giải thích → kế hoạch chuẩn bị
-   → tự luyện hoặc đặt lịch với Mentor → mock interview
-   → feedback theo rubric → hành động tiếp theo
+JD → extraction/OCR → text confirmation → requirement analysis
+   → explainable question mapping → preparation plan
+   → self-practice or Mentor booking → mock interview
+   → rubric feedback → next actions
 ```
 
-MVP phục vụ ba vai trò Student, Mentor và Administrator. Pilot tập trung vào Front-end Intern/Junior tại Việt Nam, với JavaScript, TypeScript và React. Nhóm dùng công cụ họp bên ngoài, Mentor tham gia tự nguyện và chưa xử lý thanh toán. AI interviewer, chấm điểm tự động, video tích hợp, ghi âm/phiên âm, payout, ứng dụng mobile native và ATS nằm ngoài phạm vi.
+The MVP serves three roles: Student, Mentor, and Administrator. The pilot focuses on Front-end Intern/Junior candidates in Vietnam, using JavaScript, TypeScript, and React. The team uses external meeting tools, Mentors participate voluntarily, and payment is not handled. AI interviewer, automatic scoring, integrated video, recording/transcription, payouts, native mobile apps, and ATS are out of scope.
 
-Nhóm đề xuất **tiếp tục có điều kiện**: hoàn thành thử nghiệm hẹp và các PoC bắt buộc trước khi quyết định phát hành pilot.
+The team recommends a **conditional proceed**: complete the narrow trial and mandatory PoCs before deciding on a pilot release.
 
-## 3. Vấn đề, người dùng và nhu cầu
+## 3. Problem, users, and needs
 
-### 3.1 Vấn đề cần giải quyết
+### 3.1 The problem
 
-> Ứng viên entry-level đọc một JD cụ thể nhưng không biết cần ôn kiến thức, kỹ năng và câu hỏi nào; JD, câu hỏi, mock interview và feedback chưa được nối trong một quy trình có truy vết.
+> An entry-level candidate reads a specific JD but does not know which knowledge, skills, and questions to prepare; the JD, questions, mock interview, and feedback are not yet connected in a traceable process.
 
-Hiện nay, ứng viên phải tự suy luận vị trí, cấp bậc và kỹ năng từ JD; tìm câu hỏi trên nhiều website, video hoặc cộng đồng; lưu tiến độ bằng ghi chú; rồi tự luyện hoặc tìm Mentor qua mạng lưới cá nhân. Mục tiêu buổi luyện, lịch hẹn và feedback nằm ở các công cụ khác nhau nên người học khó theo dõi từ yêu cầu ban đầu đến hành động cải thiện.
+Today, candidates must infer role, seniority, and skills from the JD; search questions across websites, videos, or communities; track progress in notes; then self-practice or find a Mentor through personal networks. Session goals, appointments, and feedback live in different tools, so learners find it hard to follow from the initial requirements to improvement actions.
 
-### 3.2 Người dùng và stakeholder chính
+### 3.2 Primary users and stakeholders
 
-- **Student:** sinh viên chuẩn bị thực tập, sinh viên năm cuối, người mới tốt nghiệp hoặc người chuyển hướng ở cấp entry-level đang có một JD Front-end cụ thể.
-- **Mentor:** người có kinh nghiệm Front-end, phỏng vấn hoặc tuyển dụng, có thể cung cấp khung giờ và feedback theo rubric.
-- **Administrator:** người quản lý taxonomy, câu hỏi, xác minh Mentor, booking, báo cáo và audit trong phạm vi quyền hạn.
-- **Sponsor và nhóm dự án:** Sponsor phê duyệt baseline và các thay đổi lớn; Product Owner ưu tiên giá trị; Tuấn Anh với vai trò Project Manager / Team Leader / Timekeeper điều hành nhóm, quản lý thời gian, Kanban và rủi ro; Gia Thành lập dữ liệu planning/estimation và tham gia phát triển Full-stack.
-- **Các bên hỗ trợ:** HR/chuyên gia nội dung, trường hoặc CLB nghề nghiệp, Student tham gia UAT và nhà cung cấp email, họp trực tuyến, OCR hoặc AI.
+- **Student:** students preparing for internships, final-year students, recent graduates, or career changers at entry level with a specific Front-end JD.
+- **Mentor:** people with Front-end, interviewing, or hiring experience who can offer time slots and rubric feedback.
+- **Administrator:** people managing taxonomy, questions, Mentor verification, bookings, reports, and audits within their authority.
+- **Sponsor and project team:** Sponsors approve the baseline and major changes; the Product Owner prioritizes value; Tuấn Anh, as Project Manager / Team Leader / Timekeeper, runs the team, time, Kanban, and risks; Gia Thành maintains planning/estimation data and contributes Full-stack development.
+- **Supporting parties:** HR/content experts, universities or career clubs, Students joining UAT, and email, online meeting, OCR, or AI providers.
 
-Chi tiết về quyền lực, lợi ích và cách phối hợp nằm trong [Stakeholder Analysis](../Project_Governance%20%26%20Stakeholder/Stakeholder_Analysis.md).
+For power, interest, and coordination details, see [Stakeholder Analysis](../Project_Governance%20%26%20Stakeholder/Stakeholder_Analysis.md).
 
-### 3.3 Pain points cần kiểm chứng
+### 3.3 Pain points to verify
 
-| Pain point | Biểu hiện | Cách kiểm chứng |
+| Pain point | Symptom | How to verify |
 |---|---|---|
-| Khó xác định nội dung cần ôn | Không biết yêu cầu nào quan trọng hoặc câu hỏi nào liên quan đến JD | Tỷ lệ hoàn tất JD-to-plan, requirement recall và precision@10 |
-| Tốn thời gian | Phải tìm, lọc và sắp xếp tài liệu từ nhiều nguồn | Thời gian hoàn thành tác vụ và phỏng vấn sau tác vụ |
-| Thiếu feedback đáng tin cậy | Không biết câu trả lời đã đúng trọng tâm và rõ ràng hay chưa | Mức đầy đủ và hữu ích của feedback |
-| Khó điều phối | Tìm Mentor và thống nhất mục tiêu, lịch hẹn qua nhiều tin nhắn | Tỷ lệ hoàn tất booking và thời gian xác nhận |
-| Thiếu tự tin | Chưa từng trải qua buổi phỏng vấn mô phỏng | So sánh điểm tự tin trước và sau buổi luyện |
+| Hard to know what to prepare | Unclear which requirements matter or which questions match the JD | JD-to-plan completion rate, requirement recall, and precision@10 |
+| Time-consuming | Must find, filter, and organize materials from many sources | Task completion time and post-task interview |
+| Lacking reliable feedback | Unsure whether answers are focused and clear | Completeness and usefulness of feedback |
+| Hard to coordinate | Finding a Mentor and agreeing on goals/schedules over many messages | Booking completion rate and confirmation time |
+| Lacking confidence | Never tried a mock interview | Confidence comparison before and after a practice session |
 
-Đây là các giả thuyết cần customer discovery. Nhóm chưa xem chúng là kết luận về thị trường.
+These are hypotheses that require customer discovery. The team does not yet treat them as market conclusions.
 
-## 4. Giải pháp hiện tại và bối cảnh cạnh tranh
+## 4. Existing solutions and competitive context
 
-Ứng viên có thể ghép website tuyển dụng, Google, YouTube, blog, ChatGPT, LeetCode, ghi chú, mạng xã hội, calendar và Google Meet/Zoom thành một quy trình thủ công. Mỗi công cụ giải quyết được một bước, nhưng dữ liệu không đi xuyên suốt. Ứng viên vẫn phải nhập lại thông tin, tự đánh giá nguồn và tự nối feedback với kế hoạch luyện tập. [Existing Tools Analysis](Existing_Tools_Analysis.md) mô tả chi tiết quy trình này.
+Candidates can combine job sites, Google, YouTube, blogs, ChatGPT, LeetCode, notes, social media, calendars, and Google Meet/Zoom into a manual process. Each tool solves one step, but the data does not flow through. Candidates must still re-enter information, judge sources themselves, and connect feedback to their practice plan. [Existing Tools Analysis](Existing_Tools_Analysis.md) describes this process in detail.
 
-Thị trường đã có kho câu hỏi, nền tảng peer practice và dịch vụ mentor coaching. MentorCruise, interviewing.io, Pramp/Exponent Practice, LeetCode, Mentori Vietnam và Mentora cho thấy từng phần của nhu cầu đã có người sử dụng. Khoảng trống dự án muốn kiểm chứng không phải “chưa ai làm”, mà là trải nghiệm JD-first có giải thích, phù hợp với ứng viên entry-level tại Việt Nam. So sánh đầy đủ nằm trong [Competitor Analysis](Competitor_Analysis.md).
+The market already has question banks, peer-practice platforms, and mentor coaching services. MentorCruise, interviewing.io, Pramp/Exponent Practice, LeetCode, Mentori Vietnam, and Mentora show that each part of the need already has users. The gap the project wants to verify is not "nobody has done this", but an explainable, JD-first experience suitable for entry-level candidates in Vietnam. The full comparison is in [Competitor Analysis](Competitor_Analysis.md).
 
-## 5. Giải pháp đề xuất và luồng nghiệp vụ
+## 5. Proposed solution and business flow
 
-Student dán hoặc tải JD, kiểm tra văn bản sau khi trích xuất, xem các yêu cầu đã chuẩn hóa và nhận danh sách câu hỏi có lý do ánh xạ. Từ kế hoạch chuẩn bị, Student có thể tự luyện hoặc tìm Mentor đã được duyệt. Booking mang theo mục tiêu cùng ngữ cảnh JD hoặc kế hoạch; sau buổi mock interview, feedback quay lại thành hành động tiếp theo.
+The Student pastes or uploads a JD, reviews the extracted text, sees normalized requirements, and receives a question list with mapping reasons. From the preparation plan, the Student can self-practice or find an approved Mentor. The booking carries the goal plus JD or plan context; after the mock interview, feedback returns as next actions.
 
 ```mermaid
 flowchart LR
-    A["Nhập JD"] --> B["Trích xuất/OCR và sửa văn bản"]
-    B --> C["Phân tích yêu cầu"]
-    C --> D["Ánh xạ câu hỏi có giải thích"]
-    D --> E["Kế hoạch chuẩn bị"]
-    E --> F["Tự luyện"]
-    E --> G["Đặt lịch Mentor"]
-    G --> H["Mock interview qua link ngoài"]
-    H --> I["Feedback và hành động tiếp theo"]
+    A["Enter JD"] --> B["Extraction/OCR and text correction"]
+    B --> C["Requirement analysis"]
+    C --> D["Explainable question mapping"]
+    D --> E["Preparation plan"]
+    E --> F["Self-practice"]
+    E --> G["Mentor booking"]
+    G --> H["Mock interview via external link"]
+    H --> I["Feedback and next actions"]
     I --> E
 ```
 
-Mỗi kết quả ánh xạ phải truy vết được yêu cầu nguồn, chủ đề, lý do và phiên bản. Chỉ câu hỏi `PUBLISHED` và Mentor `APPROVED` mới được đưa vào kết quả. Hệ thống phải chống double booking, kiểm soát quyền truy cập theo đối tượng và không để lỗi notification làm mất booking đã ghi nhận.
+Each mapping result must trace to the source requirement, topic, reason, and version. Only `PUBLISHED` questions and `APPROVED` Mentors enter results. The system must prevent double booking, enforce object-level access control, and never let a notification error lose a recorded booking.
 
-Theo ADR-005, Gemini có thể hỗ trợ phân tích yêu cầu, giải thích và soạn nháp sau feature flag. Kết quả AI phải qua validation và người dùng xác nhận; rule/manual flow vẫn phải hoạt động khi nhà cung cấp lỗi. MVP không dùng Gemini làm AI interviewer hoặc công cụ chấm điểm.
+Per ADR-005, Gemini may support requirement analysis, explanation, and drafts behind a feature flag. AI results require validation and user confirmation; the rule/manual flow must still work when the provider fails. The MVP does not use Gemini as an AI interviewer or scoring tool.
 
-## 6. Điểm khác biệt và Business Case
+## 6. Differentiation and business case
 
-### 6.1 Giá trị khác biệt cần chứng minh
+### 6.1 Differentiating value to prove
 
-1. **Bắt đầu từ JD thật:** người dùng chuẩn bị cho cơ hội đang ứng tuyển thay vì học từ một kho nội dung chung.
-2. **Ánh xạ có giải thích:** mỗi câu hỏi gắn với yêu cầu nguồn, chủ đề, lý do và phiên bản.
-3. **Kế hoạch có giá trị độc lập:** Student vẫn có thể tự luyện khi chưa muốn hoặc chưa thể đặt Mentor.
-4. **Ngữ cảnh đi xuyên suốt:** JD hoặc kế hoạch đi cùng booking; feedback quay lại đúng nội dung cần cải thiện.
-5. **MVP gọn:** nhóm dùng link họp ngoài, pilot miễn phí và fallback thủ công để tập trung nguồn lực vào core loop.
+1. **Starts from a real JD:** users prepare for the opportunity they are applying to instead of learning from a generic content pool.
+2. **Explainable mapping:** each question links to a source requirement, topic, reason, and version.
+3. **Plan is valuable on its own:** a Student can still self-practice before wanting or being able to book a Mentor.
+4. **Context flows end to end:** the JD or plan travels with the booking; feedback returns to the exact content that needs improvement.
+5. **Lean MVP:** the team uses external meeting links, a free pilot, and manual fallback to focus resources on the core loop.
 
-Những điểm trên là giả thuyết định vị. Nhóm chỉ xem chúng là lợi thế khi có dữ liệu sử dụng hoặc kết quả pilot.
+These points are positioning hypotheses. The team treats them as advantages only when usage data or pilot results exist.
 
-### 6.2 Business Case
+### 6.2 Business case
 
-An là sinh viên năm ba ngành Công nghệ thông tin và có ba tuần để chuẩn bị cho một JD Front-end Intern. An tìm được nhiều bài viết và video nhưng không biết yêu cầu nào cần ưu tiên, câu hỏi nào phù hợp với JavaScript/React trong JD và cách diễn đạt của mình đã rõ chưa. An mất nhiều buổi tổng hợp tài liệu nhưng vẫn có thể chỉ nhận ra điểm yếu khi bước vào buổi phỏng vấn thật.
+An is a third-year IT student with three weeks to prepare for a Front-end Intern JD. An finds many articles and videos but does not know which requirements to prioritize, which questions fit the JavaScript/React in the JD, or whether their answers are clear enough. An spends many sessions compiling materials but may only discover weaknesses in a real interview.
 
-Với sản phẩm, An tải JD, sửa lỗi trích xuất và nhận một kế hoạch gồm các câu hỏi có lý do ánh xạ. An tự luyện phần nền tảng, sau đó đặt lịch với Mentor Front-end và gửi kèm những chủ đề còn yếu. Sau mock interview, An nhận feedback gồm điểm mạnh, điểm yếu và hành động tiếp theo, rồi tiếp tục luyện theo chính kế hoạch đó.
+With the product, An uploads the JD, fixes extraction errors, and receives a plan of questions with mapping reasons. An self-practices the fundamentals, then books a Front-end Mentor and includes the weaker topics. After the mock interview, An receives feedback with strengths, weaknesses, and next actions, then continues practicing from that same plan.
 
-| Đối tượng | Lợi ích kỳ vọng | Bằng chứng cần thu |
+| Audience | Expected benefit | Evidence to collect |
 |---|---|---|
-| Student | Giảm công sức tổng hợp, biết nội dung cần ưu tiên và nhận feedback có thể hành động | Task completion/time, usefulness và mức tự tin trước–sau |
-| Mentor | Nhận đủ ngữ cảnh, giảm trao đổi thủ công và quản lý lịch rõ hơn | Thời gian chuẩn bị, tỷ lệ chấp nhận/hoàn thành và độ đầy đủ của feedback |
-| Nhóm/Sponsor | Có căn cứ để Go, Pivot hoặc Stop | Kết quả gate, pilot funnel và sai lệch chi phí/capacity |
+| Student | Less compilation effort, clarity on what to prioritize, and actionable feedback | Task completion/time, usefulness, and before–after confidence |
+| Mentor | Enough context, less manual coordination, clearer schedule management | Preparation time, accept/complete rates, and feedback completeness |
+| Team/Sponsor | A basis for Go, Pivot, or Stop | Gate results, pilot funnel, and cost/capacity variance |
 
-Kế hoạch chuẩn bị tạo giá trị trước khi Student đặt Mentor, nhờ đó rủi ro thiếu nguồn cung không làm mất toàn bộ giá trị MVP. Nếu kế hoạch hữu ích nhưng tỷ lệ booking thấp, nhóm sẽ đánh giá lại nguồn Mentor và value proposition của marketplace. Nếu JD-to-plan không đạt độ liên quan hoặc khả dụng, nhóm sẽ sửa core preparation flow trước khi mở rộng.
+The preparation plan creates value before the Student books a Mentor, so mentor-supply risk does not erase all MVP value. If the plan is useful but booking rates are low, the team will re-evaluate Mentor supply and the marketplace value proposition. If JD-to-plan fails relevance or usability, the team will fix the core preparation flow before expanding.
 
-### 6.3 Mô hình kinh doanh giả định
+### 6.3 Assumed business model
 
-Pilot dùng Question Bank, kế hoạch chuẩn bị và Mentor tự nguyện; không thu tiền, ký quỹ, payout hoặc commission. Dự án vì thế **chưa chứng minh unit economics**.
+The pilot uses the Question Bank, preparation plans, and volunteer Mentors; no payments, escrow, payouts, or commissions. The project therefore **does not yet prove unit economics**.
 
-Sau khi core loop chứng minh được giá trị, nhóm có thể nghiên cứu phí trên booking hoàn thành, subscription cho nội dung nâng cao hoặc gói hỗ trợ dành cho trường/CLB. Willingness to pay phải được kiểm tra bằng hành vi như pricing interview, lựa chọn giữa nhiều mức giá hoặc pre-booking; một câu trả lời “có sẵn lòng trả tiền” chưa đủ làm bằng chứng.
+After the core loop demonstrates value, the team could study fees per completed booking, subscriptions for advanced content, or support packages for universities/clubs. Willingness to pay must be verified with behavior such as pricing interviews, choices between price tiers, or pre-bookings; a "yes, I'd pay" answer alone is not evidence.
 
-## 7. Phạm vi MVP và sản phẩm bàn giao
+## 7. MVP scope and deliverables
 
-### Trong phạm vi
+### In scope
 
-- Xác thực và phân quyền cho Student, Mentor và Administrator.
-- Nhập JD bằng tối đa 50.000 ký tự hoặc một PDF/PNG/JPEG tối đa 10 MB; PDF tối đa 5 trang.
-- Trích xuất trực tiếp, OCR tiếng Việt/Anh dự phòng và bước xác nhận/sửa văn bản.
-- Phân tích yêu cầu, chuẩn hóa taxonomy/alias và ánh xạ câu hỏi có giải thích.
-- Kế hoạch chuẩn bị, Question Bank, bookmark và trạng thái luyện cơ bản.
-- Hồ sơ, xác minh và lịch rảnh của Mentor.
-- Booking, khóa slot, đổi/hủy lịch, link họp ngoài, notification và audit.
-- Feedback theo rubric, review hợp lệ, report/moderation và trang quản trị tối thiểu.
-- Gemini assistance chỉ khi release gate của ADR-005 đạt; rule/manual flow luôn tồn tại.
+- Authentication and role-based access for Student, Mentor, and Administrator.
+- JD input of up to 50,000 characters or one PDF/PNG/JPEG up to 10 MB; PDFs up to 5 pages.
+- Direct extraction, Vietnamese/English OCR fallback, and a text confirm/correction step.
+- Requirement analysis, taxonomy/alias normalization, and explainable question mapping.
+- Preparation plan, Question Bank, bookmarking, and basic practice status.
+- Mentor profiles, verification, and availability.
+- Booking, slot locking, rescheduling/cancelling, external meeting links, notification, and audit.
+- Rubric feedback, valid reviews, reports/moderation, and a minimal admin page.
+- Gemini assistance only when ADR-005's release gate passes; the rule/manual flow always exists.
 
-R1 mở rộng chỉ gồm dashboard tiến độ cơ bản và lời nhắc lịch. Nhóm chỉ chọn hai hạng mục này khi phần Must và reserve vẫn an toàn.
+The extended R1 covers only a basic progress dashboard and schedule reminders. The team selects these two items only when the Must scope and reserve remain safe.
 
-### Ngoài phạm vi
+### Out of scope
 
-- AI interviewer, chatbot phỏng vấn, chấm điểm tự động hoặc phân tích giọng nói/video.
-- Video/audio call, recording hoặc transcript tích hợp.
-- Payment, escrow, payout và commission tự động.
-- ML recommendation không có deterministic guardrail.
-- Mobile native, ATS/nộp hồ sơ, OCR tổng quát và marketplace đa quốc gia.
+- AI interviewer, interview chatbot, automatic scoring, or voice/video analysis.
+- Integrated video/audio calls, recording, or transcription.
+- Automatic payment, escrow, payouts, and commissions.
+- ML recommendations without deterministic guardrails.
+- Native mobile, ATS/application submission, general OCR, and multi-country marketplaces.
 
-Phạm vi, business rules, Definition of Done và acceptance criteria chi tiết thuộc [Project Vision and Scope](../Project_Vision_and_Scope/Project_Vision_and_Scope.md) và [Product Backlog and Acceptance Criteria](../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md).
+Scope, business rules, Definition of Done, and acceptance criteria are detailed in [Project Vision and Scope](../Project_Vision_and_Scope/Project_Vision_and_Scope.md) and [Product Backlog and Acceptance Criteria](../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md).
 
-## 8. Thời gian, nguồn lực và ngân sách
+## 8. Time, resources, and budget
 
-| Hạng mục | Baseline |
+| Item | Baseline |
 |---|---:|
-| Thành viên | 6 |
-| Thời lượng | 8 tuần, từ 29/06 đến 23/08/2026 |
-| Capacity danh nghĩa | 6 × 16 giờ/tuần × 8 tuần = 768 giờ |
-| Reserve | 15% = 115,2 giờ |
-| Capacity cho phạm vi | Khoảng 653 giờ |
-| R1 Must | 27 story, 134 SP |
-| Throughput cần so sánh | 33,5 SP/tuần trong 4 tuần execution tái dựng |
-| Direct cash | 900.000 VNĐ |
-| Contingency tiền mặt | 225.000 VNĐ |
-| **Trần tiền mặt** | **1.125.000 VNĐ** |
+| Members | 6 |
+| Duration | 8 weeks, 29/06–23/08/2026 |
+| Nominal capacity | 6 × 16 hours/week × 8 weeks = 768 hours |
+| Reserve | 15% = 115.2 hours |
+| Capacity for scope | About 653 hours |
+| R1 Must | 27 stories, 134 SP |
+| Throughput to compare | 33.5 SP/week across 4 reconstructed execution weeks |
+| Direct cash | 900,000 VND |
+| Cash contingency | 225,000 VND |
+| **Cash ceiling** | **1,125,000 VND** |
 
-134 SP chưa phải cam kết giao hàng. Nhóm phát triển phải Planning Poker từng story, cập nhật hai estimate độc lập và dùng khoảng throughput thực tế để xác nhận phạm vi có thể hoàn thành.
+134 SP is not yet a delivery commitment. The development team must run Planning Poker per story, update the two independent estimates, and use the actual throughput range to confirm the scope can be completed.
 
-Sáu giai đoạn của dự án gồm Discovery/Charter, Requirement/Prototype, Foundation, JD intake & analysis, Mentor core loop và UAT/Release. Milestone, phân công và chi phí chi tiết nằm trong [Project Charter](../Project_Governance%20%26%20Stakeholder/Project_Charter.md), [Resource Plan](../Project_Resource_Plan/ResourcePlan.md) và [Cost, Time and Resources](../Project_Resource_Plan/Cost_Time_Resources.md).
+The six project phases are Discovery/Charter, Requirement/Prototype, Foundation, JD intake & analysis, Mentor core loop, and UAT/Release. Milestones, assignments, and detailed costs are in [Project Charter](../Project_Governance%20%26%20Stakeholder/Project_Charter.md), [Resource Plan](../Project_Resource_Plan/ResourcePlan.md), and [Cost, Time and Resources](../Project_Resource_Plan/Cost_Time_Resources.md).
 
-## 9. Khả thi và rủi ro chính
+## 9. Feasibility and key risks
 
-### 9.1 Đánh giá khả thi
+### 9.1 Feasibility assessment
 
-| Khía cạnh | Đánh giá | Điều kiện chính |
+| Aspect | Assessment | Main conditions |
 |---|---|---|
-| Kỹ thuật | Khả thi có điều kiện | Extraction/OCR, mapping, authorization, booking consistency, notification fallback và AI guardrail đạt gate |
-| Vận hành | Khả thi có điều kiện | Có 4 Mentor `APPROVED`, mỗi người ít nhất 3 slot; policy và admin owner rõ |
-| Thị trường | Có tín hiệu, chưa chứng minh | Discovery đúng phân khúc và KPI về tác vụ/giá trị đạt ngưỡng |
-| Kinh tế | Có cash baseline, chưa có unit economics | Không vượt 1.125.000 VNĐ; chỉ nghiên cứu định giá sau pilot miễn phí |
-| Tiến độ/nguồn lực | Có baseline, chưa có delivery commitment | Must backlog nằm trong khoảng throughput và khoảng 653 giờ |
-| Pháp lý/quyền riêng tư | Khả thi có điều kiện | Có consent, data minimization, access control, retention/deletion và provenance |
+| Technical | Conditionally feasible | Extraction/OCR, mapping, authorization, booking consistency, notification fallback, and AI guardrails pass the gates |
+| Operational | Conditionally feasible | 4 `APPROVED` Mentors with at least 3 slots each; clear policy and admin owner |
+| Market | Some signals, not proven | Discovery reaches the right segment and task/value KPIs meet thresholds |
+| Economic | Cash baseline exists, no unit economics | Stay within 1,125,000 VND; study pricing only after the free pilot |
+| Schedule/resources | Baseline exists, no delivery commitment | Must backlog fits throughput range and ~653 hours |
+| Legal/privacy | Conditionally feasible | Consent, data minimization, access control, retention/deletion, and provenance exist |
 
-### 9.2 Rủi ro ưu tiên
+### 9.2 Priority risks
 
-| Rủi ro | Dấu hiệu | Cách ứng phó |
+| Risk | Indicator | Response |
 |---|---|---|
-| Không đủ Mentor cho pilot | Dưới 4 Mentor hoặc dưới 3 slot/người | Outreach sớm, chạy concierge pilot và giữ plan độc lập với booking |
-| Extraction/mapping không đủ chính xác | Blind recall hoặc precision@10 dưới 80% | Correction gate, corpus có nhãn, taxonomy review và rule fallback |
-| Gemini sai hoặc provider lỗi | Schema/evidence fail, quota hoặc latency tăng | Feature flag, validation, candidate constraint và manual fallback |
-| Booking không nhất quán hoặc dữ liệu bị lộ | Double booking, invalid transition hoặc truy cập trái quyền | Transaction/unique constraint, audit và negative test |
-| Scope vượt baseline | Story AI/video/payment được kéo vào Ready hoặc forecast vượt 653 giờ | Change control, cắt Should/Could và rebaseline |
-| Pilot thiếu bằng chứng | Không đủ Student, JD hoặc booking trước gate | Tuyển từ discovery và dùng pilot có hỗ trợ khi cần |
+| Not enough Mentors for the pilot | Fewer than 4 Mentors or fewer than 3 slots each | Early outreach, concierge pilot, keep the plan independent of booking |
+| Extraction/mapping insufficiently accurate | Blind recall or precision@10 below 80% | Correction gate, labeled corpus, taxonomy review, and rule fallback |
+| Gemini errors or provider failure | Schema/evidence failures, quota or latency increases | Feature flag, validation, candidate constraints, and manual fallback |
+| Inconsistent booking or data leakage | Double booking, invalid transitions, or unauthorized access | Transaction/unique constraints, audit, and negative tests |
+| Scope beyond baseline | AI/video/payment stories pulled into Ready or forecast beyond 653 hours | Change control, cut Should/Could, and rebaseline |
+| Pilot lacks evidence | Not enough Students, JDs, or bookings before the gates | Recruit from discovery and use a supported pilot when needed |
 
-Phân tích đầy đủ và bảy Go/No-Go gate nằm trong [Feasibility Study](../Project_Feasibility/feasibility.md).
+The full analysis and seven Go/No-Go gates are in [Feasibility Study](../Project_Feasibility/feasibility.md).
 
-## 10. Kết quả kỳ vọng và cách đánh giá
+## 10. Expected outcomes and evaluation method
 
-| Mục tiêu | Chỉ số | Ngưỡng đề xuất |
+| Objective | Metric | Proposed threshold |
 |---|---|---:|
-| Xác nhận vấn đề | Mẫu discovery xác nhận ít nhất một pain cốt lõi | ≥70% |
-| Hoàn tất JD-to-plan | Student nhập JD, sửa văn bản và tạo được plan | ≥80% |
-| Chất lượng phân tích | Blind requirement recall và precision@10 | ≥80% |
-| Tính hợp lệ/giải thích | Kết quả đủ source/topic/reason/version; không có Question/Mentor không hợp lệ | 100% |
-| Kích hoạt từ plan | Student mở Question hoặc luồng Mentor từ plan | ≥80% |
-| Pilot booking | Booking hợp lệ / `CONFIRMED` / `COMPLETED` | 12 / ≥10 / ≥8 |
-| Chất lượng feedback | Booking hoàn thành có điểm mạnh, điểm yếu và hành động tiếp theo | ≥90% |
-| Giá trị cảm nhận | Điểm hữu ích và mức tự tin sau–trước | ≥4/5 và tăng trung bình ≥1/5 |
-| Chất lượng kỹ thuật | Critical workflow test và defect trước UAT | 100% pass; 0 Critical/High |
+| Confirm the problem | Discovery sample confirms at least one core pain | ≥70% |
+| Complete JD-to-plan | Student enters JD, edits text, and creates a plan | ≥80% |
+| Analysis quality | Blind requirement recall and precision@10 | ≥80% |
+| Validity/explainability | Results include source/topic/reason/version; no invalid Question/Mentor | 100% |
+| Activation from plan | Student opens a Question or Mentor flow from the plan | ≥80% |
+| Pilot booking | Valid / `CONFIRMED` / `COMPLETED` bookings | 12 / ≥10 / ≥8 |
+| Feedback quality | Completed bookings have strengths, weaknesses, and next actions | ≥90% |
+| Perceived value | Usefulness score and after–before confidence | ≥4/5, average increase ≥1/5 |
+| Technical quality | Critical workflow tests and pre-UAT defects | 100% pass; 0 Critical/High |
 
-Nhóm dùng 20 JD hợp pháp, đã khử dữ liệu nhạy cảm: 12 mẫu để hiệu chỉnh và 8 mẫu blind. Pilot dự kiến có 12 Student và 4 Mentor. Kết quả chỉ dùng để đánh giá thử nghiệm hẹp, không đại diện cho toàn bộ thị trường.
+The team uses 20 legal, de-identified JDs: 12 for calibration, 8 blind. The pilot plans 12 Students and 4 Mentors. Results only evaluate the narrow trial; they do not represent the whole market.
 
-## 11. Khuyến nghị, điều kiện phê duyệt và tham chiếu
+## 11. Recommendation, approval conditions, and references
 
-### 11.1 Khuyến nghị
+### 11.1 Recommendation
 
-Nhóm nên tiếp tục PoC và pilot hẹp, nhưng chưa nên xem kế hoạch này là cam kết phát hành. Quyết định cuối cùng dựa trên ba hướng:
+The team should continue the PoC and narrow pilot but should not treat this plan as a release commitment yet. The final decision follows three directions:
 
-- **Go:** core KPI đạt, booking thực sự diễn ra, feedback hữu ích và dự báo nằm trong capacity/ngân sách.
-- **Pivot:** kế hoạch chuẩn bị có giá trị nhưng booking thấp, hoặc Mentor loop có tín hiệu trong khi JD-to-plan chưa đạt; nhóm điều chỉnh value proposition theo bằng chứng.
-- **Stop/Redesign:** pain không được xác nhận, extraction/mapping vẫn dưới ngưỡng sau một vòng khắc phục, còn access leak, thiếu Mentor hoặc core loop vượt baseline.
+- **Go:** core KPIs met, bookings actually happen, feedback is useful, and the forecast fits capacity/budget.
+- **Pivot:** the preparation plan has value but bookings are low, or the Mentor loop shows signal while JD-to-plan does not yet; adjust the value proposition based on evidence.
+- **Stop/Redesign:** pain is not confirmed, extraction/mapping remains below thresholds after one remediation cycle, or there are access leaks, Mentor shortage, or the core loop exceeds the baseline.
 
-### 11.2 Điều kiện phê duyệt
+### 11.2 Approval conditions
 
-Trước khi phát hành pilot, nhóm cần:
+Before the pilot release, the team needs:
 
-- chữ ký Sponsor trong Project Charter và xác nhận scope của Product Owner;
-- Planning Poker cho 27 Must story/134 SP, hai estimate cập nhật và khoảng throughput phù hợp;
-- 20 JD hợp pháp/khử định danh, hướng dẫn gắn nhãn và tập blind cố định;
-- bằng chứng prototype/UAT, các PoC và release gate bắt buộc;
-- privacy review, authorization negative tests và manual fallback walkthrough;
-- không còn defect Critical/High;
-- dự báo không vượt 8 tuần, khoảng 653 giờ và 1.125.000 VNĐ;
-- biên bản quyết định Go/Pivot/Stop dựa trên KPI.
+- Sponsor signatures in the Project Charter and Product Owner scope confirmation;
+- Planning Poker for 27 Must stories/134 SP, both estimates updated, and a suitable throughput range;
+- 20 legal/de-identified JDs, labeling instructions, and a fixed blind set;
+- prototype/UAT evidence, mandatory PoCs, and release gates;
+- privacy review, authorization negative tests, and a manual fallback walkthrough;
+- no remaining Critical/High defects;
+- a forecast within 8 weeks, ~653 hours, and 1,125,000 VND;
+- a recorded Go/Pivot/Stop decision based on KPIs.
 
-### 11.3 Tài liệu tham chiếu
+### 11.3 Reference documents
 
 - [Project Charter](../Project_Governance%20%26%20Stakeholder/Project_Charter.md)
 - [Project Vision and Scope](../Project_Vision_and_Scope/Project_Vision_and_Scope.md)
@@ -246,6 +246,6 @@ Trước khi phát hành pilot, nhóm cần:
 - [ADR-004 — JD Processing and Question Matching](../Project_Architecture/ADR/ADR-004-JD-Processing-and-Question-Matching.md)
 - [ADR-005 — Hybrid Gemini Assistance](../Project_Architecture/ADR/ADR-005-Hybrid-Gemini-Assistance.md)
 
-Proposal áp dụng hướng dẫn tại `docs/refs/02-software-project.md` (slide 032), `docs/refs/03-1-business-requirements.md` (slide 005 và 066), `docs/refs/03-software-project-initiation.md` (slide 015, 022–023) và `docs/refs/03-2-user-requirements.md` (slide 017).
+The proposal follows guidance from `docs/refs/02-software-project.md` (slide 032), `docs/refs/03-1-business-requirements.md` (slides 005 and 066), `docs/refs/03-software-project-initiation.md` (slides 015, 022–023) and `docs/refs/03-2-user-requirements.md` (slide 017).
 
-Nguồn thị trường kế thừa từ proposal gốc gồm MentorCruise, interviewing.io, Pramp/Exponent Practice, LeetCode, Mentori Vietnam và Mentora. Thông tin được ghi nhận ngày 09/08/2026 và phải được xác minh lại trước khi nhóm đưa ra quyết định kinh doanh hoặc định giá.
+Market sources inherited from the original proposal include MentorCruise, interviewing.io, Pramp/Exponent Practice, LeetCode, Mentori Vietnam, and Mentora. The information was recorded on 09/08/2026 and must be re-verified before the team makes business or pricing decisions.

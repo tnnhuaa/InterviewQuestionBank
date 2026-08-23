@@ -1,277 +1,277 @@
 # PrepVI — Prototype Workflow Specification
 
-## 1. Mục đích
+## 1. Purpose
 
-Prototype kiểm chứng ba luồng persona: Student đi từ một Job Description (JD) thực tế đến bộ câu hỏi phù hợp, luyện tập và nhận feedback; Mentor đi từ onboarding đến gửi feedback; Admin duyệt và xử lý ngoại lệ. Trọng tâm Proof of Concept (PoC) là kiểm chứng giả thuyết: hệ thống có thể giúp ứng viên chưa biết ôn gì chuyển từ một JD sang kế hoạch luyện tập có giải thích. Prototype ưu tiên logic, trạng thái, nội dung và usability; không dùng như bằng chứng rằng extraction/OCR, backend, security hoặc concurrency đã hoàn thành ở mức production.
+The prototype validates three persona flows: a Student moving from a real Job Description (JD) to a suitable question set, practicing, and receiving feedback; a Mentor moving from onboarding to submitting feedback; and an Admin approving and handling exceptions. The Proof of Concept (PoC) focus is validating the hypothesis: the system can help a candidate who does not know what to study move from a JD to an explainable practice plan. The prototype prioritizes logic, states, content, and usability; it is not evidence that extraction/OCR, backend, security, or concurrency are production-ready.
 
 ## 2. Prototype narrative
 
 ### Current-state story
 
-An chuẩn bị ứng tuyển nhưng không biết nên ôn nội dung nào trong JD. An tìm câu hỏi Front-end từ nhiều nguồn, tự ghi chú, nhắn nhiều người để tìm mentor và nhận feedback rời rạc. An mất thời gian chọn tài liệu, điều phối và không biết nên ưu tiên luyện gì tiếp.
+An prepares for an application but does not know what content of the JD to study. An searches Front-end questions from many sources, takes notes, messages people to find a mentor, and receives fragmented feedback. An spends time choosing materials, coordinating, and does not know what to prioritize next.
 
 ### Future-state story
 
-An dán hoặc tải lên một JD Front-end Intern. Sau khi kiểm tra nội dung được trích xuất trực tiếp hoặc qua OCR khi cần, An thấy các yêu cầu chính được mapping sang taxonomy và nhận bộ câu hỏi JavaScript/Front-end được xếp theo mức độ liên quan. An bắt đầu luyện, tìm mentor đã xác minh và chọn slot. Booking được xác nhận, An tham gia bằng link họp ngoài, nhận rubric và mở lại nhóm câu hỏi được mentor gợi ý.
+An pastes or uploads a Front-end Intern JD. After reviewing content extracted directly or via OCR when needed, An sees key requirements mapped to the taxonomy and receives a JavaScript/Front-end question set ranked by relevance. An starts practicing, finds a verified mentor, and picks a slot. The booking is confirmed, An joins via an external meeting link, receives a rubric, and reopens the question group suggested by the mentor.
 
-### Màn hình đầu vào dùng chung
+### Shared entry screens
 
 - **G01 — Homepage:** [G01-homepage.png](img/G01-homepage.png)
-- **G02 — Đăng nhập:** [G02-login.png](img/G02-login.png)
+- **G02 — Login:** [G02-login.png](img/G02-login.png)
 
-Hai màn hình `G01–G02` là điểm vào dùng chung trước khi người dùng chuyển đến giao diện theo persona; chúng không thuộc riêng Student, Mentor hoặc Admin.
+Screens `G01–G02` are the shared entry point before users move to persona-specific interfaces; they do not belong to Student, Mentor, or Admin individually.
 
 ## 3. Student prototype flow
 
 ```mermaid
 flowchart LR
-    S01["S01 Trang chủ học viên"] --> S02["S02 Question Bank"]
-    S01 --> S11["S11 Tải lên Job Description"]
-    S11 --> S12["S12 Kiểm tra nội dung trích xuất"]
-    S12 --> S13["S13 Mapping yêu cầu JD"]
-    S13 --> S14["S14 Bộ câu hỏi dành cho JD"]
+    S01["S01 Student home"] --> S02["S02 Question Bank"]
+    S01 --> S11["S11 Upload Job Description"]
+    S11 --> S12["S12 Review extracted content"]
+    S12 --> S13["S13 Map JD requirements"]
+    S13 --> S14["S14 Question set for JD"]
     S14 --> S03
     S14 --> S02
-    S02 --> S03["S03 Chi tiết câu hỏi"]
-    S03 --> S04["S04 Tìm mentor phù hợp"]
-    S04 --> S05["S05 Hồ sơ mentor"]
-    S05 --> S06["S06 Gửi yêu cầu đặt lịch"]
-    S06 --> S07["S07 Trạng thái đặt lịch"]
-    S07 --> S08["S08 Chi tiết buổi phỏng vấn"]
-    S08 --> S09["S09 Feedback buổi luyện tập"]
+    S02 --> S03["S03 Question detail"]
+    S03 --> S04["S04 Find a suitable mentor"]
+    S04 --> S05["S05 Mentor profile"]
+    S05 --> S06["S06 Submit booking request"]
+    S06 --> S07["S07 Booking status"]
+    S07 --> S08["S08 Interview session detail"]
+    S08 --> S09["S09 Practice feedback"]
     S09 --> S02
-    S09 --> S10["S10 Đánh giá mentor"]
+    S09 --> S10["S10 Review mentor"]
 ```
 
-### Screen S01 — Trang chủ học viên
+### Screen S01 — Student home
 
 **Prototype frame:** [S01-student-home.png](img/S01-student-home.png)
 
-**Mục tiêu:** giúp Student chọn vị trí và thấy hành động tiếp theo.
+**Goal:** help the Student pick a role and see the next action.
 
-- Target role, interview date optional, progress summary.
-- CTA theo trạng thái: “Quét JD mới”, “Luyện ngay”, “Luyện câu hỏi tự do” và “Tìm mentor”.
-- Trạng thái rỗng giải thích cách bắt đầu.
-- Không hiển thị score giả khi chưa có dữ liệu.
+- Target role, optional interview date, progress summary.
+- CTAs by state: "Scan new JD", "Practice now", "Practice free questions", and "Find mentor".
+- Empty state explains how to start.
+- No fake scores when data is missing.
 
 ### Core PoC flow — JD to recommended questions
 
 ```mermaid
 flowchart LR
-    I["Dán JD hoặc tải một PDF/PNG/JPEG"] --> O["Trích xuất trực tiếp; OCR khi cần"]
-    O --> V{"Student xác nhận nội dung?"}
-    V -- "Chỉnh sửa / quét lại" --> O
-    V -- "Xác nhận" --> M["Mapping yêu cầu JD với taxonomy"]
-    M --> R["Đề xuất bộ câu hỏi có lý do"]
-    R --> P["Chọn câu hỏi và bắt đầu luyện"]
+    I["Paste JD or upload a PDF/PNG/JPEG"] --> O["Direct extraction; OCR when needed"]
+    O --> V{"Student confirms content?"}
+    V -- "Edit / rescan" --> O
+    V -- "Confirm" --> M["Map JD requirements to taxonomy"]
+    M --> R["Recommend question set with reasons"]
+    R --> P["Pick questions and start practicing"]
 ```
 
-### Screen S11 — Tải lên Job Description
+### Screen S11 — Upload Job Description
 
 **Prototype frame:** [S11-jd-upload.png](img/S11-jd-upload.png)
 
-**Mục tiêu:** giảm rào cản bắt đầu cho Student chưa biết nên ôn nội dung nào.
+**Goal:** lower the start barrier for Students who do not know what to prepare.
 
-- Cho phép dán tối đa 50.000 ký tự hoặc tải một PDF/PNG/JPEG tối đa 10 MB; PDF tối đa 5 trang.
-- Hướng dẫn ảnh rõ, đủ sáng, không bị cắt; hiển thị preview và cho phép thay/xóa ảnh trước khi gửi.
-- Nêu rõ định dạng, dung lượng và số trang được hỗ trợ; validation cụ thể khi file không hợp lệ.
-- Privacy notice trước khi gửi: khuyến nghị che email, số điện thoại và dữ liệu cá nhân không cần thiết.
-- CTA “Trích xuất nội dung”; có progress và chống submit lặp.
+- Allow pasting up to 50,000 characters or uploading one PDF/PNG/JPEG up to 10 MB; PDFs up to 5 pages.
+- Clear image guidance: well-lit, not cropped; show a preview and allow replacing/removing before submitting.
+- State supported format, size, and page count; specific validation when a file is invalid.
+- Privacy notice before submit: recommend masking emails, phone numbers, and unnecessary personal data.
+- CTA "Extract content"; with progress and duplicate-submit protection.
 
-### Screen S12 — Kiểm tra nội dung trích xuất
+### Screen S12 — Review extracted content
 
 **Prototype frame:** [S12-ocr-review.png](img/S12-ocr-review.png)
 
-**Mục tiêu:** để Student kiểm soát đầu vào trước khi hệ thống đưa ra đề xuất.
+**Goal:** let the Student control the input before the system makes recommendations.
 
-- Hiển thị nguồn JD cạnh nội dung được trích xuất; văn bản có thể chỉnh sửa và đoạn OCR có độ tin cậy thấp phải được đánh dấu.
-- Đánh dấu đoạn có độ tin cậy thấp hoặc không đọc được, không âm thầm tự điền.
-- CTA “Quét lại” và “Xác nhận nội dung”; không cho mapping khi nội dung rỗng hoặc quá ít thông tin.
-- Với PDF nhiều trang trong giới hạn hỗ trợ, giữ đúng thứ tự trang và cảnh báo nội dung có thể bị trùng.
-- Cho phép bỏ qua/xóa dữ liệu ảnh theo chính sách lưu trữ của PoC.
+- Show the JD source next to the extracted content; text is editable and low-confidence OCR segments must be marked.
+- Mark low-confidence or unreadable segments; do not silently fill them in.
+- CTAs "Rescan" and "Confirm content"; no mapping allowed when content is empty or too thin.
+- For multi-page PDFs within supported limits, keep page order and warn that content may be duplicated.
+- Allow discarding/deleting image data per PoC retention policy.
 
-### Screen S13 — Mapping yêu cầu JD
+### Screen S13 — Map JD requirements
 
 **Prototype frame:** [S13-jd-mapping.png](img/S13-jd-mapping.png)
 
-**Mục tiêu:** giải thích hệ thống hiểu JD như thế nào trước khi tạo bộ câu hỏi.
+**Goal:** explain how the system understands the JD before creating the question set.
 
-- Tách các yêu cầu chính như position, seniority, skills, topics và interview context.
-- Mỗi yêu cầu được mapping sang taxonomy hiện có; hiển thị đoạn JD nguồn để Student kiểm tra.
-- Phân biệt “được mapping”, “cần xác nhận” và “chưa hỗ trợ”; Student có thể sửa hoặc bỏ mapping sai.
-- Không suy diễn kỹ năng không có căn cứ trong JD; không dùng tên công ty hay thuộc tính nhạy cảm để xếp hạng.
-- CTA “Tạo bộ câu hỏi” chỉ enable khi có ít nhất một mapping hợp lệ.
+- Separate key requirements such as position, seniority, skills, topics, and interview context.
+- Each requirement maps to the existing taxonomy; show the JD source fragment for Student verification.
+- Distinguish "mapped", "needs confirmation", and "not supported"; the Student can fix or remove incorrect mappings.
+- Do not infer skills without basis in the JD; do not use company names or sensitive attributes for ranking.
+- CTA "Generate question set" enabled only when at least one valid mapping exists.
 
-### Screen S14 — Bộ câu hỏi dành cho JD
+### Screen S14 — Question set for JD
 
 **Prototype frames:** [S14-recommended-question-set.png](img/S14-recommended-question-set.png), [S14-saved-question-set.png](img/S14-saved-question-set.png)
 
-**Mục tiêu:** biến JD thành một điểm bắt đầu luyện tập cụ thể và có thể giải thích.
+**Goal:** turn the JD into a concrete, explainable practice starting point.
 
-- Hiển thị bộ câu hỏi theo nhóm “Cần luyện”/“Nên luyện”/“Tùy chọn”, kèm topic, difficulty và thời lượng ước tính.
-- Mỗi câu hỏi có lý do đề xuất, liên kết tới yêu cầu hoặc đoạn JD đã mapping.
-- Student có thể bỏ câu không phù hợp, thêm câu từ Question Bank và lưu bộ câu hỏi.
-- CTA “Luyện ngay” hoặc “Bắt đầu luyện” mở Chi tiết câu hỏi; CTA “Xem toàn bộ Question Bank” giữ các filter từ mapping.
-- Empty state nêu rõ không tìm thấy câu hỏi phù hợp, cho phép sửa mapping hoặc chuyển sang tìm thủ công.
-- Với PoC, thứ tự đề xuất có thể dùng rule/weight minh bạch dựa trên taxonomy; không tuyên bố là ML recommendation hay đánh giá năng lực ứng viên.
+- Show the question set in groups "To practice"/"Should practice"/"Optional", with topic, difficulty, and estimated duration.
+- Each question shows a recommendation reason and links to the mapped requirement or JD fragment.
+- The Student can remove unsuitable questions, add questions from the Question Bank, and save the set.
+- CTA "Practice now" or "Start practicing" opens Question detail; CTA "View full Question Bank" keeps the filters from the mapping.
+- Empty state states no suitable questions were found, allowing mapping edits or manual search.
+- For the PoC, the recommendation order may use transparent taxonomy-based rules/weights; it is not claimed to be ML recommendation or candidate assessment.
 
 ### Screen S02 — Question Bank
 
 **Prototype frame:** [S02-question-bank.png](img/S02-question-bank.png)
 
 - Search; filter Position, Topic, Interview Type, Difficulty.
-- Result item có title, tag, difficulty, practice status.
-- Khi đi từ S14, hiển thị filter/chip bắt nguồn từ JD và cho phép xóa từng mapping.
-- Zero-result state cho phép bỏ từng filter.
-- Pagination/load-more và sort rõ.
-- Test case: một question có nhiều tag không xuất hiện trùng.
+- Result item shows title, tag, difficulty, practice status.
+- When coming from S14, show JD-derived filters/chips and allow removing each mapping.
+- Zero-result state allows removing each filter.
+- Clear pagination/load-more and sorting.
+- Test case: a question with multiple tags does not appear duplicated.
 
-### Screen S03 — Chi tiết câu hỏi
+### Screen S03 — Question detail
 
-- Question content, context, answer criteria/hints và provenance nếu phù hợp.
-- Bookmark; trạng thái Not started/Practicing/Confident.
-- CTA “Tìm mentor cho chủ đề này” truyền topic/position sang search.
-- Không dùng “đáp án duy nhất” cho behavioral question.
+- Question content, context, answer criteria/hints, and provenance when applicable.
+- Bookmark; status Not started/Practicing/Confident.
+- CTA "Find mentor for this topic" passes topic/position to search.
+- No "single correct answer" framing for behavioral questions.
 
-### Screen S04 — Tìm mentor phù hợp
+### Screen S04 — Find a suitable mentor
 
 **Prototype frame:** [S04-mentor-search.png](img/S04-mentor-search.png)
 
-- Filter expertise, interview type, language, price placeholder và availability.
-- Chỉ mentor Approved xuất hiện.
-- Card có kinh nghiệm, service scope, rating count và slot gần nhất.
-- Empty state phân biệt “không có mentor” và “không có slot theo filter”.
+- Filter expertise, interview type, language, price placeholder, and availability.
+- Only Approved mentors appear.
+- Card shows experience, service scope, rating count, and nearest slot.
+- Empty state distinguishes "no mentors" from "no slots matching filters".
 
-### Screen S05 — Hồ sơ mentor
+### Screen S05 — Mentor profile
 
-- Bio, expertise, verification badge có giải thích, service format, rating và policy.
-- Availability theo timezone của Student, có nhãn timezone.
-- CTA chọn slot; slot đã giữ/xác nhận không thể chọn.
-- Disclosure rằng buổi họp dùng công cụ ngoài.
+- Bio, expertise, explained verification badge, service format, rating, and policy.
+- Availability in the Student's timezone with a timezone label.
+- CTA to pick a slot; slots already held/confirmed cannot be selected.
+- Disclosure that the session uses an external tool.
 
-### Screen S06 — Gửi yêu cầu đặt lịch
+### Screen S06 — Submit booking request
 
 **Prototype frame:** [S06-booking-request.png](img/S06-booking-request.png)
 
-- Mentor/slot summary cố định.
-- Required: target position/interview type, goal và nội dung muốn luyện.
-- Optional: câu hỏi/topic đã chọn và note.
-- Policy hủy/no-show hiển thị trước submit.
-- Validation cụ thể; chống submit lặp.
+- Fixed mentor/slot summary.
+- Required: target position/interview type, goal, and content to practice.
+- Optional: selected questions/topics and a note.
+- Cancel/no-show policy shown before submit.
+- Specific validation; duplicate-submit protection.
 
-### Screen S07 — Trạng thái đặt lịch
+### Screen S07 — Booking status
 
 **Prototype frame:** [S07-booking-status.png](img/S07-booking-status.png)
 
 - Timeline Pending/Confirmed/Reschedule proposed/Rejected/Cancelled.
-- Hiển thị actor, thời điểm và hành động hợp lệ tiếp theo.
-- Reschedule cho phép chấp nhận hoặc quay lại chọn slot.
-- Rejection/cancellation có reason theo policy, không lộ note nội bộ.
+- Shows actor, timestamp, and next valid action.
+- Reschedule allows accepting or returning to pick another slot.
+- Rejection/cancellation has a reason per policy; internal notes are not exposed.
 
-### Screen S08 — Chi tiết buổi phỏng vấn
+### Screen S08 — Interview session detail
 
 **Prototype frame:** [S08-interview-session.png](img/S08-interview-session.png)
 
-- Goal, topic, mentor, thời gian địa phương và countdown.
-- Meeting link chỉ xuất hiện khi Confirmed và đúng actor.
-- Nút add-to-calendar/export nếu nằm trong capacity.
-- Link hỗ trợ/report và rule khi no-show.
+- Goal, topic, mentor, local time, and countdown.
+- Meeting link appears only when Confirmed and for the right actor.
+- Add-to-calendar/export button if within capacity.
+- Help/report link and no-show rules.
 
-### Screen S09 — Feedback buổi luyện tập
+### Screen S09 — Practice feedback
 
 **Prototype frame:** [S09-session-feedback.png](img/S09-session-feedback.png)
 
 - Rubric: knowledge, structure, communication, follow-up handling.
-- Strengths, weaknesses, evidence và next actions.
-- Link đến topic/question được đề xuất.
-- Không công khai feedback; Student kiểm soát việc chia sẻ.
+- Strengths, weaknesses, evidence, and next actions.
+- Links to suggested topic/questions.
+- Feedback is not public; the Student controls sharing.
 
-### Screen S10 — Đánh giá mentor
+### Screen S10 — Review mentor
 
 **Prototype frame:** [S10-mentor-review.png](img/S10-mentor-review.png)
 
-- Rating, comment, guideline và report notice.
-- Chỉ một review cho booking Completed.
-- Success state giải thích moderation/visibility.
+- Rating, comment, guidelines, and report notice.
+- Only one review per Completed booking.
+- Success state explains moderation/visibility.
 
 ## 4. Mentor prototype flow
 
 ```mermaid
 flowchart LR
-    M01["M01 Onboarding mentor"] --> M02["M02 Trạng thái xác minh"]
-    M02 --> M03["M03 Hồ sơ & Dịch vụ"]
-    M03 --> M04["M04 Lịch khả dụng"]
-    M04 --> M05["M05 Lịch đặt"]
-    M05 --> M06["M06 Phản hồi yêu cầu đặt lịch"]
-    M06 --> M07["M07 Chi tiết buổi phỏng vấn"]
-    M07 --> M08["M08 Gửi feedback"]
+    M01["M01 Mentor onboarding"] --> M02["M02 Verification status"]
+    M02 --> M03["M03 Profile & Services"]
+    M03 --> M04["M04 Availability"]
+    M04 --> M05["M05 Booking inbox"]
+    M05 --> M06["M06 Respond to booking request"]
+    M06 --> M07["M07 Interview session detail"]
+    M07 --> M08["M08 Submit feedback"]
 ```
 
-### Screen M01 — Onboarding mentor
+### Screen M01 — Mentor onboarding
 
-- Expertise, experience, language, interview types và service scope.
-- Verification evidence upload/reference với privacy notice.
-- Draft/save và field validation.
+- Expertise, experience, language, interview types, and service scope.
+- Verification evidence upload/reference with a privacy notice.
+- Draft/save and field validation.
 
-### Screen M02 — Trạng thái xác minh
+### Screen M02 — Verification status
 
 **Prototype frame:** [M02-verification-status.png](img/M02-verification-status.png)
 
-- Draft/Pending/Approved/Rejected cùng reason/action.
-- Mentor Pending/Rejected không thể publish slot.
-- Re-submit tạo audit event và giữ lịch sử quyết định.
+- Draft/Pending/Approved/Rejected with reason/action.
+- Pending/Rejected Mentors cannot publish slots.
+- Re-submit creates an audit event and preserves decision history.
 
-### Screen M03 — Hồ sơ & Dịch vụ
+### Screen M03 — Profile & Services
 
 **Prototype frame:** [M03-profile-services.png](img/M03-profile-services.png)
 
-- Public preview tách khỏi private contact/evidence.
-- Duration, format, fee placeholder và expectations.
+- Public preview separated from private contact/evidence.
+- Duration, format, fee placeholder, and expectations.
 - Policy/availability link.
 
-### Screen M04 — Lịch khả dụng
+### Screen M04 — Availability
 
 **Prototype frame:** [M04-availability.png](img/M04-availability.png)
 
-- Create/edit/delete future slot; timezone rõ.
-- Ngăn slot end ≤ start, quá khứ hoặc overlap.
-- Slot có booking Confirmed không được xóa trực tiếp.
+- Create/edit/delete future slots; clear timezone.
+- Prevent slot end ≤ start, past slots, or overlaps.
+- Slots with Confirmed bookings cannot be deleted directly.
 
-### Screen M05 — Lịch đặt
+### Screen M05 — Booking inbox
 
 **Prototype frame:** [M05-booking-inbox.png](img/M05-booking-inbox.png)
 
 - Tabs Pending/Upcoming/Completed/Cancelled.
-- Card có goal, target role, topic và slot.
-- Không lộ dữ liệu ngoài phần cần cho quyết định.
+- Card shows goal, target role, topic, and slot.
+- No data beyond what is needed for the decision.
 
-### Screen M06 — Phản hồi yêu cầu đặt lịch
+### Screen M06 — Respond to booking request
 
-- Accept, Reject có reason hoặc Propose new slot.
-- Confirmation dialog nhắc việc slot sẽ bị khóa.
-- Conflict state rõ nếu slot vừa được người khác xác nhận.
+- Accept, Reject with reason, or Propose new slot.
+- Confirmation dialog reminds that the slot will be locked.
+- Clear conflict state if the slot was just confirmed by someone else.
 
-### Screen M07 — Chi tiết buổi phỏng vấn
+### Screen M07 — Interview session detail
 
-- Student goal, selected topics/questions và meeting link.
-- Action mark completed/no-show theo policy.
-- Feedback CTA chỉ enable khi Completed.
+- Student goal, selected topics/questions, and meeting link.
+- Actions mark completed/no-show per policy.
+- Feedback CTA enabled only when Completed.
 
-### Screen M08 — Gửi feedback
+### Screen M08 — Submit feedback
 
-- Score/level cho từng rubric criterion.
-- Required strengths, improvement areas và next actions.
-- Gợi ý topic/question từ taxonomy.
-- Draft/save/submit; sau submit thay đổi theo policy/audit.
+- Score/level for each rubric criterion.
+- Required strengths, improvement areas, and next actions.
+- Suggested topic/questions from the taxonomy.
+- Draft/save/submit; changes after submit follow policy/audit.
 
 ## 5. Admin prototype flow
 
 ```mermaid
 flowchart LR
-    A01["A01 Operational Queue"] --> A02["A02 Xét duyệt hồ sơ mentor"]
-    A01 --> A03["A03 Quản lý câu hỏi"]
-    A01 --> A04["A04 Chi tiết case"]
-    A02 --> A05["A05 Quyết định & Audit"]
+    A01["A01 Operational Queue"] --> A02["A02 Review mentor profile"]
+    A01 --> A03["A03 Manage questions"]
+    A01 --> A04["A04 Case detail"]
+    A02 --> A05["A05 Decision & Audit"]
     A03 --> A05
     A04 --> A05
 ```
@@ -280,67 +280,67 @@ flowchart LR
 
 **Prototype frame:** [A01-operations-queue.png](img/A01-operations-queue.png)
 
-- Pending mentor, draft/reported question, booking exception và open report counts.
-- Không dùng vanity metric thay operational queue.
+- Pending mentor, draft/reported question, booking exception, and open report counts.
+- No vanity metrics replacing the operational queue.
 
-### Screen A02 — Xét duyệt hồ sơ mentor
+### Screen A02 — Review mentor profile
 
 **Prototype frame:** [A02-mentor-review.png](img/A02-mentor-review.png)
 
-- Public profile preview, restricted evidence, checklist và prior decision history.
-- Approve/Reject yêu cầu reason; audit actor/time.
+- Public profile preview, restricted evidence, checklist, and prior decision history.
+- Approve/Reject requires a reason; audit actor/time.
 
-### Screen A03 — Quản lý câu hỏi
+### Screen A03 — Manage questions
 
-- CRUD, taxonomy, source/provenance, version và Draft/In review/Published/Archived.
-- Không publish khi thiếu position/topic hoặc required review.
+- CRUD, taxonomy, source/provenance, version, and Draft/In review/Published/Archived.
+- Cannot publish when position/topic or required review is missing.
 
-### Screen A04 — Chi tiết case
+### Screen A04 — Case detail
 
-- Timeline booking, policy, report reason và dữ liệu tối thiểu cần xử lý.
-- Action resolve, hide review, reschedule/credit placeholder theo authority.
-- Internal note không hiển thị cho public.
+- Booking timeline, policy, report reason, and minimal data needed to handle.
+- Actions resolve, hide review, reschedule/credit placeholder per authority.
+- Internal notes not public.
 
-### Screen A05 — Quyết định & Audit
+### Screen A05 — Decision & Audit
 
-- Confirmation nêu tác động và đối tượng được thông báo.
-- Immutable audit summary sau quyết định.
+- Confirmation states impact and notified parties.
+- Immutable audit summary after the decision.
 
-## 6. Cross-flow states cần prototype
+## 6. Cross-flow states to prototype
 
-| Trạng thái | Màn hình bắt buộc |
+| State | Required screens |
 |---|---|
-| Loading | Skeleton/progress không gây layout shift lớn |
-| Empty | Câu hỏi, mentor, slot, booking, feedback |
-| Validation error | Inline, giữ dữ liệu đã nhập |
-| Permission denied | Không lộ sự tồn tại/nội dung nhạy cảm |
-| Conflict | Slot vừa bị giữ/xác nhận; CTA chọn slot khác |
-| Provider failure | Booking vẫn thành công; notification/link action có hướng xử lý |
-| Offline/timeout | Retry an toàn, tránh tạo booking/review trùng |
-| OCR low confidence | Đánh dấu đoạn cần kiểm tra; cho sửa hoặc quét lại trước mapping |
-| Unsupported/poor image | Nêu nguyên nhân và hướng dẫn chụp/tải lại, không làm mất các ảnh hợp lệ |
-| No taxonomy match | Hiển thị phần chưa hỗ trợ; cho sửa mapping hoặc tìm Question Bank thủ công |
-| No recommended question | Giữ kết quả OCR/mapping và cung cấp CTA thay đổi mapping/thêm câu thủ công |
-| Sensitive data in JD | Nhắc Student che dữ liệu cá nhân và hỗ trợ xóa ảnh/dữ liệu theo policy PoC |
+| Loading | Skeleton/progress without major layout shift |
+| Empty | Questions, mentors, slots, bookings, feedback |
+| Validation error | Inline, keeps entered data |
+| Permission denied | Do not reveal existence/sensitive content |
+| Conflict | Slot just held/confirmed; CTA to pick another slot |
+| Provider failure | Booking still succeeds; notification/link actions have handling |
+| Offline/timeout | Safe retry, avoid duplicate bookings/reviews |
+| OCR low confidence | Mark segments to check; allow edit or rescan before mapping |
+| Unsupported/poor image | Explain cause and guide retaking/re-uploading without losing valid images |
+| No taxonomy match | Show unsupported parts; allow mapping edits or manual Question Bank search |
+| No recommended question | Keep OCR/mapping results and offer CTA to change mapping/add manually |
+| Sensitive data in JD | Remind the Student to mask personal data and support image/data deletion per PoC policy |
 
 ## 7. Prototype test plan
 
 | Task | Persona | Success |
 |---|---|---|
-| Nhập JD và xác nhận văn bản trích xuất | Student | Hoàn tất không trợ giúp; phát hiện và sửa được lỗi trích xuất/OCR quan trọng |
-| Mapping JD thành chủ đề ôn tập | Student | Hiểu yêu cầu nào đã/chưa được mapping và sửa được mapping sai |
-| Nhận bộ câu hỏi từ JD | Student | Chọn được câu để bắt đầu luyện và giải thích được vì sao câu đó được đề xuất |
-| Tìm câu hỏi Front-end/JavaScript | Student | Đúng result trong ≤2 phút, không trợ giúp |
-| Bookmark và đổi trạng thái | Student | Thấy state được lưu và hiểu ý nghĩa |
-| Tìm mentor có slot phù hợp | Student | Chọn đúng timezone/chuyên môn |
-| Gửi booking hợp lệ | Student | Hoàn tất và hiểu Pending |
-| Xử lý reschedule | Student/Mentor | Hai bên hiểu trạng thái và bước tiếp theo |
-| Gửi feedback rubric | Mentor | Đủ strength/weakness/next action |
-| Duyệt mentor | Admin | Quyết định có reason và audit |
+| Enter a JD and confirm extracted text | Student | Completed without help; detects and fixes critical extraction/OCR errors |
+| Map JD into study topics | Student | Understands what is/not mapped and can fix wrong mappings |
+| Get a question set from the JD | Student | Picks a question to start and explains why it was recommended |
+| Find Front-end/JavaScript questions | Student | Correct result in ≤2 minutes without help |
+| Bookmark and change status | Student | Sees saved state and understands its meaning |
+| Find a mentor with a suitable slot | Student | Correct timezone/expertise |
+| Submit a valid booking | Student | Completes and understands Pending |
+| Handle reschedule | Student/Mentor | Both sides understand the state and next step |
+| Submit rubric feedback | Mentor | Sufficient strength/weakness/next action |
+| Review mentor | Admin | Decision with reason and audit |
 
-Thu completion rate, time-on-task, error, confidence và qualitative evidence. Mục tiêu Student task completion: ≥80%. Với core PoC, đo thêm tỷ lệ trích xuất/OCR cần sửa, tỷ lệ mapping được Student chấp nhận và mức độ hữu ích của bộ câu hỏi (target khảo sát đề xuất: ≥4/5).
+Collect completion rate, time-on-task, errors, confidence, and qualitative evidence. Student task completion target: ≥80%. For the core PoC, also measure the share of extractions/OCR needing correction, the share of mappings accepted by the Student, and question-set usefulness (proposed survey target: ≥4/5).
 
-## 8. Prototype handoff và traceability
+## 8. Prototype handoff and traceability
 
 | Screen group | Stories |
 |---|---|
@@ -352,6 +352,6 @@ Thu completion rate, time-on-task, error, confidence và qualitative evidence. M
 | M05–M08 | US-12–15 |
 | A01–A05 | US-08,18,20 |
 
-Mỗi frame trong công cụ thiết kế và tên file trong `img/` dùng cùng screen ID, theo dạng `<SCREEN-ID>-<screen-name>.png`. Hai frame dùng chung S14 là hai trạng thái truy cập của cùng màn hình: kết quả vừa được tạo và bộ câu hỏi đã lưu trong “JD của tôi”. Hai màn hình dùng chung trước khi vào flow persona được đặt tên `G01-homepage.png` và `G02-login.png`.
+Each frame in the design tool and file name in `img/` use the same screen ID, following `<SCREEN-ID>-<screen-name>.png`. The two shared S14 frames are two access states of the same screen: freshly generated results and a saved set under "My JDs". The two shared pre-flow screens are named `G01-homepage.png` and `G02-login.png`.
 
-Luồng S11–S14 đã được Product Owner formalize trong US-24–US-29 và AC-24–AC-29. Việc đề xuất trong prototype là mapping dựa trên taxonomy/rule có thể giải thích; nếu dùng OCR service ngoài hoặc ML ở implementation thật thì cần change-scope, privacy và quality review riêng.
+The S11–S14 flow has been formalized by the Product Owner into US-24–US-29 and AC-24–AC-29. The prototype proposal is explainable taxonomy/rule-based mapping; using an external OCR service or ML in the real implementation requires a separate change-scope, privacy, and quality review.

@@ -1,182 +1,182 @@
-# Nền tảng luyện phỏng vấn — Quy trình trạng thái tương lai
+# Interview Practice Platform — Future-State Workflow
 
-## 1. Định nghĩa quy trình
+## 1. Workflow definition
 
-Trạng thái tương lai mô tả quy trình nghiệp vụ hộp đen của MVP: Sinh viên đưa một Mô tả công việc (JD) vào hệ thống, kiểm tra văn bản, nhận kế hoạch chuẩn bị có ánh xạ câu hỏi, rồi tự luyện hoặc đặt Cố vấn và dùng phản hồi để cập nhật kế hoạch. Trường/lược đồ/ràng buộc kỹ thuật thuộc tài liệu Kiến trúc.
+The future state describes the black-box business process of the MVP: a Student submits a Job Description (JD) to the system, reviews the extracted text, receives a mapped preparation plan, then self-practices or books a Mentor, and uses feedback to update the plan. Technical schema/constraints belong to the Architecture document.
 
-Theo phân công trong Project Charter, Hưng (Product Owner / Business Analyst) chịu trách nhiệm quy trình nghiệp vụ; Hùng (UI/UX Designer / Front-end Developer) kiểm tra trải nghiệm/nguyên mẫu và giao diện; Trí (PoC / Integration & E2E Developer) kiểm chứng khả thi đầu-cuối; Luân (Architecture / Technical Lead) kiểm tra ràng buộc kiến trúc; Tuấn Anh (Project Manager / Team Leader / Timekeeper) điều phối thời gian, Kanban, tích hợp và readiness; Gia Thành (Project Planning & Estimation Analyst / Full-stack Developer) phân tích tác động đến baseline và tham gia implementation.
+Per the Project Charter assignment, Hưng (Product Owner / Business Analyst) owns the business process; Hùng (UI/UX Designer / Front-end Developer) checks experience/prototype and interface; Trí (PoC / Integration & E2E Developer) validates end-to-end feasibility; Luân (Architecture / Technical Lead) checks architecture constraints; Tuấn Anh (Project Manager / Team Leader / Timekeeper) coordinates time, Kanban, integration, and readiness; Gia Thành (Project Planning & Estimation Analyst / Full-stack Developer) analyzes baseline impact and supports implementation.
 
-## 2. Kịch bản chính
+## 2. Main scenario
 
-An có một JD Thực tập sinh Front-end. An dán văn bản hoặc tải lên tệp, xem nội dung được trích xuất và sửa lỗi trước khi xác nhận. Hệ thống nhận diện vị trí, cấp bậc, kỹ năng/công nghệ, chuẩn hóa tên đồng nghĩa theo bộ phân loại và ánh xạ các câu hỏi `PUBLISHED` kèm yêu cầu nguồn và lý do. An tạo kế hoạch chuẩn bị, tự luyện một số câu hỏi rồi chọn Cố vấn phù hợp với chủ đề trong kế hoạch. Lịch hẹn mang theo ngữ cảnh JD/kế hoạch; Cố vấn xác nhận, hai bên dùng liên kết họp ngoài hệ thống. Sau buổi luyện, phản hồi gồm điểm mạnh, điểm yếu và hành động tiếp theo được đưa trở lại kế hoạch chuẩn bị.
+An has a Front-end Intern JD. An pastes the text or uploads a file, reviews the extracted content, and fixes errors before confirming. The system detects role, seniority, skills/technologies, normalizes synonyms against the taxonomy, and maps `PUBLISHED` questions with source requirements and reasons. An creates a preparation plan, self-practices some questions, then picks a Mentor matching the plan's topics. The booking carries JD/plan context; the Mentor confirms, and both sides use an external meeting link. After the session, feedback with strengths, weaknesses, and next actions is fed back into the preparation plan.
 
-## 3. Quy trình đầu-cuối tương lai
+## 3. Future end-to-end process
 
 ```mermaid
 flowchart TD
-    A["Sinh viên dán văn bản hoặc tải JD"] --> B{"Loại nguồn"}
-    B -- "Văn bản/PDF có chữ" --> C["Trích xuất văn bản trực tiếp"]
-    B -- "Ảnh/PDF quét" --> D["OCR dự phòng"]
-    C --> E["Sinh viên kiểm tra và sửa văn bản"]
+    A["Student pastes text or uploads JD"] --> B{"Source type"}
+    B -- "Text/text PDF" --> C["Direct text extraction"]
+    B -- "Image/scanned PDF" --> D["OCR fallback"]
+    C --> E["Student reviews and edits text"]
     D --> E
-    E --> F["Xác nhận văn bản hiệu chỉnh"]
-    F --> G["Nhận diện vị trí/cấp bậc/kỹ năng/yêu cầu"]
-    G --> H["Chuẩn hóa từ khóa/tên đồng nghĩa theo phân loại"]
-    H --> I["Ánh xạ câu hỏi đã công bố"]
-    I --> J["Kế hoạch chuẩn bị có lý do ánh xạ"]
-    J --> K["Tự luyện trong Ngân hàng câu hỏi"]
-    J --> L["Tìm Cố vấn theo chủ đề/lịch rảnh"]
+    E --> F["Confirm corrected text"]
+    F --> G["Detect role/seniority/skills/requirements"]
+    G --> H["Normalize keywords/synonyms to taxonomy"]
+    H --> I["Map published questions"]
+    I --> J["Preparation plan with mapping reasons"]
+    J --> K["Self-practice in the Question Bank"]
+    J --> L["Find Mentor by topic/availability"]
     K --> J
-    L --> M["Gửi lịch hẹn kèm JD hoặc kế hoạch"]
-    M --> N{"Cố vấn xử lý"}
-    N -- "Từ chối" --> L
-    N -- "Đề xuất đổi lịch" --> O["Sinh viên chấp nhận hoặc từ chối"]
-    O -- "Chấp nhận" --> P["Lịch đã xác nhận"]
-    O -- "Từ chối" --> L
-    N -- "Chấp nhận" --> P
-    P --> Q["Liên kết họp ngoài hệ thống"]
-    Q --> R{"Kết quả buổi gặp"}
-    R -- "Đã diễn ra" --> S["Cố vấn đánh dấu hoàn thành"]
-    R -- "Vắng mặt/ngoại lệ" --> X["Xử lý theo chính sách"]
-    S --> T["Cố vấn gửi phản hồi theo thang"]
-    T --> U["Cập nhật hành động tiếp theo trong kế hoạch"]
+    L --> M["Submit booking with JD or plan context"]
+    M --> N{"Mentor action"}
+    N -- "Reject" --> L
+    N -- "Propose reschedule" --> O["Student accepts or rejects"]
+    O -- "Accept" --> P["Booking confirmed"]
+    O -- "Reject" --> L
+    N -- "Accept" --> P
+    P --> Q["External meeting link"]
+    Q --> R{"Session outcome"}
+    R -- "Held" --> S["Mentor marks completed"]
+    R -- "No-show/exception" --> X["Handle per policy"]
+    S --> T["Mentor submits rubric feedback"]
+    T --> U["Update next actions in the plan"]
     U --> J
-    T --> V["Sinh viên đánh giá Cố vấn"]
+    T --> V["Student reviews Mentor"]
 ```
 
-`COMPLETED` là chuyển trạng thái lịch hẹn bắt buộc trước phản hồi; phản hồi không phải trạng thái lịch hẹn. Luồng vắng mặt/hủy/đổi lịch chỉ được bật theo chính sách đã phê duyệt. Trích xuất/OCR thành công không đồng nghĩa phân tích đúng; xác nhận của Sinh viên là cổng bắt buộc.
+`COMPLETED` is the mandatory booking state before feedback; feedback is not a booking state. The no-show/cancel/reschedule flow is enabled only per approved policy. Successful extraction/OCR does not mean analysis is correct; Student confirmation is the mandatory gate.
 
-## 4. Đặc tả quy trình
+## 4. Process specification
 
-| Bước | Tác nhân | Điều kiện trước | Hoạt động | Điều kiện sau |
+| Step | Actor | Precondition | Activity | Postcondition |
 |---|---|---|---|---|
-| FS-01 | Sinh viên | Đã đăng nhập | Dán văn bản JD hoặc tải tệp trong giới hạn được phê duyệt | Tạo `JobDescription` thuộc Sinh viên |
-| FS-02 | Hệ thống/tiến trình | Nguồn hợp lệ | Trích xuất trực tiếp; OCR chỉ khi ảnh/PDF quét cần thiết | Trích xuất kết thúc với văn bản hoặc mã lỗi an toàn |
-| FS-03 | Sinh viên | Có văn bản trích xuất/dán | Xem, sửa và xác nhận văn bản hiệu chỉnh | Một phiên bản văn bản được xác nhận cho phân tích |
-| FS-04 | Hệ thống | Văn bản hiệu chỉnh đã xác nhận | Nhận diện vị trí, cấp bậc, kỹ năng, công nghệ và yêu cầu chính | Yêu cầu giữ bằng chứng gốc và trạng thái chuẩn hóa |
-| FS-05 | Hệ thống | Có phân loại/tên đồng nghĩa thử nghiệm | Chuẩn hóa yêu cầu và ánh xạ câu hỏi `PUBLISHED` | Kết quả ổn định theo phiên bản ánh xạ; có điểm/lý do |
-| FS-06 | Sinh viên/Hệ thống | Có kết quả hợp lệ | Chọn/ghi nhận chủ đề, câu hỏi và tạo kế hoạch chuẩn bị | Kế hoạch thuộc Sinh viên, tham chiếu JD và phiên bản ánh xạ |
-| FS-07 | Sinh viên | Có kế hoạch hoặc câu hỏi `PUBLISHED` | Mở câu hỏi, đánh dấu và cập nhật trạng thái luyện | Tiến độ luyện riêng tư được lưu |
-| FS-08 | Sinh viên | Có chủ đề/kế hoạch và Cố vấn `APPROVED` | Lọc Cố vấn theo chuyên môn/lịch rảnh | Chọn được Cố vấn/khung giờ hoặc nhận trạng thái rỗng rõ ràng |
-| FS-09 | Sinh viên | Khung giờ khả dụng; có JD/kế hoạch thuộc quyền sở hữu | Gửi lịch hẹn với ngữ cảnh tối thiểu cần thiết | Lịch `PENDING` tham chiếu JD hoặc kế hoạch |
-| FS-10 | Cố vấn | Là chủ khung giờ/lịch hẹn | Chấp nhận/Từ chối/Đề xuất đổi lịch | Lịch hẹn chuyển trạng thái hợp lệ và có lưu vết |
-| FS-11 | Hệ thống/hai bên | Lịch `CONFIRMED` | Khóa khung giờ, gửi thông báo và cấp quyền liên kết họp | Hai bên có thông tin buổi gặp; nhà cung cấp không phải nguồn chuẩn |
-| FS-12 | Hai bên | Đến lịch | Phỏng vấn thử qua công cụ ngoài | Lịch đủ điều kiện xử lý hoàn thành/vắng mặt |
-| FS-13 | Cố vấn sở hữu lịch hẹn | Lịch `COMPLETED` | Gửi phản hồi theo thang | Phản hồi riêng tư có điểm mạnh, điểm yếu, hành động tiếp theo |
-| FS-14 | Sinh viên/Hệ thống | Có phản hồi | Áp dụng hành động tiếp theo vào kế hoạch; Sinh viên có thể đánh giá Cố vấn | Vòng lặp luyện tiếp bắt đầu |
+| FS-01 | Student | Logged in | Paste JD text or upload a file within approved limits | `JobDescription` created for the Student |
+| FS-02 | System/process | Valid source | Direct extraction; OCR only when the image/scanned PDF requires it | Extraction finishes with text or a safe error code |
+| FS-03 | Student | Extracted/pasted text available | View, edit, and confirm corrected text | One confirmed text version for analysis |
+| FS-04 | System | Corrected text confirmed | Detect role, seniority, skills, technologies, and key requirements | Requirements keep source evidence and normalization status |
+| FS-05 | System | Taxonomy/synonyms available | Normalize requirements and map `PUBLISHED` questions | Results stable per mapping version; include score/reason |
+| FS-06 | Student/System | Valid results available | Select/acknowledge topics and questions, create a preparation plan | Plan owned by the Student, referencing JD and mapping version |
+| FS-07 | Student | Plan or `PUBLISHED` questions available | Open a question, bookmark, and update practice status | Private practice progress stored |
+| FS-08 | Student | Topics/plan plus `APPROVED` Mentors | Filter Mentors by expertise/availability | Pick a Mentor/slot or receive a clear empty state |
+| FS-09 | Student | Slot available; owns JD/plan | Submit a booking with minimal required context | `PENDING` booking referencing JD or plan |
+| FS-10 | Mentor | Owns the slot/booking | Accept/Reject/Propose reschedule | Booking transitions validly with audit trail |
+| FS-11 | System/both sides | Booking `CONFIRMED` | Lock the slot, notify, and grant meeting-link access | Both sides have session info; provider is not the source of truth |
+| FS-12 | Both sides | Time arrives | Mock interview via external tool | Booking eligible for completion/no-show handling |
+| FS-13 | Mentor owning the booking | Booking `COMPLETED` | Submit rubric feedback | Private feedback with strengths, weaknesses, next actions |
+| FS-14 | Student/System | Feedback available | Apply next actions to the plan; Student may review the Mentor | Next practice loop starts |
 
-### 4.1 Trạng thái đặt lịch chuẩn
+### 4.1 Standard booking states
 
-| Trạng thái nghiệp vụ | Mã API/lưu trữ | Chiếm khung giờ | Ý nghĩa |
+| Business state | API/storage code | Holds the slot | Meaning |
 |---|---|---|---|
-| Chờ xử lý | `PENDING` | Không | Lịch hẹn đang chờ Cố vấn quyết định |
-| Đã xác nhận | `CONFIRMED` | Có | Cố vấn đã nhận và khung giờ được giữ |
-| Đã đề xuất đổi lịch | `RESCHEDULE_PROPOSED` | Khung cũ giữ; khung mới chưa chiếm | Bên còn lại phải chấp nhận/từ chối đề xuất |
-| Bị từ chối | `REJECTED` | Không | Cố vấn từ chối yêu cầu hiện tại |
-| Đã hủy | `CANCELLED` | Không | Lịch hẹn được hủy theo chính sách |
-| Đã hoàn thành | `COMPLETED` | Có dưới dạng lịch sử | Buổi luyện đã diễn ra và được ghi nhận hoàn thành |
-| Vắng mặt | `NO_SHOW` | Lịch sử/ngoại lệ | Báo sau 15 phút và chỉ xác nhận khi Quản trị viên hoặc bên còn lại kiểm tra bằng chứng có thời điểm |
+| Pending | `PENDING` | No | Booking awaits the Mentor's decision |
+| Confirmed | `CONFIRMED` | Yes | Mentor accepted; the slot is held |
+| Reschedule proposed | `RESCHEDULE_PROPOSED` | Old slot held; new slot not held | The other side must accept/reject the proposal |
+| Rejected | `REJECTED` | No | Mentor rejected the current request |
+| Cancelled | `CANCELLED` | No | Booking cancelled per policy |
+| Completed | `COMPLETED` | Yes, as history | Session held and recorded as completed |
+| No-show | `NO_SHOW` | History/exception | Reported after 15 minutes; confirmed only when the Administrator or the other side verifies timestamped evidence |
 
-Không dùng `OCR` để gọi toàn bộ phân tích JD; không dùng lẫn các khái niệm “đổi lịch”, “đề xuất thay đổi” và `RESCHEDULE_PROPOSED`. Từ vựng đầy đủ nằm tại [Danh sách công việc sản phẩm, mục 1.3](Product_Backlog_and_Acceptance_Criteria.md#13-từ-vựng-trạng-thái-đặt-lịch).
+Do not use `OCR` to describe the whole JD analysis; do not mix "reschedule", "change proposal", and `RESCHEDULE_PROPOSED`. The full vocabulary is in [Product Backlog, section 1.3](Product_Backlog_and_Acceptance_Criteria.md#14-booking-state-vocabulary).
 
-### 4.2 Bảng chuyển trạng thái đặt lịch
+### 4.2 Booking state transition table
 
-| Từ | Lệnh/tác nhân | Điều kiện bảo vệ | Đến | Tác động kèm theo | Truy vết |
+| From | Command/actor | Guard condition | To | Side effects | Traceability |
 |---|---|---|---|---|---|
-| — | `CreateBooking` / Sinh viên | Khung giờ khả dụng; JD/kế hoạch thuộc Sinh viên; ngữ cảnh hợp lệ | `PENDING` | Ghi lịch hẹn + sự kiện chống trùng | US-11, US-30; BR-03/10/18 |
-| `PENDING` | `Accept` / Cố vấn sở hữu | Cố vấn/khung giờ hợp lệ; khóa/ràng buộc giao dịch đạt | `CONFIRMED` | Giữ khung giờ + sự kiện hộp sự kiện | US-12; BR-02/08/10 |
-| `PENDING` | `Reject` / Cố vấn sở hữu | Lý do hợp lệ | `REJECTED` | Lưu vết + sự kiện | US-12; BR-08 |
-| `PENDING`/`CONFIRMED` | `ProposeReschedule` / bên được phép | Còn ≥12 giờ; khung mới hợp lệ; chưa vượt 2 đề xuất | `RESCHEDULE_PROPOSED` | Giữ khung cũ; lưu đề xuất | US-12/13; BR-02/08/10 |
-| `RESCHEDULE_PROPOSED` | `AcceptReschedule` / bên còn lại | Khung mới còn khả dụng lúc ghi | `CONFIRMED` | Chuyển khung giờ nguyên tử | US-13; BR-02/08/10 |
-| `RESCHEDULE_PROPOSED` | `RejectReschedule` / bên còn lại | Đề xuất hợp lệ | Trạng thái trước đề xuất | Giữ khung cũ nếu trước đó `CONFIRMED`; lưu vết | US-13; BR-08 |
-| `PENDING`/`CONFIRMED`/`RESCHEDULE_PROPOSED` | `Cancel` / bên được phép | Còn ≥12 giờ; nếu muộn hơn cần Quản trị viên/bên còn lại giải quyết | `CANCELLED` | Giải phóng khung phù hợp + sự kiện | US-13; BR-08/10 |
-| `CONFIRMED` | `MarkCompleted` / Cố vấn sở hữu | Đã qua giờ kết thúc | `COMPLETED` | Lưu vết; Sinh viên có 24 giờ khiếu nại; phản hồi riêng tư và đánh giá chưa công bố đến khi hết thời hạn hoặc giải quyết khiếu nại | US-15/17; BR-05/06/08 |
-| `CONFIRMED` | `ReportNoShow` / một trong hai bên | Đã qua giờ bắt đầu + 15 phút | `CONFIRMED`/chờ giải quyết | Lưu bằng chứng có thời điểm, chưa đổi trạng thái kết thúc | US-20; BR-08 |
-| `CONFIRMED`/chờ giải quyết | `ConfirmNoShow` / Quản trị viên hoặc bên còn lại | Báo cáo/bằng chứng hợp lệ | `NO_SHOW` | Lưu vết + hành động vận hành | US-20; BR-08 |
+| — | `CreateBooking` / Student | Slot available; JD/plan owned by Student; valid context | `PENDING` | Record booking + anti-duplicate event | US-11, US-30; BR-03/10/18 |
+| `PENDING` | `Accept` / owning Mentor | Valid Mentor/slot; lock or transaction constraint met | `CONFIRMED` | Hold slot + outbox event | US-12; BR-02/08/10 |
+| `PENDING` | `Reject` / owning Mentor | Valid reason | `REJECTED` | Audit trail + event | US-12; BR-08 |
+| `PENDING`/`CONFIRMED` | `ProposeReschedule` / authorized side | ≥12 hours left; new slot valid; not more than 2 proposals | `RESCHEDULE_PROPOSED` | Keep old slot; record proposal | US-12/13; BR-02/08/10 |
+| `RESCHEDULE_PROPOSED` | `AcceptReschedule` / other side | New slot still available at write time | `CONFIRMED` | Atomically move the slot | US-13; BR-02/08/10 |
+| `RESCHEDULE_PROPOSED` | `RejectReschedule` / other side | Valid proposal | State before proposal | Keep old slot if previously `CONFIRMED`; audit trail | US-13; BR-08 |
+| `PENDING`/`CONFIRMED`/`RESCHEDULE_PROPOSED` | `Cancel` / authorized side | ≥12 hours left; later requires Administrator/other side | `CANCELLED` | Release the slot as appropriate + event | US-13; BR-08/10 |
+| `CONFIRMED` | `MarkCompleted` / owning Mentor | Past the end time | `COMPLETED` | Audit trail; Student has 24 hours to dispute; private feedback and review stay unpublished until the window ends or the dispute is resolved | US-15/17; BR-05/06/08 |
+| `CONFIRMED` | `ReportNoShow` / either side | Past start time + 15 minutes | `CONFIRMED`/awaiting resolution | Store timestamped evidence; no terminal state change yet | US-20; BR-08 |
+| `CONFIRMED`/awaiting resolution | `ConfirmNoShow` / Administrator or other side | Valid report/evidence | `NO_SHOW` | Audit trail + operational action | US-20; BR-08 |
 
-Chuyển trạng thái không hợp lệ phải thất bại mà không để lại tác động lên trạng thái/khung giờ. Lỗi thông báo không đổi trạng thái đích đã ghi.
+Invalid transitions must fail without affecting the current state or slot. Notification errors do not alter the recorded target state.
 
-## 5. Mô hình đầu vào và đầu ra nghiệp vụ
+## 5. Business input and output model
 
-### Nguồn JD
+### JD sources
 
-- `source_type`: tối đa 50.000 ký tự văn bản dán hoặc một PDF/PNG/JPEG; tệp không quá 10 MB, PDF không quá 5 trang, PNG/JPEG là một ảnh.
-- Tham chiếu tệp gốc, tên tệp/loại nội dung, trạng thái xử lý và quyền sở hữu.
-- Chữ ký tệp/MIME, dữ liệu mã hóa/nhúng/nhiều tệp và an toàn bộ phân tích được kiểm tra phía máy chủ; tệp gốc tự xóa trong 24 giờ sau khi trích xuất kết thúc.
+- `source_type`: up to 50,000 characters of pasted text or one PDF/PNG/JPEG; file up to 10 MB, PDF up to 5 pages, PNG/JPEG a single image.
+- Reference to the original file, name/content type, processing status, and ownership.
+- File signature/MIME, encoded/embedded/multi-file data, and analysis safety are checked server-side; the original file self-deletes within 24 hours after extraction finishes.
 
-### Trích xuất và hiệu chỉnh
+### Extraction and correction
 
-- `extracted_text`, phương pháp/phiên bản/trạng thái trích xuất, thời lượng và mã lỗi an toàn; OCR chỉ hỗ trợ tiếng Việt/Anh, hết hạn 60 giây, tối đa 2 lần chạy và 2 tác vụ đồng thời/tiến trình.
-- `corrected_text`, phiên bản hiệu chỉnh, thời điểm xác nhận và Sinh viên xác nhận.
-- Phân tích chỉ dùng phiên bản hiệu chỉnh đã xác nhận.
+- `extracted_text`, extraction method/version/status, duration, and safe error code; OCR supports Vietnamese/English only, times out at 60 seconds, max 2 runs and 2 concurrent tasks/processes.
+- `corrected_text`, correction version, confirmation time, and the confirming Student.
+- Analysis uses only the confirmed corrected version.
 
-### Dữ liệu yêu cầu và ánh xạ câu hỏi
+### Requirements and question mapping data
 
-- Yêu cầu gốc/đoạn bằng chứng từ văn bản hiệu chỉnh.
-- Vị trí, cấp bậc, kỹ năng/công nghệ và chủ đề phân loại đã chuẩn hóa.
-- Mã câu hỏi, điểm ánh xạ 0–100, lý do và phiên bản ánh xạ; trọng số lần lượt là 40 cho chủ đề/tên đồng nghĩa, 30 cho độ phủ từ khóa, 15 cho vai trò, 15 cho cấp bậc/độ khó.
-- Chỉ câu hỏi `PUBLISHED` có phân loại/nguồn gốc hợp lệ được đưa vào kết quả.
-- Chỉ lấy điểm ≥60; tối đa 10 câu/JD và 3 câu/yêu cầu; phân xử phải ổn định.
+- Original requirement/evidence fragment from the corrected text.
+- Role, seniority, skills/technologies, and normalized taxonomy topics.
+- Question code, match score 0–100, reason, and mapping version; weights are 40 topic/synonym, 30 keyword coverage, 15 role, 15 seniority/difficulty.
+- Only `PUBLISHED` questions with valid taxonomy/provenance enter the results.
+- Keep only score ≥60; max 10 questions per JD and 3 per requirement; tie-breaking must be stable.
 
-### Kế hoạch chuẩn bị
+### Preparation plan
 
-- Sinh viên, `JobDescription`, yêu cầu/chủ đề/câu hỏi đã chọn và trạng thái kế hoạch.
-- Kế hoạch lưu tham chiếu/phiên bản; không sao chép nội dung nhạy cảm không cần thiết.
-- Hành động tiếp theo từ phản hồi có thể thêm/chuyển ưu tiên mục nhưng không ghi đè lịch sử.
+- Student, `JobDescription`, selected requirements/topics/questions, and plan status.
+- Plans store references/versions; do not copy sensitive content unnecessarily.
+- Next actions from feedback may add/reprioritize items but must not overwrite history.
 
-### Cố vấn, đặt lịch và phản hồi
+### Mentors, booking, and feedback
 
-- Chuyên môn/lịch rảnh và trạng thái xác minh của Cố vấn.
-- Lịch hẹn tham chiếu `job_description_id` hoặc `preparation_plan_id`, Cố vấn, khung giờ, mục tiêu và loại phỏng vấn.
-- Cố vấn chỉ xem ngữ cảnh tối thiểu cần luyện; tệp gốc không tự động được chia sẻ.
-- Phản hồi gồm thang đánh giá, điểm mạnh, điểm yếu, bằng chứng và hành động tiếp theo.
-- Cố vấn tạo liên kết họp; chỉ hai bên xem từ `CONFIRMED` đến 24 giờ sau buổi gặp. Khi US-22 Mở rộng được chọn, lời nhắc chạy tại 24 giờ và 1 giờ theo múi giờ người nhận.
-- Dữ liệu dẫn xuất từ JD hết hạn sau 90 ngày không hoạt động; lịch sử lịch hẹn/phản hồi sau 180 ngày; yêu cầu xóa người dùng loại dữ liệu hoạt động trong 7 ngày và bản sao lưu trong 30 ngày.
+- Mentor expertise/slots and verification status.
+- Booking references `job_description_id` or `preparation_plan_id`, Mentor, slot, goal, and interview type.
+- The Mentor sees only the minimal context needed to practice; the original file is not shared automatically.
+- Feedback includes rubric scores, strengths, weaknesses, evidence, and next actions.
+- The Mentor creates the meeting link; only both sides see it from `CONFIRMED` until 24 hours after the session. When US-22 Extended is selected, reminders run at 24 hours and 1 hour in the recipient's timezone.
+- JD-derived data expires after 90 days of inactivity; booking/feedback history after 180 days; user deletion requests remove active data within 7 days and backups within 30 days.
 
-## 6. Các giai đoạn xử lý
+## 6. Processing phases
 
-### 6.1 Nhập JD và xác nhận văn bản
+### 6.1 JD intake and text confirmation
 
-Hệ thống phân biệt văn bản dán, PDF có chữ và PNG/JPEG/PDF quét. Đầu vào tuân giới hạn 50.000 ký tự hoặc một tệp 10 MB/5 trang; ưu tiên trích xuất trực tiếp và dùng OCR nội bộ tiếng Việt/Anh làm dự phòng. Dữ liệu không hỗ trợ/hỏng/rỗng/được bảo vệ bằng mật khẩu/vượt giới hạn phải thất bại an toàn. Sinh viên luôn xem và sửa văn bản trước phân tích.
+The system distinguishes pasted text, text PDFs, and PNG/JPEG/scanned PDFs. Input respects the 50,000-character limit or one 10 MB/5-page file; direct extraction is preferred, with internal Vietnamese/English OCR as fallback. Unsupported/corrupt/empty/password-protected/over-limit data must fail safely. The Student always reviews and edits the text before analysis.
 
-### 6.2 Phân tích yêu cầu và chuẩn hóa phân loại
+### 6.2 Requirement analysis and taxonomy normalization
 
-PoC dùng từ khóa, tên đồng nghĩa, bộ phân loại và quy tắc; kết quả giữ bằng chứng gốc để người rà soát hiểu vì sao yêu cầu được tạo. Thuật ngữ chưa biết không được tự gán chủ đề như một sự thật; phải ở trạng thái chưa ánh xạ/có thể rà soát.
+The PoC uses keywords, synonyms, taxonomy, and rules; results keep source evidence so reviewers understand why a requirement was created. Unknown terms are not auto-assigned a topic as fact; they remain unmapped/reviewable.
 
-### 6.3 Ánh xạ câu hỏi và kế hoạch chuẩn bị
+### 6.3 Question mapping and preparation plan
 
-Ánh xạ chỉ lấy câu hỏi `PUBLISHED` có điểm ≥60, tạo tối đa 10 câu/JD và 3 câu/yêu cầu bằng quy tắc 40/30/15/15. Cùng văn bản hiệu chỉnh, bộ phân loại và phiên bản ánh xạ phải cho cùng thứ tự/mã băm. Mỗi kết quả hiển thị yêu cầu nguồn, chủ đề, câu hỏi và lý do. Sinh viên có thể bỏ/chọn mục trước khi tạo kế hoạch.
+Mapping takes only `PUBLISHED` questions with score ≥60, creating at most 10 questions per JD and 3 per requirement using the 40/30/15/15 rule. The same corrected text, taxonomy, and mapping version must reproduce the same order/hash. Each result shows the source requirement, topic, question, and reason. The Student may drop/select items before creating the plan.
 
-### 6.4 Tự luyện và đặt lịch Cố vấn
+### 6.4 Self-practice and Mentor booking
 
-Sinh viên có thể luyện trực tiếp hoặc tìm Cố vấn từ chủ đề/kế hoạch. Lịch hẹn phải giữ tham chiếu đến JD hoặc kế hoạch thuộc Sinh viên; Cố vấn được xem ngữ cảnh tối thiểu theo chính sách quyền sở hữu.
+The Student can practice directly or find a Mentor from the topics/plan. A booking must keep a reference to the JD or plan owned by the Student; the Mentor sees the minimal context per the ownership policy.
 
-### 6.5 Buổi gặp, phản hồi và vòng lặp học tập
+### 6.5 Session, feedback, and learning loop
 
-Chuyển trạng thái lịch hẹn dùng máy trạng thái chuẩn và mốc 12 giờ. Cố vấn tạo liên kết họp ngoài hệ thống; lời nhắc 24 giờ/1 giờ chỉ thuộc US-22 Mở rộng. Phản hồi chỉ có sau `COMPLETED`, riêng tư theo lịch hẹn và tạo hành động tiếp theo quay về kế hoạch/Ngân hàng câu hỏi. Sinh viên có thể khiếu nại việc hoàn thành trong 24 giờ; khiếu nại giữ đánh giá chưa công bố đến khi Quản trị viên giải quyết bằng quyết định có lưu vết.
+Booking transitions use the standard state machine and the 12-hour mark. The Mentor creates the external meeting link; 24-hour/1-hour reminders belong only to US-22 Extended. Feedback exists only after `COMPLETED`, is private per booking, and produces next actions that return to the plan/Question Bank. The Student may dispute completion within 24 hours; a dispute keeps the review unpublished until the Administrator resolves it with an audited decision.
 
-## 7. Quy tắc nghiệp vụ và ngoại lệ
+## 7. Business rules and exceptions
 
-Danh mục quy tắc chuẩn, nguồn/chủ sở hữu và khả năng thay đổi nằm tại [Danh sách công việc sản phẩm và Tiêu chí chấp nhận, mục 1.2](Product_Backlog_and_Acceptance_Criteria.md#12-quy-tắc-nghiệp-vụ). Quy trình áp dụng các nhóm quy tắc sau:
+The standard rule catalog, source/owner, and changeability are in [Product Backlog and Acceptance Criteria, section 1.2](Product_Backlog_and_Acceptance_Criteria.md#13-business-rules). The process applies these rule groups:
 
-- `BR-12`–`BR-14`: kiểm tra đầu vào/tệp, định tuyến trích xuất trực tiếp/OCR và xác nhận văn bản hiệu chỉnh.
-- `BR-15`–`BR-17`: bằng chứng yêu cầu, chuẩn hóa phân loại, ánh xạ ổn định và quyền sở hữu kế hoạch.
-- `BR-18`–`BR-19`: ngữ cảnh đặt lịch cùng quyền riêng tư/lưu giữ của JD, ánh xạ và kế hoạch.
-- `BR-01`–`BR-11`: Cố vấn, lịch hẹn, Câu hỏi, thông báo, liên kết họp và phản hồi.
+- `BR-12`–`BR-14`: input/file checks, direct-extraction/OCR routing, and corrected-text confirmation.
+- `BR-15`–`BR-17`: requirement evidence, taxonomy normalization, stable mapping, and plan ownership.
+- `BR-18`–`BR-19`: booking context plus JD/mapping/plan privacy and retention.
+- `BR-01`–`BR-11`: Mentors, booking, Questions, notifications, meeting links, and feedback.
 
-| Ngoại lệ | Hành vi yêu cầu | Quy tắc/kiểm chứng |
+| Exception | Required behavior | Rule/verification |
 |---|---|---|
-| Tệp không hỗ trợ/hỏng/mã hóa/nhiều tệp/>10 MB/PDF >5 trang | Từ chối trước xử lý; báo lỗi an toàn; không tạo phân tích/ánh xạ | BR-12/19; AC-24-01/02 |
-| Trích xuất trực tiếp không có văn bản dùng được | Chuyển OCR nội bộ Việt/Anh; hết hạn 60 giây, ≤2 lần chạy; nếu thất bại thì cho dán/sửa/xử lý thủ công | BR-13; AC-25-01/02 |
-| Trích xuất/OCR sai | Sinh viên sửa; phân tích cũ bị vô hiệu khi đổi phiên bản hiệu chỉnh | BR-14; AC-26-01 |
-| Yêu cầu không ánh xạ được bộ phân loại | Giữ bằng chứng gốc ở trạng thái chưa ánh xạ; không bịa chủ đề/câu hỏi | BR-15; AC-27-01 |
-| Không có câu hỏi điểm ≥60 | Trạng thái rỗng nêu khoảng trống độ phủ; không trả bản nháp hoặc ngầm hạ ngưỡng | BR-16; AC-28-01/02 |
-| Ánh xạ chạy lại cùng phiên bản | Thứ tự/điểm/lý do ổn định; phiên bản mới tạo tập kết quả mới | BR-16; AC-28-01 |
-| Người dùng khác truy cập JD/kế hoạch | Từ chối phía máy chủ; không lộ đối tượng/tệp/văn bản | BR-19; NFR-01/11 |
-| Cố vấn mở ngữ cảnh lịch hẹn | Chỉ thấy ngữ cảnh tối thiểu của lịch thuộc mình | BR-18/19; AC-30-01 |
-| Lỗi đặt lịch/thông báo/nhà cung cấp | Trạng thái lịch hẹn nội bộ vẫn là nguồn chuẩn; thông báo thử lại phút 1/5; Cố vấn có 15 phút đưa liên kết thay thế, nếu không phải đổi lịch rõ ràng | BR-09/10/11; TC-B/TC-N |
+| Unsupported/corrupt/encrypted/multi-file/>10 MB/PDF >5 pages | Reject before processing; safe error; no analysis/mapping created | BR-12/19; AC-24-01/02 |
+| Direct extraction yields no usable text | Switch to internal VI/EN OCR; 60-second timeout, ≤2 runs; if it fails, allow paste/edit/manual handling | BR-13; AC-25-01/02 |
+| Extraction/OCR incorrect | Student edits; stale analysis invalidated when the corrected version changes | BR-14; AC-26-01 |
+| Requirement does not map to the taxonomy | Keep source evidence unmapped; do not invent topics/questions | BR-15; AC-27-01 |
+| No question reaches score ≥60 | Empty state states the coverage gap; do not return drafts or silently lower the threshold | BR-16; AC-28-01/02 |
+| Re-running mapping with the same version | Order/scores/reasons stable; a new version creates a new result set | BR-16; AC-28-01 |
+| Another user accesses JD/plan | Reject server-side; do not reveal object/file/text | BR-19; NFR-01/11 |
+| Mentor opens booking context | Sees only the minimal context of their own booking | BR-18/19; AC-30-01 |
+| Booking/notification/provider error | Internal booking state stays the source of truth; notifications retry at minute 1/5; Mentor has 15 minutes for a replacement link, otherwise an explicit reschedule | BR-09/10/11; TC-B/TC-N |
 
-## 8. Ánh xạ miền tương lai
+## 8. Future-state domain mapping
 
 ```mermaid
 erDiagram
@@ -202,50 +202,50 @@ erDiagram
     FEEDBACK }o--o{ PLAN_ITEM : updates
 ```
 
-Đây là ánh xạ miền ở mức khái niệm để đồng bộ thuật ngữ và quan hệ. Lược đồ, ràng buộc cho phép rỗng/duy nhất, lưu trữ và API chi tiết thuộc tài liệu Kiến trúc. `JDQuestionMatch` là dữ liệu ánh xạ giữa yêu cầu và Câu hỏi, không phải lời khẳng định rằng gợi ý luôn đúng.
+This is a conceptual domain mapping to align terms and relations. Schema, null/unique constraints, storage, and API details belong to the Architecture document. `JDQuestionMatch` is the mapping between a requirement and a Question, not a claim that a suggestion is always correct.
 
-## 9. Rủi ro và giới hạn
+## 9. Risks and limits
 
-- Chất lượng OCR phụ thuộc tệp/ảnh; không được bỏ qua hiệu chỉnh.
-- Thiếu phân loại/tên đồng nghĩa làm giảm độ bao phủ yêu cầu và độ liên quan ánh xạ.
-- JD có thể chứa PII hoặc thông tin công ty; cần giảm thiểu dữ liệu, phân quyền, lưu giữ và xóa.
-- Ánh xạ theo quy tắc có thể bỏ sót tên đồng nghĩa mới; phải có phiên bản và đánh giá bằng bộ JD thử nghiệm.
-- Nguồn cung Cố vấn thấp vẫn ảnh hưởng đặt lịch, nhưng không chặn kế hoạch chuẩn bị/tự luyện.
-- Gián đoạn nhà cung cấp cuộc họp/OCR/email nằm ngoài quyền kiểm soát trực tiếp.
-- Ánh xạ ngữ nghĩa/ML, thanh toán và video tích hợp không thuộc MVP.
+- OCR quality depends on the file/image; never skip correction.
+- Missing taxonomy/synonyms reduce requirement coverage and mapping relevance.
+- JDs may contain PII or company information; minimize data, access control, retention, and deletion.
+- Rule-based mapping may miss new synonyms; versioning and evaluation against a test JD set are required.
+- Low Mentor supply still affects booking but does not block the preparation plan/self-practice.
+- Meeting/OCR/email provider outages are outside direct control.
+- Semantic/ML mapping, payment, and built-in video are not in the MVP.
 
-## 10. Truy vết
+## 10. Traceability
 
-| Khu vực quy trình | Yêu cầu | Câu chuyện | Kiểm chứng |
+| Process area | Requirement | Stories | Verification |
 |---|---|---|---|
-| Nhập/trích xuất/hiệu chỉnh JD | RQ-11 | US-24, US-25, US-26 | AC-24/25/26; TC-JD; OBJ-02 |
-| Phân tích/ánh xạ/kế hoạch yêu cầu | RQ-12 | US-27, US-28, US-29 | AC-27/28/29; TC-MAP/PLAN; OBJ-03/04/05 |
-| Tự luyện câu hỏi | RQ-03 | US-04, US-05, US-06, US-18 | TC-Q; OBJ-05 |
-| Khám phá Cố vấn | RQ-05 | US-07–US-10 | TC-M/TC-SLOT |
-| Ngữ cảnh từ kế hoạch đến đặt lịch | RQ-13 | US-30, US-11 | AC-30-01/AC-11; TC-B; OBJ-06 |
-| Đặt lịch/buổi gặp/thông báo | RQ-06/07/09 | US-12–US-14, US-19, US-22 | TC-B/SESSION/N; OBJ-06 |
-| Phản hồi/đánh giá/vòng lặp | RQ-08 | US-15–US-17 | TC-F; OBJ-07/08 |
-| Kiểm duyệt/vận hành | RQ-10 | US-18, US-20, US-23 | TC-ADM; NFR-08 |
+| JD input/extraction/correction | RQ-11 | US-24, US-25, US-26 | AC-24/25/26; TC-JD; OBJ-02 |
+| Requirement analysis/mapping/plan | RQ-12 | US-27, US-28, US-29 | AC-27/28/29; TC-MAP/PLAN; OBJ-03/04/05 |
+| Question self-practice | RQ-03 | US-04, US-05, US-06, US-18 | TC-Q; OBJ-05 |
+| Mentor discovery | RQ-05 | US-07–US-10 | TC-M/TC-SLOT |
+| Plan-to-booking context | RQ-13 | US-30, US-11 | AC-30-01/AC-11; TC-B; OBJ-06 |
+| Booking/session/notification | RQ-06/07/09 | US-12–US-14, US-19, US-22 | TC-B/SESSION/N; OBJ-06 |
+| Feedback/review/loop | RQ-08 | US-15–US-17 | TC-F; OBJ-07/08 |
+| Moderation/operations | RQ-10 | US-18, US-20, US-23 | TC-ADM; NFR-08 |
 
-## 11. Kịch bản kiểm chứng quy trình
+## 11. Process verification scenarios
 
-Các kịch bản dưới đây là điều kiện cần kiểm thử, không phải tuyên bố đã đạt. Phạm vi kiểm thử bao gồm ca thành công, âm, biên, độc hại và kiểm thử quy trình.
+The scenarios below are required test conditions, not statements of achievement. Test scope includes happy, negative, boundary, malicious, and process workflow cases.
 
-| Mã | Kịch bản | Kết quả mong đợi |
+| Code | Scenario | Expected result |
 |---|---|---|
-| WV-01 | Dán một JD hợp lệ | Văn bản xuất hiện để rà soát; Sinh viên sửa/xác nhận trước phân tích |
-| WV-02 | Tải PDF có chữ và ảnh/PDF quét Việt/Anh | Ưu tiên trích xuất trực tiếp; OCR chỉ dùng khi cần, ≤60 giây/lần và có trạng thái rõ |
-| WV-03 | Tệp không hỗ trợ/hỏng/rỗng/>10 MB/PDF >5 trang | Từ chối an toàn, không tạo ánh xạ/kế hoạch rác |
-| WV-04 | Tên đồng nghĩa `ReactJS` trong văn bản hiệu chỉnh | Chuẩn hóa về chủ đề `React`, giữ bằng chứng gốc |
-| WV-05 | JD có yêu cầu không thuộc bộ phân loại | Hiển thị chưa ánh xạ/khoảng trống độ phủ, không bịa Câu hỏi |
-| WV-06 | Ánh xạ lặp cùng đầu vào/phiên bản | Cùng mã băm kết quả; chỉ điểm ≥60, tối đa 10 câu và 3 câu/yêu cầu; không có câu hỏi `DRAFT` |
-| WV-07 | Sinh viên tạo kế hoạch chuẩn bị | Mỗi mục truy được về yêu cầu/chủ đề/câu hỏi/lý do |
-| WV-08 | Sinh viên chuyển kế hoạch sang đặt lịch Cố vấn | Lịch tham chiếu JD/kế hoạch thuộc Sinh viên; Cố vấn thấy ngữ cảnh tối thiểu |
-| WV-09 | Người dùng không thuộc lịch mở JD/kế hoạch/phản hồi | Bị từ chối phía máy chủ, không lộ sự tồn tại/nội dung đối tượng không cần thiết |
-| WV-10 | Lịch hẹn có mốc/lời nhắc → `COMPLETED` → Phản hồi | Chính sách 12 giờ/15 phút/24 giờ, lời nhắc và phản hồi đủ thang/hành động tiếp theo hoạt động đúng |
-| WV-11 | Tranh chấp đồng thời đặt/đổi lịch | Một khung giờ chỉ có một lịch chiếm chỗ; lịch thua ở trạng thái an toàn |
-| WV-12 | Lỗi thông báo/nhà cung cấp | Lịch đã ghi giữ nguyên; thử lại/chống trùng/dự phòng hoạt động |
+| WV-01 | Paste a valid JD | Text appears for review; Student edits/confirms before analysis |
+| WV-02 | Upload text PDF and VI/EN image/scanned PDF | Direct extraction preferred; OCR used only when needed, ≤60 seconds/run with clear status |
+| WV-03 | Unsupported/corrupt/empty/>10 MB/PDF >5 pages | Safe rejection; no garbage mapping/plan created |
+| WV-04 | Synonym `ReactJS` in the corrected text | Normalized to topic `React`, keeping source evidence |
+| WV-05 | JD has a requirement outside the taxonomy | Show unmapped/coverage gap, do not invent Questions |
+| WV-06 | Re-run mapping with the same input/version | Same result hash; only score ≥60, max 10 questions and 3 per requirement; no `DRAFT` questions |
+| WV-07 | Student creates a preparation plan | Each item traces to requirement/topic/question/reason |
+| WV-08 | Student moves the plan into Mentor booking | Booking references Student-owned JD/plan; Mentor sees minimal context |
+| WV-09 | User not part of the booking opens JD/plan/feedback | Rejected server-side; no unnecessary reveal of object existence/content |
+| WV-10 | Booking milestones/reminders → `COMPLETED` → Feedback | 12-hour/15-minute/24-hour policy, reminders, and full rubric/next-action feedback work correctly |
+| WV-11 | Concurrent booking/reschedule contention | One slot has only one holding booking; the losing booking stays safe |
+| WV-12 | Notification/provider error | Recorded booking unchanged; retry/dedupe/fallback work |
 
-## 12. Kết quả trạng thái tương lai
+## 12. Future-state outcome
 
-Quy trình đạt mục tiêu khi Sinh viên chuyển được một JD hợp lệ thành văn bản hiệu chỉnh, yêu cầu/ánh xạ có thể giải thích và kế hoạch chuẩn bị; từ đó tự luyện hoặc hoàn thành đặt lịch/phản hồi với Cố vấn mà vẫn giữ truy vết về JD. Các đường cơ sở và đánh đổi được quản lý trong [Quyết định sản phẩm đã phê duyệt](Product_Backlog_and_Acceptance_Criteria.md#10-quyết-định-sản-phẩm-đã-phê-duyệt) và [Ghi chú ước lượng quyết định sản phẩm](Product_Decision_Estimation_Notes.md).
+The process meets its goal when a Student turns a valid JD into corrected text, explainable requirements/mapping, and a preparation plan; from there they can self-practice or complete Mentor booking/feedback while keeping traceability to the JD. Baselines and tradeoffs are managed in [Approved Product Decisions](Product_Backlog_and_Acceptance_Criteria.md#10-approved-product-decisions) and [Product Decision Estimation Notes](Product_Decision_Estimation_Notes.md).

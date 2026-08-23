@@ -1,108 +1,108 @@
 # ADR-003 — Notification Reliability
 
-| Thuộc tính | Giá trị |
+| Attribute | Value |
 |---|---|
-| Trạng thái | Accepted, pending PoC evidence |
-| Ngày quyết định | 14/08/2026 |
-| Liên quan | BR-09; US-19; POC notification resilience |
+| Status | Accepted, pending PoC evidence |
+| Decision date | 14/08/2026 |
+| Related items | BR-09; US-19; PoC notification resilience |
 
-## 1. Bối cảnh
+## 1. Context
 
-Booking phải được lưu ngay cả khi email provider timeout hoặc unavailable. Gửi email trực tiếp trong HTTP request tạo hai lỗi nguy hiểm: provider failure làm rollback nghiệp vụ, hoặc booking commit nhưng response timeout khiến client retry và gửi trùng.
+A booking must be stored even when the email provider times out or is unavailable. Sending email directly in the HTTP request creates two dangerous failure modes: a provider failure rolls back the business operation, or the booking commits but the response times out, causing the client to retry and send duplicate notifications.
 
-Notification là side effect, không phải nguồn chân lý cho booking. MVP cần retry, idempotency và khả năng xử lý thủ công mà không thêm message broker riêng.
+A notification is a side effect, not the source of truth for a booking. The MVP needs retry, idempotency, and manual recovery without adding a separate message broker.
 
-## 2. Các phương án
+## 2. Options
 
-### A. Gửi đồng bộ trong request
+### A. Synchronous sending in the request
 
-Không chọn vì tăng latency và coupling với provider; không thể atomic giữa PostgreSQL và email provider.
+Rejected because it increases latency and provider coupling, and PostgreSQL cannot commit atomically with an email provider.
 
-### B. Message broker riêng
+### B. Separate message broker
 
-Có khả năng scale tốt nhưng không chọn cho MVP vì thêm service, chi phí và operational skill chưa được xác nhận.
+This scales well but was rejected for the MVP because it adds a service, cost, and operational skills that have not been confirmed.
 
 ### C. PostgreSQL transactional outbox + worker
 
-Chọn vì event và business change commit trong cùng transaction; dùng hạ tầng sẵn có và có thể tách worker khi scale.
+Selected because the event and business change commit in the same transaction, it reuses existing infrastructure, and the worker can be separated when scaling.
 
-## 3. Quyết định
+## 3. Decision
 
 ### 3.1 Event creation
 
-Booking service insert outbox record trong cùng transaction với business change. Event tối thiểu gồm:
+The Booking service inserts an outbox record in the same transaction as the business change. A minimum event contains:
 
-- `id` bất biến.
-- `event_type`, `aggregate_type`, `aggregate_id`.
-- `recipient_user_id`; không lưu email nếu có thể resolve lúc gửi.
-- Payload versioned và chỉ chứa dữ liệu tối thiểu.
-- `occurred_at`, `available_at`, `attempt_count`, `status`.
-- `deduplication_key` duy nhất theo business event và channel.
+- Immutable id.
+- event_type, aggregate_type, and aggregate_id.
+- recipient_user_id; avoid storing email when it can be resolved at delivery time.
+- A versioned payload containing only minimum required data.
+- occurred_at, available_at, attempt_count, and status.
+- A unique deduplication_key for each business event and channel.
 
-Các event MVP: `booking.requested`, `booking.confirmed`, `booking.reschedule_proposed`, `booking.cancelled`, `session.reminder_due` và `feedback.submitted`.
+MVP events are booking.requested, booking.confirmed, booking.reschedule_proposed, booking.cancelled, session.reminder_due, and feedback.submitted.
 
 ### 3.2 Delivery semantics
 
-- Cam kết **at-least-once processing**, không tuyên bố exactly-once với external provider.
-- Worker claim batch bằng transaction/row locking; nhiều worker không xử lý đồng thời một job.
-- Provider adapter nhận `deduplication_key` làm idempotency key nếu provider hỗ trợ.
-- Thành công ghi `SENT` và provider message ID.
-- Temporary/transient failures (network timeout, connection reset, temporary DNS, temporary SMTP 4xx) được retry theo policy bên dưới.
-- Permanent failures (authentication failure, invalid recipient, permanent SMTP 5xx rejection) chuyển `DEAD` ngay mà không retry vô hạn.
-- Lỗi classify bằng `classifyNotificationError()` — prefer retry nếu uncertain vì retry count đã bị giới hạn cứng.
-- Sau tối đa 3 lần thử (initial + 2 retries), job chuyển `DEAD` và xuất hiện trong operational queue để admin/manual resend.
+- Guarantee **at-least-once processing**; do not claim exactly-once delivery with an external provider.
+- A worker claims a batch using a transaction/row lock so multiple workers do not process the same job concurrently.
+- The provider adapter receives deduplication_key as an idempotency key when the provider supports it.
+- Success records SENT and the provider message ID.
+- Temporary failures such as network timeout, connection reset, temporary DNS failure, or temporary SMTP 4xx are retried under the policy below.
+- Permanent failures such as authentication failure, invalid recipient, or permanent SMTP 5xx rejection move directly to DEAD without endless retry.
+- classifyNotificationError() classifies errors; prefer retry when uncertain because the retry count has a hard limit.
+- After at most three attempts (initial attempt + two retries), the job becomes DEAD and appears in the operational queue for administrator/manual resend.
 
-Lịch retry hiện hành (R1 theo BR-09 / AC-19-01):
+Current R1 retry schedule under BR-09 / AC-19-01:
 
-```text
+~~~text
 attempt 1 = initial send
 → failure: RETRY at scheduled_for + 1 minute
 → attempt 2 failure: RETRY at scheduled_for + 5 minutes
 → attempt 3 failure: DEAD
-```
+~~~
 
-Lưu ý: ADR ban đầu ghi pilot policy 1/5/15/60/360 phút đã bị thay thế bởi policy 1/5 phút cho R1.
+Note: the original ADR used a 1/5/15/60/360-minute pilot policy; the R1 1/5-minute policy supersedes it.
 
-US-22 scheduled reminders (nếu extension được bật) dùng cùng delivery policy.
+US-22 scheduled reminders, when the extension is enabled, use the same delivery policy.
 
-### 3.3 PII, logging và template
+### 3.3 PII, logging, and templates
 
-- Outbox không chứa meeting secret, feedback text đầy đủ hoặc verification evidence.
-- Log dùng event ID, aggregate ID, attempt và error class; không log body email/token.
-- Template được version hóa; user-facing time luôn có timezone.
-- Email link dùng HTTPS và không chứa credential dài hạn trong query string.
+- The outbox does not contain meeting secrets, full feedback text, or verification evidence.
+- Logs contain event ID, aggregate ID, attempt, and error class; they do not log email bodies or tokens.
+- Templates are versioned; user-facing time always includes a timezone.
+- Email links use HTTPS and do not contain long-lived credentials in query strings.
 
 ### 3.4 Deployment
 
-- PoC một API instance được phép chạy worker loop cùng process để giảm chi phí, nhưng module và lifecycle phải tách rõ.
-- Staging/production chạy API và worker thành process/service riêng.
-- Chỉ một scheduler tạo reminder event; unique deduplication key chống reminder trùng.
-- Shutdown phải ngừng claim job mới và hoàn tất/rollback job đang giữ.
+- A one-instance PoC may run the worker loop in the API process to reduce cost, but the modules and lifecycle must remain separate.
+- Staging/production run the API and worker as separate processes/services.
+- Only one scheduler creates reminder events; a unique deduplication key prevents duplicate reminders.
+- Shutdown stops claiming new jobs and completes or rolls back a currently held job.
 
-## 4. Hệ quả
+## 4. Consequences
 
-- Booking response không phụ thuộc email provider.
-- Có độ trễ eventual consistency giữa booking và notification.
-- PostgreSQL nhận thêm outbox traffic nhưng phù hợp pilot.
-- Cần cleanup/retention cho event đã gửi và dashboard/metric cho backlog.
-- Recipient có thể nhận trùng nếu provider xử lý request nhưng response bị mất; template và provider idempotency giảm rủi ro này.
+- Booking responses do not depend on the email provider.
+- Eventual consistency introduces a delay between booking and notification.
+- PostgreSQL receives additional outbox traffic, which is acceptable for the pilot.
+- Sent-event cleanup/retention and backlog dashboards/metrics are required.
+- A recipient may receive a duplicate if the provider processes a request but its response is lost; template design and provider idempotency reduce this risk.
 
-## 5. Metrics và cảnh báo
+## 5. Metrics and alerts
 
-- Số job `PENDING/RETRY/DEAD` và tuổi job cũ nhất.
-- Delivery success rate và attempts per event type.
-- Alert khi có job `DEAD`, backlog quá ngưỡng hoặc provider error tăng liên tục.
-- Business KPI dùng booking state; không dùng trạng thái email để suy ra booking success.
+- Counts of PENDING, RETRY, and DEAD jobs and the age of the oldest job.
+- Delivery success rate and attempts per event type.
+- Alert when a DEAD job appears, backlog exceeds a threshold, or provider errors increase continuously.
+- Business KPIs use booking state; email status must not be used to infer booking success.
 
 ## 6. PoC acceptance
 
-| Test | Pass khi |
+| Test | Pass condition |
 |---|---|
-| Provider timeout | Booking vẫn commit và có một outbox event |
-| Retry | Job được thử lại theo policy và không tạo booking/transition mới |
-| Duplicate worker | Hai worker tranh cùng job nhưng chỉ một worker claim tại một thời điểm |
-| Duplicate event | `deduplication_key` ngăn hai event logic giống nhau |
-| Permanent failure | Sau ngưỡng retry job chuyển `DEAD`, có error class và manual action |
-| Recovery | Khi provider hoạt động lại, job retry chuyển `SENT` |
+| Provider timeout | The booking still commits and exactly one outbox event exists |
+| Retry | The job follows the retry policy and creates no new booking/transition |
+| Duplicate worker | Two workers compete for a job, but only one claims it at a time |
+| Duplicate event | deduplication_key prevents two equivalent logical events |
+| Permanent failure | After the retry threshold, the job becomes DEAD with an error class and manual action |
+| Recovery | When the provider recovers, a retry moves the job to SENT |
 
-PoC có thể dùng fake provider điều khiển được timeout/5xx; không cần gửi email thật để chứng minh reliability.
+The PoC may use a controllable fake provider for timeout/5xx behavior; it does not need to send real email to prove reliability.

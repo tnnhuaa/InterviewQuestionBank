@@ -1,97 +1,97 @@
 # Interview Practice Platform — Software Architecture and Design
 
-| Thuộc tính | Giá trị |
+| Attribute | Value |
 |---|---|
-| Phiên bản | 0.6 |
-| Ngày cập nhật | 17/08/2026 |
+| Version | 0.6 |
+| Last updated | 17/08/2026 |
 | Architecture owner | Luân |
-| Trạng thái | Proposed architecture baseline cho MVP/pilot; được xác nhận dần bằng PoC evidence |
+| Status | Proposed architecture baseline for the MVP/pilot; progressively validated with PoC evidence |
 
 ## 1. Executive summary
 
-Kiến trúc MVP là **React SPA và Express REST API triển khai độc lập**, trong đó backend là **modular monolith**, PostgreSQL là nguồn chân lý và notification chạy qua transactional outbox/worker. Stack dùng JavaScript xuyên suốt theo năng lực nhóm đã xác nhận: React, Tailwind CSS, Node.js, Express và PostgreSQL.
+The MVP architecture uses an independently deployed **React SPA and Express REST API**. The backend is a **modular monolith**, PostgreSQL is the source of truth, and notifications run through a transactional outbox/worker. The stack uses JavaScript end-to-end and matches confirmed team skills: React, Tailwind CSS, Node.js, Express, and PostgreSQL.
 
-Luồng chính bắt đầu từ một JD cụ thể: nhập JD → extract text/OCR → Student kiểm tra và sửa text → phân tích requirement → chuẩn hóa taxonomy → mapping Question Bank → tạo preparation plan → tự luyện hoặc đặt mentor → feedback cập nhật kế hoạch. Mentor Marketplace vẫn được giữ nhưng là bước hỗ trợ sau preparation plan, không còn là điểm bắt đầu của sản phẩm.
+The primary flow begins with a specific JD: enter JD → extract text/OCR → Student reviews and corrects text → analyze requirements → normalize taxonomy → map the Question Bank → create a preparation plan → self-practice or book a mentor → use feedback to update the plan. The Mentor Marketplace remains available as support after the preparation plan; it is no longer the product entry point.
 
-Cấu trúc này giữ transaction booking trong một database, giảm chi phí vận hành và cho phép frontend/backend làm việc độc lập. Năm quyết định kiến trúc được quản lý bằng ADR, trong đó Gemini là lớp hỗ trợ sau adapter và feature flag; rule/policy/PostgreSQL vẫn là nguồn chân lý. Đây là kiến trúc mục tiêu cho MVP/pilot; PoC chỉ cung cấp evidence để chấp nhận, điều chỉnh hoặc thay thế từng quyết định qua các validation scenario ở mục 15.
+This structure keeps booking transactions in one database, lowers operational cost, and lets frontend/backend work independently. Five architectural decisions are managed through ADRs. Gemini is an assistance layer behind an adapter and feature flag, while rules, policies, and PostgreSQL remain the sources of truth. This is the target MVP/pilot architecture. The PoC provides evidence to accept, revise, or replace decisions through the validation scenarios in Section 15.
 
-## 2. Goals, scope và architecture drivers
+## 2. Goals, scope, and architecture drivers
 
 ### 2.1 MVP goals
 
-- Chuyển một JD cụ thể thành text có thể kiểm tra/sửa và preparation plan có cấu trúc.
-- Nhận diện requirement, chuẩn hóa alias theo taxonomy và mapping sang Question Bank bằng rule có thể giải thích.
-- Cho mỗi câu hỏi đề xuất biết requirement nguồn, topic chuẩn hóa, match score/reason và matching version.
-- Cho Student tự luyện hoặc chuyển preparation plan sang mentor booking có đầy đủ ngữ cảnh JD/topic/question.
-- Quản lý mentor verification, availability và booking an toàn.
-- Chống double booking dưới concurrent request.
-- Bảo vệ meeting link, verification evidence và feedback.
-- Gửi notification có retry mà không ảnh hưởng transaction nghiệp vụ.
-- Thu event/KPI đủ cho pilot mà không thu thập dữ liệu thừa.
+- Convert a specific JD into reviewable/editable text and a structured preparation plan.
+- Detect requirements, normalize aliases to the taxonomy, and map the Question Bank with explainable rules.
+- For each recommended question, retain the source requirement, normalized topic, match score/reason, and matching version.
+- Let a Student self-practice or turn the preparation plan into a mentor booking containing JD/topic/question context.
+- Safely manage mentor verification, availability, and booking.
+- Prevent double booking under concurrent requests.
+- Protect meeting links, verification evidence, and feedback.
+- Retry notifications without affecting business transactions.
+- Collect sufficient events/KPIs for the pilot without excessive data collection.
 
 ### 2.2 In scope
 
 - Responsive web client.
-- API/application service và relational database.
-- Identity/RBAC; Student, Mentor, Admin workflow.
-- JD dạng text, PDF có text, ảnh/PDF scan trong giới hạn PoC; extraction, OCR fallback và manual correction.
-- Requirement analysis, taxonomy/alias normalization, deterministic question matching và preparation plan.
-- Question, taxonomy, progress, mentor, slot, booking, feedback, review, report.
-- Email/in-app notification, external meeting link.
-- Audit log, telemetry, CI/CD, backup và environment configuration.
+- API/application services and a relational database.
+- Identity/RBAC and Student, Mentor, and Administrator workflows.
+- Text JDs, text PDFs, and images/scanned PDFs within PoC limits; extraction, OCR fallback, and manual correction.
+- Requirement analysis, taxonomy/alias normalization, deterministic question matching, and preparation plans.
+- Questions, taxonomy, progress, mentors, slots, bookings, feedback, reviews, and reports.
+- Email/in-app notifications and external meeting links.
+- Audit logs, telemetry, CI/CD, backup, and environment configuration.
 
 ### 2.3 Out of scope
 
-- Microservices, event streaming platform và multi-region deployment.
-- AI interviewer/scoring, chatbot phỏng vấn, Gemini reranking và semantic/vector recommendation tự trị.
-- OCR mọi định dạng/ngôn ngữ và phân tích tài liệu ngoài JD.
-- Built-in WebRTC/video, recording và transcription.
-- Payment/escrow/payout.
-- Native mobile app.
+- Microservices, an event-streaming platform, and multi-region deployment.
+- AI interviewer/scoring, interview chatbot, Gemini reranking, and autonomous semantic/vector recommendations.
+- OCR for every format/language and analysis of documents other than JDs.
+- Built-in WebRTC/video, recording, and transcription.
+- Payment, escrow, and payout.
+- Native mobile application.
 
 ### 2.4 Quality priorities
 
-1. Security/privacy cho file, JD, meeting context và object-level authorization.
-2. Tính giải thích, ổn định và kiểm thử được của question matching.
-3. Data consistency cho slot/booking/state transition.
-4. Reliability và recoverability của extraction job, notification và operations.
-5. Usability/accessibility của luồng kiểm tra text và preparation plan.
-6. Maintainability/testability; hiệu năng phù hợp pilot và tránh tối ưu sớm.
+1. Security/privacy for files, JDs, meeting context, and object-level authorization.
+2. Explainability, stability, and testability of question matching.
+3. Data consistency for slots, bookings, and state transitions.
+4. Reliability and recoverability of extraction jobs, notifications, and operations.
+5. Usability/accessibility of text review and preparation-plan flows.
+6. Maintainability/testability, pilot-appropriate performance, and avoidance of premature optimization.
 
 ## 3. Architecture decisions
 
-| ADR | Quyết định | Lý do | Trạng thái |
+| ADR | Decision | Rationale | Status |
 |---|---|---|---|
-| [ADR-001](ADR/ADR-001-Technology-Stack.md) | React/Vite/Tailwind + Node.js/Express + PostgreSQL | Khớp năng lực nhóm, test/deploy tách biệt và chi phí pilot thấp | Accepted for PoC |
-| [ADR-002](ADR/ADR-002-Booking-Consistency.md) | PostgreSQL transaction + row lock + partial unique index | Chống double booking ở nguồn chân lý | Accepted, pending PoC |
-| [ADR-003](ADR/ADR-003-Notification-Reliability.md) | Transactional outbox + worker | Provider failure không làm mất booking | Accepted, pending PoC |
-| [ADR-004](ADR/ADR-004-JD-Processing-and-Question-Matching.md) | Direct extraction trước, OCR nội bộ fallback; rule-based matching có version | Ít hạ tầng, giải thích được và deterministic cho PoC | Accepted for PoC; Proposed for MVP |
-| [ADR-005](ADR/ADR-005-Hybrid-Gemini-Assistance.md) | Gemini hỗ trợ extraction/explanation/draft sau adapter; hard filter, scorer và mutation vẫn deterministic | Tăng khả năng hiểu JD nhưng giữ privacy, audit và fallback | Accepted behind feature flags |
-| Scope decision | External meeting link | Giảm scope/security cost của video | Accepted by MVP scope |
-| Security decision | Server-side RBAC + object ownership policy | Không tin role/ownership từ client | Accepted for PoC |
+| [ADR-001](ADR/ADR-001-Technology-Stack.md) | React/Vite/Tailwind + Node.js/Express + PostgreSQL | Matches team skills, separate test/deploy boundaries, and low pilot cost | Accepted for PoC |
+| [ADR-002](ADR/ADR-002-Booking-Consistency.md) | PostgreSQL transaction + row lock + partial unique index | Prevent double booking at the source of truth | Accepted, pending PoC |
+| [ADR-003](ADR/ADR-003-Notification-Reliability.md) | Transactional outbox + worker | Provider failure does not lose a booking | Accepted, pending PoC |
+| [ADR-004](ADR/ADR-004-JD-Processing-and-Question-Matching.md) | Direct extraction first, internal OCR fallback, and versioned rule-based matching | Low infrastructure, explainable, and deterministic for the PoC | Accepted for PoC; Proposed for MVP |
+| [ADR-005](ADR/ADR-005-Hybrid-Gemini-Assistance.md) | Gemini assists extraction/explanation/drafting behind an adapter; hard filters, scoring, and mutations remain deterministic | Improves JD understanding while preserving privacy, audit, and fallback | Accepted behind feature flags |
+| Scope decision | External meeting link | Reduces video scope and security cost | Accepted by MVP scope |
+| Security decision | Server-side RBAC + object ownership policy | Never trust client-supplied roles/ownership | Accepted for PoC |
 
 ### 3.1 Technology stack baseline
 
-| Layer | Baseline | Quy tắc |
+| Layer | Baseline | Rule |
 |---|---|---|
-| Web | React SPA, Vite, JavaScript, Tailwind CSS | Static build; không truy cập database; dependency pin bằng lockfile |
-| Routing/data | React Router, `fetch` wrapper, feature hooks | API URL qua environment; loading/error/permission state rõ |
-| API | Node.js 24 LTS, Express 5, REST/JSON `/api/v1` | Modular monolith; schema validation tại boundary |
-| Data access | `pg` + versioned SQL migrations | Parameterized SQL; transaction do application service quản lý |
-| Data | PostgreSQL | ACID, constraint, row lock, index, audit và backup |
-| Job/queue | PostgreSQL outbox + worker module | At-least-once, idempotent, retry/dead-letter state |
-| JD processing | Direct text extraction + internal OCR adapter + PostgreSQL processing job | OCR chỉ cho ảnh/PDF scan; không gọi semantic/AI matching trong PoC |
-| AI assistance | `AiProvider` adapter + PostgreSQL AI job; Gemini 3.5 Flash Lite qua backend | Structured JSON, domain validation, quota/circuit breaker và manual fallback |
-| Matching | Taxonomy/alias dictionary + versioned rule-based scorer | Chỉ Published Question; lưu requirement nguồn, score và reason |
-| Auth | Server-side session qua same-origin `/api` proxy | `__Host-` cookie `Secure`, `HttpOnly`, `SameSite=Lax`; CSRF control |
-| Test | Vitest, React Testing Library, Supertest, Playwright | Integration/concurrency dùng PostgreSQL thật |
-| CI/CD | Lint, audit, test, migration check, build | Frontend và backend pipeline độc lập |
-| Deployment | Static frontend + containerized API/worker + managed PostgreSQL | Provider-neutral configuration; TLS và secret ngoài repository |
-| Cache/broker | Không có trong baseline | Chỉ thêm khi measurement/ADR chứng minh cần |
+| Web | React SPA, Vite, JavaScript, Tailwind CSS | Static build; no database access; pin dependencies with the lockfile |
+| Routing/data | React Router, fetch wrapper, feature hooks | API URL from environment; explicit loading/error/permission states |
+| API | Node.js 24 LTS, Express 5, REST/JSON /api/v1 | Modular monolith; schema validation at the boundary |
+| Data access | pg + versioned SQL migrations | Parameterized SQL; application service manages transactions |
+| Data | PostgreSQL | ACID, constraints, row locks, indexes, audit, and backup |
+| Job/queue | PostgreSQL outbox + worker module | At-least-once, idempotent, retry/dead-letter states |
+| JD processing | Direct text extraction + internal OCR adapter + PostgreSQL processing job | OCR only for images/scanned PDFs; no semantic/AI matching in the PoC |
+| AI assistance | AiProvider adapter + PostgreSQL AI job; Gemini 3.5 Flash Lite through backend | Structured JSON, domain validation, quota/circuit breaker, and manual fallback |
+| Matching | Taxonomy/alias dictionary + versioned rule-based scorer | Published Questions only; store source requirement, score, and reason |
+| Authentication | Server-side session through same-origin /api proxy | __Host- cookie with Secure, HttpOnly, SameSite=Lax; CSRF control |
+| Testing | Vitest, React Testing Library, Supertest, Playwright | Integration/concurrency tests use real PostgreSQL |
+| CI/CD | Lint, audit, test, migration check, build | Independent frontend and backend pipelines |
+| Deployment | Static frontend + containerized API/worker + managed PostgreSQL | Provider-neutral configuration; TLS and secrets outside the repository |
+| Cache/broker | Not in the baseline | Add only when measurement/ADR proves the need |
 
 ## 4. System context
 
-```mermaid
+~~~mermaid
 flowchart LR
     Student["Student"] -->|"Paste/upload JD; review text; practice/book"| FE["React Web App"]
     Mentor["Mentor"] --> FE
@@ -109,23 +109,23 @@ flowchart LR
     Worker --> Email["Email Provider"]
     Student --> Meet["External Meeting Provider"]
     Mentor --> Meet
-```
+~~~
 
 ### Trust boundaries
 
-- Browser/client là untrusted; Express API xác thực mọi input, session, role và ownership.
-- Frontend và API là hai deployable độc lập, nhưng browser dùng cùng origin `/api`; static host reverse proxy request đến API để tránh phụ thuộc third-party cookie.
-- API origin chỉ chấp nhận proxy/origin đã cấu hình; nếu mở direct cross-origin access thì CORS không dùng wildcard với credential.
-- Email/meeting provider nằm ngoài trust boundary; không làm nguồn chân lý cho booking.
-- Verification document và meeting link là dữ liệu nhạy cảm, tách khỏi public profile.
-- JD file, extracted/corrected text, requirement và preparation plan là dữ liệu private theo Student; chỉ Mentor/Admin có quan hệ nghiệp vụ hợp lệ mới xem được phần tối thiểu cần thiết.
-- OCR là một cách lấy text từ ảnh/PDF scan, không được dùng như tên chung cho JD analysis hoặc question matching.
-- Gemini nằm ngoài trust boundary; chỉ nhận dữ liệu tối thiểu, output được xem là untrusted và không thực hiện mutation nghiệp vụ.
-- Admin action có quyền cao phải được audit.
+- The browser/client is untrusted; the Express API validates every input, session, role, and ownership relationship.
+- Frontend and API are separate deployables, but the browser uses the same /api origin; the static-host reverse proxy forwards requests to the API to avoid third-party cookie dependency.
+- The API origin accepts only configured proxy/origin values. If direct cross-origin access is enabled, credentialed CORS must not use a wildcard.
+- Email and meeting providers are outside the trust boundary and are never the source of truth for bookings.
+- Verification documents and meeting links are sensitive data and are separated from public profiles.
+- JD files, extracted/corrected text, requirements, and preparation plans are private to the Student; a Mentor/Administrator sees only the minimum data allowed by a valid business relationship.
+- OCR extracts text from images/scanned PDFs; it is not a general name for JD analysis or question matching.
+- Gemini is outside the trust boundary, receives only minimum data, and returns untrusted output that cannot perform business mutations.
+- Privileged Administrator actions must be audited.
 
-## 5. Container và deployment view
+## 5. Container and deployment view
 
-```mermaid
+~~~mermaid
 flowchart TB
     Browser["Web Browser"] -->|"GET static assets"| CDN["Static Hosting / CDN"]
     Browser -->|"same-origin /api/v1 + session cookie"| Proxy["Edge Rewrite / Reverse Proxy"]
@@ -140,74 +140,74 @@ flowchart TB
     API --> Obs["Logs / Metrics / Error Tracking"]
     Worker --> Obs
     DocWorker --> Obs
-```
+~~~
 
-Frontend và backend có build/deployment độc lập. JD processing là module/worker trong cùng modular monolith, không phải microservice. PoC một-instance có thể chạy worker cùng backend process và dùng temporary private storage sau adapter; MVP/pilot thay implementation này bằng private object storage. Khi OCR làm ảnh hưởng latency hoặc cần scale độc lập thì tách process qua cùng codebase và PostgreSQL job table. Môi trường tối thiểu: local, test/CI, staging/UAT và production/pilot. Secret không nằm trong repository. Migration chạy từ pipeline/job được kiểm soát, chỉ một runner tại một thời điểm và có backup/forward-fix plan.
+Frontend and backend have independent build/deployment. JD processing is a module/worker within the same modular monolith, not a microservice. A one-instance PoC may run the worker with the backend process and use temporary private storage behind an adapter; the MVP/pilot replaces it with private object storage. If OCR affects latency or needs independent scaling, separate the process while keeping the same codebase and PostgreSQL job table. Minimum environments are local, test/CI, staging/UAT, and production/pilot. Secrets do not belong in the repository. Migrations run from a controlled pipeline/job with one runner at a time and a backup/forward-fix plan.
 
-### 5.1 Deployment profile và chi phí pilot
+### 5.1 Deployment profile and pilot cost
 
-| Thành phần | Mặc định cho PoC/pilot | Chi phí tham chiếu 14/08/2026 | Giới hạn cần ghi nhận |
+| Component | PoC/pilot default | Reference cost on 14/08/2026 | Limitation |
 |---|---|---:|---|
-| React static frontend + `/api` rewrite | Vercel Hobby | 0 USD cho personal/non-commercial | Fair-use/usage cap; pilot thương mại phải xem lại plan |
-| Express API | Render Free web service | 0 USD | Cold start, 750 free instance-hours/workspace; không dùng cho production SLA |
-| PostgreSQL | Neon Free | 0 USD | 0.5 GB/project, 100 CU-hours/project; scale-to-zero |
-| Notification | Fake provider trong PoC; provider adapter ở pilot | TBD | Báo giá/quota phải được chốt trước pilot thật |
-| JD storage/OCR | PoC: temporary private storage; MVP/pilot: private object storage; internal extraction/OCR adapter | Trong quota PoC | File PoC xóa sau extraction hoặc tối đa 24 giờ; external OCR chỉ qua ADR mới nếu internal OCR không đạt corpus pilot |
-| Browser/API domain | URL frontend mặc định + same-origin rewrite | 0 USD | Custom domain và DNS là cost riêng khi pilot public |
+| React static frontend + /api rewrite | Vercel Hobby | 0 USD for personal/non-commercial use | Fair-use/usage caps; review the plan for a commercial pilot |
+| Express API | Render Free web service | 0 USD | Cold start and 750 free instance-hours/workspace; no production SLA |
+| PostgreSQL | Neon Free | 0 USD | 0.5 GB/project, 100 CU-hours/project, scale-to-zero |
+| Notification | Fake provider in PoC; provider adapter in pilot | TBD | Confirm price/quota before a real pilot |
+| JD storage/OCR | PoC: temporary private storage; MVP/pilot: private object storage; internal extraction/OCR adapter | Within PoC quota | Delete PoC files after extraction or within 24 hours; external OCR requires a new ADR if internal OCR fails the pilot corpus |
+| Browser/API domain | Default frontend URL + same-origin rewrite | 0 USD | Custom domain and DNS are separate public-pilot costs |
 
-Render Free PostgreSQL không được chọn làm baseline vì database free hết hạn sau 30 ngày. Worker được phép chạy cùng API process trong PoC một-instance; staging/production phải tách process hoặc chứng minh deployment platform bảo đảm singleton/idempotent worker. Mọi giá/quota phải được kiểm tra lại khi phê duyệt Cost–Time–Resource baseline.
+Render Free PostgreSQL is not the baseline because its free database expires after 30 days. The worker may share the API process in a one-instance PoC; staging/production must separate it or prove singleton/idempotent behavior on the deployment platform. Recheck all prices/quotas when approving the Cost–Time–Resource baseline.
 
 ### 5.2 Browser/API session topology
 
-Baseline không để browser gọi trực tiếp `*.onrender.com` từ `*.vercel.app`. Browser luôn gọi `/api/v1` trên origin đang phục vụ React; static host rewrite/reverse proxy chuyển request đến Express API.
+The baseline does not let the browser call *.onrender.com directly from *.vercel.app. The browser always calls /api/v1 on the React-serving origin, and the static-host rewrite/reverse proxy forwards requests to Express.
 
-- Local: Vite development proxy chuyển `/api` đến API local.
-- PoC/pilot: static host rewrite chuyển `/api/:path*` đến backend deployment.
-- Session cookie dùng prefix `__Host-`, `Secure`, `HttpOnly`, `SameSite=Lax`, `Path=/` và không đặt `Domain`.
-- Mutation dùng CSRF token/header; API kiểm tra `Origin`/`Sec-Fetch-Site` khi phù hợp.
-- API base URL phía frontend là relative `/api/v1`; không nhúng backend origin vào production bundle.
+- Local: the Vite development proxy forwards /api to the local API.
+- PoC/pilot: static-host rewrites forward /api/:path* to the backend deployment.
+- Session cookie uses the __Host- prefix, Secure, HttpOnly, SameSite=Lax, Path=/, and no Domain.
+- Mutations use a CSRF token/header; the API checks Origin/Sec-Fetch-Site where appropriate.
+- The frontend API base URL is relative /api/v1; the production bundle does not embed the backend origin.
 
-Nếu sau này browser gọi trực tiếp `api.example.com` từ `app.example.com`, nhóm phải cập nhật ADR/security test cho CORS, cookie scope và CSRF trước khi đổi topology.
+If the browser later calls api.example.com directly from app.example.com, update the ADR and security tests for CORS, cookie scope, and CSRF before changing the topology.
 
 ## 6. Backend module design
 
-| Module | Trách nhiệm | Không được làm |
+| Module | Responsibility | Must not |
 |---|---|---|
-| Identity | Account, auth, role, session | Tự quyết định booking ownership |
-| Student | Profile, goals | Quản lý mentor verification |
-| Questions | Taxonomy, question, provenance, moderation | Gửi booking |
-| JD Ingestion | Nhận pasted text/file, metadata, trạng thái và bản text được Student xác nhận | Tự phân tích skill hoặc công khai file |
-| Text Extraction/OCR Adapter | Nhận dạng source, direct-extract text; chỉ OCR ảnh/PDF scan; chuẩn hóa lỗi adapter | Tự mapping question hoặc thay corrected text |
-| JD Analysis | Phát hiện role, seniority, skill/technology/requirement và chuẩn hóa alias về taxonomy | Tạo nội dung AI hoặc sửa taxonomy âm thầm |
-| AI Assistance | Requirement/taxonomy candidate, recommendation explanation, agenda/feedback draft | Bỏ qua ownership/hard filter, tạo ID hoặc tự submit mutation |
-| Question Matching | Tính score deterministic theo requirement/topic, lọc Published Question, tạo reason và version | Trả Draft hoặc gọi semantic/AI matching trong PoC |
-| Preparation Plan | Gom requirement/topic/question được chọn, theo dõi plan và cung cấp context cho Practice/Booking | Thay đổi booking state hoặc mentor feedback |
-| Practice | Bookmark/progress | Công khai dữ liệu Student |
-| Mentors | Profile, verification, service scope | Xác nhận slot trực tiếp không qua Booking |
-| Availability | Slot và overlap rules | Tạo payment |
-| Booking | State machine, lock slot, meeting-link access | Phụ thuộc email success |
-| Feedback | Rubric, next action, review eligibility | Cho feedback trước Completed |
-| Moderation | Report, content/mentor decisions | Sửa audit log |
-| Notification | Event, template, retry, delivery status | Điều khiển business state |
-| Analytics | Privacy-aware events/KPI | Lưu nội dung nhạy cảm không cần thiết |
-| Audit | Security/business decision trail | Cho phép sửa/xóa thường xuyên |
+| Identity | Accounts, authentication, roles, sessions | Decide booking ownership |
+| Student | Profile and goals | Manage mentor verification |
+| Questions | Taxonomy, questions, provenance, moderation | Send bookings |
+| JD Ingestion | Accept pasted text/files, metadata, status, and Student-confirmed text | Analyze skills itself or expose files publicly |
+| Text Extraction/OCR Adapter | Classify sources, directly extract text, OCR only images/scanned PDFs, normalize adapter errors | Match questions or overwrite corrected text |
+| JD Analysis | Detect role, seniority, skills/technologies/requirements and normalize aliases to taxonomy | Generate AI content or silently change taxonomy |
+| AI Assistance | Requirement/taxonomy candidates, recommendation explanations, agenda/feedback drafts | Bypass ownership/hard filters, create IDs, or submit mutations |
+| Question Matching | Deterministic requirement/topic scoring, Published Question filtering, reason and version generation | Return Draft Questions or use semantic/AI matching in the PoC |
+| Preparation Plan | Group selected requirements/topics/questions, track the plan, and provide Practice/Booking context | Change booking state or mentor feedback |
+| Practice | Bookmarks and progress | Expose Student data publicly |
+| Mentors | Profile, verification, and service scope | Confirm slots outside Booking |
+| Availability | Slots and overlap rules | Create payments |
+| Booking | State machine, slot locking, and meeting-link access | Depend on email success |
+| Feedback | Rubric, next actions, and review eligibility | Accept feedback before Completed |
+| Moderation | Reports and content/mentor decisions | Modify audit logs |
+| Notification | Events, templates, retry, and delivery status | Control business state |
+| Analytics | Privacy-aware events/KPIs | Store unnecessary sensitive content |
+| Audit | Security/business decision trail | Allow routine edit/delete |
 
 ### Dependency rules
 
-- UI gọi application use case; không truy cập database trực tiếp.
-- Module khác tham chiếu entity qua ID và public contract, không sửa bảng thuộc module khác tùy ý.
-- Booking kiểm tra Mentor/Slot qua domain service trong cùng transaction khi cần.
-- JD Analysis chỉ đọc `corrected_text` đã được Student xác nhận; không phân tích trực tiếp file hoặc tự ghi đè text.
-- AI Assistance chỉ nhận snapshot tối thiểu; mọi output qua schema/domain validation và luôn có rule-based/manual fallback.
-- Question Matching dùng public read contract của Taxonomy/Questions; kết quả luôn gắn `matching_version` và không làm thay đổi Question Bank.
-- Preparation Plan tham chiếu snapshot/version của match; Booking chỉ nhận `preparation_plan_id`/`job_description_id` thuộc Student và lưu context tối thiểu cho Mentor.
-- Feedback ghi strength, weakness và next action; Preparation Plan áp dụng next action qua use case riêng, không cho Feedback sửa bảng plan trực tiếp.
-- Notification nhận event sau commit từ outbox.
-- Analytics không nằm trên critical path.
+- The UI calls application use cases and never accesses the database directly.
+- Modules reference entities through IDs and public contracts; they do not modify another module's tables arbitrarily.
+- Booking checks Mentor/Slot through a domain service in the same transaction when necessary.
+- JD Analysis reads only Student-confirmed corrected_text and never analyzes the file directly or overwrites the corrected text.
+- AI Assistance receives only a minimum snapshot; all output passes schema/domain validation and always has a rule-based/manual fallback.
+- Question Matching uses public Taxonomy/Questions read contracts; every result has matching_version and never changes the Question Bank.
+- Preparation Plan references a match snapshot/version. Booking accepts only Student-owned preparation_plan_id/job_description_id and stores the minimum Mentor context.
+- Feedback records strengths, weaknesses, and next actions. Preparation Plan applies a next action through a separate use case; Feedback never edits plan tables directly.
+- Notification consumes post-commit outbox events.
+- Analytics is not on the critical path.
 
-### 6.1 Component view cho luồng JD
+### 6.1 JD-flow component view
 
-```mermaid
+~~~mermaid
 flowchart LR
     Routes["Express routes/controllers"] --> Ingest["JD Ingestion"]
     Ingest --> Jobs["Processing Job"]
@@ -225,19 +225,19 @@ flowchart LR
     Plan --> Booking["Booking"]
     Booking --> Feedback["Feedback"]
     Feedback --> Plan
-```
+~~~
 
-Mũi tên thể hiện application contract được phép gọi, không phải quyền sửa trực tiếp bảng của module đích. Vòng `Feedback → Preparation Plan` là use case “áp dụng next action” do Student khởi tạo, không phải transaction ngầm khi Mentor submit feedback.
+Arrows show allowed application-contract calls, not permission to modify a target module's tables directly. Feedback → Preparation Plan is an “apply next action” use case initiated by the Student, not an implicit transaction when a Mentor submits feedback.
 
 ### Notification event model
 
-Các event: `booking.requested`, `booking.confirmed`, `booking.reschedule_proposed`, `booking.cancelled`, `session.reminder_due`, `feedback.submitted`. Mỗi event có immutable ID, aggregate ID, type, occurred-at, deduplication key và payload tối thiểu. Worker xử lý at-least-once, idempotent, exponential backoff có jitter và dead-letter/manual retry state. Chi tiết nằm tại [ADR-003](ADR/ADR-003-Notification-Reliability.md).
+Events are booking.requested, booking.confirmed, booking.reschedule_proposed, booking.cancelled, session.reminder_due, and feedback.submitted. Every event contains an immutable ID, aggregate ID, type, occurred-at value, deduplication key, and minimum payload. The worker provides at-least-once, idempotent processing, exponential backoff with jitter, and dead-letter/manual-retry state. See [ADR-003](ADR/ADR-003-Notification-Reliability.md).
 
 ## 7. Core runtime flows
 
-### 7.1 Từ JD đến preparation plan
+### 7.1 JD to preparation plan
 
-```mermaid
+~~~mermaid
 sequenceDiagram
     actor S as Student
     participant W as React Web
@@ -247,22 +247,22 @@ sequenceDiagram
     participant M as Question Matching
     participant P as Preparation Plan
     participant D as PostgreSQL
-    S->>W: Paste text hoặc upload PDF/image
+    S->>W: Paste text or upload PDF/image
     alt Pasted text
-        W->>I: Create JobDescription với pasted text
+        W->>I: Create JobDescription with pasted text
         I->>D: Save extracted_text + SUCCEEDED
-    else PDF hoặc image
-        W->>I: Upload file và create JobDescription
+    else PDF or image
+        W->>I: Upload file and create JobDescription
         I->>D: Store private metadata + enqueue extraction job
-        alt PDF có usable text
+        alt PDF contains usable text
             X->>X: Direct text extraction
-        else Image hoặc PDF scan
+        else Image or scanned PDF
             X->>X: Internal OCR fallback
         end
         X->>D: Save extracted_text + method/status
     end
-    W-->>S: Hiển thị text để kiểm tra
-    S->>W: Sửa và xác nhận text
+    W-->>S: Display text for review
+    S->>W: Edit and confirm text
     W->>I: Save corrected_text
     I->>A: Analyze confirmed text
     A->>D: Save requirements + normalized topic
@@ -270,21 +270,21 @@ sequenceDiagram
     M->>D: Save score, reason, matching_version
     W->>P: Create plan from selected matches
     P->>D: Save PreparationPlan
-    P-->>W: Topics, questions và lý do
-```
+    P-->>W: Topics, questions, and reasons
+~~~
 
-Extraction là asynchronous job có trạng thái `PENDING`, `PROCESSING`, `SUCCEEDED`, `FAILED` và error code an toàn. Cùng file/text hash và cùng extraction version có thể trả kết quả idempotent. Student luôn phải xác nhận `corrected_text`; analyze bị chặn nếu text chưa xác nhận hoặc extraction chưa ở trạng thái cuối phù hợp. Chi tiết lựa chọn direct extraction, OCR và matching nằm tại [ADR-004](ADR/ADR-004-JD-Processing-and-Question-Matching.md).
+Extraction is an asynchronous job with PENDING, PROCESSING, SUCCEEDED, and FAILED states and a safe error code. The same file/text hash and extraction version may return an idempotent result. The Student must always confirm corrected_text; analysis is blocked until text is confirmed and extraction reaches an appropriate final state. See [ADR-004](ADR/ADR-004-JD-Processing-and-Question-Matching.md).
 
-### 7.2 Tự luyện từ preparation plan
+### 7.2 Self-practice from a preparation plan
 
-```mermaid
+~~~mermaid
 sequenceDiagram
     actor S as Student
     participant W as Web
     participant Q as Question Module
     participant P as Practice Module
     participant D as Database
-    S->>W: Mở preparation plan/search bổ sung
+    S->>W: Open preparation plan/search for more
     W->>Q: Query matched/published questions
     Q->>D: Indexed query + pagination
     D-->>Q: Results
@@ -294,22 +294,22 @@ sequenceDiagram
     P->>D: Upsert progress
     D-->>P: Success
     P-->>W: Updated state
-```
+~~~
 
-### 7.3 Từ preparation plan đến booking
+### 7.3 Preparation plan to booking
 
-Student chọn “Luyện với mentor” từ preparation plan. Booking service kiểm tra Student sở hữu plan/JD, mentor phù hợp topic và slot khả dụng; sau đó lưu `preparation_plan_id` và `job_description_id` trong booking. Mentor chỉ nhận corrected JD text, topics, nhóm câu hỏi và mục tiêu cần luyện sau khi có quan hệ booking hợp lệ; original file không được chia sẻ mặc định.
+The Student selects “Practice with a mentor” from the preparation plan. Booking verifies that the Student owns the plan/JD, the Mentor matches the topic, and the slot is available; it then stores preparation_plan_id and job_description_id in the booking. A Mentor receives only corrected JD text, topics, question groups, and practice goals after a valid booking relationship exists. The original file is not shared by default.
 
-### 7.4 Xác nhận booking và chống double booking
+### 7.4 Booking confirmation and double-booking prevention
 
-```mermaid
+~~~mermaid
 sequenceDiagram
     actor M as Mentor
     participant A as Booking API
     participant D as Database
     participant O as Outbox
     M->>A: Accept pending booking
-    A->>D: Begin transaction; lock slot then booking
+    A->>D: Begin transaction, lock slot then booking
     A->>D: Validate owner, state, slot availability
     A->>D: Set Confirmed + reserve slot
     A->>D: Insert transition + idempotency record
@@ -317,19 +317,19 @@ sequenceDiagram
     A->>D: Commit
     A-->>M: Confirmed
     Note over A,D: Partial unique index protects occupied states for the same slot
-```
+~~~
 
-Chi tiết transaction, conflict code, retry và concurrent acceptance test nằm tại [ADR-002](ADR/ADR-002-Booking-Consistency.md). Mọi path gồm Mentor, Student và Admin đều phải gọi cùng state-machine service; không có route update trạng thái trực tiếp.
+Transaction details, conflict codes, retry, and concurrent-acceptance testing are in [ADR-002](ADR/ADR-002-Booking-Consistency.md). Every Mentor, Student, and Administrator path calls the same state-machine service; no route updates the state directly.
 
-### 7.5 Hoàn thành, feedback và quay lại plan
+### 7.5 Completion, feedback, and return to plan
 
-Mentor/Admin hợp lệ chuyển booking sang Completed theo policy. Feedback service kiểm tra Mentor ownership và Completed state, validate rubric, ghi strength, weakness, next action cùng audit event. Student xem feedback qua ownership policy; Student có thể chấp nhận next action để thêm/cập nhật mục trong preparation plan rồi luyện tiếp. Analytics chỉ ghi trạng thái hoàn chỉnh và outcome code, không sao chép JD hay nội dung nhận xét.
+An authorized Mentor/Administrator moves a booking to Completed under policy. Feedback verifies Mentor ownership and Completed state, validates the rubric, and stores strengths, weaknesses, next actions, and an audit event. The Student reads feedback through ownership policy and may accept a next action to add/update a preparation-plan item before continuing practice. Analytics records only completion states and outcome codes, not JD or feedback content.
 
 ## 8. Data design
 
 ### 8.1 Conceptual ER model
 
-```mermaid
+~~~mermaid
 erDiagram
     USER ||--o| STUDENT_PROFILE : has
     USER ||--o| MENTOR_PROFILE : has
@@ -361,311 +361,310 @@ erDiagram
     QUESTION ||--o{ QUESTION_TOPIC : classified_by
     TOPIC ||--o{ QUESTION_TOPIC : contains
     BOOKING ||--o{ NOTIFICATION_JOB : emits
-```
+~~~
 
-Một slot có thể có nhiều booking `PENDING`, nhưng partial unique index chỉ cho một booking ở trạng thái chiếm slot. Booking tạo từ luồng JD phải tham chiếu preparation plan hoặc job description thuộc đúng Student; constraint/service validation ngăn context chéo owner. `Feedback` và `Review` đều unique theo `booking_id`; review chỉ thuộc Student của booking. `NotificationJob` là quan hệ logic qua aggregate ID/event key và không được điều khiển booking state.
+A slot may have multiple PENDING bookings, but a partial unique index permits only one booking in an occupying state. A booking created from the JD flow must reference a preparation plan or job description owned by the same Student; constraints/service validation prevent cross-owner context. Feedback and Review are each unique by booking_id, and only the booking Student may review. NotificationJob has a logical relationship through aggregate ID/event key and never controls booking state.
 
 ### 8.2 Entity responsibilities
 
-| Entity | Trường/chức năng chính |
+| Entity | Main fields/functions |
 |---|---|
-| User | id, email, status, roles, auth metadata |
+| User | id, email, status, roles, authentication metadata |
 | StudentProfile | user_id, target roles, goals, privacy settings |
 | JobDescription | id, student_id, source_type, original_file_ref, extracted_text, corrected_text, extraction_method/status/version, confirmed_at, created_at |
 | JDRequirement | id, job_description_id, analysis_version, raw_text/source span, requirement_type, normalized_topic_id, confidence/rule evidence |
-| JDQuestionMatch | job_description_id, requirement_id, question_id, match_score, match_reason, matching_version; unique theo version |
+| JDQuestionMatch | job_description_id, requirement_id, question_id, match_score, match_reason, matching_version; unique by version |
 | PreparationPlan | id, student_id, job_description_id, status, matching_version, created_at, updated_at |
 | PreparationPlanItem | plan_id, requirement/topic/question, source match, priority, practice state, mentor next action |
 | MentorProfile | user_id, expertise, bio, status, public fields |
-| MentorVerification | mentor_id, evidence ref, status, decision audit |
-| MentorExpertise | mentor_id, topic_id hoặc position_id, evidence ref, status; constraint yêu cầu đúng một taxonomy target |
-| Position/Topic | taxonomy và trạng thái |
-| Question | content, type, difficulty, status, provenance, version |
-| QuestionPosition/QuestionTopic | many-to-many question ↔ position/topic; composite unique key |
+| MentorVerification | mentor_id, evidence reference, status, decision audit |
+| MentorExpertise | mentor_id, topic_id or position_id, evidence reference, status; constraint requires exactly one taxonomy target |
+| Position/Topic | Taxonomy and status |
+| Question | Content, type, difficulty, status, provenance, version |
+| QuestionPosition/QuestionTopic | Many-to-many Question ↔ Position/Topic; composite unique key |
 | PracticeProgress | student_id, question_id, bookmark, status |
 | AvailabilitySlot | mentor_id, start/end UTC, timezone, status |
-| Booking | student, mentor, slot, job_description_id/preparation_plan_id, goal, type, state, meeting ref |
+| Booking | student, mentor, slot, job_description_id/preparation_plan_id, goal, type, state, meeting reference |
 | BookingTransition | booking, from/to, actor, reason, timestamp |
-| Feedback | booking_id unique, rubric, strengths, weaknesses, actions |
-| Review | booking_id unique, rating, comment, moderation status |
+| Feedback | unique booking_id, rubric, strengths, weaknesses, actions |
+| Review | unique booking_id, rating, comment, moderation status |
 | NotificationJob | event, channel, attempt, status, next_attempt |
-| IdempotencyRecord | actor, key, operation, request hash, response ref |
+| IdempotencyRecord | actor, key, operation, request hash, response reference |
 | Report/AuditLog | target, actor, action, reason, timestamp |
 
 ### 8.3 Data consistency
 
-- Lưu instant theo UTC; giữ timezone nguồn để hiển thị/audit.
-- Dùng database constraint để bảo đảm unique review/feedback per booking.
-- Dùng transaction, ordered row lock và partial unique index để chống booking trùng slot.
-- Booking state transition qua một domain service duy nhất.
-- `corrected_text` có optimistic version; analyze nhận expected version để không lưu kết quả trên text cũ.
-- Requirement/match là snapshot bất biến theo `analysis_version`/`matching_version`; chạy lại tạo version mới, không sửa lịch sử dùng bởi plan/booking.
-- `MentorExpertise` phải tham chiếu đúng một `topic_id` hoặc `position_id`; chỉ expertise hợp lệ/được duyệt mới dùng để đề xuất mentor.
-- Unique key ngăn cùng `(job_description_id, requirement_id, question_id, matching_version)` xuất hiện lặp.
-- Matching chỉ join taxonomy active và Question `PUBLISHED`; score/rule có deterministic sort để cùng input/version cho cùng kết quả.
-- Soft-delete chỉ khi có lý do vận hành; privacy deletion phải có policy riêng.
-- Migration có version và test rollback/forward phù hợp.
+- Store instants in UTC and retain source timezone for display/audit.
+- Use database constraints for one Review/Feedback per booking.
+- Use transactions, ordered row locks, and a partial unique index to prevent duplicate slot bookings.
+- Booking state transitions go through one domain service.
+- corrected_text has an optimistic version; analysis receives the expected version to prevent results from being stored against old text.
+- Requirements/matches are immutable snapshots by analysis_version/matching_version. A rerun creates a new version instead of changing history used by plans/bookings.
+- MentorExpertise references exactly one topic_id or position_id; only valid/approved expertise is used for mentor recommendations.
+- A unique key prevents duplicate (job_description_id, requirement_id, question_id, matching_version) entries.
+- Matching joins only active taxonomy and PUBLISHED Questions and uses deterministic sorting for stable results.
+- Soft deletion is used only for an operational reason; privacy deletion has a separate policy.
+- Migrations are versioned and have appropriate rollback/forward tests.
 
-## 9. Dữ liệu nhạy cảm và lifecycle
+## 9. Sensitive data and lifecycle
 
-- Public: display name, expertise, approved service scope, public rating.
-- Private: email/contact, JD text/file, requirements, preparation plan, meeting link, booking goal, feedback và progress.
-- Restricted: verification evidence, moderation note, security audit.
-- Không log credential, token, raw JD text, original filename, meeting secret hoặc feedback text đầy đủ.
-- PoC chỉ nhận tối đa 50.000 ký tự văn bản dán hoặc một PDF/PNG/JPEG tối đa 10 MB; PDF tối đa 5 trang, PNG/JPEG là một ảnh. OCR nội bộ hỗ trợ tiếng Việt/Anh, tối đa 2 tác vụ đồng thời/tiến trình, hết hạn 60 giây và tối đa 2 lần chạy tự động. Kiểm tra magic bytes/MIME, không tin extension và không thực thi macro/script/embedded attachment.
-- Trong PoC, original JD file nằm trong temporary private storage sau adapter và được xóa khi extraction hoàn tất hoặc chậm nhất 24 giờ. Trong MVP/pilot, adapter dùng private object storage với opaque ID; chỉ ingestion/worker có quyền đọc. Student không nhận durable file URL và Mentor không được xem original file mặc định.
-- Extracted/corrected text, requirement, match và plan thuộc Student. Draft không hoạt động quá 90 ngày được đưa vào cleanup; xóa JD/account phải cascade hoặc anonymize artefact liên quan theo policy đã kiểm thử. Các mốc này là baseline PoC và cần privacy/legal review trước pilot thật.
-- Mentor chỉ xem corrected text, topic/question và mục tiêu tối thiểu qua booking mình tham gia; không nhận original file hoặc metadata không cần thiết. Unrelated user bị default-deny.
-- Trong MVP/pilot, verification/JD object storage dùng bucket private, encryption at rest và signed URL ngắn hạn khi thật sự cần tải.
+- Public: display name, expertise, approved service scope, and public rating.
+- Private: email/contact data, JD text/files, requirements, preparation plans, meeting links, booking goals, feedback, and progress.
+- Restricted: verification evidence, moderation notes, and security audit data.
+- Never log credentials, tokens, raw JD text, original filenames, meeting secrets, or full feedback text.
+- The PoC accepts at most 50,000 pasted characters or one PDF/PNG/JPEG up to 10 MB. PDF limit is five pages; PNG/JPEG is one image. Internal OCR supports Vietnamese/English, at most two concurrent tasks per process, 60-second timeout, and two automatic attempts. Validate magic bytes/MIME, do not trust extensions, and never execute macros/scripts/embedded attachments.
+- In the PoC, the original JD file stays in temporary private storage behind an adapter and is deleted after extraction or within 24 hours. In the MVP/pilot, the adapter uses private object storage with opaque IDs; only ingestion/worker can read it. A Student receives no durable file URL, and a Mentor cannot view the original file by default.
+- Extracted/corrected text, requirements, matches, and plans belong to the Student. Inactive drafts older than 90 days enter cleanup; deleting a JD/account cascades or anonymizes related artifacts under a tested policy. These are PoC baselines and require privacy/legal review before a real pilot.
+- A Mentor sees only corrected text, topics/questions, and minimum goals for their booking; no original file or unnecessary metadata. Unrelated users are denied by default.
+- In the MVP/pilot, verification/JD object storage uses private buckets, encryption at rest, and short-lived signed URLs only when download is necessary.
 
-## 10. Integration contracts và fallback
+## 10. Integration contracts and fallback
 
 | Integration | Contract | Failure handling |
 |---|---|---|
-| Email | Template + recipient + idempotency key | Retry; in-app status; manual resend |
-| Meeting | URL do mentor/admin cung cấp hoặc adapter | Cho sửa trước cutoff; không mất booking |
-| Text extraction | Internal parser adapter cho pasted text/PDF có text | Nếu text rỗng/không đủ thì chuyển OCR; luôn cho sửa thủ công |
-| OCR | Internal OCR adapter cho PNG/JPEG/PDF scan | Timeout/unsupported/low confidence trả trạng thái rõ; không tự phân tích JD |
-| Calendar — future/optional | Export/link, không phải source of truth | Manual schedule vẫn hoạt động |
-| Analytics | Event schema versioned, no sensitive payload | Drop/retry ngoài critical path |
+| Email | Template + recipient + idempotency key | Retry, in-app status, manual resend |
+| Meeting | URL supplied by Mentor/Administrator or adapter | Allow replacement before cutoff; preserve booking |
+| Text extraction | Internal parser adapter for pasted text/text PDFs | Use OCR for empty/insufficient text; always allow manual correction |
+| OCR | Internal OCR adapter for PNG/JPEG/scanned PDF | Clear timeout/unsupported/low-confidence state; never analyze the JD itself |
+| Calendar — future/optional | Export/link, not a source of truth | Manual scheduling remains available |
+| Analytics | Versioned event schema with no sensitive payload | Drop/retry outside the critical path |
 
 ## 11. API design
 
-Các nhóm route đề xuất:
+Proposed route groups:
 
-- `/api/v1/auth`, `/api/v1/me`, `/api/v1/student-profile`.
-- `POST /api/v1/job-descriptions` — nhận pasted text hoặc file metadata/upload; tạo resource private.
-- `POST /api/v1/job-descriptions/{id}/extract` — enqueue/idempotently retry extraction; trả job/status, không đồng nhất OCR với analysis.
-- `PATCH /api/v1/job-descriptions/{id}/text` — lưu corrected text và version sau khi Student kiểm tra.
-- `POST /api/v1/job-descriptions/{id}/analyze` — phân tích corrected text đã xác nhận và tạo requirement/match version mới.
-- `GET /api/v1/job-descriptions/{id}/matches` — trả requirement nguồn, topic, Published Question, score/reason và matching version.
-- `POST /api/v1/preparation-plans` — tạo plan từ JD và các match hợp lệ.
-- `/api/v1/questions`, `/api/v1/topics`, `/api/v1/positions`, `/api/v1/practice-progress`.
-- `/api/v1/mentors`, `/api/v1/mentor-verifications`, `/api/v1/availability-slots`.
-- `/api/v1/bookings`, `/api/v1/bookings/{id}/transitions`, `/api/v1/bookings/{id}/feedback`, `/api/v1/reviews`.
-- `/api/v1/admin/questions`, `/api/v1/admin/mentors`, `/api/v1/admin/reports`, `/api/v1/admin/audit`.
+- /api/v1/auth, /api/v1/me, /api/v1/student-profile.
+- POST /api/v1/job-descriptions — accept pasted text or file metadata/upload and create a private resource.
+- POST /api/v1/job-descriptions/{id}/extract — enqueue/idempotently retry extraction; return job/status and do not equate OCR with analysis.
+- PATCH /api/v1/job-descriptions/{id}/text — store corrected text and version after Student review.
+- POST /api/v1/job-descriptions/{id}/analyze — analyze confirmed corrected text and create a new requirement/match version.
+- GET /api/v1/job-descriptions/{id}/matches — return source requirement, topic, Published Question, score/reason, and matching version.
+- POST /api/v1/preparation-plans — create a plan from a JD and valid matches.
+- /api/v1/questions, /api/v1/topics, /api/v1/positions, /api/v1/practice-progress.
+- /api/v1/mentors, /api/v1/mentor-verifications, /api/v1/availability-slots.
+- /api/v1/bookings, /api/v1/bookings/{id}/transitions, /api/v1/bookings/{id}/feedback, /api/v1/reviews.
+- /api/v1/admin/questions, /api/v1/admin/mentors, /api/v1/admin/reports, /api/v1/admin/audit.
 
-Các route JD ở trên là baseline để PoC và frontend/backend cùng thảo luận, chưa phải API contract được phê duyệt. OpenAPI và design review phải chốt payload, upload flow, polling/status, error code và version field trước implementation chính thức.
+These JD routes are a discussion baseline for PoC and frontend/backend, not an approved API contract. OpenAPI and design review must finalize payloads, upload flow, polling/status, error codes, and version fields before formal implementation.
 
 ### Contract conventions
 
-- JSON schema/DTO rõ; server-side validation và error code ổn định.
-- Cursor/page pagination và deterministic sort.
-- Header `Idempotency-Key` bắt buộc cho create booking và critical transition.
-- `Idempotency-Key` cũng bắt buộc cho extraction/analyze retry; request analyze mang corrected-text version.
-- Upload dùng streaming/bounded buffer, allowlist content type, size/page/time limit và error code riêng (`UNSUPPORTED_DOCUMENT`, `FILE_TOO_LARGE`, `EXTRACTION_FAILED`, `TEXT_NOT_CONFIRMED`).
-- Optimistic version hoặc ETag cho update dễ xung đột.
-- Không nhận `userId/role` từ client làm nguồn authorization.
-- Contract được version hóa bằng OpenAPI; frontend sinh/kiểm tra client contract trong CI khi khả thi.
-- Error envelope tối thiểu gồm `code`, `message`, `correlationId` và field errors; không lộ stack/SQL.
+- Clear JSON schemas/DTOs, server-side validation, and stable error codes.
+- Cursor/page pagination and deterministic sorting.
+- Idempotency-Key is required for booking creation and critical transitions.
+- Idempotency-Key is also required for extraction/analysis retry; analysis includes the corrected-text version.
+- Upload uses streaming/bounded buffers, content-type allowlists, size/page/time limits, and dedicated errors: UNSUPPORTED_DOCUMENT, FILE_TOO_LARGE, EXTRACTION_FAILED, TEXT_NOT_CONFIRMED.
+- Use optimistic versions or ETags for conflict-prone updates.
+- Never accept client userId/role as an authorization source.
+- Version contracts in OpenAPI; generate/check the frontend client contract in CI where practical.
+- The minimum error envelope contains code, message, correlationId, and field errors; never expose stack traces or SQL.
 
-### High-risk routes trước release
+### High-risk routes before release
 
-JD upload/read/delete, extraction retry, corrected-text update, analyze/matches, booking-context access, booking accept/reschedule/cancel/complete, meeting-link access, feedback create/read, mentor verification decision và admin moderation phải có integration test cho happy path, malformed input, unauthorized access, invalid state và concurrency phù hợp.
+JD upload/read/delete, extraction retry, corrected-text update, analysis/matches, booking-context access, booking accept/reschedule/cancel/complete, meeting-link access, feedback create/read, mentor-verification decisions, and administrator moderation require integration tests for the happy path, malformed input, unauthorized access, invalid state, and applicable concurrency.
 
 ## 12. Security architecture
 
-### Authentication và session
+### Authentication and session
 
-- Server-side session lưu hash/token reference và expiry; session ID chỉ nằm trong cookie.
-- Password hash bằng Argon2id hoặc thuật toán được security review chấp nhận; rate limit login/reset.
-- Cookie `__Host-` có `Secure`, `HttpOnly`, `SameSite=Lax`, `Path=/`, không có `Domain`; frontend chỉ gọi relative `/api/v1`.
-- Static host proxy request đến API; cookie-authenticated mutation có CSRF token và origin check.
-- Nếu direct cross-origin API được bật sau này, CORS phải dùng allowlist chính xác và quyết định cookie scope phải qua security review.
-- Session revoke, email verification và reset token ngắn hạn.
+- Server-side sessions store a hash/token reference and expiry; the session ID exists only in the cookie.
+- Hash passwords with Argon2id or an algorithm approved by security review; rate-limit login/reset.
+- The __Host- cookie uses Secure, HttpOnly, SameSite=Lax, Path=/, and no Domain; the frontend calls only relative /api/v1.
+- The static host proxies requests to the API; cookie-authenticated mutations use a CSRF token and origin checks.
+- If direct cross-origin API access is enabled later, CORS uses an exact allowlist and cookie scope requires security review.
+- Support session revocation, email verification, and short-lived reset tokens.
 
 ### Authorization
 
-- RBAC cho khả năng cấp vai trò; ownership/relationship check cho object.
-- Default deny; policy test cho Student, Mentor, Admin và unrelated user trên JD, matches, plan, booking context, meeting link và feedback.
-- Student sở hữu JD/plan; Mentor chỉ có read projection tối thiểu khi thuộc booking còn hiệu lực. Admin access nội dung JD chỉ dùng cho support/security purpose được định nghĩa và phải audit.
-- Admin route tách rõ, audit quyết định quyền cao.
-- Không dựa vào việc ẩn nút ở UI.
+- RBAC grants capabilities; ownership/relationship checks protect objects.
+- Default deny, with policy tests for Student, Mentor, Administrator, and unrelated user access to JDs, matches, plans, booking context, meeting links, and feedback.
+- A Student owns their JD/plan. A Mentor receives only a minimum read projection for an active booking. Administrator access to JD content is limited to defined support/security purposes and must be audited.
+- Separate Administrator routes and audit privileged decisions.
+- Never rely on hiding UI buttons.
 
-### Application và infrastructure
+### Application and infrastructure
 
-- Validate length/type/enum; encode output; parameterized query/ORM an toàn.
-- Upload kiểm tra magic bytes/MIME, size/page limit, filename sanitation, decompression/parse limit và timeout; parser/OCR chạy với least privilege, không có quyền mạng mặc định và không trả stack/parser detail cho client.
-- Corrected text được coi là untrusted input khi render; không cho HTML/script từ JD chạy trong React.
-- TLS, secret manager/environment secret, dependency scan và patching.
-- Rate limit với auth, upload/extraction/analyze, search abuse, booking và review/report; quota theo Student ngăn OCR chiếm CPU/storage.
-- Backup có kiểm tra restore; least-privilege DB/service account.
-- Security incident runbook cho link/token/data exposure.
+- Validate length/type/enums, encode output, and use parameterized queries/safe ORM.
+- Upload validates magic bytes/MIME, size/page limits, sanitized filenames, decompression/parse limits, and timeouts. Parser/OCR runs with least privilege and no network by default and never returns stack/parser details to clients.
+- Treat corrected text as untrusted when rendering; JD HTML/scripts cannot execute in React.
+- Use TLS, secret-manager/environment secrets, dependency scanning, and patching.
+- Rate-limit authentication, upload/extraction/analysis, search abuse, booking, review/report; per-Student quota prevents OCR from exhausting CPU/storage.
+- Verify backup restores and use least-privilege database/service accounts.
+- Maintain a security-incident runbook for link/token/data exposure.
 
-## 13. Reliability, performance và observability
+## 13. Reliability, performance, and observability
 
 ### Initial service targets
 
-Profile kiểm chứng pilot dùng một API instance, connection pool được cấu hình, PostgreSQL có ít nhất 1.000 Published Question, 100 Mentor, 1.000 future Slot và 500 Booking. Corpus JD phải có ít nhất 10 mẫu đã gắn nhãn, bao gồm pasted text, PDF có text, ảnh/PDF scan và ít nhất một file không hỗ trợ. Load test API thường chạy 20 virtual users đồng thời trong 10 phút sau warm-up; OCR benchmark chạy riêng để không che latency request path. Đây là baseline kỹ thuật để so sánh và phải cập nhật khi quy mô pilot thực tế được duyệt.
+The pilot validation profile uses one API instance, a configured connection pool, and PostgreSQL containing at least 1,000 Published Questions, 100 Mentors, 1,000 future Slots, and 500 Bookings. The JD corpus contains at least ten labeled samples: pasted text, text PDF, image/scanned PDF, and at least one unsupported file. Normal API load tests run 20 concurrent virtual users for ten minutes after warm-up; OCR benchmarks run separately to avoid hiding request-path latency. This is a comparison baseline and must be updated when actual pilot scale is approved.
 
-Các ngưỡng recall, precision@10 và task completion dưới đây là **đề xuất exit gate ban đầu**, chưa phải KPI sản phẩm đã phê duyệt. Trí phải báo cả số đo thực tế và corpus/rubric; Product Owner có thể đổi ngưỡng qua review có ghi nhận, không sửa kết quả PoC sau khi chạy.
+The recall, precision@10, and task-completion thresholds below are **initial proposed exit gates**, not approved product KPIs. Trí must report actual measurements and the corpus/rubric. The Product Owner may change thresholds through a recorded review but must not rewrite PoC results after execution.
 
-| Target | Mục tiêu pilot | Cách kiểm chứng |
+| Target | Pilot target | Verification |
 |---|---:|---|
-| Search/list API | p95 ≤ 3 giây; HTTP 5xx < 1% | Load test theo profile trên với deterministic dataset |
-| JD intake completion | 100% file hợp lệ trong corpus tạo được editable text hoặc trạng thái lỗi có thể xử lý | Corpus test + task analytics |
-| Extraction quality | Báo extraction success theo source type và character/field accuracy trên corpus có ground truth | So sánh output trước manual correction; không gộp direct extract với OCR |
-| Requirement detection | Recall ≥ 80% trên requirement đã gắn nhãn cho vị trí pilot | Golden dataset test; báo false positive/negative |
-| Mapping relevance | Precision@10 ≥ 80% qua review rubric của domain reviewer | Blind review trên cùng corpus/version |
-| Matching stability | 100% cùng corrected text + taxonomy + matching version cho cùng ordered result | Repeatability test và result hash |
-| JD-to-plan task completion | ≥ 80% người dùng test hoàn thành không cần trợ giúp | Usability test năm màn hình |
-| Booking detail/mutation | p95 ≤ 3 giây, không tính provider notification | Integration/load test trên staging |
-| Booking consistency | Đúng 1 winner trong 20 concurrent confirm cùng slot | PostgreSQL concurrency test theo ADR-002 |
-| Critical workflow test pass | 100% | Evidence report cho 8 architecture validation scenario và 10 acceptance criteria |
-| Critical/High open defect trước UAT | 0 | Defect register và UAT exit review |
-| Notification enqueue | Outbox cùng transaction; worker pickup p95 ≤ 10 giây khi provider hoạt động | Fake-provider integration test và job metrics |
-| Backup/restore | RPO ≤ 24 giờ; RTO ≤ 4 giờ | Nightly logical backup và restore drill trước pilot |
-| Transport security | TLS 1.2 trở lên | Deployment/security configuration check |
+| Search/list API | p95 ≤ 3 seconds; HTTP 5xx < 1% | Load test under the profile above with deterministic data |
+| JD intake completion | 100% of valid corpus files produce editable text or a recoverable error state | Corpus test + task analytics |
+| Extraction quality | Report success by source type and character/field accuracy against ground truth | Compare before manual correction; keep direct extraction separate from OCR |
+| Requirement detection | Recall ≥ 80% on labeled pilot-role requirements | Golden-dataset test with false positives/negatives |
+| Mapping relevance | Precision@10 ≥ 80% under a domain-review rubric | Blind review on the same corpus/version |
+| Matching stability | 100% identical ordered results for the same corrected text + taxonomy + matching version | Repeatability test and result hash |
+| JD-to-plan task completion | At least 80% of test users complete without help | Five-screen usability test |
+| Booking detail/mutation | p95 ≤ 3 seconds, excluding provider notification | Integration/load test on staging |
+| Booking consistency | Exactly one winner among 20 concurrent confirmations for the same slot | PostgreSQL concurrency test under ADR-002 |
+| Critical workflow test pass | 100% | Evidence report for eight architecture validation scenarios and ten acceptance criteria |
+| Critical/High open defects before UAT | 0 | Defect register and UAT exit review |
+| Notification enqueue | Outbox in the same transaction; worker pickup p95 ≤ 10 seconds while provider works | Fake-provider integration test and job metrics |
+| Backup/restore | RPO ≤ 24 hours; RTO ≤ 4 hours | Nightly logical backup and a restore drill before pilot |
+| Transport security | TLS 1.2 or later | Deployment/security configuration check |
 
-Free-tier deployment không có uptime SLA; availability target chỉ được baseline sau khi nhóm chọn paid pilot plan hoặc nhà cung cấp có SLA phù hợp.
+Free-tier deployment has no uptime SLA. Establish an availability target only after the team selects a paid pilot plan or a provider with an appropriate SLA.
 
 ### Observability
 
-- Structured log với correlation ID, actor pseudonymous ID và event type.
-- Metrics: request latency/error; extraction queue age, duration/failure theo source/method/error class; OCR fallback rate; manual-correction delta; requirement recall; mapping precision@10; result stability; notification backlog/failure; booking transition failure.
-- Log/metric ghi `extraction_version`, `analysis_version`, `matching_version`, count và timing nhưng không ghi raw JD/requirement text.
-- Business events: JD submitted, extraction completed/failed, text corrected/confirmed, plan created, question practiced, mentor selected, booking requested/confirmed/completed, feedback submitted và next action applied.
-- Alert cho auth anomaly, repeated unauthorized JD access, extraction backlog/timeout, mapping result rỗng tăng bất thường, booking conflict, notification backlog và provider failure.
+- Structured logs with correlation ID, pseudonymous actor ID, and event type.
+- Metrics: request latency/errors; extraction queue age, duration/failure by source/method/error class; OCR fallback rate; manual-correction delta; requirement recall; mapping precision@10; result stability; notification backlog/failure; booking-transition failure.
+- Logs/metrics record extraction_version, analysis_version, matching_version, counts, and timing, but never raw JD/requirement text.
+- Business events: JD submitted, extraction completed/failed, text corrected/confirmed, plan created, question practiced, Mentor selected, booking requested/confirmed/completed, feedback submitted, and next action applied.
+- Alerts for authentication anomalies, repeated unauthorized JD access, extraction backlog/timeouts, abnormal increases in empty mapping results, booking conflicts, notification backlog, and provider failure.
 
 ### 13.1 Test strategy
 
-| Cấp kiểm thử | Phạm vi bắt buộc |
+| Test level | Required scope |
 |---|---|
-| Unit | Source classifier, alias normalization, requirement rules, scoring/tie-break, reason template, state transition và authorization policy |
-| Adapter contract | Direct PDF extraction, OCR adapter, timeout/error normalization và fake fixtures; không phụ thuộc ảnh chụp UI |
-| Golden dataset | So extracted text/requirements/matches với corpus đã gắn nhãn; đo recall, precision@10 và regression theo version |
-| Integration | Upload limits, private storage, processing job retry/idempotency, corrected-text optimistic version, Published-only query, plan/booking FK và retention cleanup trên PostgreSQL thật |
-| Security/privacy | MIME spoof, malformed/oversized file, parser timeout, XSS từ corrected text, owner/mentor/admin/unrelated matrix và log-redaction assertion |
-| Concurrency/reliability | Repeat analyze, duplicate worker, 20 concurrent booking confirmations, outbox retry/dead-letter |
-| E2E/usability | Năm trạng thái chính: nhập JD, kiểm tra text, plan có lý do, mentor/booking, session/feedback quay lại plan |
+| Unit | Source classifier, alias normalization, requirement rules, scoring/tie-break, reason templates, state transitions, and authorization policies |
+| Adapter contract | Direct PDF extraction, OCR adapter, timeout/error normalization, and fake fixtures; never depend on UI screenshots |
+| Golden dataset | Compare extracted text/requirements/matches against the labeled corpus; measure recall, precision@10, and versioned regression |
+| Integration | Upload limits, private storage, processing-job retry/idempotency, corrected-text optimistic version, Published-only queries, plan/booking foreign keys, and retention cleanup on real PostgreSQL |
+| Security/privacy | MIME spoofing, malformed/oversized files, parser timeout, corrected-text XSS, owner/Mentor/Administrator/unrelated-user matrix, and log-redaction assertions |
+| Concurrency/reliability | Repeat analysis, duplicate workers, 20 concurrent booking confirmations, and outbox retry/dead-letter |
+| E2E/usability | Five primary states: JD entry, text review, explained plan, Mentor/booking, and session/feedback returned to the plan |
 
-Test fixture JD phải là dữ liệu giả lập hoặc đã khử thông tin nhạy cảm. Mỗi kết quả benchmark ghi corpus version, taxonomy/alias/rule version, runtime và environment để tái lập được.
+JD test fixtures must be synthetic or de-identified. Every benchmark records corpus version, taxonomy/alias/rule version, runtime, and environment for reproducibility.
 
-## 14. UX routes và traceability
+## 14. UX routes and traceability
 
 | Route/screen | Story | Module |
 |---|---|---|
-| `/job-descriptions/new` | US-24–25 (proposed) | JD Ingestion/Text Extraction |
-| `/job-descriptions/{id}/review` | US-26 (proposed) | JD Ingestion |
-| `/preparation-plans/{id}` | US-27–29 (proposed) | JD Analysis/Question Matching/Preparation Plan |
-| `/questions` và detail | US-04–06 | Questions/Practice |
-| `/mentors` và profile | US-10 | Mentors/Availability |
-| `/bookings/new?plan={id}` | US-11, US-30 (proposed) | Preparation Plan/Booking |
-| `/bookings/{id}` | US-12–16,19 | Booking/Feedback/Notification |
-| `/mentor/profile`, `/mentor/availability` | US-07,09 | Mentors/Availability |
-| `/mentor/bookings` | US-12,13,15 | Booking/Feedback |
-| `/admin/mentors`, `/admin/questions`, `/admin/reports` | US-08,18,20 | Moderation/Audit |
+| /job-descriptions/new | US-24–25 (proposed) | JD Ingestion/Text Extraction |
+| /job-descriptions/{id}/review | US-26 (proposed) | JD Ingestion |
+| /preparation-plans/{id} | US-27–29 (proposed) | JD Analysis/Question Matching/Preparation Plan |
+| /questions and detail | US-04–06 | Questions/Practice |
+| /mentors and profile | US-10 | Mentors/Availability |
+| /bookings/new?plan={id} | US-11, US-30 (proposed) | Preparation Plan/Booking |
+| /bookings/{id} | US-12–16,19 | Booking/Feedback/Notification |
+| /mentor/profile, /mentor/availability | US-07,09 | Mentors/Availability |
+| /mentor/bookings | US-12,13,15 | Booking/Feedback |
+| /admin/mentors, /admin/questions, /admin/reports | US-08,18,20 | Moderation/Audit |
 
-`US-24–30` là ID dự kiến từ change brief ngày 15/08/2026. Architecture không tự coi các ID này đã được baseline cho đến khi `Product_Backlog_and_Acceptance_Criteria.md` được Product Owner cập nhật mà không đổi ID cũ.
+US-24–30 are proposed IDs from the change brief dated 15/08/2026. Architecture does not treat them as baselined until the Product Owner updates Product_Backlog_and_Acceptance_Criteria.md without changing existing IDs.
 
-## 15. PoC validation của proposed MVP architecture
+## 15. PoC validation of the proposed MVP architecture
 
-Các mục dưới đây là **architecture validation scenario**, không phải tám PoC độc lập và không tự động trở thành yêu cầu thay đổi implementation hiện tại. Architecture owner cập nhật trạng thái khi nhận được evidence; phần chưa có evidence giữ `Pending` và chỉ được giao cho thành viên PoC qua change request riêng.
+The items below are **architecture validation scenarios**, not eight independent PoCs, and do not automatically become implementation change requests. The Architecture Owner updates status when evidence arrives. A scenario without evidence remains Pending and is assigned to the PoC owner only through a separate change request.
 
-| Phạm vi | Trạng thái hiện tại | Cách xử lý |
+| Scope | Current status | Handling |
 |---|---|---|
-| Question filtering | Existing PoC; pending evidence review | Đối chiếu source/test/result trước khi đổi trạng thái ADR |
-| Mentor booking, transition, meeting link và feedback | Existing PoC; pending evidence review | Giữ implementation hiện tại; chỉ yêu cầu bổ sung sau review |
-| JD intake, extraction/OCR, analysis, matching và preparation plan | Pending PoC | Architecture mô tả target; chưa yêu cầu implementation ngay |
-| Tích hợp JD preparation plan với mentor booking/feedback | Optional follow-up | Thực hiện nếu scope, thời gian và change request được duyệt |
+| Question filtering | Existing PoC; pending evidence review | Compare source/test/results before changing ADR status |
+| Mentor booking, transitions, meeting links, and feedback | Existing PoC; pending evidence review | Keep current implementation; request additions only after review |
+| JD intake, extraction/OCR, analysis, matching, and preparation plan | Pending PoC | Architecture describes the target; no immediate implementation request |
+| JD preparation-plan integration with Mentor booking/feedback | Optional follow-up | Execute only after scope, time, and change request approval |
 
-### VS-1: JD intake, extraction và correction
+### VS-1: JD intake, extraction, and correction
 
-Dùng corpus gồm pasted text, PDF có text, PNG/JPEG hoặc PDF scan và file không hỗ trợ. Pass khi direct extraction được ưu tiên, OCR chỉ chạy cho ảnh/scan, mọi JD hợp lệ tạo editable text hoặc lỗi có thể xử lý, Student sửa/xác nhận được text và file trái format/size bị chặn an toàn.
+Use a corpus containing pasted text, text PDFs, PNG/JPEG or scanned PDFs, and unsupported files. Pass when direct extraction is preferred, OCR runs only for images/scans, every valid JD produces editable text or a recoverable error, the Student can edit/confirm text, and invalid formats/sizes are safely blocked.
 
-### VS-2: Requirement analysis và question matching
+### VS-2: Requirement analysis and question matching
 
-Chạy corrected text đã biết trước qua alias/taxonomy/rule set cố định. Pass khi hệ thống nhận diện skill kỳ vọng, chuẩn hóa được alias như `ReactJS → React`, không trả Draft/topic không active, mỗi result có requirement nguồn/topic/question/score/reason/version và repeat run cho cùng input/version có cùng ordered result. Đo recall và precision@10 theo mục 13; evidence theo ADR-004.
+Run known corrected text through a fixed alias/taxonomy/rule set. Pass when expected skills are detected, aliases such as ReactJS → React normalize correctly, Draft/inactive-topic questions are excluded, every result contains source requirement/topic/question/score/reason/version, and repeated execution with identical input/version returns the same ordered results. Measure recall and precision@10 under Section 13; evidence follows ADR-004.
 
-### VS-3: Preparation plan → mentor → feedback loop
+### VS-3: Preparation plan → Mentor → feedback loop
 
-Student tạo plan từ match, tự luyện hoặc chọn mentor, tạo booking có JD/plan context, Mentor xem đúng corrected text/topic/question cần luyện, mở external meeting link, hoàn thành và gửi strength/weakness/next action. Pass khi next action quay lại plan và unrelated user không xem được context.
+The Student creates a plan from matches, self-practices or selects a Mentor, and creates a booking with JD/plan context. The Mentor sees the correct corrected text, topics/question groups, and goals, opens an external meeting link, completes the session, and submits strengths, weaknesses, and next actions. Pass when next actions return to the plan and unrelated users cannot view the context.
 
 ### VS-4: Booking consistency
 
-Chạy ít nhất 20 request concurrent accept cùng slot trên PostgreSQL thật. Pass khi đúng một booking chiếm slot, các response còn lại là conflict/idempotent và chỉ một transition/outbox event logic được tạo. Evidence theo ADR-002.
+Run at least 20 concurrent accept requests for the same slot on real PostgreSQL. Pass when exactly one booking occupies the slot, other responses are conflicts/idempotent, and only one logical transition/outbox event exists. Evidence follows ADR-002.
 
-### VS-5: Authorization và privacy
+### VS-5: Authorization and privacy
 
-Tạo Student A/B, Mentor A/B và Admin; kiểm tra matrix read/write JD, match, plan, booking context, original file, meeting link, feedback và verification. Pass khi mọi access trái quyền bị chặn ở server, original file không chia sẻ cho Mentor và log không chứa raw JD/secret.
+Create Student A/B, Mentor A/B, and Administrator. Test read/write access to JDs, matches, plans, booking context, original files, meeting links, feedback, and verification. Pass when all unauthorized access is blocked server-side, original files are not shared with Mentors, and logs contain no raw JDs/secrets.
 
-### VS-6: Booking transition và audit
+### VS-6: Booking transitions and audit
 
-Kiểm tra happy path và invalid path của `PENDING → CONFIRMED → COMPLETED`, cancel/reschedule, actor ownership và retry. Pass khi chỉ transition hợp lệ được commit, mỗi transition có actor/reason/timestamp và không có route bypass state machine.
+Test happy and invalid paths for PENDING → CONFIRMED → COMPLETED, cancellation/rescheduling, actor ownership, and retries. Pass when only valid transitions commit, each transition records actor/reason/timestamp, and no route bypasses the state machine.
 
 ### VS-7: Question filtering
 
-Seed zero/one/many question, nhiều tag và trạng thái draft/published. Pass khi filter/pagination deterministic, không duplicate, Draft không lộ qua search lẫn JD matching.
+Seed zero/one/many Questions with multiple tags and Draft/Published states. Pass when filtering/pagination is deterministic, creates no duplicates, and Draft Questions never appear in search or JD matching.
 
 ### VS-8: Notification resilience
 
-Giả lập provider timeout, 5xx và duplicate worker. Pass khi booking vẫn commit một lần, worker retry idempotent, job lỗi vĩnh viễn vào `DEAD` và có trạng thái để vận hành xử lý. Evidence theo ADR-003.
+Simulate provider timeouts, 5xx responses, and duplicate workers. Pass when the booking commits once, the worker retries idempotently, permanent failures become DEAD, and an operational state supports resolution. Evidence follows ADR-003.
 
-Tám validation scenario trên dùng để thu thập evidence cho mười acceptance criteria trong change brief: editable text; expected skill; alias normalization; no Draft/invalid taxonomy; explainable match; deterministic version; booking từ plan; object authorization; booking/meeting/feedback vẫn hoạt động; feedback tạo next action quay lại plan. Scenario chưa nằm trong PoC hiện tại được giữ `Pending`, không được coi là thất bại.
+These eight scenarios collect evidence for ten acceptance criteria in the change brief: editable text, expected skills, alias normalization, no Draft/invalid taxonomy, explainable matches, deterministic versions, booking from a plan, object authorization, preserved booking/meeting/feedback flow, and feedback-generated next actions. A scenario outside the current PoC remains Pending; it is not considered failed.
 
-### 15.1 Contract phối hợp với Trí
+### 15.1 Coordination contract with Trí
 
-Mentor booking PoC đã tồn tại nhưng architecture owner chưa review đầy đủ source, test và result; JD/OCR/mapping PoC chưa được thực hiện tại ngày 15/08/2026. Khi nhóm phát hành change request hoặc bàn giao evidence, PoC owner trả lại các artifact áp dụng cho phạm vi được giao dưới thư mục PoC đã thống nhất:
+The Mentor-booking PoC exists, but the Architecture Owner has not fully reviewed source, tests, and results. The JD/OCR/mapping PoC had not been implemented as of 15/08/2026. When the team issues a change request or hands over evidence, the PoC owner returns the applicable artifacts under the agreed PoC directory:
 
-| Artifact | Nội dung Luân cần để cập nhật architecture |
+| Artifact | Content Luân needs to update architecture |
 |---|---|
-| `README.md` | Runtime, setup, environment variables, migration/seed/test commands |
-| `POC_Result.md` | Bảng Pass/Fail/Pending cho validation scenario thuộc phạm vi đã giao, mapping tới acceptance criteria, evidence và limitation |
-| `fixtures/jd/` | Corpus JD đã khử thông tin nhạy cảm, ground-truth text/requirement và rubric relevance |
-| `database/` | Migration cho JD/requirement/match/plan, booking context, partial unique index, audit, processing job và outbox |
-| `tests/` | Extraction/OCR, golden matching, repeatability, authorization matrix, concurrent booking, transition, filter và retry test |
-| API contract | Route/payload/status/error code thực tế; đặc biệt upload/extraction/analyze version, `409` và `Idempotency-Key` |
+| README.md | Runtime, setup, environment variables, migration/seed/test commands |
+| POC_Result.md | Pass/Fail/Pending table for assigned validation scenarios, mapped to acceptance criteria, evidence, and limitations |
+| fixtures/jd/ | De-identified JD corpus, ground-truth text/requirements, and relevance rubric |
+| database/ | Migrations for JD/requirements/matches/plans, booking context, partial unique index, audit, processing jobs, and outbox |
+| tests/ | Extraction/OCR, golden matching, repeatability, authorization matrix, concurrent booking, transitions, filtering, and retry tests |
+| API contract | Actual routes/payloads/status/error codes, especially upload/extraction/analysis versions, 409, and Idempotency-Key |
 
-Sau khi nhận result, Luân phải: (1) đối chiếu ADR assumption với evidence; (2) cập nhật trạng thái ADR; (3) sửa diagram/data/API nếu PoC khác baseline; (4) ghi deviation và trade-off, không âm thầm sửa lịch sử ADR.
+After receiving results, Luân must: (1) compare ADR assumptions with evidence; (2) update ADR status; (3) revise diagrams/data/API when the PoC differs from baseline; and (4) record deviations and trade-offs without silently rewriting ADR history.
 
-Design review là gate bắt buộc trước khi chấp nhận architecture cho MVP:
+Design review is mandatory before accepting architecture for the MVP:
 
-| Mục | Trạng thái hiện tại | Exit evidence |
+| Item | Current status | Exit evidence |
 |---|---|---|
-| Review backlog/module mapping | Prepared | Luân và Trí xác nhận module/API phục vụ validation scenario và acceptance criteria thuộc scope đã duyệt |
-| Review JD processing/matching | Pending PoC | Corpus, extraction metrics, matching relevance/repeatability và ADR-004 được review |
-| Review database/concurrency design | Pending PoC | Migration và concurrent test result được review |
-| Review authorization/session topology | Pending PoC | Ownership matrix và deployed same-origin session test pass |
-| Review notification/deployment | Pending PoC | Failure/retry evidence và worker topology được xác nhận |
-| Quyết định cuối | Pending | Meeting note hoặc PR review ghi Accept/Revise và ADR status mới |
+| Review backlog/module mapping | Prepared | Luân and Trí confirm that modules/APIs support approved validation scenarios and acceptance criteria |
+| Review JD processing/matching | Pending PoC | Review corpus, extraction metrics, matching relevance/repeatability, and ADR-004 |
+| Review database/concurrency design | Pending PoC | Review migrations and concurrent-test results |
+| Review authorization/session topology | Pending PoC | Ownership matrix and deployed same-origin session test pass |
+| Review notification/deployment | Pending PoC | Confirm failure/retry evidence and worker topology |
+| Final decision | Pending | Meeting note or PR review records Accept/Revise and new ADR status |
 
 ### Recommended delivery order
 
-1. Repository, CI/CD, auth/RBAC, private storage, schema và audit foundation.
-2. Taxonomy/alias và Question Bank seed cho vị trí pilot.
-3. JD intake, direct extraction/OCR adapter và correction screen.
-4. Requirement analysis, versioned matching, explainable result và preparation plan.
-5. Self-practice cùng mentor discovery/profile/availability.
-6. Booking context, state machine và concurrency PoC.
-7. External meeting handoff, notification và feedback-to-plan loop.
-8. Analytics, E2E, privacy/security test, UAT và release.
+1. Repository, CI/CD, authentication/RBAC, private storage, schema, and audit foundation.
+2. Taxonomy/aliases and Question Bank seed for the pilot role.
+3. JD intake, direct extraction/OCR adapter, and correction screen.
+4. Requirement analysis, versioned matching, explained results, and preparation plan.
+5. Self-practice plus Mentor discovery/profile/availability.
+6. Booking context, state machine, and concurrency PoC.
+7. External meeting handoff, notifications, and feedback-to-plan loop.
+8. Analytics, E2E, privacy/security tests, UAT, and release.
 
-## 16. Risks, constraints và mitigation
+## 16. Risks, constraints, and mitigation
 
 | Risk | Mitigation |
 |---|---|
-| OCR quality phụ thuộc file/image | Direct extraction trước; supported-format limits; corpus benchmark; confidence/error state và manual correction bắt buộc |
-| Extraction sai kéo theo mapping sai | Chỉ analyze corrected text đã xác nhận; version/hash; hiển thị requirement nguồn và cho rerun |
-| Taxonomy/alias thiếu cho vị trí pilot | Giới hạn pilot role; golden dataset; review alias/version trước demo; không fallback sang AI âm thầm |
-| Mapping trả kết quả không liên quan | Điểm theo quy tắc có thể giải thích; chỉ dùng câu hỏi đã xuất bản và taxonomy đang hoạt động; rà soát precision@10 cùng cổng kiểm soát theo ngưỡng/phiên bản |
-| JD chứa PII/thông tin công ty | Private storage, least privilege, log redaction, file auto-delete, Student delete và retention review |
-| Double booking | DB constraint, transaction, lock và concurrency test |
-| Broken object authorization | Central policy, default deny, matrix integration tests |
-| Provider outage | Outbox/retry, fallback và source of truth nội bộ |
-| Scope creep | ADR + release boundary + change control |
-| PII leakage | Data classification, log redaction, private storage, retention |
-| Content/review abuse | Provenance, moderation, report/appeal và audit |
-| Stack mismatch với team | Spike và ADR sau skill matrix; tránh công nghệ mới không cần thiết |
-| Marketplace thiếu mentor | Preparation plan và self-practice vẫn tạo giá trị trước booking; giới hạn mentor pilot theo topic |
+| OCR quality depends on file/image quality | Direct extraction first, supported-format limits, corpus benchmark, confidence/error state, and mandatory manual correction |
+| Extraction errors cause matching errors | Analyze only confirmed corrected text; version/hash; show source requirements and allow rerun |
+| Missing pilot-role taxonomy/aliases | Limit pilot role, use a golden dataset, review alias/version before demo, and never silently fall back to AI |
+| Irrelevant mapping results | Explainable rule-based score, Published/active taxonomy only, precision@10 review, and threshold/version gate |
+| JDs contain PII/company information | Private storage, least privilege, log redaction, automatic file deletion, Student deletion, and retention review |
+| Double booking | Database constraint, transaction, lock, and concurrency test |
+| Broken object authorization | Central policy, default deny, and matrix integration tests |
+| Provider outage | Outbox/retry, fallback, and internal source of truth |
+| Scope creep | ADR, release boundary, and change control |
+| PII leakage | Data classification, log redaction, private storage, and retention |
+| Content/review abuse | Provenance, moderation, report/appeal, and audit |
+| Stack mismatch with team | Spike and ADR after skill matrix; avoid unnecessary new technologies |
+| Too few Mentors in the marketplace | Preparation plans and self-practice provide value before booking; limit pilot Mentors by topic |
 
-## 17. Traceability với slide tham chiếu
+## 17. Traceability to course slides
 
-| Nội dung slide | Cách architecture đáp ứng |
+| Course material | Architecture response |
 |---|---|
-| [03 — Slide 011: Which Architecture?](../refs/03-software-project-initiation.md) | ADR-001 giải thích architectural style, technology stack, framework và deployment platform |
-| [06.1 — Slides 032–033: System Architecture](../refs/06-1-agile-planning.md) | Backlog traceability, system context, components, interfaces, NFR và design-review gate |
-| [05.1 — Slide 024: Solution Engineering Decomposition](../refs/05-1-work-breakdown-structure.md) | ER model, module design, technology, external integrations và ADR patterns |
-| [07 — Slides 041–050: SCM, CI/CD và DevOps](../refs/07-software-configuration-management.md) | Branch/lockfile, independent pipelines, Docker, environment configuration và monitoring |
-| [10.1 — Slides 010–014: Technology risk](../refs/10-1-agile-risk-management.md) | Ưu tiên stack quen thuộc; PoC gates, transition indicator và contingency qua ADR |
-| [11 — Slides 024–025: Quality requirements](../refs/11-software-quality-management.md) | NFR có metric, test profile, evaluation method và exit criteria |
-
+| [03 — Slide 011: Which Architecture?](../refs/03-software-project-initiation.md) | ADR-001 explains architectural style, technology stack, framework, and deployment platform |
+| [06.1 — Slides 032–033: System Architecture](../refs/06-1-agile-planning.md) | Backlog traceability, system context, components, interfaces, NFRs, and design-review gate |
+| [05.1 — Slide 024: Solution Engineering Decomposition](../refs/05-1-work-breakdown-structure.md) | ER model, module design, technology, external integrations, and ADR patterns |
+| [07 — Slides 041–050: SCM, CI/CD, and DevOps](../refs/07-software-configuration-management.md) | Branches/lockfile, independent pipelines, Docker, environment configuration, and monitoring |
+| [10.1 — Slides 010–014: Technology risk](../refs/10-1-agile-risk-management.md) | Familiar stack, PoC gates, transition indicators, and ADR contingency |
+| [11 — Slides 024–025: Quality requirements](../refs/11-software-quality-management.md) | NFR metrics, test profile, evaluation method, and exit criteria |
