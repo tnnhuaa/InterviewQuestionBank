@@ -93,23 +93,16 @@ This structure keeps booking transactions in one database, lowers operational co
 
 ~~~mermaid
 flowchart LR
-    Student["Student"] -->|"Paste/upload JD; review text; practice/book"| FE["React Web App"]
-    Mentor["Mentor"] --> FE
-    Admin["Administrator"] --> FE
-    Sponsor["PO / Operations"] --> FE
-    FE -->|"same-origin /api/v1"| Proxy["Static Host Reverse Proxy"]
-    Proxy -->|"HTTPS REST/JSON"| API["Express API"]
-    API -->|"business data + outbox transaction"| DB[("PostgreSQL")]
-    API --> Obj["Private File Storage Adapter"]
-    JDWorker["Extraction/OCR Worker"] --> DB
-    JDWorker --> Obj
-    AIWorker["AI Job Worker"] --> DB
-    AIWorker --> Gemini["Gemini API"]
-    Worker["Notification Worker"] --> DB
-    Worker --> Email["Email Provider"]
-    Student --> Meet["External Meeting Provider"]
-    Mentor --> Meet
+    Student["Student<br/>[Person]"] -->|"Uploads/reviews JD; practices; books"| PrepVI["PrepVI<br/>[Software System]<br/>Interview preparation platform"]
+    Mentor["Mentor<br/>[Person]"] -->|"Manages sessions and feedback"| PrepVI
+    Admin["Administrator<br/>[Person]"] -->|"Verifies and moderates"| PrepVI
+    Operations["PO / Operations<br/>[Person]"] -->|"Reviews outcomes"| PrepVI
+    PrepVI -->|"Assisted extraction and drafts<br/>HTTPS/JSON"| Gemini["Gemini API<br/>[External Software System]"]
+    PrepVI -->|"Notifications<br/>HTTPS/API"| Email["Email Provider<br/>[External Software System]"]
+    PrepVI -->|"Approved session links<br/>HTTPS"| Meeting["Meeting Provider<br/>[External Software System]"]
 ~~~
+
+The diagram deliberately treats PrepVI as one software system. Applications, workers, and data stores inside PrepVI appear only in the Container diagram.
 
 ### Trust boundaries
 
@@ -123,26 +116,46 @@ flowchart LR
 - Gemini is outside the trust boundary, receives only minimum data, and returns untrusted output that cannot perform business mutations.
 - Privileged Administrator actions must be audited.
 
-## 5. Container and deployment view
+## 5. Container view
 
 ~~~mermaid
-flowchart TB
-    Browser["Web Browser"] -->|"GET static assets"| CDN["Static Hosting / CDN"]
-    Browser -->|"same-origin /api/v1 + session cookie"| Proxy["Edge Rewrite / Reverse Proxy"]
-    Proxy -->|HTTPS| API["Express Modular Monolith"]
-    API --> DB[("PostgreSQL")]
-    API --> Obj["Private File Storage Adapter"]
-    DocWorker["Extraction/OCR Worker"] --> DB
-    DocWorker --> Obj
-    API --> Outbox[("Outbox tables in PostgreSQL")]
-    Worker["Notification Worker"] --> Outbox
-    Worker --> Email["Email Provider"]
-    API --> Obs["Logs / Metrics / Error Tracking"]
-    Worker --> Obs
-    DocWorker --> Obs
+flowchart LR
+    Student["Student<br/>[Person]"] -->|Uses| Web
+    Mentor["Mentor<br/>[Person]"] -->|Uses| Web
+    Admin["Administrator<br/>[Person]"] -->|Uses| Web
+
+    subgraph PrepVI["PrepVI Software System"]
+        direction LR
+        Web["React Web App<br/>[Container: React/Vite]<br/>Browser UI"]
+
+        subgraph Runtime["Application and worker containers"]
+            direction TB
+            API["Express API<br/>[Node.js/Express]<br/>Modular monolith"]
+            DocWorker["Extraction/OCR Worker<br/>[Node.js]"]
+            AIWorker["AI Job Worker<br/>[Node.js]"]
+            NotifyWorker["Notification Worker<br/>[Node.js]"]
+        end
+
+        subgraph Data["Data-store containers"]
+            direction TB
+            DB[("PostgreSQL<br/>Business data, jobs,<br/>audit and outbox")]
+            FileStore["Private File Storage<br/>Temporary JD files"]
+        end
+
+        Web -->|"HTTPS REST/JSON<br/>/api/v1"| API
+        API -->|"Reads/writes<br/>SQL"| DB
+        API -->|"Stores files"| FileStore
+        DocWorker -->|"Extraction jobs<br/>SQL"| DB
+        DocWorker -->|"Reads/deletes files"| FileStore
+        AIWorker -->|"AI jobs<br/>SQL"| DB
+        NotifyWorker -->|"Outbox<br/>SQL"| DB
+    end
+
+    AIWorker -->|"HTTPS/JSON"| Gemini["Gemini API<br/>[External Software System]"]
+    NotifyWorker -->|"HTTPS/API"| Email["Email Provider<br/>[External Software System]"]
 ~~~
 
-Frontend and backend have independent build/deployment. JD processing is a module/worker within the same modular monolith, not a microservice. A one-instance PoC may run the worker with the backend process and use temporary private storage behind an adapter; the MVP/pilot replaces it with private object storage. If OCR affects latency or needs independent scaling, separate the process while keeping the same codebase and PostgreSQL job table. Minimum environments are local, test/CI, staging/UAT, and production/pilot. Secrets do not belong in the repository. Migrations run from a controlled pipeline/job with one runner at a time and a backup/forward-fix plan.
+The diagram shows logical runtime and data boundaries, not physical deployment nodes. Frontend and backend have independent build/deployment. JD processing is a module/worker within the same modular-monolith codebase, not a microservice. A one-instance PoC may run a worker with the backend process and use temporary private storage behind an adapter; the MVP/pilot replaces it with private object storage. Minimum environments are local, test/CI, staging/UAT, and production/pilot. Secrets do not belong in the repository. Migrations run from a controlled pipeline/job with one runner at a time and a backup/forward-fix plan.
 
 ### 5.1 Deployment profile and pilot cost
 
@@ -205,29 +218,9 @@ If the browser later calls api.example.com directly from app.example.com, update
 - Notification consumes post-commit outbox events.
 - Analytics is not on the critical path.
 
-### 6.1 JD-flow component view
+### 6.1 JD-flow component responsibilities
 
-~~~mermaid
-flowchart LR
-    Routes["Express routes/controllers"] --> Ingest["JD Ingestion"]
-    Ingest --> Jobs["Processing Job"]
-    Jobs --> Extract["Text Extraction/OCR Adapter"]
-    Extract --> Store["Private File Storage Adapter"]
-    Extract --> DB[("PostgreSQL")]
-    Ingest --> Analyze["JD Analysis"]
-    Analyze --> Taxonomy["Taxonomy read contract"]
-    Analyze --> Match["Question Matching"]
-    Match --> Questions["Questions read contract"]
-    Match --> DB
-    Routes --> Plan["Preparation Plan"]
-    Plan --> Match
-    Plan --> Practice["Practice"]
-    Plan --> Booking["Booking"]
-    Booking --> Feedback["Feedback"]
-    Feedback --> Plan
-~~~
-
-Arrows show allowed application-contract calls, not permission to modify a target module's tables directly. Feedback → Preparation Plan is an “apply next action” use case initiated by the Student, not an implicit transaction when a Mentor submits feedback.
+The module table and dependency rules above define the JD-flow component boundaries. Calls use explicit application contracts and never imply permission to modify another module's tables directly. Feedback → Preparation Plan is an “apply next action” use case initiated by the Student, not an implicit transaction when a Mentor submits feedback.
 
 ### Notification event model
 
@@ -237,64 +230,13 @@ Events are booking.requested, booking.confirmed, booking.reschedule_proposed, bo
 
 ### 7.1 JD to preparation plan
 
-~~~mermaid
-sequenceDiagram
-    actor S as Student
-    participant W as React Web
-    participant I as JD Ingestion
-    participant X as Extraction/OCR Worker
-    participant A as JD Analysis
-    participant M as Question Matching
-    participant P as Preparation Plan
-    participant D as PostgreSQL
-    S->>W: Paste text or upload PDF/image
-    alt Pasted text
-        W->>I: Create JobDescription with pasted text
-        I->>D: Save extracted_text + SUCCEEDED
-    else PDF or image
-        W->>I: Upload file and create JobDescription
-        I->>D: Store private metadata + enqueue extraction job
-        alt PDF contains usable text
-            X->>X: Direct text extraction
-        else Image or scanned PDF
-            X->>X: Internal OCR fallback
-        end
-        X->>D: Save extracted_text + method/status
-    end
-    W-->>S: Display text for review
-    S->>W: Edit and confirm text
-    W->>I: Save corrected_text
-    I->>A: Analyze confirmed text
-    A->>D: Save requirements + normalized topic
-    A->>M: Match active taxonomy to Published Questions
-    M->>D: Save score, reason, matching_version
-    W->>P: Create plan from selected matches
-    P->>D: Save PreparationPlan
-    P-->>W: Topics, questions, and reasons
-~~~
+The Student pastes text or uploads a PDF/image. JD Ingestion stores the input and, when necessary, creates an asynchronous extraction job. The worker extracts text directly or uses OCR, then stores its status and result. The Student reviews and confirms the corrected text before JD Analysis detects requirements and Question Matching selects Published Questions. The Student then creates a Preparation Plan from the accepted matches.
 
-Extraction is an asynchronous job with PENDING, PROCESSING, SUCCEEDED, and FAILED states and a safe error code. The same file/text hash and extraction version may return an idempotent result. The Student must always confirm corrected_text; analysis is blocked until text is confirmed and extraction reaches an appropriate final state. See [ADR-004](ADR-004-JD-Processing-and-Question-Matching_EN.md).
+Extraction uses PENDING, PROCESSING, SUCCEEDED, and FAILED states and a safe error code. The same file/text hash and extraction version may return an idempotent result. Analysis is blocked until text is confirmed and extraction reaches an appropriate final state. See [ADR-004](ADR-004-JD-Processing-and-Question-Matching_EN.md).
 
 ### 7.2 Self-practice from a preparation plan
 
-~~~mermaid
-sequenceDiagram
-    actor S as Student
-    participant W as Web
-    participant Q as Question Module
-    participant P as Practice Module
-    participant D as Database
-    S->>W: Open preparation plan/search for more
-    W->>Q: Query matched/published questions
-    Q->>D: Indexed query + pagination
-    D-->>Q: Results
-    Q-->>W: DTO
-    S->>W: Bookmark/update status
-    W->>P: Save for authenticated Student
-    P->>D: Upsert progress
-    D-->>P: Success
-    P-->>W: Updated state
-~~~
+The Student opens a preparation plan and retrieves matched or additional Published Questions through an indexed, paginated query. Bookmark and practice-status changes are saved only for the authenticated Student, and the updated state is returned to the Web application.
 
 ### 7.3 Preparation plan to booking
 
@@ -302,22 +244,7 @@ The Student selects “Practice with a mentor” from the preparation plan. Book
 
 ### 7.4 Booking confirmation and double-booking prevention
 
-~~~mermaid
-sequenceDiagram
-    actor M as Mentor
-    participant A as Booking API
-    participant D as Database
-    participant O as Outbox
-    M->>A: Accept pending booking
-    A->>D: Begin transaction, lock slot then booking
-    A->>D: Validate owner, state, slot availability
-    A->>D: Set Confirmed + reserve slot
-    A->>D: Insert transition + idempotency record
-    A->>O: Insert deduplicated notification event
-    A->>D: Commit
-    A-->>M: Confirmed
-    Note over A,D: Partial unique index protects occupied states for the same slot
-~~~
+When a Mentor accepts a pending booking, the Booking service starts a transaction, locks the slot and booking, validates ownership/state/availability, confirms the booking, records the transition and idempotency key, and inserts a deduplicated notification event before commit. A partial unique index prevents more than one occupying booking for the same slot.
 
 Transaction details, conflict codes, retry, and concurrent-acceptance testing are in [ADR-002](ADR-002-Booking-Consistency_EN.md). Every Mentor, Student, and Administrator path calls the same state-machine service; no route updates the state directly.
 
@@ -327,41 +254,7 @@ An authorized Mentor/Administrator moves a booking to Completed under policy. Fe
 
 ## 8. Data design
 
-### 8.1 Conceptual ER model
-
-~~~mermaid
-erDiagram
-    USER ||--o| STUDENT_PROFILE : has
-    USER ||--o| MENTOR_PROFILE : has
-    STUDENT_PROFILE ||--o{ JOB_DESCRIPTION : owns
-    JOB_DESCRIPTION ||--o{ JD_REQUIREMENT : yields
-    TOPIC o|--o{ JD_REQUIREMENT : normalizes
-    JOB_DESCRIPTION ||--o{ JD_QUESTION_MATCH : produces
-    QUESTION ||--o{ JD_QUESTION_MATCH : matched_to
-    JOB_DESCRIPTION ||--o{ PREPARATION_PLAN : grounds
-    PREPARATION_PLAN ||--o{ PREPARATION_PLAN_ITEM : contains
-    JD_QUESTION_MATCH ||--o{ PREPARATION_PLAN_ITEM : selected_from
-    MENTOR_PROFILE ||--o{ MENTOR_VERIFICATION : submits
-    MENTOR_PROFILE ||--o{ MENTOR_EXPERTISE : declares
-    TOPIC o|--o{ MENTOR_EXPERTISE : classifies
-    POSITION o|--o{ MENTOR_EXPERTISE : classifies
-    MENTOR_PROFILE ||--o{ AVAILABILITY_SLOT : publishes
-    STUDENT_PROFILE ||--o{ BOOKING : requests
-    MENTOR_PROFILE ||--o{ BOOKING : receives
-    AVAILABILITY_SLOT ||--o{ BOOKING : selected_by
-    JOB_DESCRIPTION ||--o{ BOOKING : provides_context
-    PREPARATION_PLAN ||--o{ BOOKING : practiced_by
-    BOOKING ||--o{ BOOKING_TRANSITION : records
-    BOOKING ||--o| FEEDBACK : produces
-    BOOKING ||--o| REVIEW : produces
-    USER ||--o{ PRACTICE_PROGRESS : owns
-    QUESTION ||--o{ PRACTICE_PROGRESS : tracked_for
-    QUESTION ||--o{ QUESTION_POSITION : classified_by
-    POSITION ||--o{ QUESTION_POSITION : contains
-    QUESTION ||--o{ QUESTION_TOPIC : classified_by
-    TOPIC ||--o{ QUESTION_TOPIC : contains
-    BOOKING ||--o{ NOTIFICATION_JOB : emits
-~~~
+### 8.1 Core entity relationships
 
 A slot may have multiple PENDING bookings, but a partial unique index permits only one booking in an occupying state. A booking created from the JD flow must reference a preparation plan or job description owned by the same Student; constraints/service validation prevent cross-owner context. Feedback and Review are each unique by booking_id, and only the booking Student may review. NotificationJob has a logical relationship through aggregate ID/event key and never controls booking state.
 

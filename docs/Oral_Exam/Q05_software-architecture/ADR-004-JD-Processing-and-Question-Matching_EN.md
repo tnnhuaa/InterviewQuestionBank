@@ -50,17 +50,7 @@ The current matcher is a heuristic keyword lookup. The PoC has no taxonomy, alia
 
 ### 3.3 User flow
 
-~~~mermaid
-flowchart LR
-    Student["Student"] --> Upload["Upload JD file"]
-    Upload --> API["Express API"]
-    API --> Parse["PDF text extraction or image inline data"]
-    Parse --> Gemini["Gemini topic extraction"]
-    Gemini --> Match["Question Bank keyword matching"]
-    Match --> DB[("PostgreSQL sessions")]
-    DB --> Review["Review, add, edit, or delete questions"]
-    Review --> Student
-~~~
+The Student uploads a JD file. The Express API extracts PDF text or prepares image data, Gemini extracts topics, the Question Bank matcher selects related questions, and PostgreSQL stores the session. The Student then reviews, adds, edits, or removes questions before continuing.
 
 ## 4. Current data and boundaries
 

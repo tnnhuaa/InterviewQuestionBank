@@ -11,7 +11,7 @@ Trước tiên nhóm em xác định tài liệu Kiến trúc phần mềm phả
 Những cái đầu vào mà nhóm đưa vào để hình thành kiến trúc ban đầu gồm Charter, Vision & Scope, Backlog/acceptance criteria, NFR, ràng buộc thời gian–chi phí–năng lực nhóm và prototype nghiệp vụ nếu có.
 Đầu tiên là lựa chọn kiến trúc phải giải thích được style, stack, platform và framework. Vì vậy, nhóm so sánh phương án trong ADR-001 rồi chọn modular monolith, React/Vite, Express và PostgreSQL vì phù hợp quy mô pilot và yêu cầu transaction.
 
-Thứ hai là nhóm phân rã giải pháp phải làm rõ component, technology, dịch vụ ngoài, database, algorithm và pattern. Nhóm viết tài liệu bằng Markdown, vẽ Mermaid và phân rã PrepVI thành React SPA, Express API, module nghiệp vụ, PostgreSQL, worker/outbox, provider ngoài, JD extraction và matching.
+Thứ hai là nhóm phân rã giải pháp phải làm rõ component, technology, dịch vụ ngoài, database, algorithm và pattern. Nhóm viết tài liệu bằng Markdown, vẽ hai sơ đồ C4 System Context và Container bằng Mermaid, rồi phân rã PrepVI thành React SPA, Express API, module nghiệp vụ, PostgreSQL, worker/outbox, provider ngoài, JD extraction và matching.
 
 Từ baseline đó, nhóm xây dựng PoC theo các validation scenario.Dùng các PoC, source, migration và test làm bằng chứng để xác nhận giả định; nếu các bằng chứng khác baseline, Nhóm cập nhật sơ đồ, contract hoặc trạng thái ADR nhưng vẫn giữ lịch sử quyết định.
 
@@ -38,7 +38,7 @@ Bởi vì nhóm có sử dụng AI để hỗ trợ tạo ra tài liệu này, n
 
 1. Review yêu cầu, backlog và NFR để xác định architecture driver.
 2. So sánh phương án, chọn kiến trúc/stack và ghi lý do, trade-off trong ADR.
-3. Phân rã component, vẽ các sơ đồ và xác định API, data, security, reliability boundary.
+3. Phân rã component, vẽ C4 System Context và Container, rồi xác định API, data, security và reliability boundary.
 4. Dùng PoC/source/test để kiểm chứng; cập nhật tài liệu và ADR khi evidence khác baseline.
 
 ### 2.3 Tài liệu Kiến trúc phần mềm được đánh giá thế nào?
@@ -64,4 +64,4 @@ Các bản tiếng Anh dưới đây nằm cùng thư mục với câu trả l�
 - [ ] [ADR-004 — JD Processing and Question Matching](ADR-004-JD-Processing-and-Question-Matching_EN.md).
 - [ ] [ADR-005 — Hybrid Gemini Assistance](ADR-005-Hybrid-Gemini-Assistance_EN.md).
 - [ ] [Architecture Diagrams — rendered images](Architecture_Diagrams_EN.md).
-- [ ] Bản in các sơ đồ System Context, Container và JD component trong bản Software Architecture tiếng Anh.
+- [ ] Bản in hai sơ đồ C4 System Context và Container trong bản Software Architecture tiếng Anh.
