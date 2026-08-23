@@ -26,7 +26,11 @@ describe("status endpoints", () => {
     const response = await request(app).get("/api/v1/ready");
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ status: "ready", database: "connected" });
+    expect(response.body).toMatchObject({
+      status: "ready",
+      database: "connected",
+      storage: "available",
+    });
   });
 
   it.each([
@@ -44,9 +48,9 @@ describe("status endpoints", () => {
       ).get("/api/v1/ready");
 
       expect(response.status).toBe(503);
-      expect(response.body).toEqual({
-        status: "not_ready",
-        database: "disconnected",
+      expect(response.body).toMatchObject({
+        code: "DATABASE_UNAVAILABLE",
+        recovery: { kind: "WAIT", retryable: true },
       });
     },
   );
@@ -57,6 +61,9 @@ describe("status endpoints", () => {
     );
 
     expect(response.status).toBe(404);
-    expect(response.body.error).toBe("not_found");
+    expect(response.body).toMatchObject({
+      code: "ROUTE_NOT_FOUND",
+      recovery: { kind: "NONE", retryable: false },
+    });
   });
 });

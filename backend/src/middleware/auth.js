@@ -1,5 +1,6 @@
 import { AppError, notFoundError } from "../shared/errors.js";
 import { hashToken } from "../platform/security/tokens.js";
+import { queryWithTransientRetry } from "../platform/db/retry.js";
 
 export function sessionCookieName(environment) {
   return environment.sessionCookieSecure ? "__Host-prepvi_session" : "prepvi_session";
@@ -21,7 +22,8 @@ export function createSessionMiddleware({ pool, environment }) {
       const token = request.cookies?.[sessionCookieName(environment)];
       request.auth = { user: null, session: null };
       if (!token) return next();
-      const result = await pool.query(
+      const result = await queryWithTransientRetry(
+        pool,
         `SELECT s.id AS session_id, s.csrf_secret_hash, s.expires_at,
                 u.id, u.email, u.display_name, u.status,
                 coalesce(array_agg(ur.role_code) FILTER (WHERE ur.role_code IS NOT NULL), '{}') AS roles
@@ -50,7 +52,11 @@ export function createSessionMiddleware({ pool, environment }) {
           roles: row.roles,
         },
       };
-      await pool.query("UPDATE sessions SET last_seen_at = now() WHERE id = $1", [row.session_id]);
+      await queryWithTransientRetry(
+        pool,
+        "UPDATE sessions SET last_seen_at = now() WHERE id = $1",
+        [row.session_id],
+      );
       return next();
     } catch (error) {
       return next(error);

@@ -14,8 +14,76 @@ const allowedTypes = new Map([
   ["image/jpeg", "IMAGE"],
 ]);
 
+function invalidDocumentError(cause) {
+  return new AppError({
+    status: 422,
+    code: "INVALID_DOCUMENT_BYTES",
+    message: "Không thể đọc cấu trúc tệp đã chọn. Hãy xuất lại PNG/JPEG/PDF rồi tải lên lần nữa.",
+    recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
+    cause,
+  });
+}
+
+async function detectDocumentType(buffer) {
+  try {
+    return await fileTypeFromBuffer(buffer);
+  } catch (error) {
+    throw invalidDocumentError(error);
+  }
+}
+
+function storageUnavailableError(cause) {
+  return new AppError({
+    status: 503,
+    code: "STORAGE_UNAVAILABLE",
+    message: "Không thể lưu tệp vào private storage. Hãy kiểm tra cấu hình storage rồi thử lại an toàn.",
+    recovery: { kind: "RETRY_SAFE", retryable: true, retryAfterSeconds: 10 },
+    cause,
+  });
+}
+
+function aiExtractionUnavailableError(cause) {
+  const providerCode = typeof cause?.code === "string" ? cause.code : "AI_PROVIDER_FAILURE";
+  const disabled = providerCode === "AI_DISABLED";
+  const invalidInput = providerCode === "AI_REQUEST_INVALID";
+  const retryAfterSeconds = Number.isInteger(cause?.retryAfterSeconds)
+    ? cause.retryAfterSeconds
+    : null;
+  return new AppError({
+    status: invalidInput ? 422 : 503,
+    code: providerCode,
+    message: disabled
+      ? "OCR bằng Gemini chưa được cấu hình. Hãy dùng luồng tải tệp tiêu chuẩn hoặc dán nội dung JD để tiếp tục."
+      : invalidInput
+        ? "Gemini không thể đọc tệp này. Hãy xuất lại PNG/JPEG/PDF hoặc dán nội dung JD."
+        : "Gemini đang tạm thời không thể trích xuất tệp. Bạn có thể thử lại hoặc dán nội dung JD để tiếp tục.",
+    recovery: {
+      kind: disabled || invalidInput ? "PASTE_TEXT" : "RETRY_SAFE",
+      retryable: !disabled && !invalidInput,
+      retryAfterSeconds,
+    },
+    cause,
+  });
+}
+
+async function extractTextWithAi(aiProvider, fileBuffer, mimeType) {
+  try {
+    return await aiProvider.extractTextFromFile({ buffer: fileBuffer, mimeType });
+  } catch (error) {
+    throw aiExtractionUnavailableError(error);
+  }
+}
+
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
+}
+
+function nullableNumber(value) {
+  return value === null || value === undefined ? null : Number(value);
+}
+
+function nullableIsoDate(value) {
+  return value === null || value === undefined ? null : new Date(value).toISOString();
 }
 
 function normalize(value) {
@@ -23,9 +91,11 @@ function normalize(value) {
 }
 
 async function validatePdf(buffer) {
+  let loadingTask;
   let document;
   try {
-    document = await getDocument({ data: new Uint8Array(buffer), isEvalSupported: false }).promise;
+    loadingTask = getDocument({ data: new Uint8Array(buffer), isEvalSupported: false });
+    document = await loadingTask.promise;
     if (document.numPages > 5) {
       throw new AppError({ status: 422, code: "PDF_PAGE_LIMIT", message: "PDF chỉ được có tối đa 5 trang.", recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null } });
     }
@@ -43,29 +113,41 @@ async function validatePdf(buffer) {
       recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
     });
   } finally {
-    await document?.destroy();
+    await loadingTask?.destroy();
   }
 }
 
 function jdDto(row) {
   return {
     id: row.id,
+    title: row.title,
     sourceType: row.source_type,
     status: row.status,
     extractedText: row.extracted_text,
     correctedText: row.corrected_text,
     correctedVersion: row.corrected_version,
-    confirmedAt: row.confirmed_at,
+    confirmedAt: nullableIsoDate(row.confirmed_at),
     extractionMethod: row.extraction_method,
-    extractionConfidence: row.confidence,
+    extractionConfidence: nullableNumber(row.confidence),
     processing: row.job_status ? {
       id: row.job_id,
       status: row.job_status,
       attemptCount: row.attempt_count,
       errorCode: row.error_code,
     } : null,
+    createdAt: nullableIsoDate(row.created_at),
+    updatedAt: nullableIsoDate(row.updated_at),
     version: row.version,
   };
+}
+
+function defaultJdTitle(sourceType) {
+  const sourceLabel = sourceType === "PDF"
+    ? "JD từ tệp PDF"
+    : sourceType === "IMAGE"
+      ? "JD từ hình ảnh"
+      : "JD dạng văn bản";
+  return `${sourceLabel} · ${new Date().toISOString().slice(0, 10)}`;
 }
 
 export function createJdService({ pool, storage, environment }) {
@@ -84,7 +166,7 @@ export function createJdService({ pool, storage, environment }) {
     return result.rows[0];
   }
 
-  async function createFromText(studentId, text) {
+  async function createFromText(studentId, text, key) {
     const cleaned = text.trim();
     if (!cleaned || cleaned.length > 50000) {
       throw new AppError({
@@ -95,23 +177,43 @@ export function createJdService({ pool, storage, environment }) {
         recovery: { kind: "EDIT_INPUT", retryable: false, retryAfterSeconds: null },
       });
     }
-    const result = await pool.query(
-      `INSERT INTO job_descriptions (
-         student_id, source_type, status, extracted_text, corrected_text,
-         corrected_version, extraction_method, extraction_version
-       ) VALUES ($1, 'PASTED_TEXT', 'READY_FOR_REVIEW', $2, $2, 1, 'PASTED_TEXT', 'extract-v1')
-       RETURNING *`,
-      [studentId, cleaned],
-    );
-    await pool.query(
-      `INSERT INTO jd_text_versions (job_description_id, version, corrected_text, created_by)
-       VALUES ($1, 1, $2, $3)`,
-      [result.rows[0].id, cleaned, studentId],
-    );
-    return jdDto(result.rows[0]);
+    return withTransaction(pool, async (client) => {
+      const operation = "CREATE_TEXT_JD";
+      const state = await findIdempotentResult(client, {
+        actorId: studentId,
+        operation,
+        key,
+        input: { textHash: sha256(cleaned), length: cleaned.length },
+      });
+      if (state.cached?.response_body) return state.cached.response_body;
+      const result = await client.query(
+        `INSERT INTO job_descriptions (
+           student_id, title, source_type, status, extracted_text, corrected_text,
+           corrected_version, extraction_method, extraction_version
+         ) VALUES ($1, $2, 'PASTED_TEXT', 'READY_FOR_REVIEW', $3, $3, 1, 'PASTED_TEXT', 'extract-v1')
+         RETURNING *`,
+        [studentId, defaultJdTitle("PASTED_TEXT"), cleaned],
+      );
+      await client.query(
+        `INSERT INTO jd_text_versions (job_description_id, version, corrected_text, created_by)
+         VALUES ($1, 1, $2, $3)`,
+        [result.rows[0].id, cleaned, studentId],
+      );
+      const body = jdDto(result.rows[0]);
+      await saveIdempotentResult(client, {
+        actorId: studentId,
+        operation,
+        key,
+        digest: state.digest,
+        status: 201,
+        body,
+        resourceId: body.id,
+      });
+      return body;
+    });
   }
 
-  async function createFromFile(studentId, file) {
+  async function createFromFile(studentId, file, key) {
     if (!file?.buffer?.length) {
       throw new AppError({
         status: 422,
@@ -128,7 +230,7 @@ export function createJdService({ pool, storage, environment }) {
         recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
       });
     }
-    const detected = await fileTypeFromBuffer(file.buffer);
+    const detected = await detectDocumentType(file.buffer);
     const sourceType = allowedTypes.get(detected?.mime);
     if (!sourceType) {
       throw new AppError({
@@ -138,34 +240,66 @@ export function createJdService({ pool, storage, environment }) {
         recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
       });
     }
-    const quota = await pool.query(
-      `SELECT count(*)::int AS count FROM job_descriptions
-       WHERE student_id = $1 AND source_type IN ('PDF','IMAGE')
-         AND created_at >= now() - interval '24 hours'`,
-      [studentId],
-    );
-    if (quota.rows[0].count >= 20) {
-      throw new AppError({
-        status: 429,
-        code: "JD_UPLOAD_QUOTA_REACHED",
-        message: "Bạn đã dùng hết 20 lượt upload trong 24 giờ. Có thể dán nội dung JD để tiếp tục ngay.",
-        recovery: { kind: "PASTE_TEXT", retryable: false, retryAfterSeconds: 3600 },
-      });
-    }
     if (detected.mime === "application/pdf") await validatePdf(file.buffer);
-    const objectKey = await storage.put(file.buffer, { contentType: detected.mime });
+    const contentHash = sha256(file.buffer);
+    let objectKey = null;
     try {
-      const result = await pool.query(
-        `INSERT INTO job_descriptions (
-           student_id, source_type, original_file_ref, original_mime_type,
-           original_size_bytes, original_content_hash, original_delete_after, status
-         ) VALUES ($1, $2, $3, $4, $5, $6, now() + interval '24 hours', 'DRAFT')
-         RETURNING *`,
-        [studentId, sourceType, objectKey, detected.mime, file.size, sha256(file.buffer)],
-      );
-      return jdDto(result.rows[0]);
+      return await withTransaction(pool, async (client) => {
+        const operation = "CREATE_FILE_JD";
+        const state = await findIdempotentResult(client, {
+          actorId: studentId,
+          operation,
+          key,
+          input: { contentHash, size: file.size, mimeType: detected.mime },
+        });
+        if (state.cached?.response_body) return state.cached.response_body;
+        const quota = await client.query(
+          `SELECT count(*)::int AS count FROM job_descriptions
+           WHERE student_id = $1 AND source_type IN ('PDF','IMAGE')
+             AND created_at >= now() - interval '24 hours'`,
+          [studentId],
+        );
+        if (quota.rows[0].count >= 20) {
+          throw new AppError({
+            status: 429,
+            code: "JD_UPLOAD_QUOTA_REACHED",
+            message: "Bạn đã dùng hết 20 lượt upload trong 24 giờ. Có thể dán nội dung JD để tiếp tục ngay.",
+            recovery: { kind: "PASTE_TEXT", retryable: false, retryAfterSeconds: 3600 },
+          });
+        }
+        try {
+          objectKey = await storage.put(file.buffer, { contentType: detected.mime });
+        } catch (error) {
+          throw storageUnavailableError(error);
+        }
+        const result = await client.query(
+          `INSERT INTO job_descriptions (
+             student_id, title, source_type, original_file_ref, original_mime_type,
+             original_size_bytes, original_content_hash, original_delete_after, status
+           ) VALUES ($1, $2, $3, $4, $5, $6, $7, now() + interval '24 hours', 'DRAFT')
+           RETURNING *`,
+          [studentId, defaultJdTitle(sourceType), sourceType, objectKey, detected.mime, file.size, contentHash],
+        );
+        const body = jdDto(result.rows[0]);
+        await saveIdempotentResult(client, {
+          actorId: studentId,
+          operation,
+          key,
+          digest: state.digest,
+          status: 201,
+          body,
+          resourceId: body.id,
+        });
+        return body;
+      });
     } catch (error) {
-      await storage.delete(objectKey);
+      if (objectKey) {
+        try {
+          await storage.delete(objectKey);
+        } catch {
+          // Preserve the actionable upload/database error; readiness will surface cleanup storage failures.
+        }
+      }
       throw error;
     }
   }
@@ -187,7 +321,7 @@ export function createJdService({ pool, storage, environment }) {
         recovery: { kind: "REUPLOAD", retryable: false, retryAfterSeconds: null },
       });
     }
-    const detected = await fileTypeFromBuffer(file.buffer);
+    const detected = await detectDocumentType(file.buffer);
     const sourceType = allowedTypes.get(detected?.mime);
     if (!sourceType) {
       throw new AppError({
@@ -199,29 +333,36 @@ export function createJdService({ pool, storage, environment }) {
     }
 
     let extractedText = "";
+    let extractionMethod = "OCR";
 
     if (detected.mime === "application/pdf") {
       // PDF: thử trích text trực tiếp trước (pdfjs), nếu không có thì dùng Gemini vision
       if (detected.mime === "application/pdf") await validatePdf(file.buffer);
       const { getDocument: getPdfDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
-      const pdfDoc = await getPdfDocument({ data: new Uint8Array(file.buffer), isEvalSupported: false }).promise;
+      const loadingTask = getPdfDocument({ data: new Uint8Array(file.buffer), isEvalSupported: false });
+      let pdfDoc;
       const pages = [];
-      for (let i = 1; i <= pdfDoc.numPages; i++) {
-        const page = await pdfDoc.getPage(i);
-        const content = await page.getTextContent();
-        pages.push(content.items.map((item) => item.str).join(" ").trim());
+      try {
+        pdfDoc = await loadingTask.promise;
+        for (let i = 1; i <= pdfDoc.numPages; i += 1) {
+          const page = await pdfDoc.getPage(i);
+          const content = await page.getTextContent();
+          pages.push(content.items.map((item) => item.str).join(" ").trim());
+        }
+      } finally {
+        await loadingTask.destroy();
       }
-      await pdfDoc.destroy().catch(() => {});
       const directText = pages.join("\n\n").trim();
       if (directText.length >= 50) {
         extractedText = directText;
+        extractionMethod = "DIRECT_PDF";
       } else {
         // PDF scan: dùng Gemini để OCR
-        extractedText = await aiProvider.extractTextFromFile({ buffer: file.buffer, mimeType: detected.mime });
+        extractedText = await extractTextWithAi(aiProvider, file.buffer, detected.mime);
       }
     } else {
       // Ảnh PNG/JPEG: gửi trực tiếp lên Gemini để OCR
-      extractedText = await aiProvider.extractTextFromFile({ buffer: file.buffer, mimeType: detected.mime });
+      extractedText = await extractTextWithAi(aiProvider, file.buffer, detected.mime);
     }
 
     if (!extractedText.trim()) {
@@ -233,23 +374,26 @@ export function createJdService({ pool, storage, environment }) {
       });
     }
 
-    const result = await pool.query(
-      `INSERT INTO job_descriptions (
-         student_id, source_type, original_mime_type,
-         original_size_bytes, original_content_hash,
-         extracted_text, corrected_text, corrected_version,
-         extraction_method, extraction_version,
-         status, updated_at
-       ) VALUES ($1, $2, $3, $4, $5, $6, $6, 1, 'OCR', 'extract-v1', 'READY_FOR_REVIEW', now())
-       RETURNING *`,
-      [studentId, sourceType, detected.mime, file.size, sha256(file.buffer), extractedText.trim()],
-    );
-    await pool.query(
-      `INSERT INTO jd_text_versions (job_description_id, version, corrected_text, created_by)
-       VALUES ($1, 1, $2, $3) ON CONFLICT DO NOTHING`,
-      [result.rows[0].id, extractedText.trim(), studentId],
-    );
-    return jdDto(result.rows[0]);
+    return withTransaction(pool, async (client) => {
+      const result = await client.query(
+        `INSERT INTO job_descriptions (
+           student_id, title, source_type, original_mime_type,
+           original_size_bytes, original_content_hash,
+           extracted_text, corrected_text, corrected_version,
+           extraction_method, extraction_version,
+           status, updated_at
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $7, 1, $8, 'extract-v1', 'READY_FOR_REVIEW', now())
+         RETURNING *`,
+        [studentId, defaultJdTitle(sourceType), sourceType, detected.mime, file.size,
+          sha256(file.buffer), extractedText.trim(), extractionMethod],
+      );
+      await client.query(
+        `INSERT INTO jd_text_versions (job_description_id, version, corrected_text, created_by)
+         VALUES ($1, 1, $2, $3)`,
+        [result.rows[0].id, extractedText.trim(), studentId],
+      );
+      return jdDto(result.rows[0]);
+    });
   }
 
   async function get(studentId, id) {
@@ -265,6 +409,76 @@ export function createJdService({ pool, storage, environment }) {
       [studentId],
     );
     return { items: result.rows.map(jdDto), pageInfo: { page: 1, pageSize: result.rowCount, total: result.rowCount } };
+  }
+
+  async function updateJobDescription(studentId, id, input, correlationId) {
+    return withTransaction(pool, async (client) => {
+      const current = await getOwned(studentId, id, client);
+      if (current.version !== input.version) {
+        throw new AppError({
+          status: 409,
+          code: "VERSION_CONFLICT",
+          message: "JD đã được cập nhật ở nơi khác. Hãy tải lại danh sách trước khi lưu.",
+          recovery: { kind: "RETRY_SAFE", retryable: true, retryAfterSeconds: null },
+        });
+      }
+      const result = await client.query(
+        `UPDATE job_descriptions
+         SET title = $3, updated_at = now(), version = version + 1
+         WHERE id = $1 AND student_id = $2
+         RETURNING *`,
+        [id, studentId, input.title.trim()],
+      );
+      await writeAudit(client, {
+        actorId: studentId,
+        action: "JOB_DESCRIPTION_RENAMED",
+        targetType: "JOB_DESCRIPTION",
+        targetId: id,
+        correlationId,
+      });
+      return jdDto(result.rows[0]);
+    });
+  }
+
+  async function archiveJobDescription(studentId, id, version, correlationId) {
+    return withTransaction(pool, async (client) => {
+      const current = await getOwned(studentId, id, client);
+      if (current.status === "ARCHIVED") return jdDto(current);
+      if (current.version !== version) {
+        throw new AppError({
+          status: 409,
+          code: "VERSION_CONFLICT",
+          message: "JD đã được cập nhật ở nơi khác. Hãy tải lại danh sách trước khi xóa.",
+          recovery: { kind: "RETRY_SAFE", retryable: true, retryAfterSeconds: null },
+        });
+      }
+      const result = await client.query(
+        `UPDATE job_descriptions
+         SET status = 'ARCHIVED', original_delete_after = CASE
+               WHEN original_file_ref IS NULL THEN original_delete_after ELSE now()
+             END,
+             updated_at = now(), version = version + 1
+         WHERE id = $1 AND student_id = $2
+         RETURNING *`,
+        [id, studentId],
+      );
+      const plans = await client.query(
+        `UPDATE preparation_plans
+         SET status = 'ARCHIVED', updated_at = now(), version = version + 1
+         WHERE job_description_id = $1 AND student_id = $2 AND status = 'ACTIVE'
+         RETURNING id`,
+        [id, studentId],
+      );
+      await writeAudit(client, {
+        actorId: studentId,
+        action: "JOB_DESCRIPTION_ARCHIVED",
+        targetType: "JOB_DESCRIPTION",
+        targetId: id,
+        correlationId,
+        metadata: { archivedPlanIds: plans.rows.map((plan) => plan.id) },
+      });
+      return jdDto(result.rows[0]);
+    });
   }
 
   async function startExtraction(studentId, id, key) {
@@ -286,6 +500,40 @@ export function createJdService({ pool, storage, environment }) {
         input,
       });
       if (state.cached?.response_body) return state.cached.response_body;
+      if (["PENDING", "PROCESSING"].includes(jd.job_status)) {
+        const body = jdDto(jd);
+        await saveIdempotentResult(client, {
+          actorId: studentId,
+          operation: "START_EXTRACTION",
+          key,
+          digest: state.digest,
+          status: 202,
+          body,
+          resourceId: id,
+        });
+        return body;
+      }
+      if (jd.job_status === "SUCCEEDED" || ["READY_FOR_REVIEW", "CONFIRMED", "ANALYZED"].includes(jd.status)) {
+        const body = jdDto(jd);
+        await saveIdempotentResult(client, {
+          actorId: studentId,
+          operation: "START_EXTRACTION",
+          key,
+          digest: state.digest,
+          status: 200,
+          body,
+          resourceId: id,
+        });
+        return body;
+      }
+      if (jd.job_status === "FAILED") {
+        throw new AppError({
+          status: 409,
+          code: "EXTRACTION_RETRY_REQUIRED",
+          message: "Lần trích xuất trước đã thất bại. Hãy dùng thao tác thử lại an toàn hoặc dán văn bản thủ công.",
+          recovery: { kind: "RETRY_SAFE", retryable: true, retryAfterSeconds: null },
+        });
+      }
       const job = await client.query(
         `INSERT INTO extraction_jobs (job_description_id, input_hash, extraction_version)
          VALUES ($1, $2, 'extract-v1')
@@ -294,16 +542,17 @@ export function createJdService({ pool, storage, environment }) {
          RETURNING id, status, attempt_count`,
         [id, jd.original_content_hash],
       );
-      await client.query(
-        "UPDATE job_descriptions SET status = 'EXTRACTING', updated_at = now(), version = version + 1 WHERE id = $1",
+      const updated = await client.query(
+        "UPDATE job_descriptions SET status = 'EXTRACTING', updated_at = now(), version = version + 1 WHERE id = $1 RETURNING *",
         [id],
       );
-      const body = { id, status: "EXTRACTING", processing: {
-        id: job.rows[0].id,
-        status: job.rows[0].status,
-        attemptCount: job.rows[0].attempt_count,
-        errorCode: null,
-      } };
+      const body = jdDto({
+        ...updated.rows[0],
+        job_id: job.rows[0].id,
+        job_status: job.rows[0].status,
+        attempt_count: job.rows[0].attempt_count,
+        error_code: null,
+      });
       await saveIdempotentResult(client, {
         actorId: studentId,
         operation: "START_EXTRACTION",
@@ -318,23 +567,58 @@ export function createJdService({ pool, storage, environment }) {
   }
 
   async function retryExtraction(studentId, id, key) {
-    const current = await getOwned(studentId, id);
-    if (current.job_status !== "FAILED") return startExtraction(studentId, id, key);
-    if (current.attempt_count >= 2) {
-      throw new AppError({
-        status: 409,
-        code: "EXTRACTION_RETRY_LIMIT",
-        message: "Đã hết lượt xử lý tự động. Bạn có thể dán nội dung JD để tiếp tục.",
-        recovery: { kind: "PASTE_TEXT", retryable: false, retryAfterSeconds: null },
+    return withTransaction(pool, async (client) => {
+      const current = await getOwned(studentId, id, client);
+      const operation = "RETRY_EXTRACTION";
+      const state = await findIdempotentResult(client, {
+        actorId: studentId,
+        operation,
+        key,
+        input: { id, jobId: current.job_id, attemptCount: current.attempt_count },
       });
-    }
-    await pool.query(
-      `UPDATE extraction_jobs SET status = 'PENDING', error_code = NULL, available_at = now()
-       WHERE id = $1`,
-      [current.job_id],
-    );
-    await pool.query("UPDATE job_descriptions SET status = 'EXTRACTING' WHERE id = $1", [id]);
-    return get(studentId, id);
+      if (state.cached?.response_body) return state.cached.response_body;
+      if (current.job_status !== "FAILED") {
+        const body = jdDto(current);
+        await saveIdempotentResult(client, {
+          actorId: studentId,
+          operation,
+          key,
+          digest: state.digest,
+          status: 202,
+          body,
+          resourceId: id,
+        });
+        return body;
+      }
+      if (current.attempt_count >= environment.ocr.maxAttempts) {
+        throw new AppError({
+          status: 409,
+          code: "EXTRACTION_RETRY_LIMIT",
+          message: "Đã hết lượt xử lý tự động. Bạn có thể dán nội dung JD để tiếp tục.",
+          recovery: { kind: "PASTE_TEXT", retryable: false, retryAfterSeconds: null },
+        });
+      }
+      await client.query(
+        `UPDATE extraction_jobs SET status = 'PENDING', error_code = NULL, available_at = now()
+         WHERE id = $1`,
+        [current.job_id],
+      );
+      const updated = await client.query(
+        "UPDATE job_descriptions SET status = 'EXTRACTING', updated_at = now(), version = version + 1 WHERE id = $1 RETURNING *",
+        [id],
+      );
+      const body = jdDto({ ...updated.rows[0], job_id: current.job_id, job_status: "PENDING", attempt_count: current.attempt_count, error_code: null });
+      await saveIdempotentResult(client, {
+        actorId: studentId,
+        operation,
+        key,
+        digest: state.digest,
+        status: 202,
+        body,
+        resourceId: id,
+      });
+      return body;
+    });
   }
 
   async function saveCorrectedText(studentId, id, { correctedText, version }) {
@@ -353,10 +637,20 @@ export function createJdService({ pool, storage, environment }) {
            corrected_version = corrected_version + 1, confirmed_at = NULL,
            status = 'READY_FOR_REVIEW', updated_at = now(), version = version + 1
          WHERE id = $1 AND student_id = $2 AND corrected_version = $4
+           AND status <> 'ARCHIVED'
          RETURNING *`,
         [id, studentId, cleaned, version],
       );
       if (!result.rowCount) {
+        const current = await getOwned(studentId, id, client);
+        if (current.status === "ARCHIVED") {
+          throw new AppError({
+            status: 409,
+            code: "RESOURCE_ARCHIVED",
+            message: "JD này đã được lưu trữ và chỉ còn ở chế độ xem lịch sử.",
+            recovery: { kind: "NONE", retryable: false, retryAfterSeconds: null },
+          });
+        }
         throw new AppError({
           status: 409,
           code: "VERSION_CONFLICT",
@@ -384,11 +678,20 @@ export function createJdService({ pool, storage, environment }) {
       `UPDATE job_descriptions SET status = 'CONFIRMED', confirmed_at = now(),
          updated_at = now(), version = version + 1
        WHERE id = $1 AND student_id = $2 AND corrected_version = $3
-         AND corrected_text IS NOT NULL
+         AND corrected_text IS NOT NULL AND status <> 'ARCHIVED'
        RETURNING *`,
       [id, studentId, version],
     );
     if (!result.rowCount) {
+      const current = await getOwned(studentId, id);
+      if (current.status === "ARCHIVED") {
+        throw new AppError({
+          status: 409,
+          code: "RESOURCE_ARCHIVED",
+          message: "JD này đã được lưu trữ và chỉ còn ở chế độ xem lịch sử.",
+          recovery: { kind: "NONE", retryable: false, retryAfterSeconds: null },
+        });
+      }
       throw new AppError({
         status: 409,
         code: "TEXT_VERSION_CONFLICT",
@@ -491,7 +794,7 @@ export function createJdService({ pool, storage, environment }) {
     });
   }
 
-  async function analyze(studentId, id, correctedTextVersion, correlationId, key) {
+  async function analyze(studentId, id, correctedTextVersion, correlationId, key, provenance = {}) {
     return withTransaction(pool, async (client) => {
       const jd = await getOwned(studentId, id, client);
       const idempotency = await findIdempotentResult(client, {
@@ -558,10 +861,20 @@ export function createJdService({ pool, storage, environment }) {
           [id, analysisVersion, item.matchedTerm, sourceStart >= 0 ? sourceStart : null,
             sourceStart >= 0 ? sourceStart + String(item.matchedTerm).length : null,
             item.type ?? "SKILL", item.topic?.id ?? null,
-            item.topic ? 0.95 : 0.75, { rule: item.topic ? "taxonomy_alias" : "pilot_dictionary" },
+            item.topic ? 0.95 : 0.75, {
+               source: "RULE_BASED",
+               rule: item.topic ? "taxonomy_alias" : "pilot_dictionary",
+               fallbackUsed: Boolean(provenance.fallbackUsed),
+               ...(provenance.aiJobId ? { aiJobId: provenance.aiJobId } : {}),
+               ...(provenance.errorCode ? { fallbackErrorCode: provenance.errorCode } : {}),
+             },
             correctedTextVersion, taxonomyVersion.rows[0].id],
         );
-        requirements.push(result.rows[0]);
+        requirements.push({
+          ...result.rows[0],
+          confidence: nullableNumber(result.rows[0].confidence),
+          source: "RULE_BASED",
+        });
       }
       await client.query(
         "UPDATE job_descriptions SET status = 'ANALYZED', updated_at = now(), version = version + 1 WHERE id = $1",
@@ -575,7 +888,15 @@ export function createJdService({ pool, storage, environment }) {
         metadata: { analysisVersion, requirementCount: requirements.length },
         correlationId,
       });
-      const body = { jobDescriptionId: id, analysisVersion, requirements };
+      const body = {
+        jobDescriptionId: id,
+        analysisVersion,
+        analysisSource: "RULE_BASED",
+        fallbackUsed: Boolean(provenance.fallbackUsed),
+        aiJobId: provenance.aiJobId ?? null,
+        fallbackErrorCode: provenance.errorCode ?? null,
+        requirements,
+      };
       await saveIdempotentResult(client, {
         actorId: studentId,
         operation: "ANALYZE_JD",
@@ -690,7 +1011,10 @@ export function createJdService({ pool, storage, environment }) {
     if (!version) throw notFoundError();
     const result = await pool.query(
       `SELECT r.id, r.raw_text, r.source_start, r.source_end, r.requirement_type,
-              r.normalized_topic_id, r.confidence, r.rule_evidence->>'source' AS source,
+              r.normalized_topic_id, r.confidence, coalesce(r.rule_evidence->>'source', 'RULE_BASED') AS source,
+              coalesce((r.rule_evidence->>'fallbackUsed')::boolean, false) AS fallback_used,
+              r.rule_evidence->>'aiJobId' AS ai_job_id,
+              r.rule_evidence->>'fallbackErrorCode' AS fallback_error_code,
               coalesce((SELECT o.topic_id FROM requirement_normalization_overrides o
                         WHERE o.requirement_id = r.id ORDER BY mapping_input_version DESC LIMIT 1), r.normalized_topic_id) AS effective_topic_id,
               t.name AS topic_name, d.decision, d.selected_topic_id AS decision_topic_id
@@ -703,7 +1027,23 @@ export function createJdService({ pool, storage, environment }) {
       [id, version, studentId, jd.corrected_version],
     );
     if (!result.rowCount) throw notFoundError();
-    return { jobDescriptionId: id, analysisVersion: version, requirements: result.rows };
+    const metadata = result.rows[0] ?? {};
+    const requirements = result.rows.map((item) => {
+      const requirement = { ...item, confidence: nullableNumber(item.confidence) };
+      delete requirement.fallback_used;
+      delete requirement.ai_job_id;
+      delete requirement.fallback_error_code;
+      return requirement;
+    });
+    return {
+      jobDescriptionId: id,
+      analysisVersion: version,
+      analysisSource: requirements.some((item) => item.source === "GEMINI") ? "GEMINI" : "RULE_BASED",
+      fallbackUsed: result.rows.some((item) => item.fallback_used),
+      aiJobId: metadata.ai_job_id ?? null,
+      fallbackErrorCode: metadata.fallback_error_code ?? null,
+      requirements,
+    };
   }
 
   async function match(studentId, id, analysisVersion, correlationId, key) {
@@ -796,7 +1136,7 @@ export function createJdService({ pool, storage, environment }) {
           resultHash: existing.rows[0].result_hash,
           matches: existing.rows.map((row) => ({
             id: row.id, requirementId: row.requirement_id, requirement: row.requirement,
-            topic: row.topic, score: row.score, reason: row.reason, rank: row.rank,
+            topic: row.topic, score: Number(row.score), reason: row.reason, rank: row.rank,
             question: { id: row.question_id, title: row.title, difficulty: row.difficulty },
           })),
         };
@@ -935,7 +1275,7 @@ export function createJdService({ pool, storage, environment }) {
         requirementId: row.requirement_id,
         requirement: row.requirement,
         topic: row.topic,
-        score: row.score,
+        score: Number(row.score),
         reason: row.reason,
         rank: row.rank,
         question: { id: row.question_id, title: row.title, difficulty: row.difficulty },
@@ -971,9 +1311,10 @@ export function createJdService({ pool, storage, environment }) {
         });
       }
       const plan = await client.query(
-        `INSERT INTO preparation_plans (student_id, job_description_id, matching_version)
-         VALUES ($1, $2, $3) RETURNING id, status, version, created_at, updated_at`,
-        [studentId, input.jobDescriptionId, input.matchingVersion],
+        `INSERT INTO preparation_plans (student_id, job_description_id, matching_version, title)
+         VALUES ($1, $2, $3, $4) RETURNING id, title, status, version, created_at, updated_at`,
+        [studentId, input.jobDescriptionId, input.matchingVersion,
+          `Kế hoạch luyện tập · ${new Date().toISOString().slice(0, 10)}`],
       );
       for (const [index, match] of matches.rows.entries()) {
         await client.query(
@@ -993,14 +1334,15 @@ export function createJdService({ pool, storage, environment }) {
         correlationId,
       });
       return { id: plan.rows[0].id, jobDescriptionId: input.jobDescriptionId,
-        matchingVersion: input.matchingVersion, status: plan.rows[0].status,
-        version: plan.rows[0].version };
+        title: plan.rows[0].title, matchingVersion: input.matchingVersion,
+        status: plan.rows[0].status, createdAt: nullableIsoDate(plan.rows[0].created_at),
+        updatedAt: nullableIsoDate(plan.rows[0].updated_at), version: plan.rows[0].version };
     });
   }
 
   async function getPlan(studentId, id) {
     const plan = await pool.query(
-      `SELECT id, job_description_id, matching_version, status, version, created_at, updated_at
+      `SELECT id, title, job_description_id, matching_version, status, version, created_at, updated_at
        FROM preparation_plans WHERE id = $1 AND student_id = $2`,
       [id, studentId],
     );
@@ -1025,9 +1367,12 @@ export function createJdService({ pool, storage, environment }) {
     );
     return {
       id: plan.rows[0].id,
+      title: plan.rows[0].title,
       jobDescriptionId: plan.rows[0].job_description_id,
       matchingVersion: plan.rows[0].matching_version,
       status: plan.rows[0].status,
+      createdAt: nullableIsoDate(plan.rows[0].created_at),
+      updatedAt: nullableIsoDate(plan.rows[0].updated_at),
       version: plan.rows[0].version,
       items: items.rows.map((row) => ({
         id: row.id,
@@ -1038,7 +1383,7 @@ export function createJdService({ pool, storage, environment }) {
         requirement: row.requirement,
         topic: row.topic,
         topicId: row.topic_id,
-        score: row.score,
+        score: nullableNumber(row.score),
         reason: row.reason,
         aiExplanation: row.ai_explanation,
         question: { id: row.question_id, title: row.title, difficulty: row.difficulty },
@@ -1098,6 +1443,85 @@ export function createJdService({ pool, storage, environment }) {
       const { question_id: ignored, ...body } = updated.rows[0];
       void ignored;
       return body;
+    });
+  }
+
+  async function updatePlan(studentId, id, input, correlationId) {
+    return withTransaction(pool, async (client) => {
+      const selected = await client.query(
+        `SELECT * FROM preparation_plans
+         WHERE id = $1 AND student_id = $2 FOR UPDATE`,
+        [id, studentId],
+      );
+      if (!selected.rowCount) throw notFoundError();
+      if (selected.rows[0].version !== input.version) {
+        throw new AppError({
+          status: 409,
+          code: "VERSION_CONFLICT",
+          message: "Kế hoạch đã được cập nhật ở nơi khác. Hãy tải lại trước khi lưu.",
+          recovery: { kind: "RETRY_SAFE", retryable: true, retryAfterSeconds: null },
+        });
+      }
+      const result = await client.query(
+        `UPDATE preparation_plans
+         SET title = $3, updated_at = now(), version = version + 1
+         WHERE id = $1 AND student_id = $2
+         RETURNING *`,
+        [id, studentId, input.title.trim()],
+      );
+      await writeAudit(client, {
+        actorId: studentId,
+        action: "PREPARATION_PLAN_RENAMED",
+        targetType: "PREPARATION_PLAN",
+        targetId: id,
+        correlationId,
+      });
+      return {
+        id: result.rows[0].id,
+        title: result.rows[0].title,
+        jobDescriptionId: result.rows[0].job_description_id,
+        matchingVersion: result.rows[0].matching_version,
+        status: result.rows[0].status,
+        createdAt: nullableIsoDate(result.rows[0].created_at),
+        updatedAt: nullableIsoDate(result.rows[0].updated_at),
+        version: result.rows[0].version,
+      };
+    });
+  }
+
+  async function archivePlan(studentId, id, version, correlationId) {
+    return withTransaction(pool, async (client) => {
+      const selected = await client.query(
+        `SELECT * FROM preparation_plans
+         WHERE id = $1 AND student_id = $2 FOR UPDATE`,
+        [id, studentId],
+      );
+      if (!selected.rowCount) throw notFoundError();
+      if (selected.rows[0].status === "ARCHIVED") {
+        return { id, status: "ARCHIVED" };
+      }
+      if (selected.rows[0].version !== version) {
+        throw new AppError({
+          status: 409,
+          code: "VERSION_CONFLICT",
+          message: "Kế hoạch đã được cập nhật ở nơi khác. Hãy tải lại trước khi xóa.",
+          recovery: { kind: "RETRY_SAFE", retryable: true, retryAfterSeconds: null },
+        });
+      }
+      await client.query(
+        `UPDATE preparation_plans
+         SET status = 'ARCHIVED', updated_at = now(), version = version + 1
+         WHERE id = $1`,
+        [id],
+      );
+      await writeAudit(client, {
+        actorId: studentId,
+        action: "PREPARATION_PLAN_ARCHIVED",
+        targetType: "PREPARATION_PLAN",
+        targetId: id,
+        correlationId,
+      });
+      return { id, status: "ARCHIVED" };
     });
   }
 
@@ -1204,13 +1628,11 @@ export function createJdService({ pool, storage, environment }) {
       planVersion: plan.rows[0].version,
       items: items.rows.map((row) => ({
         id: row.id,
-        userId: row.user_id,
         displayName: row.display_name,
         headline: row.headline,
         bio: row.bio,
         timezone: row.timezone,
-        verificationStatus: row.verification_status,
-        publicRating: row.public_rating,
+        publicRating: nullableNumber(row.public_rating),
         expertise: row.expertise,
         positionExpertise: [],
         nextSlots: row.next_slots,
@@ -1311,11 +1733,33 @@ export function createJdService({ pool, storage, environment }) {
 
   async function listPlans(studentId) {
     const result = await pool.query(
-      `SELECT id, job_description_id, matching_version, status, version, created_at
-       FROM preparation_plans WHERE student_id = $1 AND status = 'ACTIVE' ORDER BY created_at DESC`,
+      `SELECT p.id, p.title, p.job_description_id, p.matching_version, p.status,
+              p.version, p.created_at, p.updated_at, jd.title AS job_description_title,
+              array_remove(array_agg(DISTINCT t.name), NULL) AS topics
+       FROM preparation_plans p
+       JOIN job_descriptions jd ON jd.id = p.job_description_id
+       LEFT JOIN preparation_plan_items pi ON pi.plan_id = p.id
+       LEFT JOIN topics t ON t.id = pi.topic_id
+       WHERE p.student_id = $1
+       GROUP BY p.id, jd.title
+       ORDER BY p.updated_at DESC, p.id`,
       [studentId],
     );
-    return { items: result.rows.map((row) => ({ id: row.id, jobDescriptionId: row.job_description_id, matchingVersion: row.matching_version, status: row.status, version: row.version })), pageInfo: { page: 1, pageSize: result.rowCount, total: result.rowCount } };
+    return {
+      items: result.rows.map((row) => ({
+        id: row.id,
+        title: row.title,
+        jobDescriptionId: row.job_description_id,
+        jobDescriptionTitle: row.job_description_title,
+        matchingVersion: row.matching_version,
+        status: row.status,
+        topics: row.topics,
+        createdAt: nullableIsoDate(row.created_at),
+        updatedAt: nullableIsoDate(row.updated_at),
+        version: row.version,
+      })),
+      pageInfo: { page: 1, pageSize: result.rowCount, total: result.rowCount },
+    };
   }
 
   return {
@@ -1324,6 +1768,8 @@ export function createJdService({ pool, storage, environment }) {
     extractFromFileWithAi,
     get,
     list,
+    updateJobDescription,
+    archiveJobDescription,
     startExtraction,
     retryExtraction,
     saveCorrectedText,
@@ -1338,6 +1784,8 @@ export function createJdService({ pool, storage, environment }) {
     getMatches,
     createPlan,
     getPlan,
+    updatePlan,
+    archivePlan,
     updatePlanItem,
     listMentorCandidates,
     startRecommendationExplanations,

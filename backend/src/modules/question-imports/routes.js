@@ -1,18 +1,18 @@
 import { Router } from "express";
-import multer from "multer";
 import { z } from "zod";
 import { requireRole } from "../../middleware/auth.js";
 import { asyncHandler } from "../../shared/async-handler.js";
+import { singleUpload } from "../../shared/single-upload.js";
 import { parse } from "../../shared/validation.js";
 import { createQuestionImportsService } from "./service.js";
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { files: 1, fileSize: 5 * 1024 * 1024 } });
+const uploadCsv = singleUpload("file", { fileSize: 5 * 1024 * 1024 });
 
 export function createQuestionImportsRouter({ pool }) {
   const router = Router();
   const service = createQuestionImportsService({ pool });
 
-  router.post("/admin/question-imports/preview", requireRole("ADMIN"), upload.single("file"), asyncHandler(async (request, response) => {
+  router.post("/admin/question-imports/preview", requireRole("ADMIN"), uploadCsv, asyncHandler(async (request, response) => {
     response.status(201).json(await service.preview(request.auth.user.id, request.file, request.correlationId));
   }));
   router.get("/admin/question-imports/:importId", requireRole("ADMIN"), asyncHandler(async (request, response) => {

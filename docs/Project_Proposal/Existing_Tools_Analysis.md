@@ -1,66 +1,66 @@
 # Interview Practice Platform — Existing Tools Analysis
 
-## 1. Kết luận điều hành
+## 1. Executive summary
 
-Người học hiện có đủ công cụ để ghép một quy trình luyện phỏng vấn thủ công, nhưng phải tự đọc JD, suy luận requirement, chuyển ngữ cảnh, nhập lại dữ liệu và tự đánh giá chất lượng ở mỗi bước. Cơ hội của dự án không nằm ở việc thay thế mọi công cụ; nó nằm ở việc nối JD, explainable Question mapping, preparation plan, mentor booking và feedback thành một vòng lặp duy nhất.
+Candidates can assemble a manual interview-preparation workflow from existing tools, but they must read each job description (JD), infer requirements, transfer context, re-enter data, and assess quality at every handoff. The opportunity is not to replace every tool. It is to connect the JD, explainable question mapping, preparation plan, mentor booking, and structured feedback in one traceable loop.
 
-## 2. Các công cụ đang được dùng riêng lẻ
+## 2. Tools currently used separately
 
-| Nhu cầu | Công cụ thường dùng | Giá trị | Hạn chế |
-|---|---|---|---|
-| Tìm việc/vị trí | Website tuyển dụng, LinkedIn | Có mô tả công việc thật | Không chuyển JD thành lộ trình luyện |
-| Tìm câu hỏi | Google, blog, YouTube, ChatGPT | Nhiều nội dung, dễ tiếp cận | Rời rạc, trùng lặp, khó kiểm chứng |
-| Luyện coding | LeetCode và kho bài tập | Có bài tập và test tự động | Hẹp về coding; thiếu feedback giao tiếp |
-| Lưu tiến độ | Notes, bookmark, spreadsheet | Linh hoạt | Phải tổ chức thủ công, không gắn với booking |
-| Tìm người hỗ trợ | Bạn bè, cộng đồng, LinkedIn | Có thể tìm đúng chuyên môn | Phụ thuộc mạng lưới; hồ sơ và chất lượng không đồng nhất |
-| Điều phối lịch | Chat, calendar, email | Phổ biến | Trao đổi kéo dài, dễ thiếu thông tin hoặc trùng lịch |
-| Họp trực tuyến | Google Meet, Zoom | Ổn định, quen thuộc | Không lưu mục tiêu và rubric của buổi luyện |
-| Feedback | Tin nhắn, tài liệu tự do | Dễ triển khai | Khó so sánh và theo dõi hành động cải thiện |
+| Need                 | Common tools                       | Value                            | Limitation                                                |
+| -------------------- | ---------------------------------- | -------------------------------- | --------------------------------------------------------- |
+| Find a role          | Recruitment websites, LinkedIn     | Real job descriptions            | Does not turn a JD into a preparation plan                |
+| Find questions       | Google, blogs, YouTube, ChatGPT    | Broad and accessible content     | Fragmented, duplicated, and difficult to verify           |
+| Practise coding      | LeetCode and exercise repositories | Exercises and automated checking | Focuses on coding and gives little communication feedback |
+| Track progress       | Notes, bookmarks, spreadsheets     | Flexible                         | Manually organised and disconnected from bookings         |
+| Find support         | Friends, communities, LinkedIn     | May reach relevant expertise     | Network-dependent and inconsistent profiles or quality    |
+| Coordinate schedules | Chat, calendars, email             | Familiar                         | Long exchanges, missing context, and conflict risk        |
+| Meet online          | Google Meet, Zoom                  | Stable and familiar              | Does not retain the practice goal or rubric               |
+| Receive feedback     | Messages and free-form documents   | Easy to start                    | Difficult to compare and turn into follow-up actions      |
 
-## 3. Workflow kết hợp hiện tại
+## 3. Current combined workflow
 
 ```mermaid
 flowchart LR
-    A["Đọc JD và tự suy luận yêu cầu"] --> B["Tìm câu hỏi nhiều nguồn"]
-    B --> C["Tự đối chiếu và lập kế hoạch"]
-    C --> D["Tìm người qua mạng lưới"]
-    D --> E["Gửi lại JD, chốt mục tiêu và lịch"]
-    E --> F["Họp bằng công cụ ngoài"]
-    F --> G["Nhận feedback tự do"]
+    A["Read a JD and infer requirements"] --> B["Search for questions across sources"]
+    B --> C["Compare results and make a plan manually"]
+    C --> D["Find help through personal networks"]
+    D --> E["Resend the JD and agree on goals and time"]
+    E --> F["Meet using an external tool"]
+    F --> G["Receive free-form feedback"]
 ```
 
-Mỗi chuyển tiếp phụ thuộc vào thao tác thủ công. Dữ liệu về vị trí, chủ đề yếu và mục tiêu buổi luyện không đi xuyên suốt quy trình.
+Every transition is manual. Role context, weak topics, and practice goals do not travel through the complete workflow.
 
-## 4. Vì sao tổ hợp vẫn phức tạp
+## 4. Sources of complexity
 
-- Người học phải xác định nguồn nào đáng tin cậy và tự loại nội dung trùng lặp.
-- JD dạng tệp/ảnh cần công cụ trích xuất riêng; lỗi OCR không có correction gate thống nhất.
-- Không có taxonomy chung giữa JD, câu hỏi, mentor và feedback.
-- Không có mapping giải thích requirement nào dẫn đến Question nào hoặc coverage gap nào còn mở.
-- Mentor thường nhận yêu cầu thiếu mục tiêu, bối cảnh và phạm vi luyện.
-- Lịch rảnh và trạng thái booking nằm trong hội thoại riêng.
-- Không có quy tắc chống trùng slot, no-show hoặc review không hợp lệ.
-- Feedback khó biến thành danh sách chủ đề cần luyện tiếp.
+- Candidates must judge source credibility and remove duplicate content themselves.
+- File- or image-based JDs need a separate extraction tool, with no consistent correction gate for OCR errors.
+- There is no shared taxonomy across JDs, questions, mentors, and feedback.
+- There is no explainable mapping from a requirement to a question or an uncovered gap.
+- Mentors often receive incomplete goals, context, and practice scope.
+- Availability and booking status remain in private conversations.
+- There is no shared control for overlapping slots, no-shows, or invalid reviews.
+- Free-form feedback is difficult to convert into the next preparation tasks.
 
-## 5. So sánh với giải pháp đề xuất
+## 5. Comparison with the proposed solution
 
-| Khả năng | Tổ hợp công cụ hiện tại | Interview Practice Platform MVP |
-|---|---|---|
-| JD intake/extraction | Đọc/copy/OCR thủ công bằng công cụ rời | Paste/file, direct extraction/OCR fallback và correction gate |
-| Requirement/Question mapping | Người học tự suy luận | Taxonomy/alias + versioned rule score; Gemini hỗ trợ sau feature flag/validation; source/topic/reason |
-| Preparation plan | Notes/spreadsheet rời | Plan truy vết về JD/requirement/Question và next action |
-| Question taxonomy | Mỗi nguồn một cách phân loại | Một taxonomy theo vị trí/chủ đề/loại/mức độ |
-| Theo dõi luyện tập | Ghi chú thủ công | Bookmark và trạng thái luyện cơ bản |
-| Mentor discovery | Mạng lưới và tìm kiếm mở | Hồ sơ, phạm vi, xác minh, lịch và đánh giá |
-| Booking | Nhắn tin và lịch riêng | Vòng đời booking và khóa slot |
-| Context trước buổi | Gửi lại thủ công | Mục tiêu/chủ đề đi cùng booking |
-| Feedback | Tự do | Rubric và hành động tiếp theo |
-| Họp trực tuyến | Công cụ ngoài | Vẫn dùng công cụ ngoài trong MVP |
+| Capability                      | Current tool combination                 | Interview Practice Platform MVP                                            |
+| ------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------- |
+| JD intake and extraction        | Manual reading, copying, or separate OCR | Paste/file input, direct extraction, OCR fallback, and correction gate     |
+| Requirement-to-question mapping | Candidate inference                      | Versioned rule scores with source, topic, and reason; optional Gemini support behind feature flags and validation |
+| Preparation plan                | Separate notes or spreadsheet            | Plan traced to JD, requirement, question, and next action                  |
+| Question taxonomy               | Different classification per source      | Shared role, topic, type, and difficulty taxonomy                          |
+| Practice tracking               | Manual notes                             | Bookmarks and basic practice status                                        |
+| Mentor discovery                | Open search and personal network         | Profile, scope, verification, availability, and reviews                    |
+| Booking                         | Messages and private calendars           | Booking lifecycle with slot protection                                     |
+| Pre-session context             | Manually resent                          | Goal and topics attached to the booking                                    |
+| Feedback                        | Free form                                | Rubric and next action                                                     |
+| Online meeting                  | External tool                            | Still external in the MVP                                                  |
 
-## 6. Hàm ý cho business case
+## 6. Business-case implication
 
-MVP có giá trị ban đầu nếu giảm được ma sát từ JD đến preparation plan, kể cả khi người dùng chưa đặt Mentor. Nhóm phải đo task completion JD-to-plan, extraction success, blind-set recall/precision@10, plan activation, booking conversion/completion và feedback quality. Gemini chỉ là lớp hỗ trợ; rule/manual flow phải giữ được core value khi provider lỗi. Nếu plan hữu ích nhưng người dùng không chuyển sang Mentor, nhóm đánh giá lại value proposition/nguồn cung marketplace thay vì kết luận toàn bộ sản phẩm không có giá trị. Business case và logic đầu tư đầy đủ nằm trong [Project Proposal](Project_Proposal_Draft.md).
+The MVP has initial value if it reduces friction from JD to preparation plan, even before a mentor booking. The team must measure JD-to-plan task completion, extraction success, blind-set recall and precision@10, plan activation, booking conversion and completion, and feedback quality. Gemini remains an optional support layer; the rule/manual flow must preserve the core value when the provider fails. If plans are useful but candidates do not proceed to mentors, the team should reassess the marketplace value proposition and mentor supply rather than treat the whole product as invalid. The [Project Proposal](Project_Proposal.md) contains the complete business case and investment logic.
 
-## 7. Giới hạn bằng chứng
+## 7. Evidence limitation
 
-Phân tích này kế thừa giả thuyết từ proposal. Nhóm cần customer discovery với sinh viên và mentor để xác nhận tần suất sử dụng từng công cụ, chi phí chuyển đổi và mức sẵn lòng trả tiền.
+This analysis inherits hypotheses from the proposal. The repository contains no customer-interview record, survey dataset, analytics, or willingness-to-pay evidence. Customer discovery with candidates and mentors is still required to validate tool usage frequency, switching cost, and willingness to pay.

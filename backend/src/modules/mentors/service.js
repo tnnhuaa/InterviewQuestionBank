@@ -23,21 +23,32 @@ function mapLatestVerification(raw) {
   };
 }
 
-function profileDto(row) {
-  return {
+function nullableNumber(value) {
+  return value === null || value === undefined ? null : Number(value);
+}
+
+function publicProfileDto(row) {
+  const profile = {
     id: row.id,
-    userId: row.user_id,
     displayName: row.display_name,
     headline: row.headline,
     bio: row.bio,
     timezone: row.timezone,
-    verificationStatus: row.verification_status,
-    publicRating: row.public_rating,
+    publicRating: nullableNumber(row.public_rating),
     expertise: row.expertise ?? [],
     positionExpertise: row.position_expertise ?? [],
     nextSlots: row.next_slots ?? [],
-    reviews: row.reviews ?? [],
     version: row.version,
+  };
+  if (row.reviews !== undefined) profile.reviews = row.reviews ?? [];
+  return profile;
+}
+
+function profileDto(row) {
+  return {
+    ...publicProfileDto(row),
+    userId: row.user_id,
+    verificationStatus: row.verification_status,
   };
 }
 
@@ -557,7 +568,7 @@ export function createMentorsService({ pool, storage, environment }) {
     }
 
     return {
-      items: result.rows.map(profileDto),
+      items: result.rows.map(publicProfileDto),
       pageInfo: { page, pageSize, total },
       searchContext: {
         matchingMentorCount,
@@ -600,7 +611,7 @@ export function createMentorsService({ pool, storage, environment }) {
       [id],
     );
     if (!result.rowCount) throw notFoundError();
-    return profileDto(result.rows[0]);
+    return publicProfileDto(result.rows[0]);
   }
 
   async function listSlots(userId) {
