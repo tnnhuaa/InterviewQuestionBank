@@ -74,7 +74,9 @@ Công việc `secret-scan` dùng Gitleaks, lấy toàn bộ lịch sử Git và 
 
 **Giới hạn:** luồng tự động hiện không chạy `npm test`, không tạo gói phát hành có phiên bản, không triển khai môi trường staging và không kiểm tra nhanh URL sau triển khai.
 
-## 5. CD và IaC hiện tại
+## 5. Tự động triển khai và IaC hiện tại
+
+Render hiện tự động dựng và triển khai khi thay đổi tới `main`; đây là cơ chế tự động triển khai dựa trên Git. Tuy nhiên, do chưa có `npm test` trong CI, môi trường tiền sản xuất (staging), cổng phê duyệt, gói phát hành bất biến và kiểm tra sau triển khai, nhóm không gọi đây là một quy trình Triển khai liên tục (Continuous Deployment) hoàn chỉnh.
 
 | Thành phần | Hiện trạng | Giới hạn |
 |---|---|---|

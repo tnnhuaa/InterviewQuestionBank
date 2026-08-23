@@ -37,7 +37,7 @@ Kế hoạch kiểm thử mô tả sẽ kiểm thử cái gì, bằng phương p
 
 ### WHEN - Khi nào chạy?
 
-- Kiểm thử đơn vị/tích hợp: trước khi tạo Pull Request và khi sửa lỗi liên quan.
+- Kiểm thử đơn vị/tích hợp: quy trình nhóm yêu cầu chạy trước khi tạo Pull Request và khi sửa lỗi liên quan; CI hiện chưa tự động bắt buộc bước này.
 - CI quality gates: mỗi push và Pull Request.
 - Migration/seed replay: trong CI và trước release candidate.
 - Đi qua luồng thủ công: sau khi API, tiến trình nền, frontend và dữ liệu demo sẵn sàng.
@@ -66,9 +66,9 @@ Không dùng demo/load seed trên production. Không đưa mật khẩu, token, 
 
 ## 4. Ma trận kiểm thử ưu tiên
 
-| Nhóm | Luồng chính | Negative/boundary quan trọng |
+| Nhóm | Luồng chính | Trường hợp lỗi/biên quan trọng |
 |---|---|---|
-| Identity | đăng ký, verify, login/logout/reset | sai quyền trả 404, session cũ, rate limit, password bị xóa khỏi form |
+| Định danh | đăng ký, xác minh email, đăng nhập/đăng xuất/đặt lại mật khẩu | truy cập chưa xác thực trả 401; thiếu quyền trả 403 khi có thể công khai sự tồn tại; tài nguyên riêng của người khác trả 404 theo chính sách chống lộ tài nguyên; phiên đăng nhập cũ, giới hạn tần suất, mật khẩu bị xóa khỏi biểu mẫu |
 | JD | dán/tải tệp -> trích xuất -> xác nhận -> phân tích -> đối sánh -> kế hoạch | tệp rỗng/hỏng/mã hóa/quá giới hạn, OCR rỗng, nhà cung cấp lỗi, thử lại không tạo JD trùng |
 | Mentor | onboarding -> approval -> availability | chưa approved, slot quá khứ/chồng lấn, expertise không khớp |
 | Booking | chọn context/mentor/slot -> confirm/reschedule/cancel | context sai chủ, version conflict, double submit, hai request cùng slot chỉ một winner |
@@ -98,7 +98,9 @@ Không dùng demo/load seed trên production. Không đưa mật khẩu, token, 
 
 Các điều kiện thoát là release gate đề xuất; chỉ được gọi là đạt khi có bằng chứng tương ứng.
 
-## 6. Kết quả chạy thực tế ngày 23/08/2026
+## 6. Minh chứng thực thi kế hoạch kiểm thử ngày 23/08/2026
+
+Phần này là báo cáo kết quả của một lần thực thi kế hoạch tại môi trường và commit cụ thể, không phải nội dung định nghĩa Test Plan. Nó được giữ lại để chứng minh kế hoạch đã được áp dụng và để ghi nhận giới hạn của bằng chứng.
 
 Lần chạy đầu tiên không có PostgreSQL local:
 

@@ -11,7 +11,7 @@ This table applies Charter assignments; it creates no new roles and transfers no
 | Member | Charter primary role | Backlog responsibility |
 |---|---|---|
 | Tuấn Anh | Project Manager / Team Leader / Timekeeper | Runs the team, deadlines, and Kanban; handles blocker/escalation; reviews/merges and confirms Done |
-| Gia Thành | Project Planning & Estimation Analyst / Full-stack Developer | Prepares refinement/Planning Poker data, updates estimates and baseline impact; contributes Full-stack implementation |
+| Gia Thành | Project Planning & Estimation Analyst / Full-stack Developer | Prepares refinement and relative-estimation data, updates estimates and baseline impact; contributes Full-stack implementation |
 | Hưng | Product Owner / Business Analyst | Owns and orders the backlog, clarifies requirements, decides trade-offs, and accepts/rejects stories |
 | Luân | Architecture / Technical Lead | Reviews architecture impact, ADRs, NFRs, and technical/security constraints |
 | Hùng | UI/UX Designer / Front-end Developer | Verifies workflow/usability, maintains prototype traceability, and develops the interface |
@@ -69,7 +69,7 @@ Interface labels may be localized, but API contracts, tests, and documentation m
 
 ## 2. Product Backlog
 
-The backlog is ordered by value and dependencies. R1 has 27 Must stories; US-21–US-22 are Extended and US-23 is Future. Codes US-01–US-23 stay unchanged; the JD-first scope adds US-24–US-30. Story Points are relative size estimates, not hours, and need Development Team confirmation during refinement.
+The backlog is ordered by value and dependencies and supplies work to the team's Kanban flow. R1 has 27 Must stories; US-21–US-22 are Extended and US-23 is Future. Codes US-01–US-23 stay unchanged; the JD-first scope adds US-24–US-30. Story Points are relative size estimates, not hours, and need confirmation by the implementation team during refinement.
 
 | Order | Code | Feature group | User story | Value / goal | Release | Dependencies | Traceability | SP | Readiness/state |
 |---:|---|---|---|---|---|---|---|---:|---|
@@ -104,21 +104,21 @@ The backlog is ordered by value and dependencies. R1 has 27 Must stories; US-21�
 | 29 | US-22 | Reminders | As a side of a booking, I want scheduled reminders so I am less likely to miss a session. | OBJ-06; completion rate | R1 Extended | US-19 | RQ-09; BR-09; FS-11 | 3 | 24h/1h marks and retry policy approved |
 | 30 | US-23 | Data intake | As an Administrator, I want governed bulk question import so content expands without skipping moderation. | Content efficiency | Future/Maybe | US-18 | RQ-03/10; BR-07/08 | 8 | Needs per-item validation/error split |
 
-The R1 choice becomes a delivery commitment only after the Product Owner approves it, the Development Team runs Planning Poker, and the velocity range is reviewed.
+The R1 choice becomes a delivery commitment only after the Product Owner approves it, the implementation team refines the estimates, and capacity is checked against credible throughput and cycle-time evidence. If that historical evidence is unavailable, the range remains an explicit forecast rather than a measured delivery rate.
 
 ### 2.1 Method and story-point totals
 
 - Story Points express overall relative size, not hours.
-- Estimation uses the Fibonacci sequence `1, 2, 3, 5, 8`; larger gaps mean higher uncertainty. These are initial analogy/decomposition estimates and need Planning Poker confirmation.
+- Estimation uses the Fibonacci sequence `1, 2, 3, 5, 8`; larger gaps mean higher uncertainty. These are initial analogy/decomposition estimates. The team may use Planning Poker during backlog refinement to challenge assumptions and confirm relative size; it is not treated as a Scrum ceremony or a Kanban throughput measure.
 - Each SP covers one complete vertical story, including implementation, tests, documentation, and acceptance evidence. EN-01–EN-09 are quality/delivery gates already inside the related stories; if a support task is scheduled separately it must be estimated separately and rechecked to avoid double counting.
 - `US-03 = 2 SP` marks a small data-storage slice; bounded end-to-end work is usually `3–5 SP`; `8 SP` signals uncertainty or a split need. US-01, US-12, US-13, US-19, US-23, US-25, US-27, and US-28 must be considered for splitting before being pulled into Ready.
 
 | Backlog group | Stories | Initial SP | Plan interpretation |
 |---|---:|---:|---|
-| R1 Must | 27 | 134 | Needs an average `134 / 4 = 33.5 SP/week` across four reconstructed execution weeks; feasibility concluded only after a throughput range and rebaseline |
+| R1 Must | 27 | 134 | Implies an initial planning load of `134 / 4 = 33.5 SP` per calendar week across four reconstructed execution weeks; this is not empirical throughput, and feasibility requires evidence and a rebaseline |
 | R1 Extended | 2 | 8 | US-21 = 5, US-22 = 3; chosen only when Must and reserve are safe |
 | Future/Maybe | 1 | 8 | US-23; not in R1 |
-| Entire Product Backlog | 30 | 150 | Relative size estimate awaiting the Development Team's confirmation |
+| Entire Product Backlog | 30 | 150 | Relative size estimate awaiting confirmation by the implementation team |
 
 ## 3. Cross-cutting items and delivery
 
@@ -241,7 +241,7 @@ KPI evidence confirms outcomes; test evidence confirms behavior. Do not infer ei
 
 ### 7.1 Definition of Ready
 
-A story is Ready only when it has actor/value, acceptance criteria, dependencies, process/design/contract inputs, any approved PD baseline applying to it, and a Development Team estimate. Any deviation from PD-01–PD-08 must pass change control before the story counts as Ready.
+A story is Ready only when it has actor/value, acceptance criteria, dependencies, process/design/contract inputs, any approved PD baseline applying to it, and an estimate confirmed by the implementation team. Any deviation from PD-01–PD-08 must pass change control before the story counts as Ready.
 
 ### 7.2 Definition of Done
 
@@ -279,11 +279,11 @@ R1 uses Kanban in the eight-week window from 29/06/2026 to 23/08/2026. The execu
 
 | Backlog group | Stories | Initial SP | Plan constraint |
 |---|---:|---:|---|
-| R1 Must | US-01–US-20 and US-24–US-30 | 134 | Needs `33.5 SP/week` across four reconstructed execution weeks; not committed until the throughput range and capacity baseline confirm feasibility |
+| R1 Must | US-01–US-20 and US-24–US-30 | 134 | Implies an initial planning load of `33.5 SP` per calendar week across four reconstructed execution weeks; not committed until empirical flow data or an explicit forecast range and the capacity baseline confirm feasibility |
 | R1 Extended | US-21–US-22 | 8 | Chosen only after Must and reserve are safe |
 | Future | US-23 | 8 | Not in R1 |
 
-The will-have/might-have line is not placed until the Development Team confirms estimates and provides a low/high throughput range. The JD-first change adds 42 initial SP to the Must scope; the old 92-SP feasibility conclusion must not be inherited unless re-estimated.
+The will-have/might-have line is not placed until the implementation team confirms estimates and provides a low/high forecast informed by throughput and cycle time when such history exists. The JD-first change adds 42 initial SP to the Must scope; the old 92-SP feasibility conclusion must not be inherited unless re-estimated.
 
 ### 9.1 Story map
 
@@ -320,7 +320,7 @@ A story may be pulled into the Ready column only when:
 1. actor, value, priority, dependency, and Given/When/Then acceptance criteria are clear;
 2. process/prototype and technical inputs exist;
 3. the implementation follows PD-01–PD-08, or a recorded change and replacement evidence exist;
-4. the Development Team confirms the estimate using the agreed Fibonacci sequence;
+4. the implementation team confirms the estimate using the agreed Fibonacci sequence;
 5. any 8-point story is split or accepted as an exception before Ready;
 6. test data and expected outputs exist for extraction/analysis/mapping stories;
 7. the Product Owner, developer, and QA agree the story is implementable and testable within the set WIP limit.

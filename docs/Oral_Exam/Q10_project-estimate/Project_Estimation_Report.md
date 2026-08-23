@@ -110,7 +110,7 @@ Re-estimation is required when scope changes, a critical proof of concept fails,
 - The project has no comparable historical actual-effort dataset.
 - Complete actual timesheets are not retained.
 - The 606/650-hour values use the historical 20-Must-story scope.
-- Story Points cannot be converted directly to hours without reliable team velocity.
+- Story Points cannot be converted directly to hours. A Kanban forecast should use credible historical throughput, cycle-time, lead-time and Work in Progress data; the repository does not retain enough of that history.
 - The academic labor rate is not a market quote.
 
 ## 11. Source artifacts

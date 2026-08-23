@@ -45,7 +45,7 @@ Acceptance Criteria are verification contracts. They are not statements that a f
 
 ## 4. Inputs and development method
 
-The requirements were derived from the Project Charter, Vision and Scope, current and future workflows, prototype, stakeholder needs, architecture constraints and product decisions.
+The requirements were derived from the Project Charter, Vision and Scope, current and future workflows, prototype, stakeholder needs, architecture constraints and product decisions. The Product Backlog supplies ordered work to the project's Kanban flow; a sufficiently refined item is pulled from Backlog to Ready under the Work in Progress limit. Its use does not imply that the team operates Scrum.
 
 The team applied the following process:
 
@@ -55,7 +55,7 @@ The team applied the following process:
 4. identify dependencies and release boundaries;
 5. define Business Rules and measurable quality requirements;
 6. write testable Acceptance Criteria;
-7. estimate stories relatively with Story Points;
+7. have the implementation team estimate stories relatively with Story Points;
 8. order the backlog by value, risk and dependency; and
 9. link stories to workflows, tests and supporting evidence.
 

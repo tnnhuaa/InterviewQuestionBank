@@ -7,7 +7,7 @@
 | Project | PrepVI — Interview Practice Platform |
 | Version | 1.0 |
 | Reporting date | 23 August 2026 |
-| Status | Current test plan with retained local execution and CI evidence |
+| Status | Current test plan; execution evidence is reported separately in Sections 7 and 8 |
 | Test environments | Local Node.js workspaces, local PostgreSQL and hosted frontend/API checks |
 
 ## 1. Purpose
@@ -51,6 +51,8 @@ The test scope covers:
 
 Positive, negative, boundary, permission, concurrency, provider-failure and recovery scenarios are required for risk-critical flows.
 
+Authorization expectations are scenario-specific: an unauthenticated request normally returns `401`; an authenticated user without an allowed role may receive `403` when resource existence is not sensitive; access to another user's private object returns `404` when the policy must conceal that object. The Test Plan does not define every authorization failure as `404`.
+
 ## 5. Test environments
 
 | Environment | Intended use | Required controls |
@@ -81,9 +83,9 @@ Tests must not reset or seed a shared/production database with non-production da
 
 Automated test success alone does not satisfy UAT exit criteria.
 
-## 7. Automated test execution
+## 7. Test execution evidence
 
-The local `npm test` execution used a local PostgreSQL container and completed with process exit code 0:
+This section is a Test Execution summary for one retained run, not part of the planning baseline. The local `npm test` execution used a local PostgreSQL container and completed with process exit code 0:
 
 | Workspace | Test files | Tests | Result |
 | --- | ---: | ---: | --- |

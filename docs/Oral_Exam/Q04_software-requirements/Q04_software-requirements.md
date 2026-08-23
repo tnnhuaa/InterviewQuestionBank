@@ -8,7 +8,7 @@
 4. Yêu cầu chức năng, yêu cầu phi chức năng và quy tắc nghiệp vụ khác nhau thế nào?
 5. Nhóm duy trì khả năng truy vết và kiểm soát thay đổi Product Backlog như thế nào?
 
-> Product Backlog là tên chuẩn trong Scrum nên được giữ nguyên. Các thuật ngữ chuyên môn khác được giải thích bằng tiếng Việt ở lần xuất hiện đầu tiên.
+> Product Backlog là danh sách yêu cầu và công việc sản phẩm được sắp thứ tự. Nhóm dùng Product Backlog làm đầu vào cho luồng Kanban; hạng mục đủ điều kiện được kéo từ Backlog sang Ready theo giới hạn công việc đang thực hiện (Work in Progress - WIP). Thuật ngữ này không có nghĩa nhóm vận hành theo Scrum.
 
 ## 2. Câu trả lời ngắn theo WHAT - HOW - WHY - WHEN - EVIDENCE
 
@@ -30,7 +30,7 @@
 5. Xác định quan hệ phụ thuộc và ranh giới bản phát hành.
 6. Viết tiêu chí chấp nhận theo Given/When/Then hoặc điều kiện - hành động - kết quả.
 7. Liên kết câu chuyện với quy tắc nghiệp vụ, NFR, luồng, bộ kiểm thử và mục tiêu sản phẩm.
-8. Development Team ước lượng tương đối bằng Story Point; Product Owner sắp thứ tự theo giá trị, rủi ro và quan hệ phụ thuộc.
+8. Nhóm phát triển cùng ước lượng tương đối bằng Story Point; Product Owner sắp thứ tự theo giá trị, rủi ro và quan hệ phụ thuộc.
 
 ### WHY - Vì sao nhóm cần tài liệu này?
 
@@ -63,7 +63,7 @@ Git chứng minh tài liệu đã thay đổi. Repository không lưu chữ ký 
 | R1 Extended | US-21-US-22 | 8 | Chỉ chọn khi phần Must và nguồn dự phòng vẫn an toàn |
 | Future/Maybe | US-23 | 8 | Không thuộc cam kết R1 hiện tại |
 
-Story 8 SP thể hiện độ lớn hoặc bất định cao và cần được Development Team cân nhắc tách trước khi đưa vào trạng thái Ready.
+Câu chuyện 8 SP thể hiện độ lớn hoặc bất định cao và cần được nhóm phát triển cân nhắc tách trước khi đưa vào trạng thái Ready.
 
 ## 4. Ví dụ cụ thể: US-30
 
@@ -140,7 +140,7 @@ Nếu muốn chuyển US-21, US-22 hoặc US-23 vào phạm vi cơ sở, Product
 
 ### Ai ước lượng Story Point?
 
-Development Team ước lượng. Product Owner giải thích giá trị và yêu cầu, sau đó sắp thứ tự Product Backlog; Product Owner không tự áp đặt điểm.
+Các thành viên tham gia triển khai cùng ước lượng. Product Owner giải thích giá trị và yêu cầu, sau đó sắp thứ tự Product Backlog; Product Owner không tự áp đặt điểm.
 
 ### Độ ưu tiên và quan hệ phụ thuộc khác nhau thế nào?
 

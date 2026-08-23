@@ -82,7 +82,7 @@ Hai con số 606/650 giờ được tính từ phạm vi cơ sở lịch sử c�
 
 - 606/650 giờ chỉ là dự báo lịch sử, chưa phải cam kết cho backlog hiện tại;
 - không được coi 47 giờ còn lại là ngân sách để thêm tính năng;
-- cần cập nhật WBS/PERT, đếm lại phạm vi và chạy Planning Poker trước khi cam kết phát hành;
+- cần cập nhật WBS/PERT theo phạm vi mới, tinh chỉnh lại Product Backlog và hiệu chỉnh Story Point trước khi đưa hạng mục vào Ready hoặc tái thiết lập đường cơ sở phát hành;
 - dự báo vượt khoảng 653 giờ hoặc 8 tuần phải dẫn đến tái ước lượng, cắt phạm vi Extended/Future hoặc quyết định của Product Owner/Sponsor.
 
 ## 6. Câu hỏi phụ thường gặp
@@ -97,7 +97,7 @@ Dự phòng năng lực bảo vệ tổng thời gian sẵn có của nhóm. D�
 
 ### Story Point có đổi trực tiếp sang giờ không?
 
-Không. Story Point là thước đo tương đối về độ lớn, phức tạp và bất định. Chỉ có thể dự báo thời gian từ Story Point khi nhóm có dữ liệu velocity đủ tin cậy; repository hiện chưa lưu velocity lịch sử đủ để làm việc đó.
+Không. Story Point là thước đo tương đối về độ lớn, phức tạp và bất định. Với Kanban, nhóm ưu tiên dữ liệu thực nghiệm về thông lượng (throughput), thời gian chu trình (cycle time), thời gian hoàn thành (lead time) và WIP để dự báo. Repository hiện chưa lưu đủ dữ liệu lịch sử này, nên không được đổi trực tiếp Story Point sang giờ hoặc xem điểm mỗi tuần là tốc độ thực tế.
 
 ## 7. Minh chứng hình ảnh
 

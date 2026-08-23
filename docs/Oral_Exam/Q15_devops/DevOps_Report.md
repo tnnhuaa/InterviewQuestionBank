@@ -14,7 +14,7 @@
 
 PrepVI uses Git and GitHub for version control and review, GitHub Actions for automated quality and secret-scanning checks, Render Git integration for frontend/API deployment, Terraform for versioned Render service configuration, and Supabase PostgreSQL outside the current Terraform state.
 
-The current setup provides a repeatable source-to-deployment path for the frontend and API, but it is not a complete production-ready Continuous Delivery system. The background worker is not deployed, Terraform is not executed by GitHub Actions, automated post-deployment readiness tests are absent, and the current CI workflow does not run `npm test`.
+The current setup provides a repeatable source-to-deployment path for the frontend and API. Render automatically builds and deploys changes from `main`, but the project does not claim a complete production-ready Continuous Deployment pipeline: the background worker is not deployed, Terraform is not executed by GitHub Actions, automated tests and post-deployment readiness checks are absent from the pipeline, and no protected staging or release-artifact gate exists.
 
 ## 2. Objectives
 
@@ -53,6 +53,8 @@ The separate `secret-scan` job uses Gitleaks with full Git history. Workflow per
 The workflow does not currently run the Vitest suites. Local automated-test evidence and CI evidence must therefore be reported separately.
 
 ## 5. Deployment and Infrastructure as Code
+
+The Git-connected Render behavior is automatic deployment. It must not be presented as complete Continuous Deployment maturity until the missing quality, approval, artifact and post-deployment controls are implemented and evidenced.
 
 Render deploys two Git-connected services:
 
