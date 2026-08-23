@@ -6,80 +6,92 @@
 
 **Câu trả lời viết tay trong không quá 10 phút:**
 
-Tài liệu Định nghĩa quy trình phát triển phần mềm mô tả mô hình, giai đoạn, vai trò, sản phẩm công việc, điều kiện chuyển bước và cách tạo một bản phân phối PrepVI. Tôi tạo tài liệu để thống nhất cách chuyển yêu cầu thành backlog, thiết kế, mã nguồn, kiểm thử và increment.
+Tài liệu Định nghĩa quy trình phát triển phần mềm mô tả nhóm chuyển yêu cầu thành một increment đã review, kiểm tra và tích hợp như thế nào. Đầu vào gồm Project Charter, Vision & Scope, Product Backlog/acceptance criteria, Resource Plan, prototype, Architecture/ADR, quy tắc Ready/Done và bằng chứng Git/PR/CI.
 
-Đầu vào gồm Charter, Vision & Scope, Product Backlog/acceptance criteria, Resource Plan, prototype, Architecture/ADR, Definition of Ready, Definition of Done, CI và Git history. Tôi chọn Scrum/Agile làm mô hình cơ sở rồi hiệu chỉnh bằng architecture review, PoC, security/privacy check, CI và UAT/release gate. Kế hoạch gồm bốn sprint hai tuần trong tám tuần, chia thành Discovery/Charter, Prototype/Requirement, Foundation, JD Intake & Analysis, Marketplace Core Loop và UAT/Release. Các vai trò chính là Product Owner/BA, PM/Scrum Master, Architecture/Technical Lead, PoC/E2E, UI/UX và Leadership/Governance.
+Từ các đầu vào đó, nhóm xác định quy trình **Kanban theo tuần** vì sáu thành viên làm nhiều workstream song song và cần đổi ưu tiên linh hoạt. Cửa sổ kế hoạch là tám tuần; InterviewQuestionBank được thực hiện thực tế trong hai tuần cuối, còn lịch execution bốn tuần và Trello là dữ liệu tái dựng. Tuấn Anh điều hành deadline, Kanban, blocker, review/merge và xác nhận Done; Hưng ưu tiên backlog và chấp nhận story.
 
-Quy trình bắt đầu từ Product Backlog đã ưu tiên. Story được refinement để rõ actor, giá trị, acceptance criteria, dependency và estimate; chỉ vào sprint khi đạt DoR. Trong sprint, nhóm hiện thực code, UI, API và migration; thay đổi được lưu bằng Git, đưa qua Pull Request và CI. Story chỉ đạt DoD khi AC/NFR đạt, build thành công, có test/evidence, tài liệu được cập nhật và không còn lỗi nghiêm trọng. Increment được review/UAT, sau đó feedback quay lại backlog.
+Flow chính là **Product Backlog → Ready (WIP 6) → In Progress (WIP 6) → Review (WIP 3) → Done theo tuần**. Story chỉ vào Ready khi đạt Definition of Ready. Thành viên nhận việc qua phân công/Messenger, thực hiện trên branch, tự kiểm tra acceptance criteria, commit và tạo Pull Request. Tuấn Anh review/feedback; GitHub Actions kiểm tra chất lượng và secret; sau khi đạt yêu cầu, thay đổi được merge và xác nhận Done. PoC dùng để kiểm chứng rủi ro kỹ thuật nhưng được quản lý riêng, không nằm trên Trello. Feedback hoặc change được Product Owner đưa lại backlog để sắp xếp lại.
 
-Tôi đánh giá tài liệu bằng cách kiểm tra đủ vai trò và hoạt động, kiểm tra đầu ra bước trước có trở thành đầu vào bước sau, rồi đối chiếu mô tả với source, commit, CI và tài liệu dự án. Mô hình này giúp nhận feedback và phát hiện rủi ro sớm, nhưng cần backlog discipline, review đều và bằng chứng sprint. Tôi dùng tài liệu để phân công, xác định gate và hướng dẫn tích hợp; khi backlog, architecture hoặc release flow thay đổi, tôi cập nhật quy trình tương ứng.
+Tôi đánh giá tài liệu bằng cách kiểm tra đủ vai trò, trạng thái, input/output, WIP, Ready/Done và gate, sau đó đối chiếu với Charter, Backlog, Resource Plan, Trello tái dựng, Messenger, Git history, PR và CI. Cách đánh giá là **Criteria → Evidence → Judgement**. Điểm đạt là flow, ownership và integration có bằng chứng; điểm hạn chế là không có snapshot Trello gốc theo ngày, timesheet, throughput/cycle-time history, weekly reforecast hay UAT record đầy đủ. Vì vậy, tài liệu phải phân biệt rõ quy trình đã định nghĩa, bằng chứng quan sát được và dữ liệu tái dựng.
 
 ## 2. Câu hỏi thường gặp
 
-### 2.1 Tài liệu Định nghĩa quy trình phát triển phần mềm cần trả lời gì?
+### 2.1 Nhóm dùng mô hình quy trình nào và vì sao?
 
-Tài liệu phải trả lời: dùng mô hình nào; vì sao chọn; gồm giai đoạn/hoạt động/vai trò nào; đầu vào và đầu ra từng bước; tạo những work product nào; khi nào công việc được xem là sẵn sàng/hoàn thành; và làm sao tạo, đánh giá, phát hành một increment.
+Nhóm dùng **Kanban/Agile theo tuần**, không vận hành sprint. Kanban phù hợp vì nhóm nhỏ, workstream khác nhau, thời gian thực hiện ngắn và cần thay đổi ưu tiên sau feedback. Nhóm giữ các quality gate như Definition of Ready, Definition of Done, architecture review, Pull Request, CI và release review.
 
-### 2.2 Mô hình cơ sở được chọn để hiệu chỉnh là gì?
+### 2.2 Đầu vào và các bước tạo tài liệu là gì?
 
-Tôi chọn Scrum/Agile vì yêu cầu và rủi ro kỹ thuật cần được kiểm chứng theo increment ngắn. Tôi hiệu chỉnh Scrum bằng ADR/architecture gate, PoC, CI, security/privacy check và UAT/release gate. Đây không phải Waterfall vì backlog có thể được cập nhật từ feedback sau mỗi increment.
+**Đầu vào:** Charter; Vision & Scope; Product Backlog/AC; Resource Plan; prototype; Architecture/ADR; Ready/Done; phân công; Trello; Git/PR/CI và feedback của nhóm.
 
-### 2.3 Thời gian dự kiến của từng giai đoạn là bao lâu?
+**Các bước:**
 
-| Giai đoạn | Thời gian dự kiến | Đầu ra chính |
-| --- | ---: | --- |
-| Discovery/Charter | Tuần 1 | Charter, stakeholder và scope baseline |
-| Prototype/Requirement | Tuần 2 | Workflow, prototype, backlog/AC |
-| Foundation | Tuần 3 | Architecture/ADR, auth, schema và CI foundation |
-| JD Intake & Analysis | Tuần 4 | Extraction/OCR, taxonomy, matching và preparation plan |
-| Marketplace Core Loop | Tuần 5–6 | Mentor, availability, booking, notification và feedback |
-| UAT/Release | Tuần 7–8 | Defect triage, UAT và release evidence |
+1. Xác định vai trò, work product, công cụ và gate từ tài liệu dự án.
+2. Tái dựng flow từ backlog, phân công, Trello và luồng Git/PR/CI.
+3. Mô tả input, activity, output và điều kiện chuyển trạng thái.
+4. Đối chiếu với evidence, ghi rõ phần thực tế, phần tái dựng và khoảng trống.
 
-Đây là kế hoạch 8 tuần, được tổ chức theo bốn sprint hai tuần.
+### 2.3 Quy trình Kanban của nhóm vận hành như thế nào?
 
-### 2.4 Các vai trò của từng thành viên là gì?
+`Product Backlog → Ready (6) → In Progress (6) → Review (3) → Done theo tuần`.
 
-| Thành viên | Vai trò theo tài liệu dự án |
+- Product Owner sắp xếp backlog; refinement thực hiện ít nhất hằng tuần hoặc khi cần thêm việc.
+- Story chỉ vào Ready khi actor/value, AC, dependency, input kỹ thuật, estimate và test data cần thiết đã rõ.
+- Tuấn Anh giao việc; thành viên xác nhận qua Messenger và thực hiện trên branch.
+- Owner tự kiểm tra AC → commit → Pull Request → review/feedback → GitHub Actions → merge → xác nhận Done.
+- Blocker được báo qua Messenger; change ảnh hưởng scope được đưa lại backlog và reforecast.
+- PoC chạy song song để kiểm chứng rủi ro kỹ thuật và không nằm trên Trello.
+
+### 2.4 Vai trò của các thành viên là gì?
+
+| Thành viên | Vai trò chính |
 | --- | --- |
-| Hưng | Product Owner/BA |
-| Gia Thành | PM/Scrum Master |
-| Luân | Architecture/Technical Lead |
-| Trí | PoC/E2E |
-| Hùng | UI/UX |
-| Tuấn Anh | Leadership/Governance và release readiness |
+| Tuấn Anh | Project Manager / Team Leader / Timekeeper; Kanban, deadline, escalation, review/merge và Done |
+| Gia Thành | Project Planning & Estimation Analyst / Full-stack Developer |
+| Hưng | Product Owner / Business Analyst; backlog, AC và acceptance |
+| Luân | Architecture / Technical Lead; stack, ADR và technical review |
+| Hùng | UI/UX Designer / Front-end Developer |
+| Trí | PoC / Integration & E2E Developer |
 
-Khi vấn đáp về quá trình tạo và áp dụng tài liệu này, tôi trình bày các hoạt động dưới góc nhìn công việc tôi đã thực hiện và kiểm soát.
+### 2.5 Thời gian dự án được hiểu như thế nào?
 
-### 2.5 Những sản phẩm nào được khởi tạo?
+- **8 tuần:** cửa sổ kế hoạch học phần, từ 29/06 đến 23/08/2026.
+- **4 tuần:** lịch execution tái dựng, từ 27/07 đến 23/08; không phải actual đầy đủ.
+- **2 tuần:** thời gian thực hiện InterviewQuestionBank thực tế, từ 10/08 đến 23/08.
 
-Charter; Stakeholder Analysis; Vision & Scope; current/future workflow; Product Backlog và AC; prototype; Architecture và ADR; PoC; source code frontend/backend; OpenAPI contract; database migrations; CI workflow; test/evidence; hướng dẫn chạy/build và release/UAT evidence.
 
-### 2.6 Quy trình để đưa ra một bản phân phối hoạt động là gì?
+### 2.6 Các work product chính là gì?
 
-Backlog ưu tiên → refinement và estimate → đạt DoR → thực hiện work package → code/API/UI/migration → Pull Request và CI → kiểm tra DoD → build tích hợp → review/UAT → chấp nhận hoặc đưa feedback về backlog.
+Charter; Stakeholder Analysis; Vision & Scope; Product Backlog/AC; Resource Plan; prototype; Architecture/ADR; Trello Kanban; PoC; source code; migrations; API contract; Pull Request; CI result; test/evidence; increment và release guidance.
 
-### 2.7 Ưu và khuyết điểm của mô hình đã chọn là gì?
+### 2.7 Tài liệu và quy trình được đánh giá như thế nào?
 
-**Ưu điểm:** nhận feedback sớm, ưu tiên core loop, phát hiện rủi ro OCR/matching/booking sớm và dễ cập nhật theo evidence.
+Tôi dùng **Criteria → Evidence → Judgement**:
 
-**Khuyết điểm:** cần Product Owner/refinement đều đặn; thiếu kỷ luật DoR/DoD dễ làm scope trôi; thiếu bằng chứng sprint làm khó theo dõi velocity và đánh giá quy trình.
+1. Criteria: đúng vai trò, flow, WIP, Ready/Done, input/output và quality gate.
+2. Evidence: Charter, Backlog, Resource Plan, Trello, Messenger, Git, PR, CI, test và tài liệu dự án.
+3. Judgement: Pass khi mô tả có evidence; Pending khi thiếu dữ liệu; phần tái dựng phải được gắn nhãn, không được gọi là actual.
 
-### 2.8 Tài liệu được đánh giá thế nào?
+### 2.8 Ưu và nhược điểm của Kanban trong dự án là gì?
 
-Tôi kiểm tra tính đầy đủ của vai trò, bước, input/output và gate; sau đó đối chiếu với Charter, Resource Plan, Backlog/DoR/DoD, Architecture, CI, source code và Git history. Một mô tả chỉ được giữ khi có tài liệu hoặc sản phẩm thực tế hỗ trợ.
+**Ưu điểm:** trực quan hóa flow, giới hạn việc đang làm, dễ đổi ưu tiên, thấy blocker và hỗ trợ nhiều workstream song song.
 
-### 2.9 Tại sao cần tạo tài liệu này?
+**Nhược điểm:** nếu board không được cập nhật đúng thời điểm thì khó đo cycle time/throughput và dự báo; WIP limit chỉ có ý nghĩa khi nhóm thực sự tuân thủ; thiếu cadence review có thể làm backlog và flow lệch thực tế.
 
-Để mọi thành viên hiểu cùng một cách làm việc, biết công việc cần đầu vào gì, khi nào được chuyển bước, ai chịu trách nhiệm và bằng chứng nào chứng minh increment đã hoàn thành.
+### 2.9 Tài liệu được sử dụng và cập nhật như thế nào?
 
-### 2.10 Tài liệu được sử dụng và cập nhật thế nào?
+Tài liệu liên kết backlog với phân công, implementation, PR/CI và Done. Khi nhóm pivot từ Splitly sang InterviewQuestionBank rồi thu hẹp sang candidate-first, Charter, Proposal, backlog, planning và architecture được làm lại. Khi flow hoặc evidence thay đổi, tài liệu quy trình phải cập nhật nhưng vẫn giữ disclosure về dữ liệu tái dựng.
 
-Tôi dùng nó để liên kết backlog, architecture, implementation, CI và release gate. Khi scope, NFR, ADR, DoR/DoD hoặc build flow thay đổi, quy trình và work product tương ứng phải được cập nhật để không lệch thực tế.
+### 2.10 Những giới hạn bằng chứng nào phải công khai?
+
+Nhóm không có snapshot Trello gốc theo ngày, timesheet, throughput/cycle-time history đáng tin cậy, biên bản retrospective, weekly reforecast record hoặc UAT record đầy đủ. Board được tái dựng ngày 16/08; 26/27 story và 129/134 SP Done là trạng thái ghi trên board tái dựng, không phải phần trăm hoàn thành theo effort.
 
 ### 2.11 Software Process Definition khác Project Plan thế nào?
 
-Process Definition trả lời “làm theo cách nào và qua những gate nào”. Project Plan trả lời “làm việc gì, khi nào, ai làm và cần bao nhiêu nguồn lực”.
+Software Process Definition trả lời **nhóm làm việc theo flow nào, dùng công cụ/gate gì và chuyển trạng thái khi nào**. Project Plan trả lời **làm scope nào, ai làm, trong thời gian–nguồn lực–chi phí nào và dự báo ra sao**.
 
 ## 3. Tài liệu đi kèm
 
 - [ ] [Software Process Definition — English version](Software_Process_Definition_EN.md).
+- [ ] [Kanban software-process overview](img/software-process-overview.png).
+- [ ] [Reconstructed Kanban evidence](../Q11_project-plan/img/Q11-06-reconstructed-kanban-user-stories.png).

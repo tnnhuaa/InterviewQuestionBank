@@ -5,350 +5,363 @@
 | Field | Value |
 | --- | --- |
 | Project | PrepVI — Interview Practice Platform |
-| Process baseline | Tailored Scrum with iterative and incremental development |
-| Scope | From product discovery and backlog definition to an integrated, tested pilot increment |
-| Process owner | Project Manager / Scrum Master |
-| Approval roles | Product Owner for product acceptance; Technical Lead for technical gates; Team Lead/Sponsor for major scope and release decisions |
-| Status | Defined baseline reconstructed and checked against the project repository |
+| Process baseline | Weekly Kanban with incremental integration |
+| Planned window | 29 June–23 August 2026 |
+| Actual InterviewQuestionBank execution | 10–23 August 2026 |
+| Process owner | Tuấn Anh — Project Manager / Team Leader / Timekeeper |
+| Product acceptance | Hưng — Product Owner / Business Analyst |
+| Status | Defined from current project sources and checked against observed/reconstructed evidence |
 
-## 1. Purpose, scope, and application
+## 1. WHAT, WHY, and WHEN
 
-### 1.1 What this process defines
+### 1.1 WHAT — What this process defines
 
-This document defines how the PrepVI team turns an identified user problem into a prioritized backlog, design decisions, source code, verified increments, and a pilot-ready release. It describes the life cycle, phases, activities, roles, inputs, outputs, work products, tools, checkpoints, entry criteria, and exit criteria used by the team.
+This document defines how the PrepVI team turns an ordered Product Backlog item into a reviewed, integrated, and accepted increment. It describes the actors, workflow states, work-in-progress limits, inputs, activities, tools, outputs, entry/exit policies, evidence, and feedback paths used by the project.
 
 The process covers:
 
-- product discovery, vision, scope, and feasibility;
-- backlog creation, refinement, estimation, and release planning;
-- architecture, prototype, and technical-risk validation;
-- sprint planning and implementation;
-- inspection, testing, integration, and product acceptance;
-- review, adaptation, UAT, and release readiness;
-- change, risk, defect, and configuration control.
+- backlog refinement and Ready control;
+- weekly assignment, Kanban coordination, and blocker escalation;
+- analysis, design, implementation, documentation, and testing;
+- Git branch, commit, Pull Request, review, CI, merge, and Done confirmation;
+- technical-risk validation through PoC work outside Trello;
+- change, feedback, release, and process evaluation.
 
-### 1.2 Why the project needs a defined process
+### 1.2 WHY — Why Kanban fits this project
 
-A defined process answers the management questions: what should happen next, how the work is performed, how long it may continue, which artifacts it consumes and produces, who is accountable, and what evidence permits the work to move forward. For PrepVI, this prevents independent frontend, backend, database, architecture, and product decisions from drifting apart. It also makes security, booking consistency, notification reliability, JD-processing quality, and acceptance evidence explicit rather than relying on individual memory.
+The six-person team handled product, planning, UI/UX, architecture, PoC, front-end, back-end, and integration work in parallel. The product direction also changed late from Splitly to InterviewQuestionBank and then from a Mentor-first concept to a candidate-first JD flow. Weekly Kanban supports visible work, flexible priority, explicit WIP, and frequent integration without claiming fixed Scrum sprints that the team did not operate.
 
-### 1.3 When the process applies
+DoR, DoD, architecture review, Pull Request review, CI, security/privacy checks, and release gates remain necessary. Kanban controls flow; it does not remove product, technical, or quality governance.
 
-The process starts when a product problem or change request is proposed. It is applied during backlog refinement, every planned sprint, integration, release preparation, and maintenance. Feedback from a review, failed test, technical spike, user evaluation, or production-like walkthrough returns to the appropriate earlier activity instead of being handled through uncontrolled code-and-fix work.
+### 1.3 WHEN — When the process applies
 
-## 2. Process model selection and tailoring
+The process starts when the Product Owner creates or changes a backlog item. It applies whenever work is refined, assigned, pulled, implemented, reviewed, integrated, accepted, blocked, or returned for change. Replenishment and flow review occur weekly or when new work or a change must be confirmed.
 
-### 2.1 Selected model
+Three time layers must not be mixed:
 
-PrepVI uses a **Scrum-based, time-boxed iterative and incremental development process**. The release baseline contains four planned two-week sprints. Each sprint is a small development cycle that includes requirement clarification, analysis, design, implementation, inspection, testing, and integration, and aims to produce a stable, integrated, tested increment.
+1. **Eight-week planning window:** 29 June–23 August 2026.
+2. **Four-week reconstructed execution view:** 27 July–23 August 2026.
+3. **Actual InterviewQuestionBank execution:** 10–23 August 2026.
 
-This choice follows the course definitions:
+The four-week board view is reconstructed evidence, not proof of real-time tracking throughout those four weeks.
 
-- iterative and incremental development divides the life cycle into iterations and functionality into increments;
-- a sprint has a fixed end, while scope may be adjusted according to evidence and capacity;
-- working software and retained verification evidence are the primary measures of progress;
-- the Product Backlog evolves, but entry and completion gates protect quality.
+## 2. Source and evidence model
 
-### 2.2 Why this model fits PrepVI
+The process was formed from the following inputs:
 
-PrepVI had a clear product direction but uncertain details and technical risks. The team needed early feedback on the JD-first workflow, OCR/extraction, rule-based matching, authorization, concurrent booking, and notification retry. A sequential Waterfall baseline would defer too much feedback until late development. A full Spiral process would add disproportionate risk-analysis overhead for a small pilot team. The V-model's verification discipline is useful, but its sequential decomposition is not the primary life-cycle structure.
+| Input | Process information supplied |
+| --- | --- |
+| Project Charter | Roles, authority, planned window, decision rules |
+| Stakeholder Analysis | Communication and review cadence, escalation paths |
+| Vision & Scope | Product boundary and release objective |
+| Product Backlog and AC | Priority, stories, DoR, DoD, WIP-aware readiness, change control |
+| Resource Plan | Weekly Kanban rhythm, capacity, tools, tracking expectations |
+| Prototype and Architecture/ADRs | Design and technical constraints |
+| Weekly assignments and Messenger | Work assignment, acknowledgement, blocker communication |
+| Reconstructed Trello | Workflow states, WIP 6/6/3, assignees, weekly Done grouping |
+| Git, Pull Requests, and CI | Implementation, integration, automated-check evidence |
+| Q11, Q16, Q17, and Lessons Learned | Actual events, review results, and evidence limitations |
 
-Scrum and iterative development fit because the team can prioritize the core JD-to-feedback loop, validate risky behavior early with prototype/PoC work, integrate in small increments, and move lower-value scope when capacity or evidence changes.
+Evidence is classified as:
 
-### 2.3 Project-specific tailoring
+- **Defined:** a rule or expected practice stated in an approved/current project document.
+- **Observed:** a repository, PR, CI, message, or artifact directly demonstrates that an event occurred.
+- **Reconstructed:** the team recreated a view later from available information; it must not be presented as contemporaneous tracking.
+- **Missing/Pending:** no sufficient evidence exists.
 
-The team does not use unmodified Scrum. The process adds the following controls:
+## 3. Selected process model and tailoring
 
-- a Discovery and Charter baseline before sprint delivery;
-- prototype and feasibility checks for product and usability risk;
-- Architecture Decision Records and technical review for high-impact decisions;
-- explicit Definition of Ready and Definition of Done gates;
-- PostgreSQL-based tests for transactional and authorization invariants;
-- Pull Request review and GitHub Actions integration checks;
-- security/privacy review for JD files, meeting links, feedback, and access ownership;
-- UAT and release-readiness gates before a pilot is accepted.
+PrepVI uses **weekly Kanban**, not Scrum. The explicit board flow is:
 
-This is therefore a lightweight empirical process with defined engineering and governance checkpoints.
+`Product Backlog → Ready (WIP 6) → In Progress (WIP 6) → Review (WIP 3) → Done`
 
-## 3. Life-cycle structure
+The reconstructed Trello groups Done into W1–W4 for reporting. These columns do not create four Scrum sprints.
 
-The high-level flow is shown below. Solid forward paths create an increment; feedback paths return work to the backlog or implementation activity.
+Project-specific policies are:
 
-![PrepVI software process overview](img/software-process-overview.png)
+- the Product Owner orders the Product Backlog and accepts business behavior;
+- an item enters Ready only after applicable DoR conditions are met;
+- Tuấn Anh assigns weekly work and manages deadlines, flow, blockers, and escalation;
+- WIP limits are Ready 6, In Progress 6, and Review 3;
+- implementation uses a branch, focused commits, Pull Request, review/feedback, CI, and merge;
+- Tuấn Anh confirms Done after the applicable delivery checks;
+- PoC validates technical risks outside Trello and does not automatically change scope or an ADR;
+- feedback or an approved change returns to the Product Backlog for reordering and impact review;
+- no Critical/High defect may remain before release acceptance.
 
-The editable definition behind this diagram follows this flow:
+The WIP values are visible on a reconstructed board. The repository does not prove that the limits were continuously enforced before the reconstruction date.
 
-`Discovery → Product Backlog → Refinement/DoR → Sprint Planning → Analysis and Design → Implementation → Inspection and Testing → Pull Request/CI → DoD and Product Review → Increment → UAT/Release or next Sprint`
+## 4. Process overview
 
-The life cycle has three hierarchical groups:
+![PrepVI Kanban software process overview](img/software-process-overview.png)
 
-1. **Pregame — Initiation and release planning:** establish the product goal, feasibility, scope, backlog, architecture direction, release boundary, team, and capacity.
-2. **Game — Iterative sprint delivery:** refine, plan, build, inspect, test, integrate, review, and adapt through time-boxed sprints.
-3. **Postgame — UAT and release:** integrate the release candidate, resolve blocking defects, prepare operational material, obtain acceptance evidence, and make the release decision.
+The diagram combines three connected paths:
 
-Activities may overlap. For example, refinement for the next sprint may occur while the current increment is being completed, but a story cannot enter implementation without satisfying the readiness gate.
+1. **Product flow:** ordered backlog through Ready, In Progress, Review, and Done.
+2. **Integration flow:** branch/commit → Pull Request/review → GitHub Actions → merge/Done.
+3. **Risk-validation flow:** Architecture/ADR → PoC/evidence → confirm, revise, or keep Pending.
 
-## 4. Roles and responsibilities
+Messenger supports assignment acknowledgement, clarification, and blocker escalation. Feedback and accepted changes return to the Product Backlog.
 
-| Role | Process responsibility | Decision authority |
+## 5. Roles and responsibilities
+
+| Role/member | Process responsibility | Decision authority |
 | --- | --- | --- |
-| Sponsor / Lecturer | Reviews major Go/No-Go points and the project baseline | Approves or rejects major scope and pilot decisions |
-| Product Owner / Business Analyst | Owns product vision, backlog ordering, business rules, acceptance criteria, and story acceptance | Accepts/rejects stories and prioritizes product scope |
-| Project Manager / Scrum Master | Facilitates planning/refinement, tracks capacity, dependencies, risks, impediments, and process evidence | Escalates baseline variance and facilitates process changes |
-| Team Lead / Governance | Coordinates workstreams, resolves escalation, checks configuration and release readiness | Confirms cross-team priority and readiness decisions |
-| Architecture / Technical Lead | Reviews architecture impact, NFRs, security, consistency, reliability, and technical decisions | Accepts technical baselines and requests a PoC or ADR when needed |
-| UI/UX | Defines workflows and prototypes and collects usability evidence | Confirms UI handoff and usability findings |
-| Development Team | Analyzes, designs, implements, reviews, tests, documents, and integrates the increment | Owns estimates and the implementation plan for selected stories |
-| PoC / E2E / QA responsibility | Prepares test data, validates technical risks and end-to-end behavior, and retains results | Reports pass/fail evidence; does not waive failed acceptance criteria |
+| Sponsors | Review the Charter, baseline, and major change/release decisions | Approve major baseline and Go/No-Go decisions |
+| Hưng — Product Owner / Business Analyst | Own vision, backlog ordering, acceptance criteria, refinement, and story acceptance | Prioritize scope and accept/reject product behavior |
+| Tuấn Anh — Project Manager / Team Leader / Timekeeper | Assign work, manage deadline and Kanban, coordinate blockers/escalation, review/merge, and confirm Done | Make operational decisions without overriding PO product authority |
+| Gia Thành — Planning & Estimation Analyst / Full-stack Developer | Maintain planning, capacity, cost, estimates, and implement assigned full-stack work | Provide planning evidence and implementation output |
+| Luân — Architecture / Technical Lead | Own architecture, ADRs, technical constraints, and technical review | Accept/revise technical baselines and request PoC evidence |
+| Hùng — UI/UX Designer / Front-end Developer | Maintain workflow/prototype and implement front-end work | Confirm UI handoff and usability findings |
+| Trí — PoC / Integration & E2E Developer | Build PoCs, integration/E2E checks, and technical-risk evidence | Report evidence; does not independently change product scope |
+| Development contributors | Analyze, implement, test, document, review, and integrate assigned work | Own implementation approach within approved baselines |
 
-The team is cross-functional, so one member may perform more than one delivery responsibility. Product, architecture, quality, security/privacy, and release ownership must never be left unassigned.
+## 6. Activity definitions
 
-## 5. Phase definitions
-
-### 5.1 Phase A — Initiation and release planning
+### 6.1 Activity A — Establish or update the baseline
 
 | Element | Definition |
 | --- | --- |
-| Purpose | Establish why the product should be built, who it serves, the pilot boundary, feasibility, governance, capacity, and initial release goal. |
-| Entry criteria | A product problem or opportunity has been proposed and an accountable sponsor/team is available. |
-| Inputs | Problem evidence, stakeholder needs, course requirements, constraints, assumptions, and available team capacity. |
-| Roles | Sponsor, Product Owner, Project Manager/Scrum Master, Team Lead, UI/UX, Technical Lead, Development/PoC representatives. |
-| Activities and tools | Kick-off; stakeholder and problem analysis; Vision & Scope; prototype/PoC planning; initial estimation; risk and feasibility review. Markdown and Git store baselines; prototype artifacts support workflow validation. |
-| Deliverables | Charter, stakeholder analysis, Vision & Scope, feasibility study, prototype workflow, initial Product Backlog, Resource Plan, architecture direction, and release boundary. |
-| Checkpoint | Problem, scope, capacity, key risks, and release objective are reviewed together. |
-| Exit criteria | Product goal and R1 boundary are explicit; roles are assigned; initial backlog exists; major feasibility risks have owners and planned validation; Go/No-Go conditions are recorded. |
+| Trigger | New product direction or an approved material change |
+| Inputs | Problem evidence, stakeholder feedback, scope, constraints, capacity, prior artifacts |
+| Actors | Sponsors, Product Owner, Project Manager, Planning Analyst, UI/UX, Architecture, PoC/Development |
+| Steps | Confirm direction → update Charter/Proposal/Vision → update backlog and estimates → review architecture/resource/release impact |
+| Tools | Messenger/direct discussion, Markdown, Git/GitHub, Figma |
+| Outputs | Current product baseline, roles, ordered backlog, architecture direction, plan constraints |
+| Gate | Owner and approval authority are explicit; unresolved assumptions are marked Pending |
+| Evidence | Current Charter, Proposal, Vision & Scope, Backlog, Resource Plan, ADRs, Git history |
 
-### 5.2 Phase B — Backlog refinement and readiness
+Observed event: the team stopped Splitly, selected InterviewQuestionBank, then narrowed the value flow to candidate-first JD preparation. The planning documents were rebuilt after this change.
 
-| Element | Definition |
-| --- | --- |
-| Purpose | Convert product scope and feedback into ordered, testable, estimable stories that can be completed within a sprint. |
-| Entry criteria | A Product Backlog or an approved change request exists. |
-| Inputs | Vision/scope, business rules, workflow/prototype, architecture constraints, defects, review feedback, risks, and previous increment results. |
-| Roles | Product Owner, Scrum Master, Development Team, Architecture, UI/UX, and QA/PoC responsibility. |
-| Activities and tools | Clarify actor and value; write Given/When/Then acceptance criteria; identify dependencies and NFRs; link workflow/design/API/data inputs; estimate with the agreed Fibonacci scale; split oversized stories; prepare test data and expected results. |
-| Deliverables | Ordered Product Backlog, refined stories, acceptance criteria, dependency/traceability links, estimates, and candidate Sprint Backlog items. |
-| Checkpoint | Definition of Ready review. |
-| Exit criteria | Only stories satisfying every applicable DoR condition may be selected for Sprint Planning. Unready work remains in the Product Backlog. |
-
-### 5.3 Phase C — Sprint planning
+### 6.2 Activity B — Refine and move an item to Ready
 
 | Element | Definition |
 | --- | --- |
-| Purpose | Select a coherent sprint goal and a feasible set of Ready stories within team capacity. |
-| Entry criteria | Ordered Ready stories, current capacity, known carry-over, dependencies, and risks are available. |
-| Inputs | Product Backlog, release goal, estimates, capacity/reserve, architecture decisions, and prior sprint evidence. |
-| Roles | Product Owner, Scrum Master, Development Team; Technical Lead and QA participate for affected work. |
-| Activities and tools | Agree the Sprint Goal; select stories without exceeding credible capacity; break stories into tasks; identify owners, integration order, test needs, and blockers; reserve effort for review, testing, defects, learning, and risk. |
-| Deliverables | Sprint Goal, Sprint Backlog, task/dependency plan, test approach, and risk actions. |
-| Checkpoint | Product Owner and Development Team agree on the goal and selected scope; the team owns the implementation estimate. |
-| Exit criteria | Selected work is Ready, feasible for the timebox, testable, and has no unresolved dependency that makes the Sprint Goal impossible. |
+| Trigger | Weekly refinement or a need to add/change work |
+| Inputs | Ordered backlog item, acceptance criteria, dependencies, design/architecture inputs, estimate and test needs |
+| Actors | Product Owner with Development, Architecture, UX, and QA/PoC representatives |
+| Steps | Clarify actor/value → refine AC → identify dependencies/NFRs → confirm estimate → split large work → prepare test data → check WIP-aware feasibility |
+| Tools | Product Backlog Markdown, Trello/backlog tool, architecture/prototype artifacts |
+| Outputs | Ready item with priority, owner candidate, AC, dependencies, estimate, and evidence needs |
+| Success condition | All applicable DoR conditions pass and Ready WIP remains within 6 |
+| Failure path | Item remains in Product Backlog/refinement |
 
-### 5.4 Phase D — Sprint execution: analyze, design, build, inspect, and test
-
-| Element | Definition |
-| --- | --- |
-| Purpose | Produce a working, reviewed, tested increment that satisfies the Sprint Goal and applicable NFRs. |
-| Entry criteria | Sprint Goal and Sprint Backlog are agreed; required environments and inputs are available. |
-| Inputs | Ready stories, acceptance criteria, prototype/workflow, ADRs, API/data contracts, test data, and coding conventions. |
-| Roles | Development Team, Architecture/Technical Lead, UI/UX, QA/PoC responsibility, and Product Owner for clarification. |
-| Activities and tools | Analyze the story; update design/API/data contracts when required; implement React/Express/PostgreSQL changes; write or update tests; perform peer inspection; commit through Git; open/review a Pull Request; run CI; correct defects and re-run failed checks. |
-| Deliverables | Source code, unit/integration/policy tests, migrations, API contracts, updated documentation, review record, CI result, and a deployable integrated build. |
-| Checkpoints | Technical review for high-risk decisions; peer review; automated integration checks; story-level verification against AC/NFR. |
-| Exit criteria | All applicable DoD conditions are met. A failed review, test, build, migration, security check, or acceptance criterion returns the work to implementation and does not produce a Done story. |
-
-### 5.5 Phase E — Sprint review, retrospective, and replanning
+### 6.3 Activity C — Assign and pull work
 
 | Element | Definition |
 | --- | --- |
-| Purpose | Inspect the increment and the way of working, accept demonstrated value, and adapt the Product Backlog and process. |
-| Entry criteria | The sprint timebox ends and the integrated increment plus evidence are available. |
-| Inputs | Sprint Goal, increment, acceptance evidence, unresolved defects, CI results, capacity/carry-over, stakeholder feedback, and risk status. |
-| Roles | Product Owner, Scrum Master, Development Team, relevant stakeholders, and technical/quality reviewers. |
-| Activities and tools | Demonstrate Done behavior; accept or reject stories; record defects and feedback; compare planned and completed work; review risks and impediments; agree one or more process improvements; reorder/re-estimate the backlog. |
-| Deliverables | Accepted increment, updated Product/Release Backlog, defect records, review evidence, retrospective actions, and a revised forecast. |
-| Checkpoint | Product acceptance is based on AC/NFR evidence, not presentation alone. |
-| Exit criteria | Story states are accurate; rejected or incomplete work is returned to the backlog; feedback, risks, and improvement actions have owners; the next planning baseline is updated. |
+| Trigger | Weekly assignment or available capacity |
+| Inputs | Ready items, priority, role/skill ownership, deadlines, current WIP and blockers |
+| Actors | Tuấn Anh, Product Owner, assigned member |
+| Steps | Select work by priority/capacity → assign owner and cross-checker → communicate in Messenger → member acknowledges → move through the Kanban state |
+| Tools | Weekly assignment table, Messenger, Trello |
+| Outputs | Assigned work with expected output, owner, cross-check, and deadline |
+| Success condition | The assignment is understood and WIP limits are not exceeded |
+| Evidence limitation | A Messenger reaction proves receipt, not start, completion, or actual effort |
 
-### 5.6 Phase F — UAT and release
+The team used a default weekly deadline of 22:00 Saturday, with deadline changes coordinated by Tuấn Anh when needed.
+
+### 6.4 Activity D — Implement and integrate
 
 | Element | Definition |
 | --- | --- |
-| Purpose | Verify the integrated core workflow in its target-like environment and decide whether the pilot release is ready. |
-| Entry criteria | Required R1 stories are Done; a release candidate can be built and deployed; UAT scenarios and participants are available. |
-| Inputs | Integrated build, release backlog, test/UAT plan, migration and seed procedure, user/deployment guidance, known defects, and release risks. |
-| Roles | Product Owner, Project Manager/Scrum Master, Team Lead, Development/QA, Technical Lead, and pilot users. |
-| Activities and tools | Deploy the release candidate; perform smoke, critical workflow, negative authorization, migration, and UAT checks; triage defects; update guidance and evidence; evaluate Go/No-Go criteria. |
-| Deliverables | Release candidate, UAT/test results, defect disposition, deployment/user guidance, release evidence, and Go/No-Go decision. |
-| Checkpoint | No open Critical/High defect; critical workflows pass; Product Owner accepts the intended behavior; unresolved limitations are explicit. |
-| Exit criteria | A Go decision produces the pilot increment and retained evidence. A No-Go decision returns affected items to the backlog with priority, owner, and corrective action. |
+| Trigger | A member starts assigned Ready work |
+| Inputs | Story/task, AC, design/ADR, source or document baseline, test expectations |
+| Actors | Assigned member, cross-checker/reviewer, Tuấn Anh, GitHub Actions |
+| Steps | Analyze → edit code/docs on branch → self-check AC → commit → open PR → review/feedback → run CI → correct failures → approve/merge |
+| Tools | IDE/editor, Git, GitHub, Pull Request, GitHub Actions |
+| Outputs | Versioned source/documentation, reviewable diff, CI result, merged increment |
+| Success condition | Applicable review and CI checks pass; merge is completed; no blocking defect remains |
+| Failure path | Return to implementation or backlog/change control depending on the cause |
 
-## 6. Definition of Ready
+The CI currently checks lint, TypeScript, OpenAPI drift, PostgreSQL migration/seed, build, and Gitleaks. It does not currently run the repository's `npm run test` command or deploy, so CI success alone does not prove full DoD or release readiness.
 
-A story is Ready only when all applicable conditions below are satisfied:
+### 6.5 Activity E — Confirm Done and feed back
 
-1. The actor, user value, priority, and business outcome are clear.
-2. Acceptance criteria are testable and use Given/When/Then where appropriate.
-3. Dependencies, business rules, privacy/security constraints, and applicable NFRs are identified.
-4. Required workflow, prototype, API, data, architecture, or provider inputs are available.
-5. The implementation follows approved product/technical decisions, or an approved change record exists.
-6. The Development Team has estimated the story using the agreed relative scale.
-7. An eight-point story is split or explicitly accepted as a sprint exception.
-8. Test data and expected results exist for extraction, analysis, matching, booking, and other evidence-sensitive work.
-9. Product Owner, implementer, and QA responsibility agree that the story can be implemented and verified within the sprint.
+| Element | Definition |
+| --- | --- |
+| Trigger | Review and integration checks are complete |
+| Inputs | Merged increment, AC/NFR evidence, test/build result, updated contracts/docs, defect status |
+| Actors | Owner, reviewer, Tuấn Anh, Product Owner where product acceptance applies |
+| Steps | Verify applicable DoD → confirm business behavior → record Done → collect feedback/defects → update backlog and forecast when needed |
+| Tools | Trello, GitHub, test evidence, Messenger/backlog |
+| Outputs | Done item or a returned item with reason and next action |
+| Success condition | Applicable DoD passes and acceptance authority confirms the result |
+| Evidence limitation | The team describes owner self-check and Tuấn Anh review/merge/Done confirmation, but complete approval logs are not available for every PR |
 
-Failure of any required condition keeps the item in refinement; urgency alone does not bypass DoR.
+### 6.6 Activity F — Validate technical risk through PoC
 
-## 7. Definition of Done
+| Element | Definition |
+| --- | --- |
+| Trigger | A risky architecture assumption or validation scenario needs evidence |
+| Inputs | ADR/architecture assumption, criteria, test data, technical constraints |
+| Actors | Architecture/Technical Lead, PoC/E2E owner, affected developers |
+| Steps | Define criteria → implement/run PoC → collect source/test/result → judge Pass/Fail/Pending → update ADR/architecture if authorized |
+| Tools | Separate PoC source, Git, tests, result documents |
+| Outputs | Technical evidence and an ADR/architecture status decision |
+| Success condition | Evidence is reproducible and mapped to an explicit criterion |
+| Boundary | PoC is outside Trello and does not automatically add product scope |
 
-A story or increment is Done only when:
+### 6.7 Activity G — Review release readiness
 
-1. applicable acceptance criteria and NFRs pass and evidence is retained;
-2. the Product Owner accepts the demonstrated business behavior;
-3. code follows project conventions and has been reviewed by another team member;
-4. relevant unit, integration, end-to-end, policy, negative authorization, or concurrency tests pass;
-5. PostgreSQL—not only mocks—is used to prove database concurrency, state-machine, authorization, and outbox invariants when applicable;
-6. the build succeeds and applicable lint, type, API drift, migration replay, seed, and secret checks pass;
-7. database migrations, API contracts, audit/observability behavior, and documentation are updated;
-8. secrets, unnecessary JD content, and personal data are absent from the repository and logs;
-9. the integrated build is deployed or run in the target-like environment and smoke-checked by another member;
-10. no open Critical/High defect blocks the story or release;
-11. the release backlog, plan/forecast, guidance, and evidence links are updated.
+| Element | Definition |
+| --- | --- |
+| Trigger | Required scope is Done or a Go/No-Go decision is needed |
+| Inputs | Integrated build, accepted stories, defects, test/UAT evidence, deployment guidance, forecast and risks |
+| Actors | Product Owner, Project Manager, Technical Lead, Development/QA, Sponsors/pilot users as applicable |
+| Steps | Review critical flow → review defects/security/privacy → check deployment/migration guidance → decide Go/No-Go or return work |
+| Tools | Release checklist, GitHub/CI, test and UAT artifacts, risk/change log |
+| Outputs | Release decision, known limitations, corrective work or pilot increment |
+| Evidence status | Defined as a gate; the repository does not contain complete UAT and final release-decision evidence |
 
-Partially implemented work is not counted as Done and returns to the Product Backlog or defect flow.
+## 7. Explicit policies
+
+### 7.1 Definition of Ready
+
+An item enters Ready only when the applicable conditions are met:
+
+1. actor, value, priority, dependencies, and testable AC are clear;
+2. required process, prototype, API, data, and architecture inputs exist;
+3. the item follows approved product/technical decisions or has an approved change;
+4. the Development Team confirms its estimate;
+5. an eight-point item is split or accepted as an exception;
+6. evidence-sensitive work has test data and expected results;
+7. Product Owner, implementer, and QA responsibility agree it can be verified within the WIP policy.
+
+### 7.2 Definition of Done
+
+An item is Done only when applicable AC/NFR evidence passes, the Product Owner accepts product behavior, another member reviews the change, relevant tests/build checks pass, migrations/contracts/docs are updated, secrets and unnecessary private data are absent, the target-like build is smoke-checked when applicable, and no Critical/High defect blocks delivery.
+
+### 7.3 WIP and blocker policy
+
+| State | Limit |
+| --- | ---: |
+| Ready | 6 |
+| In Progress | 6 |
+| Review | 3 |
+
+Blockers are raised in Messenger when found. The current documents do not define a fixed response-time service-level expectation. The WIP limits come from the reconstructed Trello and should not be described as continuously measured historical compliance.
+
+### 7.4 Change policy
+
+The Product Owner owns backlog priority and acceptance. A material change updates its story, AC, dependencies, estimates, traceability, affected prototype/architecture contracts, release impact, and forecast. Changes exceeding scope, schedule, cost, resource, security/privacy, or release thresholds require the appropriate PO/Sponsor/technical decision.
 
 ## 8. Work products and traceability
 
-| Work product | Created or updated by | Used as input for | Acceptance/control |
-| --- | --- | --- | --- |
-| Charter and stakeholder baseline | PM/Scrum Master, Product Owner, Sponsor | Vision, scope, governance, release planning | Sponsor/Go-No-Go review |
-| Vision & Scope and workflow | Product Owner/BA, UI/UX | Product Backlog, prototype, acceptance criteria | Product baseline review |
-| Product/Release Backlog | Product Owner with team | Refinement, Sprint Planning, release decision | Ordered, traceable, estimated, and current |
-| Sprint Backlog and Sprint Goal | Development Team with PO/SM | Sprint execution | Capacity and DoR review |
-| Prototype and usability evidence | UI/UX and participants | Requirement clarification and acceptance design | Task completion/feedback evidence |
-| Architecture and ADRs | Technical Lead with reviewers | Design, implementation, technical validation | Decision status and evidence review |
-| Source, migrations, and API contracts | Development Team | Build, integration, testing, deployment | Peer review and automated checks |
-| Test data, tests, and results | Development/QA/PoC responsibility | Story acceptance, UAT, release gate | Expected-versus-actual result retained |
-| Increment and release candidate | Development Team | Sprint Review, UAT, pilot | DoD and release gate |
-| Review, defect, risk, and improvement records | PO/SM/Team | Replanning and process improvement | Owner, state, priority, and follow-up |
-
-Traceability follows this chain:
-
-`Product objective → requirement/user story → acceptance criteria and NFR → workflow/design/ADR → code/API/migration → test evidence → accepted increment`
-
-## 9. Control procedures
-
-### 9.1 Requirement and scope change
-
-The Product Owner reviews each change for value, priority, acceptance criteria, dependency, estimate, traceability, and release impact. Architecture, UX, QA, and Development review affected contracts and evidence. Changes that exceed the release capacity/budget baseline or materially change the core workflow require an explicit PO/Sponsor decision. Lower-priority Should/Could work is moved before mandatory quality controls are removed.
-
-### 9.2 Technical decision and risk
-
-A high-impact or difficult-to-reverse decision requires an ADR or recorded technical review. A risky assumption is validated with a spike, PoC, prototype, benchmark, or test before broad implementation. Evidence may confirm, revise, or supersede a decision; it must not silently rewrite the original rationale.
-
-### 9.3 Defect handling
-
-Defects are reproduced, classified, linked to affected behavior, assigned, fixed, reviewed, and regression-tested. Critical/High defects block Done/release. A failed test or CI check returns work to implementation. Lower-severity accepted limitations require an owner and explicit disposition.
-
-### 9.4 Configuration and integration
-
-Git is the configuration baseline. Changes use focused commits and Pull Request review before integration to `main`. Documentation, API contracts, migrations, seed behavior, and source changes are versioned together when they form one product change. CI checks the integrated state rather than relying only on a developer's local environment.
-
-### 9.5 Release control
-
-A release decision uses retained test/UAT results, known-defect status, migration/deployment readiness, privacy/security checks, and Product Owner acceptance. Release is a decision gate, not an automatic result of reaching the end of the schedule.
-
-## 10. Tools and project configuration
-
-| Need | Project tool/configuration | Evidence or control |
+| Work product | Used by the process | Control/evidence |
 | --- | --- | --- |
-| Version control and integration | Git and GitHub | Commit history, merged PR references, versioned project artifacts |
-| Backlog and decisions | Versioned Markdown; GitHub Issues/Projects when used | Backlog, acceptance criteria, ADRs, and change history |
-| Prototype and workflow | Figma/prototype images plus Markdown workflow specification | Screen-flow traceability and usability scenarios |
-| Implementation | React/Vite frontend, Express backend, PostgreSQL | Source, package scripts, schema/migrations, API contracts |
-| Review | Pull Request and peer review | Reviewable change set before integration |
-| Continuous integration | GitHub Actions on push and pull request | Install, lint, typecheck, OpenAPI drift, migration replay, reference-seed verification, build, and Gitleaks scan |
-| Testing | Project test suites and PostgreSQL-backed checks where required | Unit/integration/policy/regression evidence |
-| Documentation | Markdown in the repository | Versioned process, product, architecture, test, and operating knowledge |
+| Charter and Stakeholder Analysis | Roles, authority, communication, escalation | Current version and approval status |
+| Vision & Scope and Backlog | Priority, AC, DoR/DoD, release scope | Product Owner ownership and change history |
+| Weekly assignment and Messenger | Assignment, acknowledgement, blocker coordination | Screenshots/messages; acknowledgement is not completion |
+| Trello Kanban | Work states, WIP, assignee, weekly Done grouping | Reconstructed on 16 August; not original daily tracking |
+| Prototype and Architecture/ADRs | Design and technical boundaries | Owner/reviewer and decision status |
+| PoC source/test/result | Technical-risk validation | Criteria-to-evidence mapping; outside Trello |
+| Source/docs, commit, and PR | Versioned implementation and review flow | Git history and diff |
+| GitHub Actions result | Automated integration checks | Workflow status/log; tests and deployment remain separate gaps |
+| Increment/release evidence | Acceptance and Go/No-Go | Incomplete UAT/release evidence remains Pending |
 
-## 11. Monitoring, evaluation, and improvement
+Traceability follows:
 
-### 11.1 Defined monitoring
+`Product objective → story → AC/NFR → design/ADR → assignment → source/docs/PR → CI/test evidence → Done/feedback`
 
-At each sprint boundary, the team should inspect delivered scope, carry-over, blockers, defects, risks, capacity, and the forecast. Velocity is the long-term amount of completed work per iteration and must be calculated only from Done work. A burn-down chart may show remaining sprint work, but neither metric replaces acceptance or quality evidence.
+## 9. Tools and project configuration
 
-The process is evaluated using **Evidence → Criteria → Judgement**:
+| Need | Tool used | Evidence/control |
+| --- | --- | --- |
+| Product backlog and flow | Markdown backlog and reconstructed Trello | Story, priority, AC, states, WIP and Done grouping |
+| Assignment/coordination | Weekly assignment table and Messenger | Owner, output, cross-check, deadline, acknowledgement, blocker discussion |
+| Version control/integration | Git and GitHub | Branch, commit, PR, merge and history |
+| Automated integration | GitHub Actions | Lint, type, contract, migration, seed, build and secret scan |
+| Design | Figma/prototype artifacts | Workflow and interface handoff |
+| Technical decisions | Markdown architecture and ADRs | Decision rationale, status and validation criteria |
+| Evidence | Tests, CI logs, screenshots and reports | Expected-versus-observed comparison with limitations disclosed |
 
-1. define a criterion such as DoR, DoD, Sprint Goal, acceptance criterion, NFR, or release gate;
-2. collect evidence from the backlog, source, review, CI, test, deployment, or user evaluation;
-3. judge Pass, Fail, or Pending and record the action;
-4. update the backlog, risk, process, or technical baseline when evidence differs from the assumption.
+## 10. Evaluation and improvement
 
-### 11.2 Repository evidence observed
+### 10.1 Evaluation method
 
-The repository currently provides evidence of:
+The process is evaluated with **Criteria → Evidence → Judgement**:
 
-- an ordered Product Backlog with acceptance criteria, NFRs, DoR, DoD, release planning, and change-control rules;
-- versioned Charter, Resource Plan, Vision & Scope, prototype workflow, feasibility, architecture, and ADR artifacts;
-- incremental source history and commits containing Pull Request identifiers;
-- frontend and backend test files, including booking, idempotency, JD matching, mentor, policy, and regression coverage;
-- a GitHub Actions workflow that runs on pushes and pull requests;
-- automated lint, typecheck, OpenAPI drift, migration replay, reference-seed, build, and secret-scan controls.
+1. Define a criterion for roles, states, WIP, DoR/DoD, input/output, review, CI, change or release.
+2. Collect evidence from current documents, Trello, Messenger, Git, PR, CI, tests and reports.
+3. Judge Pass, Fail or Pending.
+4. Correct the process document or project artifact when evidence differs from the description.
 
-### 11.3 Gaps and improvement actions
+### 10.2 Evidence-supported findings
 
-The repository does not by itself prove that Daily Scrum, Sprint Review, Sprint Retrospective, burn-down/velocity tracking, or UAT were consistently performed. These activities must be supported by meeting notes, board snapshots, review decisions, metrics, or UAT results before they are reported as completed practice.
+- Current Charter, Resource Plan, Backlog, Stakeholder Analysis, Q11, Q16, Q17 and Q21 consistently identify weekly Kanban rather than Scrum.
+- The reconstructed board defines Product Backlog, Ready 6, In Progress 6, Review 3, and Done by week.
+- Git/PR/CI evidence supports incremental integration across workstreams.
+- Roles and authority are now aligned: Tuấn Anh manages delivery/Kanban; Hưng owns backlog/acceptance; Gia Thành owns planning/estimation and contributes development.
+- The team rebuilt planning documents after two major product-direction changes.
 
-The current CI workflow does not invoke the repository's `npm test` script even though test files exist. The process therefore requires retained test evidence, but automated test execution in CI remains an improvement action. Recommended improvements are:
+### 10.3 Evidence gaps
 
-1. add the relevant automated test command to CI and retain the result;
-2. store one concise Sprint Review and Retrospective record per sprint;
-3. retain Sprint Goal, committed/completed scope, carry-over reason, and velocity evidence;
-4. store UAT scenarios, actual results, defect disposition, and the final release decision;
-5. update this definition when the team's observed process differs from the prescribed baseline.
+- no original daily Trello snapshots before reconstruction;
+- no trustworthy historical throughput or cycle-time series;
+- no person-hour timesheet;
+- no complete weekly reforecast or process-review record created at the time;
+- no formal retrospective minutes;
+- incomplete PR approval evidence across all changes;
+- CI does not run the full test command and does not deploy;
+- no complete UAT and final release-decision evidence.
 
-## 12. Strengths and limitations
+The reconstructed board records 26 of 27 Must stories and 129 of 134 SP as Done. This is a reconstructed board state, not 96.3% of actual effort and not proof that the board was updated in real time.
+
+### 10.4 Improvement actions
+
+1. Keep one live board and retain weekly snapshots or exports.
+2. Record state-change timestamps to calculate throughput, cycle time, WIP age and blocked time.
+3. Link every card to its story, PR, AC and acceptance evidence.
+4. Retain flow/replenishment decisions and reforecast results at the time they occur.
+5. Add the relevant automated test command to CI and retain UAT/release evidence.
+6. Record concise process-improvement actions without inventing a retrospective that did not occur.
+
+## 11. Strengths and limitations
 
 ### Strengths
 
-- Early and repeated feedback reduces the cost of misunderstanding requirements.
-- Timeboxes and ordered scope protect the schedule while allowing empirical adjustment.
-- DoR, DoD, architecture/PoC gates, and CI provide stronger control than informal code-and-fix work.
-- Small integrated increments reveal interface, database, security, and workflow risks earlier.
-- Versioned artifacts improve communication, review, traceability, and redesign support.
+- Visible states and WIP make parallel work and review queues easier to coordinate.
+- Weekly replenishment supports late product changes without pretending that fixed sprint commitments existed.
+- DoR, DoD, ADR, PR and CI connect flow control with engineering quality.
+- Versioned artifacts and Git history support traceability and reconstruction.
 
 ### Limitations
 
-- The process depends on disciplined refinement, evidence retention, and Product Owner availability.
-- A small cross-functional team may create role overlap and single-person dependencies.
-- Without reliable sprint records, velocity and process conformance cannot be demonstrated.
-- Iterative delivery can accumulate architectural debt if short-term increments bypass technical review.
-- Ceremonies and documentation become waste if they do not support a decision, artifact, quality gate, or feedback loop.
+- Reconstructed flow data cannot establish historical Kanban performance.
+- Without live state timestamps, throughput and cycle-time forecasts remain proposals rather than verified metrics.
+- Broad WIP limits may not expose bottlenecks if the team does not actively review and enforce them.
+- PoC outside Trello reduces visibility unless its criteria, owner, status and result are linked elsewhere.
+- Informal Messenger decisions are difficult to audit without a concise decision/action log.
 
-## 13. References and evidence sources
+## 12. References and evidence sources
 
-### Course references used to define the process
-
-- [Software Development Life Cycle Model](../../refs/04-software-development-life-cycle-model.md): SDLC elements and the phase-definition template of purpose, entry criteria, inputs, roles, tasks, flow, deliverables, checkpoints, outputs, and exit criteria.
-- [Software Development Models](../../refs/04-01-software-development-models.md): Waterfall, iterative/incremental, evolutionary, Spiral, and V-model characteristics and trade-offs.
-- [Scrum Development Process](../../refs/04-02-scrum-development-process.md): Scrum roles, activities, work products, phases, DoD, review, retrospective, velocity, and adaptation.
-- [Oral-exam process template](../template/03-template-mo-hinh-quy-trinh.md): WHAT–WHY–WHEN, project-specific flow, inputs/outputs, tools, evidence, and improvement requirements.
-
-### PrepVI sources used to tailor and verify the definition
+### Current project sources
 
 - [Project Charter](../../Project_Governance%20&%20Stakeholder/Project_Charter.md)
-- [Resource Plan](../../Project_Resource_Plan/ResourcePlan.md)
+- [Stakeholder Analysis](../../Project_Governance%20&%20Stakeholder/Stakeholder_Analysis.md)
 - [Vision and Scope](../../Project_Vision_and_Scope/Project_Vision_and_Scope.md)
 - [Product Backlog and Acceptance Criteria](../../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md)
-- [Prototype Workflow](../../Project_Prototype/Prototype_Workflow.md)
-- [Feasibility Study](../../Project_Feasibility/feasibility.md)
+- [Resource Plan](../../Project_Resource_Plan/ResourcePlan.md)
 - [Software Architecture](../../Project_Architecture/software_architecture.md)
-- [CI workflow](../../../.github/workflows/ci.yml)
+- [Q11 — Project Plan](../Q11_project-plan/Q11_project-plan.md)
+- [Q13 — Continuous Integration](../Q13_continuous-integration/Q13_continuous-integration.md)
+- [Q16 — Team Management](../Q16_team-management/Q16_team-management.md)
+- [Q17 — Monitoring and Control](../Q17_monitoring-and-control/Q17_monitoring-and-control.md)
+- [Q21 — Lessons Learned](../Q21_lessons-learned/Q21_lessons-learned.md)
 
-## 14. Print checklist
+### Method references
 
-- [ ] The process overview diagram is visible and readable.
-- [ ] Every phase includes purpose, entry criteria, inputs, roles, activities, deliverables, checkpoint, and exit criteria.
-- [ ] Definition of Ready and Definition of Done are included.
-- [ ] Defined practice is distinguished from repository-observed evidence.
-- [ ] Gaps and improvement actions are not presented as completed activities.
-- [ ] The printed version includes this document only as the required Software Process Definition attachment.
+- [Software Development Life Cycle Model](../../refs/04-software-development-life-cycle-model.md)
+- [Scrum Development Process — includes Kanban as an Agile alternative](../../refs/04-02-scrum-development-process.md)
+- [Oral-exam process template](../template/03-template-mo-hinh-quy-trinh.md)
+
+## 13. Print checklist
+
+- [ ] The Kanban process diagram is visible and readable.
+- [ ] Each activity shows actor, input, steps, tool, output, gate and evidence.
+- [ ] WIP values are Ready 6, In Progress 6 and Review 3.
+- [ ] PoC is shown outside Trello.
+- [ ] Eight-week planned, four-week reconstructed and two-week actual timelines are distinct.
+- [ ] Reconstructed evidence is not presented as real-time tracking.
+- [ ] Missing throughput/cycle-time, timesheet, retrospective and UAT evidence is disclosed.
