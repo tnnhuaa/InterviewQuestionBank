@@ -6,89 +6,65 @@
 
 **Câu trả lời viết tay trong không quá 10 phút:**
 
-Tài liệu Định nghĩa quy trình phát triển phần mềm mô tả nhóm chuyển yêu cầu thành một increment đã review, kiểm tra và tích hợp như thế nào. Đầu vào gồm Project Charter, Vision & Scope, Product Backlog/acceptance criteria, Resource Plan, prototype, Architecture/ADR, quy tắc Ready/Done và bằng chứng Git/PR/CI.
+Trước tiên nhóm xác định Tài liệu Định nghĩa quy trình phát triển phần mềm phải mô tả nhóm chuyển những yêu cầu thành một increment đã review, kiểm tra và tích hợp như thế nào.
+Đầu vào của tài liệu này bao gồm Project Charter, Vision & Scope, Product Backlog/acceptance criteria, Resource Plan, prototype, Architecture/ADR, quy tắc Ready/Done và bằng chứng Git/PR/CI.
 
-Từ các đầu vào đó, nhóm xác định quy trình **Kanban theo tuần** vì sáu thành viên làm nhiều workstream song song và cần đổi ưu tiên linh hoạt. Cửa sổ kế hoạch là tám tuần; InterviewQuestionBank được thực hiện thực tế trong hai tuần cuối, còn lịch execution bốn tuần và Trello là dữ liệu tái dựng. Tuấn Anh điều hành deadline, Kanban, blocker, review/merge và xác nhận Done; Hưng ưu tiên backlog và chấp nhận story.
+Từ các đầu vào đó, nhóm xác định quy trình **Kanban theo tuần** vì sáu thành viên làm nhiều công việc song song và cần đổi ưu tiên linh hoạt. Kế hoạch dự kiến là tám tuần. Trưởng nhóm sẽ điều hành deadline, Kanban, blocker, review/merge và xác nhận Done
 
-Flow chính là **Product Backlog → Ready (WIP 6) → In Progress (WIP 6) → Review (WIP 3) → Done theo tuần**. Story chỉ vào Ready khi đạt Definition of Ready. Thành viên nhận việc qua phân công/Messenger, thực hiện trên branch, tự kiểm tra acceptance criteria, commit và tạo Pull Request. Tuấn Anh review/feedback; GitHub Actions kiểm tra chất lượng và secret; sau khi đạt yêu cầu, thay đổi được merge và xác nhận Done. PoC dùng để kiểm chứng rủi ro kỹ thuật nhưng được quản lý riêng, không nằm trên Trello. Feedback hoặc change được Product Owner đưa lại backlog để sắp xếp lại.
+Flow chính của quy trình là **Product Backlog → Ready (WIP 6) → In Progress (WIP 6) → Review (WIP 3) → Done theo tuần**. Story chỉ vào Ready khi đạt Definition of Ready. Thành viên nhận việc qua phân công/Messenger, thực hiện trên branch, tự kiểm tra acceptance criteria, commit và tạo Pull Request. Trưởng nhóm sẽ review/feedback; GitHub Actions kiểm tra chất lượng và secret; sau khi đạt yêu cầu, thay đổi được merge và xác nhận Done. PoC dùng để kiểm chứng rủi ro kỹ thuật nhưng được quản lý riêng, không nằm trên Trello. Feedback hoặc change được Product Owner phản hồi sẽ đưa các task lại backlog để người được phân công xem lại.
 
-Tôi đánh giá tài liệu bằng cách kiểm tra đủ vai trò, trạng thái, input/output, WIP, Ready/Done và gate, sau đó đối chiếu với Charter, Backlog, Resource Plan, Trello tái dựng, Messenger, Git history, PR và CI. Cách đánh giá là **Criteria → Evidence → Judgement**. Điểm đạt là flow, ownership và integration có bằng chứng; điểm hạn chế là không có snapshot Trello gốc theo ngày, timesheet, throughput/cycle-time history, weekly reforecast hay UAT record đầy đủ. Vì vậy, tài liệu phải phân biệt rõ quy trình đã định nghĩa, bằng chứng quan sát được và dữ liệu tái dựng.
+Trong quá trình xây dựng tài liệu Quy trình phát triển phần mềm, nhóm lập dàn ý và sử dụng AI để hỗ trợ diễn đạt nội dung. Sau đó, nhóm kiểm tra xem tài liệu đã mô tả đầy đủ vai trò, trạng thái công việc, đầu vào/đầu ra, giới hạn công việc đang thực hiện (WIP), điều kiện Ready/Done và các bước kiểm soát chất lượng hay chưa. Nội dung tài liệu tiếp tục được đối chiếu với các bằng chứng của dự án như Charter, Backlog, Resource Plan, bảng Trello được tái dựng, tin nhắn Messenger, lịch sử Git, Pull Request và kết quả CI. Nhóm đánh giá theo ba bước **Tiêu chí → Bằng chứng → Kết luận**. Một nội dung chỉ được xem là đạt khi có bằng chứng về luồng công việc, người chịu trách nhiệm và việc tích hợp sản phẩm. Tuy nhiên, nhóm không có đầy đủ ảnh chụp Trello theo từng ngày, bảng ghi thời gian làm việc, lịch sử năng suất và thời gian xử lý công việc, bản cập nhật dự báo hằng tuần hoặc hồ sơ kiểm thử chấp nhận của người dùng (UAT). Vì vậy, tài liệu phải ghi rõ đâu là quy trình nhóm đã đề ra, đâu là thông tin có bằng chứng kiểm chứng được và đâu là dữ liệu được tái dựng sau đó.
 
 ## 2. Câu hỏi thường gặp
 
-### 2.1 Nhóm dùng mô hình quy trình nào và vì sao?
+### 2.1 Các câu hỏi chính cần trả lời trong tài liệu Định nghĩa quy trình phát triển phần mềm là gì?
 
-Nhóm dùng **Kanban/Agile theo tuần**, không vận hành sprint. Kanban phù hợp vì nhóm nhỏ, workstream khác nhau, thời gian thực hiện ngắn và cần thay đổi ưu tiên sau feedback. Nhóm giữ các quality gate như Definition of Ready, Definition of Done, architecture review, Pull Request, CI và release review.
+Tài liệu cần trả lời: nhóm sử dụng mô hình phát triển nào; quy trình gồm những vai trò, hoạt động, đầu vào, đầu ra và công cụ nào; công việc chuyển qua các trạng thái ra sao; điều kiện Ready và Done là gì; các bước kiểm soát chất lượng và tạo bản phân phối hoạt động được thực hiện như thế nào.
 
-### 2.2 Đầu vào và các bước tạo tài liệu là gì?
+### 2.2 Mô hình cơ sở được lựa chọn để hiệu chỉnh là gì?
 
-**Đầu vào:** Charter; Vision & Scope; Product Backlog/AC; Resource Plan; prototype; Architecture/ADR; Ready/Done; phân công; Trello; Git/PR/CI và feedback của nhóm.
+Nhóm chọn **Kanban/Agile theo tuần**, không vận hành theo sprint. Nhóm hiệu chỉnh Kanban thành luồng `Product Backlog → Ready (WIP 6) → In Progress (WIP 6) → Review (WIP 3) → Done`, đồng thời bổ sung Definition of Ready, Definition of Done, architecture review, Pull Request, CI và release review để phù hợp với dự án.
 
-**Các bước:**
+### 2.3 Thời gian dự kiến của từng giai đoạn là bao lâu?
 
-1. Xác định vai trò, work product, công cụ và gate từ tài liệu dự án.
-2. Tái dựng flow từ backlog, phân công, Trello và luồng Git/PR/CI.
-3. Mô tả input, activity, output và điều kiện chuyển trạng thái.
-4. Đối chiếu với evidence, ghi rõ phần thực tế, phần tái dựng và khoảng trống.
+Kanban không quy định thời lượng cố định cho từng trạng thái như một mô hình chia theo giai đoạn hoặc sprint. Nhóm vận hành theo chu kỳ tuần: refinement, phân công, theo dõi và xác nhận Done được thực hiện trong tuần; thời gian của từng công việc phụ thuộc vào độ phức tạp và giới hạn WIP. Cửa sổ kế hoạch của dự án là tám tuần, từ 29/06 đến 23/08/2026; lịch thực hiện bốn tuần từ 27/07 đến 23/08 là dữ liệu tái dựng, còn InterviewQuestionBank được thực hiện thực tế trong hai tuần từ 10/08 đến 23/08.
 
-### 2.3 Quy trình Kanban của nhóm vận hành như thế nào?
+### 2.4 Các vai trò nào từng thành viên trong nhóm sẽ đảm nhiệm?
 
-`Product Backlog → Ready (6) → In Progress (6) → Review (3) → Done theo tuần`.
+| Thành viên | Vai trò chính                                                                                  |
+| ---------- | ---------------------------------------------------------------------------------------------- |
+| Tuấn Anh   | Project Manager / Team Leader / Timekeeper; Kanban, deadline, escalation, review/merge và Done |
+| Gia Thành  | Project Planning & Estimation Analyst / Full-stack Developer                                   |
+| Hưng       | Product Owner / Business Analyst; backlog, AC và acceptance                                    |
+| Luân       | Architecture / Technical Lead; stack, ADR và technical review                                  |
+| Hùng       | UI/UX Designer / Front-end Developer                                                           |
+| Trí        | PoC / Integration & E2E Developer                                                              |
 
-- Product Owner sắp xếp backlog; refinement thực hiện ít nhất hằng tuần hoặc khi cần thêm việc.
-- Story chỉ vào Ready khi actor/value, AC, dependency, input kỹ thuật, estimate và test data cần thiết đã rõ.
-- Tuấn Anh giao việc; thành viên xác nhận qua Messenger và thực hiện trên branch.
-- Owner tự kiểm tra AC → commit → Pull Request → review/feedback → GitHub Actions → merge → xác nhận Done.
-- Blocker được báo qua Messenger; change ảnh hưởng scope được đưa lại backlog và reforecast.
-- PoC chạy song song để kiểm chứng rủi ro kỹ thuật và không nằm trên Trello.
+### 2.5 Các sản phẩm nào dự kiến sẽ khởi tạo?
 
-### 2.4 Vai trò của các thành viên là gì?
+Các sản phẩm dự kiến gồm Charter; Stakeholder Analysis; Vision & Scope; Product Backlog và acceptance criteria; Resource Plan; prototype; Architecture/ADR; bảng Trello Kanban; PoC; source code; migration; API contract; Pull Request; kết quả CI; bằng chứng kiểm thử; increment và hướng dẫn phát hành.
 
-| Thành viên | Vai trò chính |
-| --- | --- |
-| Tuấn Anh | Project Manager / Team Leader / Timekeeper; Kanban, deadline, escalation, review/merge và Done |
-| Gia Thành | Project Planning & Estimation Analyst / Full-stack Developer |
-| Hưng | Product Owner / Business Analyst; backlog, AC và acceptance |
-| Luân | Architecture / Technical Lead; stack, ADR và technical review |
-| Hùng | UI/UX Designer / Front-end Developer |
-| Trí | PoC / Integration & E2E Developer |
+### 2.6 Quy trình để đưa ra một bản phân phối hoạt động là gì?
 
-### 2.5 Thời gian dự án được hiểu như thế nào?
+Product Owner sắp xếp backlog và đưa story đạt Definition of Ready vào Ready. Trưởng nhóm phân công story; thành viên xác nhận qua Messenger, thực hiện trên branch, tự kiểm tra acceptance criteria, commit và tạo Pull Request. Sau khi Pull Request được review, phản hồi được xử lý và CI chạy đạt, thay đổi được merge. Nhóm kiểm tra increment đã tích hợp, Product Owner xác nhận kết quả và trưởng nhóm xác nhận Done trước khi đưa vào bản phân phối.
 
-- **8 tuần:** cửa sổ kế hoạch học phần, từ 29/06 đến 23/08/2026.
-- **4 tuần:** lịch execution tái dựng, từ 27/07 đến 23/08; không phải actual đầy đủ.
-- **2 tuần:** thời gian thực hiện InterviewQuestionBank thực tế, từ 10/08 đến 23/08.
+### 2.7 Ưu và khuyết điểm của mô hình nhóm lựa chọn là gì?
 
+**Ưu điểm:** Kanban trực quan hóa luồng công việc, giới hạn việc đang làm, giúp phát hiện blocker, hỗ trợ nhiều công việc song song và cho phép thay đổi ưu tiên linh hoạt.
 
-### 2.6 Các work product chính là gì?
+**Khuyết điểm:** nếu bảng không được cập nhật đúng thời điểm thì khó đo năng suất và thời gian xử lý; giới hạn WIP chỉ có ý nghĩa khi được tuân thủ; nếu thiếu nhịp review đều đặn thì backlog và trạng thái công việc có thể lệch so với thực tế.
 
-Charter; Stakeholder Analysis; Vision & Scope; Product Backlog/AC; Resource Plan; prototype; Architecture/ADR; Trello Kanban; PoC; source code; migrations; API contract; Pull Request; CI result; test/evidence; increment và release guidance.
+### 2.8 Tài liệu Định nghĩa quy trình phát triển phần mềm của nhóm đã được đánh giá thế nào?
 
-### 2.7 Tài liệu và quy trình được đánh giá như thế nào?
+Nhóm đánh giá theo phương pháp **Tiêu chí → Bằng chứng → Kết luận**. Tiêu chí gồm vai trò, trạng thái, WIP, Ready/Done, đầu vào/đầu ra và các bước kiểm soát chất lượng. Bằng chứng được lấy từ Charter, Backlog, Resource Plan, Trello, Messenger, Git, Pull Request, CI, kiểm thử và các tài liệu dự án. Nội dung có bằng chứng thì được kết luận là đạt; nội dung thiếu bằng chứng được ghi là chưa đủ dữ liệu; dữ liệu tái dựng phải được ghi rõ và không được xem là dữ liệu thực tế theo thời điểm.
 
-Tôi dùng **Criteria → Evidence → Judgement**:
+### 2.9 Tại sao cần tạo tài liệu Định nghĩa quy trình phát triển phần mềm?
 
-1. Criteria: đúng vai trò, flow, WIP, Ready/Done, input/output và quality gate.
-2. Evidence: Charter, Backlog, Resource Plan, Trello, Messenger, Git, PR, CI, test và tài liệu dự án.
-3. Judgement: Pass khi mô tả có evidence; Pending khi thiếu dữ liệu; phần tái dựng phải được gắn nhãn, không được gọi là actual.
+Tài liệu giúp các thành viên thống nhất cách làm việc, biết rõ trách nhiệm của mình, hiểu điều kiện chuyển trạng thái và tuân theo cùng các bước review, kiểm tra, tích hợp và xác nhận Done. Tài liệu cũng là cơ sở để kiểm soát công việc, phát hiện điểm nghẽn, đánh giá việc tuân thủ quy trình và cải tiến cách làm việc của nhóm.
 
-### 2.8 Ưu và nhược điểm của Kanban trong dự án là gì?
+### 2.10 Tài liệu được sử dụng và cập nhật trong quá trình thực hiện dự án như thế nào?
 
-**Ưu điểm:** trực quan hóa flow, giới hạn việc đang làm, dễ đổi ưu tiên, thấy blocker và hỗ trợ nhiều workstream song song.
-
-**Nhược điểm:** nếu board không được cập nhật đúng thời điểm thì khó đo cycle time/throughput và dự báo; WIP limit chỉ có ý nghĩa khi nhóm thực sự tuân thủ; thiếu cadence review có thể làm backlog và flow lệch thực tế.
-
-### 2.9 Tài liệu được sử dụng và cập nhật như thế nào?
-
-Tài liệu liên kết backlog với phân công, implementation, PR/CI và Done. Khi nhóm pivot từ Splitly sang InterviewQuestionBank rồi thu hẹp sang candidate-first, Charter, Proposal, backlog, planning và architecture được làm lại. Khi flow hoặc evidence thay đổi, tài liệu quy trình phải cập nhật nhưng vẫn giữ disclosure về dữ liệu tái dựng.
-
-### 2.10 Những giới hạn bằng chứng nào phải công khai?
-
-Nhóm không có snapshot Trello gốc theo ngày, timesheet, throughput/cycle-time history đáng tin cậy, biên bản retrospective, weekly reforecast record hoặc UAT record đầy đủ. Board được tái dựng ngày 16/08; 26/27 story và 129/134 SP Done là trạng thái ghi trên board tái dựng, không phải phần trăm hoàn thành theo effort.
-
-### 2.11 Software Process Definition khác Project Plan thế nào?
-
-Software Process Definition trả lời **nhóm làm việc theo flow nào, dùng công cụ/gate gì và chuyển trạng thái khi nào**. Project Plan trả lời **làm scope nào, ai làm, trong thời gian–nguồn lực–chi phí nào và dự báo ra sao**.
+Nhóm sử dụng tài liệu để liên kết backlog, phân công, quá trình thực hiện, Pull Request, CI và trạng thái Done. Khi dự án chuyển từ Splitly sang InterviewQuestionBank rồi thu hẹp sang hướng candidate-first, nhóm cập nhật Charter, Proposal, backlog, kế hoạch, kiến trúc và quy trình liên quan. Khi luồng công việc, vai trò hoặc bằng chứng thay đổi, tài liệu quy trình cũng được cập nhật và tiếp tục ghi rõ phần nào là dữ liệu thực tế, phần nào là dữ liệu tái dựng.
 
 ## 3. Tài liệu đi kèm
 
