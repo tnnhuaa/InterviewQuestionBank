@@ -131,26 +131,27 @@ Kết quả quality gates cùng môi trường:
 
 ## 8. Minh chứng hình ảnh
 
-**Hình Q20-01 - Kết quả Vitest 45/45 sau khi PostgreSQL sẵn sàng.**
+**Hình Q20-01 - Cửa sổ Windows Terminal thật hiển thị 35 kiểm thử backend đạt và mã thoát 0.**
 
-![Executed test results](img/Q20-01-test-results.png)
+![Backend test execution in Windows Terminal](img/Q20-01-test-terminal.png)
 
-**Hình Q20-02 - Kết quả các cổng chất lượng chạy cục bộ.**
+**Hình Q20-02 - Cửa sổ Windows Terminal thật hiển thị 10 kiểm thử frontend và 35 kiểm thử backend đạt.**
 
-![Local quality gates](img/Q20-02-quality-gates.png)
+![Frontend and backend test execution in Windows Terminal](img/Q20-02-frontend-test-terminal.png)
 
-**Hình Q20-03 - Khoảng trống giữa test có trong repository và test chạy trong CI.**
+**Hình Q20-03 - Cửa sổ GitHub Actions của repository.**
 
-![Current CI test automation gap](img/Q20-03-ci-coverage-gap.png)
+![GitHub Actions workflow runs](img/Q20-03-github-actions.png)
 
-**Hình Q20-04 - CI quality và quét thông tin bí mật thành công.**
+**Hình Q20-04 - Tệp workflow CI hiện hành được mở trực tiếp trên GitHub.**
 
-![Successful CI and secret scan](../Q17_monitoring-and-control/img/Q17-06-ci-success-no-leaks.png)
+![CI workflow on GitHub](img/Q20-04-ci-workflow-github.png)
 
-Ảnh Q20-04 chỉ chứng minh hai job CI hiển thị thành công; không chứng minh Vitest chạy trong CI.
+Hai ảnh terminal là minh chứng lần chạy `npm test` cục bộ. Hai ảnh GitHub là minh chứng cấu hình và lịch sử CI; chúng không chứng minh Vitest chạy trong CI vì workflow hiện không có test step.
 
 ## 9. Tài liệu in kèm
 
+- [Test Plan](Test_Plan.md).
 - [Manual Validation and Operations](../../Implementation/Manual_Validation_and_Operations.md).
 - [GitHub Actions CI](../../../.github/workflows/ci.yml).
 

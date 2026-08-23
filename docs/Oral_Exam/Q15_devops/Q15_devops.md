@@ -108,22 +108,23 @@ Terraform không lưu thông tin bí mật thật. `terraform.tfvars` bị bỏ 
 
 ![Live PrepVI frontend](img/Q15-01-live-frontend.png)
 
-**Hình Q15-02 - Cấu trúc triển khai và giới hạn tiến trình nền.**
+**Hình Q15-02 - Cửa sổ GitHub Actions của repository.**
 
-![Current deployment topology](img/Q15-02-infrastructure-topology.png)
+![GitHub Actions workflow runs](img/Q15-02-github-actions.png)
 
-**Hình Q15-03 - API health trả HTTP 200 và dấu hiệu CORS cần rà soát.**
+**Hình Q15-03 - Cấu hình Terraform được mở trực tiếp trên GitHub.**
 
-![Public API health check](img/Q15-03-api-health.png)
+![Terraform configuration on GitHub](img/Q15-03-terraform-github.png)
 
-**Hình Q15-04 - GitHub Actions CI và quét thông tin bí mật thành công.**
+**Hình Q15-04 - Cửa sổ Windows Terminal thật hiển thị phản hồi health của API, correlation ID, CORS và mã thoát 0.**
 
-![Successful CI and secret scan](../Q17_monitoring-and-control/img/Q17-06-ci-success-no-leaks.png)
+![Public API health response in Windows Terminal](img/Q15-04-api-health-terminal.png)
 
-Ảnh Q15-04 là minh chứng công việc CI thành công tại thời điểm chụp. Nó không chứng minh unit test chạy trong CI vì luồng tự động hiện không có bước test.
+Ảnh GitHub Actions chứng minh repository có lịch sử workflow run. Cần mở từng run để kiểm tra step cụ thể; trạng thái xanh không tự chứng minh `npm test` đã chạy vì workflow hiện không có test step. Ảnh health chỉ chứng minh API phản hồi tại thời điểm chụp, không chứng minh database readiness hoặc tiến trình nền.
 
 ## 9. Tài liệu in kèm
 
+- [DevOps Report](DevOps_Report.md).
 - [GitHub Actions CI](../../../.github/workflows/ci.yml).
 - [Terraform main configuration](../../../infra/main.tf).
 - Các hình Q15-01 đến Q15-04 trong mục minh chứng hình ảnh.

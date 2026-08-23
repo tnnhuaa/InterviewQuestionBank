@@ -152,16 +152,17 @@ AC mô tả điều kiện chấp nhận riêng của một câu chuyện. Defin
 
 ## 10. Minh chứng hình ảnh
 
-**Hình Q04-01 - Ranh giới bản phát hành và số liệu Product Backlog.**
+**Hình Q04-01 - Product Backlog được mở trực tiếp trên GitHub tại phần ranh giới bản phát hành.**
 
-![Release boundary and ordered backlog](img/Q04-01-release-boundary.png)
+![Product Backlog trên GitHub](img/Q04-01-product-backlog-github.png)
 
-**Hình Q04-02 - Lịch sử thay đổi Product Backlog trong Git.**
+**Hình Q04-02 - Cửa sổ lịch sử thay đổi Product Backlog trên GitHub.**
 
-![Backlog document history](img/Q04-02-git-history.png)
+![Lịch sử Product Backlog trên GitHub](img/Q04-02-backlog-history-github.png)
 
 ## 11. Tài liệu in kèm
 
+- [Software Requirements Report](Software_Requirements_Report.md).
 - [Product Backlog and Acceptance Criteria](../../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md).
 - [Future-State Workflow](../../Project_Vision_and_Scope/Future_State_Workflow.md).
 

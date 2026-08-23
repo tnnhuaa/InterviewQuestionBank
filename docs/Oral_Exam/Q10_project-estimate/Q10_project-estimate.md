@@ -101,16 +101,17 @@ Không. Story Point là thước đo tương đối về độ lớn, phức t�
 
 ## 7. Minh chứng hình ảnh
 
-**Hình Q10-01 - So sánh hai phương pháp ước lượng.**
+**Hình Q10-01 - Tài liệu so sánh hai phương pháp ước lượng được mở trực tiếp trên GitHub.**
 
-![Two independent estimation methods](img/Q10-01-method-comparison.png)
+![Estimation Comparison trên GitHub](img/Q10-01-estimation-comparison-github.png)
 
-**Hình Q10-02 - Năng lực và giới hạn kinh tế của kế hoạch.**
+**Hình Q10-02 - Baseline chi phí, thời gian và nguồn lực được mở trực tiếp trên GitHub.**
 
-![Planning capacity and economic envelope](img/Q10-02-capacity-cost.png)
+![Cost Time Resources trên GitHub](img/Q10-02-cost-baseline-github.png)
 
 ## 8. Tài liệu in kèm
 
+- [Project Estimation Report](Project_Estimation_Report.md).
 - [Estimation Comparison](../../Project_Resource_Plan/Estimation_Comparison.md).
 - [Cost, Time and Resources](../../Project_Resource_Plan/Cost_Time_Resources.md).
 - [Resource Plan](../../Project_Resource_Plan/ResourcePlan.md).
