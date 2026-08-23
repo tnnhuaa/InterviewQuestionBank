@@ -50,7 +50,7 @@ Các chỉ số 70%, 80%, 90% và “zero Critical/High” là **criteria**, kh�
 
 | Đầu vào                | Dùng để làm gì                                                                     | Bằng chứng                                                                                                                              |
 | ---------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Project Proposal       | Bối cảnh, vấn đề, giải pháp, high-level MVP                                        | [Project Proposal](../../Project_Proposal/Project_Proposal_Draft.md)                                                                    |
+| Project Proposal       | Bối cảnh, vấn đề, giải pháp, high-level MVP                                        | [Project Proposal](../../Project_Proposal/Project_Proposal.md)                                                                          |
 | Vision & Scope         | Người dùng, mục tiêu, in/out scope, assumptions                                    | [Project Vision and Scope](../../Project_Vision_and_Scope/Project_Vision_and_Scope.md)                                                  |
 | Resource/cost baseline | 6 người, 8 tuần, 653 giờ, cash ceiling                                             | [Resource Plan](../../Project_Resource_Plan/ResourcePlan.md), [Cost-Time-Resources](../../Project_Resource_Plan/Cost_Time_Resources.md) |
 | Feasibility            | Go/No-Go gates và rủi ro kỹ thuật/nguồn cung                                       | [Feasibility Study](../../Project_Feasibility/feasibility.md)                                                                           |
@@ -135,7 +135,7 @@ Charter được cập nhật khi baseline JD-first được làm rõ: nhóm b�
 ## 11. Nguồn kiểm chứng
 
 - [Project Charter](<../../Project_Governance & Stakeholder/Project_Charter.md>)
-- [Project Proposal](../../Project_Proposal/Project_Proposal_Draft.md)
+- [Project Proposal](../../Project_Proposal/Project_Proposal.md)
 - [Project Vision and Scope](../../Project_Vision_and_Scope/Project_Vision_and_Scope.md)
 - [Resource Plan](../../Project_Resource_Plan/ResourcePlan.md)
 - [Feasibility Study](../../Project_Feasibility/feasibility.md)

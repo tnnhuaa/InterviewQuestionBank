@@ -45,7 +45,7 @@ Các câu hỏi chính tài liệu phải trả lời:
 
 | Đầu vào                             | Cách sử dụng                                                             | Bằng chứng                                                                                                                                                                                                  |
 | ----------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Đề xuất dự án                       | Lấy vấn đề, giải pháp và giá trị cấp cao                                 | [Project Proposal](../../Project_Proposal/Project_Proposal_Draft.md)                                                                                                                                        |
+| Đề xuất dự án                       | Lấy vấn đề, giải pháp và giá trị cấp cao                                 | [Project Proposal](../../Project_Proposal/Project_Proposal.md)                                                                                                                                              |
 | Phân tích cách làm hiện tại/đối thủ | Xác định ma sát và giả thuyết định vị                                    | [Existing Tools Analysis](../../Project_Proposal/Existing_Tools_Analysis.md), [Competitor Analysis](../../Project_Proposal/Competitor_Analysis.md)                                                          |
 | Quy trình hiện tại và tương lai     | Xác định actors, các bước và system boundary                             | [Current-State](../../Project_Vision_and_Scope/Current_State_Workflow.md), [Future-State](../../Project_Vision_and_Scope/Future_State_Workflow.md)                                                          |
 | Charter, nguồn lực, tính khả thi    | Kiểm tra quyền hạn, 8 tuần, 653 giờ, 1.125.000 VNĐ và gates              | [Project Charter](<../../Project_Governance & Stakeholder/Project_Charter.md>), [Resource Plan](../../Project_Resource_Plan/ResourcePlan.md), [Feasibility Study](../../Project_Feasibility/feasibility.md) |
@@ -124,7 +124,7 @@ Tài liệu được cập nhật khi nhóm chuyển trọng tâm sang JD-first:
 ## 10. Nguồn kiểm chứng
 
 - [Project Vision and Scope](../../Project_Vision_and_Scope/Project_Vision_and_Scope.md)
-- [Project Proposal](../../Project_Proposal/Project_Proposal_Draft.md)
+- [Project Proposal](../../Project_Proposal/Project_Proposal.md)
 - [Project Charter](<../../Project_Governance & Stakeholder/Project_Charter.md>)
 - [Product Backlog and Acceptance Criteria](../../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md)
 - Git: `0743a685195a3396511a59c83515860c9f11bfdd`, `7ca1f6ede1a0d71b3541cb2c15d06f03323a9135`.

@@ -1,108 +1,108 @@
 # ADR-001 — Technology Stack
 
-| Thuộc tính | Giá trị |
+| Attribute | Value |
 |---|---|
-| Trạng thái | Accepted for PoC; Proposed for MVP |
-| Ngày quyết định | 14/08/2026 |
-| Người chịu trách nhiệm | Luân — Architecture/Technology Stack |
-| Người cần xác nhận bằng PoC | Trí — End-to-End PoC |
-| Phạm vi | Frontend, backend, database, test và deployment |
+| Status | Accepted for PoC; Proposed for MVP |
+| Decision date | 14/08/2026 |
+| Owner | Luân — Architecture/Technology Stack |
+| PoC confirmation owner | Trí — End-to-End PoC |
+| Scope | Frontend, backend, database, testing, and deployment |
 
-## 1. Bối cảnh
+## 1. Context
 
-MVP cần hỗ trợ Question Bank, mentor discovery, availability, booking, meeting-link handoff, feedback và notification. Hai thuộc tính kỹ thuật quan trọng nhất là kiểm soát quyền truy cập theo đối tượng và chống double booking dưới concurrent request.
+The MVP must support the Question Bank, mentor discovery, availability, booking, meeting-link handoff, feedback, and notifications. The two most important technical attributes are object-level access control and prevention of double booking under concurrent requests.
 
-Thông tin nhóm đã xác nhận:
+Confirmed team information:
 
-- Frontend: React và Tailwind CSS.
-- Backend: Node.js và Express.
+- Frontend: React and Tailwind CSS.
+- Backend: Node.js and Express.
 - Database: PostgreSQL.
-- Frontend và backend tách thành hai ứng dụng, build và deployment độc lập.
-- Không có ràng buộc nhà cung cấp triển khai.
-- PoC chưa có kết quả tại thời điểm ra quyết định.
+- Frontend and backend are separate applications with independent build and deployment.
+- No deployment-provider constraint.
+- No PoC result was available when the decision was made.
 
-Vì chưa có skill matrix chi tiết cho từng thành viên, quyết định ưu tiên công nghệ nhóm đã nêu rõ và giới hạn số công nghệ mới. JavaScript được dùng xuyên suốt; TypeScript chỉ được xem xét qua change/ADR mới nếu nhóm xác nhận đủ năng lực và capacity.
+Because no detailed skill matrix was available for every member, the decision prioritizes technologies already identified by the team and limits new technologies. JavaScript is used end-to-end. TypeScript requires a new change/ADR if the team confirms sufficient skills and capacity.
 
-## 2. Tiêu chí quyết định
+## 2. Decision criteria
 
-Mỗi phương án được chấm 1–5, trong đó 5 là phù hợp nhất.
+Each option is scored from 1 to 5, where 5 is the best fit.
 
-| Tiêu chí | Trọng số | Ý nghĩa |
+| Criterion | Weight | Meaning |
 |---|---:|---|
-| Phù hợp năng lực nhóm | 30% | Công nghệ nhóm đã biết, ít thời gian học mới |
-| Tốc độ phát triển | 20% | Setup, feedback loop và lượng boilerplate |
-| Khả năng kiểm thử | 20% | Unit, integration, E2E và concurrency test |
-| Deployment/operations | 15% | Build tách biệt, container, CI/CD và observability |
-| Chi phí pilot | 10% | Có thể chạy trên free/low-cost tier, không khóa nhà cung cấp |
-| Data consistency | 5% | Transaction, constraint, lock và migration |
+| Team fit | 30% | Familiar technology and little new-learning time |
+| Development speed | 20% | Setup, feedback loop, and boilerplate |
+| Testability | 20% | Unit, integration, E2E, and concurrency testing |
+| Deployment/operations | 15% | Separate builds, containers, CI/CD, and observability |
+| Pilot cost | 10% | Free/low-cost tiers without provider lock-in |
+| Data consistency | 5% | Transactions, constraints, locks, and migrations |
 
-## 3. Các phương án đã xem xét
+## 3. Options considered
 
-| Phương án | Team fit | Dev speed | Test | Deploy | Cost | Consistency | Điểm có trọng số |
+| Option | Team fit | Dev speed | Test | Deploy | Cost | Consistency | Weighted score |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | **A. React/Vite + Express + PostgreSQL** | 5 | 5 | 5 | 5 | 5 | 5 | **5.00** |
 | B. Next.js full-stack + PostgreSQL | 3 | 4 | 4 | 4 | 4 | 5 | 3.70 |
 | C. React + Spring Boot + PostgreSQL | 2 | 2 | 5 | 3 | 4 | 5 | 3.00 |
 
-### Phương án A — React/Vite + Express + PostgreSQL
+### Option A — React/Vite + Express + PostgreSQL
 
-Ưu điểm: khớp năng lực đã xác nhận, JavaScript xuyên suốt, frontend/backend tách rõ, Vite có feedback loop nhanh, Express dễ tạo API và PostgreSQL cung cấp transaction/constraint cần cho booking.
+Advantages: matches confirmed skills, uses JavaScript end-to-end, keeps frontend/backend separate, provides a fast Vite feedback loop, makes APIs simple with Express, and uses PostgreSQL transactions/constraints for booking.
 
-Nhược điểm: Express không áp đặt module structure; nhóm phải tuân boundary, validation và error contract. Raw SQL cần review và migration discipline.
+Disadvantages: Express does not impose a module structure, so the team must enforce boundaries, validation, and error contracts. Raw SQL requires review and migration discipline.
 
-### Phương án B — Next.js full-stack + PostgreSQL
+### Option B — Next.js full-stack + PostgreSQL
 
-Ưu điểm: routing, data loading và deployment được tích hợp; có thể giảm số quyết định frontend.
+Advantages: integrated routing, data loading, and deployment may reduce frontend decisions.
 
-Không chọn vì: yêu cầu hiện tại là frontend/backend độc lập; MVP không cần SSR/React Server Components; chuyển sang full-stack framework tạo thêm kiến thức và coupling không cần cho PoC.
+Rejected because the current requirement is independent frontend/backend applications; the MVP does not need SSR or React Server Components, and a full-stack framework adds unnecessary learning and coupling for the PoC.
 
-### Phương án C — React + Spring Boot + PostgreSQL
+### Option C — React + Spring Boot + PostgreSQL
 
-Ưu điểm: ecosystem backend trưởng thành, typing mạnh và test/transaction support tốt.
+Advantages: mature backend ecosystem, strong typing, and good testing/transaction support.
 
-Không chọn vì: Java/Spring không nằm trong năng lực nhóm đã cung cấp; chi phí học và setup làm giảm tốc độ PoC mà không tạo lợi ích cần thiết cho quy mô pilot.
+Rejected because Java/Spring was not among the stated team skills; learning and setup cost would reduce PoC speed without a necessary pilot-scale benefit.
 
-### 3.1 Architectural styles đã xem xét
+### 3.1 Architectural styles considered
 
-Slide môn học yêu cầu trả lời cả “vì sao chọn architectural style”, không chỉ framework. Ba style được đánh giá như sau:
+The course material requires an explanation of architectural style, not only framework choice.
 
-| Style | Transaction booking | Testability | Operations/cost | Team fit | Kết luận |
+| Style | Booking transaction | Testability | Operations/cost | Team fit | Conclusion |
 |---|---|---|---|---|---|
-| **Modular monolith backend** | Một transaction/DB boundary | Module và integration test rõ | Một API deployable; chi phí thấp | Phù hợp Express | **Chọn** |
-| Microservices | Cần distributed consistency/saga | Service test tốt nhưng E2E phức tạp | Nhiều service, network và observability | Quá sức pilot | Không chọn |
-| Serverless functions theo route | Transaction ngắn khả thi | Dễ test đơn vị, khó worker/lifecycle | Scale-to-zero nhưng có cold start/connection pressure | Thêm platform coupling | Không chọn làm baseline |
+| **Modular monolith backend** | One transaction/database boundary | Clear module and integration tests | One API deployable; low cost | Fits Express | **Selected** |
+| Microservices | Requires distributed consistency/sagas | Good service tests but complex E2E | Multiple services, network, and observability | Too large for the pilot | Rejected |
+| Route-based serverless functions | Short transactions are possible | Easy units, difficult worker/lifecycle | Scale-to-zero with cold-start/connection pressure | Adds platform coupling | Not selected as baseline |
 
-Modular monolith không có nghĩa mọi module được phép sửa chung dữ liệu tùy ý. Modules giao tiếp qua application contracts; Booking giữ state machine, Notification chỉ nhận outbox event và frontend không truy cập database.
+A modular monolith does not allow every module to modify shared data arbitrarily. Modules communicate through application contracts; Booking owns its state machine, Notification only consumes outbox events, and the frontend never accesses the database.
 
-## 4. Quyết định
+## 4. Decision
 
-Chọn phương án A với baseline sau:
+Select option A with this baseline:
 
-| Layer | Quyết định |
+| Layer | Decision |
 |---|---|
 | Frontend runtime | React SPA, JavaScript modules |
-| Frontend build | Vite; không dùng Create React App |
-| UI | Tailwind CSS; component accessibility được kiểm tra bằng semantic HTML và automated test |
-| Routing/data | React Router; `fetch` wrapper và server-state hooks theo feature |
+| Frontend build | Vite; do not use Create React App |
+| UI | Tailwind CSS; check component accessibility with semantic HTML and automated tests |
+| Routing/data | React Router; fetch wrapper and feature-level server-state hooks |
 | Backend runtime | Node.js 24 LTS |
-| HTTP API | Express 5, REST/JSON dưới `/api/v1` |
-| Validation | Schema validation ở API boundary; không tin dữ liệu/role từ client |
-| Database | PostgreSQL, dùng `pg` và versioned SQL migrations |
-| Architecture style | Modular monolith backend; frontend là deployable riêng |
-| Background work | Transactional outbox trong PostgreSQL; worker logic tách khỏi request path |
-| Authentication | Server-side session qua same-origin `/api` reverse proxy; `__Host-` cookie `Secure`, `HttpOnly`, `SameSite=Lax` |
-| Unit/integration test | Vitest; React Testing Library; Supertest; PostgreSQL thật cho integration/concurrency test |
-| E2E test | Playwright cho critical workflow |
-| Quality/CI | ESLint, formatter, dependency audit, migration check, test và build trong CI |
-| Packaging | `package-lock.json` được commit; API có Dockerfile; frontend build thành static assets |
+| HTTP API | Express 5, REST/JSON under /api/v1 |
+| Validation | Schema validation at the API boundary; never trust client data or roles |
+| Database | PostgreSQL with pg and versioned SQL migrations |
+| Architecture style | Modular-monolith backend; separately deployable frontend |
+| Background work | PostgreSQL transactional outbox; worker logic outside the request path |
+| Authentication | Server-side session through a same-origin /api reverse proxy; __Host- cookie with Secure, HttpOnly, and SameSite=Lax |
+| Unit/integration testing | Vitest, React Testing Library, Supertest, and real PostgreSQL for integration/concurrency tests |
+| E2E testing | Playwright for critical workflows |
+| Quality/CI | ESLint, formatter, dependency audit, migration check, test, and build in CI |
+| Packaging | Commit package-lock.json; API has a Dockerfile; frontend builds static assets |
 
-Không pin phiên bản thư viện giao diện ngay trong ADR. Mỗi ứng dụng phải pin dependency bằng lockfile và chỉ dùng release đang được hỗ trợ tại lúc scaffold. Node.js được pin theo major LTS trong runtime/container.
+The ADR does not pin UI-library versions. Each application pins dependencies through the lockfile and uses supported releases at scaffold time. Node.js is pinned to a major LTS version in the runtime/container.
 
-## 5. Source organization và deployment boundary
+## 5. Source organization and deployment boundary
 
-Frontend và backend là hai project độc lập:
+Frontend and backend are independent projects:
 
-```text
+~~~text
 frontend/
   src/
     features/
@@ -117,52 +117,52 @@ backend/
     worker/
   database/migrations/
   tests/
-```
+~~~
 
-Trong bài nộp PoC, hai project có thể nằm dưới `poc/mentor-booking-feedback/` để đúng cây thư mục Task W10, nhưng không dùng chung runtime build và không cho frontend truy cập database trực tiếp.
+For the PoC submission, both projects may exist under poc/mentor-booking-feedback/ to match the Task W10 directory tree, but they do not share a runtime build and the frontend never accesses the database directly.
 
-Deployment pilot đề xuất:
+Proposed pilot deployment:
 
-- Frontend static: Vercel Hobby hoặc static host tương đương; cấu hình same-origin `/api/*` rewrite đến backend.
-- Backend API: Render Free cho demo/PoC; chuyển sang paid instance khi pilot cần uptime ổn định.
-- Database: Neon Free cho PoC/pilot nhỏ; dùng pooled connection và theo dõi quota.
-- Worker: chạy cùng backend process chỉ trong PoC một-instance; tách thành worker process ở staging/production khi nền tảng hỗ trợ.
+- Static frontend: Vercel Hobby or an equivalent static host; configure same-origin /api/* rewrites to the backend.
+- Backend API: Render Free for demo/PoC; move to a paid instance when the pilot requires stable uptime.
+- Database: Neon Free for a small PoC/pilot; use pooled connections and monitor quota.
+- Worker: run in the backend process only for a one-instance PoC; separate it into a worker process in staging/production when supported by the platform.
 
-Đây là deployment profile mặc định, không phải vendor lock-in. API, worker và database được cấu hình qua environment variables; schema và migration không phụ thuộc extension độc quyền.
+This is the default deployment profile, not vendor lock-in. The API, worker, and database are configured through environment variables; the schema and migrations do not depend on proprietary extensions.
 
-## 6. Hệ quả
+## 6. Consequences
 
-### Tích cực
+### Positive
 
-- Nhóm dùng đúng công nghệ đã biết và chia việc frontend/backend độc lập.
-- Một ngôn ngữ giúp giảm chi phí chuyển ngữ cảnh.
-- PostgreSQL trực tiếp kiểm soát booking consistency thay vì phụ thuộc memory lock.
-- Static frontend và containerized API có nhiều lựa chọn triển khai chi phí thấp.
+- The team uses familiar technology and can divide frontend/backend work independently.
+- One language reduces context-switching cost.
+- PostgreSQL directly protects booking consistency instead of relying on an in-memory lock.
+- A static frontend and containerized API have several low-cost deployment choices.
 
-### Đánh đổi
+### Trade-offs
 
-- Nhóm phải tự duy trì module conventions cho Express.
-- JavaScript cần schema validation và test tốt để bù thiếu compile-time type checking.
-- Free tier có cold start, quota và không phải production SLA.
-- Chạy worker cùng API chỉ phù hợp PoC; không được giả định an toàn khi scale nhiều instance.
+- The team must maintain Express module conventions.
+- JavaScript needs schema validation and strong tests to compensate for the lack of compile-time type checking.
+- Free tiers have cold starts and quotas and do not provide production SLAs.
+- Running the worker with the API suits only a PoC and is not assumed safe for multiple instances.
 
-## 7. PoC gates trước khi Accepted cho MVP
+## 7. PoC gates before MVP acceptance
 
-Trí cần ghi Pass/Fail và evidence cho:
+Trí must record Pass/Fail and evidence for:
 
-1. Ít nhất 20 request concurrent cố xác nhận cùng slot; chỉ một booking chiếm slot.
-2. Student/Mentor không thuộc booking không đọc được meeting link hoặc feedback.
-3. Mọi booking transition hợp lệ có audit record; transition sai trả lỗi ổn định.
-4. Multi-tag question filter không duplicate và không lộ Draft.
-5. Notification provider lỗi không rollback booking; retry không gửi trùng theo event key.
-6. Frontend build, backend test và migration chạy được độc lập trong CI.
-7. Deployed frontend đăng nhập và gọi protected `/api/v1` qua same-origin proxy; cookie không phụ thuộc third-party access và CSRF negative test pass.
+1. At least 20 concurrent requests try to confirm the same slot; only one booking occupies it.
+2. A Student/Mentor outside a booking cannot read its meeting link or feedback.
+3. Every valid booking transition creates an audit record; an invalid transition returns a stable error.
+4. Multi-tag question filtering creates no duplicates and exposes no Draft question.
+5. Notification-provider failure does not roll back booking; retry does not duplicate delivery for an event key.
+6. Frontend build, backend tests, and migrations run independently in CI.
+7. The deployed frontend logs in and calls protected /api/v1 through a same-origin proxy; cookies do not depend on third-party access and the CSRF negative test passes.
 
-Nếu một gate thất bại do giới hạn stack thay vì lỗi triển khai, ADR này chuyển thành `Superseded` hoặc `Rejected` bằng ADR mới; không sửa lịch sử quyết định.
+If a gate fails because of a stack limitation rather than an implementation defect, a new ADR changes this ADR to Superseded or Rejected; do not rewrite the decision history.
 
-## 8. Nguồn kiểm chứng
+## 8. Verification sources
 
-Kiểm tra ngày 14/08/2026:
+Verified on 14/08/2026:
 
 - React — Creating a React App: https://react.dev/learn/creating-a-react-app
 - Vite — Getting Started: https://vite.dev/guide/

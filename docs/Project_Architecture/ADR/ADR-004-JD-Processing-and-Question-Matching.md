@@ -1,123 +1,123 @@
 # ADR-004 — JD Processing and Question Matching Strategy
 
-| Thuộc tính | Giá trị |
+| Attribute | Value |
 |---|---|
-| Trạng thái | Accepted for current PoC; requires MVP review |
-| Ngày quyết định/cập nhật | 16/08/2026 |
-| Người chịu trách nhiệm | Luân — Architecture/Technology Stack |
-| Evidence | `poc_question` |
-| Liên quan | JD upload, topic extraction, Question Bank matching |
+| Status | Accepted for current PoC; requires MVP review |
+| Decision/update date | 16/08/2026 |
+| Owner | Luân — Architecture/Technology Stack |
+| Evidence | poc_question |
+| Related scope | JD upload, topic extraction, Question Bank matching |
 
-## 1. Bối cảnh
+## 1. Context
 
-PoC kiểm tra nhanh giá trị của luồng: Student tải Job Description (JD) lên, hệ thống rút trích các chủ đề kỹ thuật, tìm câu hỏi liên quan trong Question Bank, sau đó cho phép Student xem và điều chỉnh bộ câu hỏi.
+The PoC quickly validates this value flow: a Student uploads a Job Description (JD), the system extracts technical topics, finds related questions in the Question Bank, and then lets the Student review and adjust the question set.
 
-PoC sử dụng React ở frontend, Node.js/Express ở backend và PostgreSQL để lưu Question Bank cùng kết quả của mỗi phiên phân tích. Mục tiêu của quyết định này là ưu tiên tốc độ kiểm chứng luồng end-to-end; chưa phải thiết kế được xác nhận cho MVP/pilot.
+The PoC uses React for the frontend, Node.js/Express for the backend, and PostgreSQL to store the Question Bank and each analysis session. This decision prioritizes the speed of validating the end-to-end flow; it is not yet a design approved for the MVP/pilot.
 
-## 2. Các phương án đã xem xét
+## 2. Options considered
 
-| Phương án | Ưu điểm | Nhược điểm | Kết luận |
+| Option | Advantages | Disadvantages | Conclusion |
 |---|---|---|---|
-| Rule/dictionary nội bộ | Deterministic, dễ giải thích, không gửi JD ra ngoài | Cần taxonomy và corpus dữ liệu trước; tốn thời gian xây dựng | Hoãn lại cho MVP review |
-| **Gemini rút trích topic + keyword matching** | Tạo luồng end-to-end nhanh, xử lý JD tự do và ảnh, không cần taxonomy hoàn chỉnh | Phụ thuộc provider, kết quả không hoàn toàn deterministic và có rủi ro privacy | **Chọn cho PoC hiện tại** |
-| Embedding/vector search | Có thể tìm được các cách diễn đạt tương tự | Thêm model, vector index và độ phức tạp vận hành | Ngoài phạm vi PoC |
+| Internal rules/dictionary | Deterministic, explainable, and no JD is sent outside | Requires taxonomy and a data corpus first; takes time to build | Deferred to MVP review |
+| **Gemini topic extraction + keyword matching** | Quickly creates an end-to-end flow, handles free-form JDs and images, and does not require a complete taxonomy | Provider dependency, non-deterministic results, and privacy risk | **Selected for the current PoC** |
+| Embedding/vector search | Can find semantically similar wording | Adds a model, vector index, and operational complexity | Outside PoC scope |
 
-## 3. Quyết định
+## 3. Decision
 
-### 3.1 Xử lý JD
+### 3.1 JD processing
 
-1. Frontend cho phép tải lên một file JD và gửi đến `POST /api/upload-jd`.
-2. Backend nhận file trong bộ nhớ cho request hiện tại.
-3. PDF được đọc text trực tiếp bằng `pdf-parse`. PDF không rút trích được text trả lỗi cho người dùng.
-4. Ảnh được chuyển thành base64 `inlineData` và gửi cùng prompt đến Gemini.
-5. Các file còn lại được PoC đọc như text UTF-8. UI hiển thị cả DOCX, nhưng PoC chưa có DOCX parser riêng.
-6. Gemini `gemini-2.5-flash` rút trích `job_title` và danh sách topic gồm `name`, `description`, `keywords`. Khi không có API key, lỗi provider hoặc lỗi parse, backend dùng mock data để demo luồng.
-7. PoC lưu `job_title` và `raw_jd` trong `sessions`; đối với ảnh, `raw_jd` chỉ lưu marker `[IMAGE_DATA]` thay vì dữ liệu ảnh.
+1. The frontend accepts one JD file and sends it to POST /api/upload-jd.
+2. The backend receives the file in memory for the current request.
+3. PDF text is extracted directly with pdf-parse. A PDF with no extractable text returns an error.
+4. An image is converted to base64 inlineData and sent with the prompt to Gemini.
+5. Other files are read as UTF-8 text by the PoC. The UI displays DOCX as supported, but the PoC has no dedicated DOCX parser.
+6. Gemini gemini-2.5-flash extracts job_title and topics containing name, description, and keywords. When no API key is configured, the provider fails, or parsing fails, the backend uses mock data to demonstrate the flow.
+7. The PoC stores job_title and raw_jd in sessions; for an image, raw_jd stores only the marker [IMAGE_DATA], not the image data.
 
-PoC chưa có OCR nội bộ, job nền, lưu file dài hạn, pasted-text input, hay bước Student xem/sửa/xác nhận text trước khi phân tích.
+The PoC has no internal OCR, background job, long-term file storage, pasted-text input, or Student review/edit/confirmation gate before analysis.
 
-### 3.2 Matching câu hỏi
+### 3.2 Question matching
 
-Với mỗi topic do Gemini trả về, backend:
+For each topic returned by Gemini, the backend:
 
-1. Lưu topic vào `session_topics`.
-2. Tìm tối đa ba câu hỏi trong `question_bank` theo `topic`/`sub_topic` bằng `ILIKE`.
-3. Nếu chưa có kết quả, thử lại với tối đa ba keyword do Gemini rút trích, đối chiếu `tags` hoặc `topic`.
-4. Sao chép các câu hỏi tìm được vào `session_questions`, giữ `original_bank_id` để truy nguồn.
-5. Cho phép Student thêm từ Question Bank, sửa hoặc xóa câu hỏi trong phiên đã tạo.
+1. Stores the topic in session_topics.
+2. Finds at most three questions in question_bank by matching topic/sub_topic with ILIKE.
+3. If there is no result, retries with at most three Gemini-extracted keywords against tags or topic.
+4. Copies matching questions into session_questions and retains original_bank_id for traceability.
+5. Allows the Student to add a question from the Question Bank or edit/delete a question in the generated session.
 
-Matching hiện tại là heuristic keyword lookup. PoC không có taxonomy, alias normalization, trạng thái `PUBLISHED`, scoring, match reason, deterministic tie-break hay `matching_version`.
+The current matcher is a heuristic keyword lookup. The PoC has no taxonomy, alias normalization, PUBLISHED status, scoring, match reason, deterministic tie-break, or matching_version.
 
-### 3.3 Luồng người dùng
+### 3.3 User flow
 
-```mermaid
+~~~mermaid
 flowchart LR
-    Student["Student"] --> Upload["Tải JD file"]
+    Student["Student"] --> Upload["Upload JD file"]
     Upload --> API["Express API"]
-    API --> Parse["PDF text extraction hoặc image inline data"]
+    API --> Parse["PDF text extraction or image inline data"]
     Parse --> Gemini["Gemini topic extraction"]
-    Gemini --> Match["Keyword matching Question Bank"]
+    Gemini --> Match["Question Bank keyword matching"]
     Match --> DB[("PostgreSQL sessions")]
-    DB --> Review["Xem, thêm, sửa, xóa câu hỏi"]
+    DB --> Review["Review, add, edit, or delete questions"]
     Review --> Student
-```
+~~~
 
-## 4. Dữ liệu và boundary hiện tại
+## 4. Current data and boundaries
 
-| Thành phần | Dữ liệu PoC lưu |
+| Component | Data stored by the PoC |
 |---|---|
-| `question_bank` | Topic, sub-topic, câu hỏi, gợi ý trả lời, độ khó, tags |
-| `sessions` | Job title, raw JD text hoặc marker của ảnh |
-| `session_topics` | Topic, mô tả và thứ tự hiển thị |
-| `session_questions` | Bản sao câu hỏi đã match, nguồn và liên kết tới Question Bank |
+| question_bank | Topic, sub-topic, question, answer hint, difficulty, and tags |
+| sessions | Job title and raw JD text or image marker |
+| session_topics | Topic, description, and display order |
+| session_questions | Matched question copy, source, and Question Bank reference |
 
-`poc_question` là một PoC độc lập. Hiện tại chưa có authentication, ownership policy, private file storage, preparation plan, mentor booking context, hay API version `/api/v1`. Các boundary này vẫn là yêu cầu cần thiết trước MVP/pilot và được mô tả ở Software Architecture.
+poc_question is a standalone PoC. It currently has no authentication, ownership policy, private file storage, preparation plan, mentor-booking context, or /api/v1 API version. These boundaries remain required before the MVP/pilot and are described in Software Architecture.
 
-## 5. Hệ quả và đánh đổi
+## 5. Consequences and trade-offs
 
-### Tích cực
+### Positive
 
-- Nhanh chóng kiểm chứng được chuỗi giá trị JD → topic → câu hỏi.
-- Có thể xử lý PDF text và ảnh mà không cần tự xây OCR trong PoC.
-- Question Bank vẫn là nguồn câu hỏi; PoC không dùng AI để tự sinh câu hỏi.
-- Màn hình review cho phép người dùng bổ sung, sửa và loại câu hỏi không phù hợp.
+- Quickly validates the JD → topic → question value chain.
+- Handles text PDFs and images without building internal OCR in the PoC.
+- The Question Bank remains the question source; the PoC does not ask AI to generate questions.
+- The review screen lets users add, edit, and remove unsuitable questions.
 
-### Hạn chế và rủi ro đã chấp nhận trong PoC
+### Limitations and risks accepted for the PoC
 
-- Nội dung JD và ảnh có thể được gửi đến Gemini khi cấu hình API key; không phù hợp với yêu cầu privacy của MVP nếu chưa có consent, review pháp lý và policy rõ ràng.
-- Kết quả topic phụ thuộc provider/model; fallback mock data không phản ánh JD thật.
-- Keyword matching có thể bỏ sót synonym và trả kết quả không liên quan; không có score hay lý do để người dùng đánh giá.
-- File được xử lý trong memory và chưa có giới hạn size, MIME/magic-byte validation, quota, retention hay audit.
-- Session và các endpoint sửa/xóa câu hỏi chưa có authorization; chỉ dùng trong môi trường demo tin cậy.
+- JD text and images may be sent to Gemini when an API key is configured; this does not meet MVP privacy requirements without consent, legal review, and a clear policy.
+- Topic results depend on the provider/model; mock fallback does not represent the real JD.
+- Keyword matching may miss synonyms or return irrelevant results; there is no score or reason for evaluation.
+- Files are processed in memory without size limits, MIME/magic-byte validation, quota, retention, or audit.
+- Sessions and question edit/delete endpoints have no authorization and are suitable only for a trusted demo environment.
 
 ## 6. PoC acceptance
 
-| Test | Pass khi |
+| Test | Pass condition |
 |---|---|
-| PDF text | PDF có text tạo được `job_title` và topic hoặc trả lỗi rõ ràng khi parser không đọc được |
-| Image JD | Ảnh được gửi đến Gemini và nhận về cấu trúc topic hợp lệ khi provider khả dụng |
-| Topic extraction | Response có `job_title` và danh sách topic có `name`, `description`, `keywords` |
-| Question matching | Mỗi topic tìm tối đa ba câu hỏi theo topic/sub-topic hoặc keyword; không tự sinh câu hỏi mới |
-| Manual curation | Người dùng thêm từ bank, sửa và xóa câu hỏi trong session được |
-| Provider fallback | Không có API key hoặc provider lỗi thì luồng demo vẫn hoạt động với mock data |
+| Text PDF | A PDF with text produces job_title and topics, or a clear error when parsing fails |
+| Image JD | The image is sent to Gemini and returns a valid topic structure when the provider is available |
+| Topic extraction | The response contains job_title and topics with name, description, and keywords |
+| Question matching | Each topic finds at most three questions by topic/sub-topic or keyword; no new question is generated |
+| Manual curation | The user can add from the bank and edit/delete session questions |
+| Provider fallback | Without an API key, or when the provider fails, the demo flow still works with mock data |
 
-Kết quả trên chỉ xác nhận luồng PoC. Chúng không xác nhận precision, repeatability, privacy, authorization hay độ tin cậy cho MVP.
+These results validate only the PoC flow. They do not validate precision, repeatability, privacy, authorization, or MVP reliability.
 
-## 7. Điều kiện review cho MVP/pilot
+## 7. Review conditions for MVP/pilot
 
-Cần review hoặc ADR mới trước khi đưa luồng này vào MVP/pilot nếu có một trong các điều kiện sau:
+A review or new ADR is required before this flow enters the MVP/pilot if:
 
-- JD thật có thể chứa PII hoặc thông tin công ty và cần quyết định việc gửi dữ liệu đến provider bên thứ ba.
-- Cần kết quả ổn định, có thể giải thích, version hóa và đo được relevance.
-- Cần Student sửa/xác nhận text, xử lý PDF scan/OCR, retry job hoặc kiểm soát file lifecycle.
-- Cần liên kết JD/question với preparation plan, mentor booking và object-level authorization.
-- Cần hỗ trợ file DOCX thật sự, giới hạn upload, validation và logging an toàn.
+- Real JDs may contain PII or company information and third-party data transfer requires a decision.
+- Results must be stable, explainable, versioned, and measurable for relevance.
+- Student text review/confirmation, scanned-PDF OCR, job retry, or file lifecycle control is required.
+- JD/questions must connect to a preparation plan, mentor booking, and object-level authorization.
+- Real DOCX support, upload limits, validation, and safe logging are required.
 
-Hướng thay thế cần được đánh giá khi review MVP gồm: text confirmation, private storage, extraction/OCR adapter, taxonomy/alias, rule-based scorer có version, và authorization. Không coi các capability này là đã được triển khai trong PoC hiện tại.
+Alternatives to evaluate at MVP review are text confirmation, private storage, an extraction/OCR adapter, taxonomy/aliases, a versioned rule-based scorer, and authorization. These capabilities must not be treated as implemented in the current PoC.
 
 ## 8. Related decisions
 
-- [ADR-001 — Technology Stack](ADR-001-Technology-Stack.md): React, Express và PostgreSQL phù hợp với PoC.
-- [ADR-002 — Booking Consistency](ADR-002-Booking-Consistency.md): chưa được tích hợp vào `poc_question`.
-- [ADR-003 — Notification Reliability](ADR-003-Notification-Reliability.md): chưa được tích hợp vào `poc_question`.
-- [Software Architecture](../software_architecture.md): kiến trúc mục tiêu cho MVP/pilot, cần được cập nhật evidence sau PoC.
+- [ADR-001 — Technology Stack](ADR-001-Technology-Stack.md): React, Express, and PostgreSQL for the PoC.
+- [ADR-002 — Booking Consistency](ADR-002-Booking-Consistency.md): not integrated into poc_question.
+- [ADR-003 — Notification Reliability](ADR-003-Notification-Reliability.md): not integrated into poc_question.
+- [Software Architecture](../software_architecture.md): target MVP/pilot architecture that requires evidence updates after the PoC.

@@ -2,7 +2,7 @@
 
 ## 1. Yêu cầu của câu hỏi
 
-Trình bày **quá trình hình thành** và **phương pháp đánh giá** tài liệu Đề xuất dự án (Project Proposal) của nhóm; giải thích việc sử dụng, cập nhật tài liệu và các khái niệm dự án liên quan. Bản in bắt buộc là tài liệu [Đề xuất dự án — Nền tảng luyện phỏng vấn](../../Project_Proposal/Project_Proposal_Draft.md).
+Trình bày **quá trình hình thành** và **phương pháp đánh giá** tài liệu Đề xuất dự án (Project Proposal) của nhóm; giải thích việc sử dụng, cập nhật tài liệu và các khái niệm dự án liên quan. Bản in bắt buộc là tài liệu [Đề xuất dự án — Nền tảng luyện phỏng vấn](../../Project_Proposal/Project_Proposal.md).
 
 ## 2. Dàn ý viết trên A4 trong 10 phút
 
@@ -244,7 +244,7 @@ Với nhóm, các ràng buộc 8 tuần, khoảng 653 giờ và 1.125.000 VNĐ g
 
 ## 11. Bản in và bằng chứng cần mang
 
-- [ ] **Bắt buộc:** [Đề xuất dự án bản 0.2 (Project Proposal v0.2)](../../Project_Proposal/Project_Proposal_Draft.md).
+- [ ] **Bắt buộc:** [Đề xuất dự án chính thức (Project Proposal)](../../Project_Proposal/Project_Proposal.md).
 - [ ] Phụ lục hỗ trợ: [Phân tích công cụ hiện có (Existing Tools Analysis)](../../Project_Proposal/Existing_Tools_Analysis.md) và [Phân tích đối thủ cạnh tranh (Competitor Analysis)](../../Project_Proposal/Competitor_Analysis.md).
 - [ ] Một trang tóm tắt thay đổi từ đề xuất Question Bank + Mentor Marketplace sang đề xuất JD-first.
 - [ ] Các trang liên quan của [Project Charter](<../../Project_Governance & Stakeholder/Project_Charter.md>) thể hiện 8 tuần, 653 giờ, 1.125.000 VNĐ và trạng thái chờ Sponsor phê duyệt. Chỉ in thêm Feasibility Study sau khi phần đem nộp đã được chuẩn hóa hoàn toàn bằng tiếng Anh.
@@ -252,7 +252,7 @@ Với nhóm, các ràng buộc 8 tuần, khoảng 653 giờ và 1.125.000 VNĐ g
 
 ## 12. Nguồn kiểm chứng
 
-- [Bản thảo Đề xuất dự án (Project Proposal Draft)](../../Project_Proposal/Project_Proposal_Draft.md).
+- [Đề xuất dự án chính thức (Project Proposal)](../../Project_Proposal/Project_Proposal.md).
 - [Phân tích công cụ hiện có (Existing Tools Analysis)](../../Project_Proposal/Existing_Tools_Analysis.md).
 - [Phân tích đối thủ cạnh tranh (Competitor Analysis)](../../Project_Proposal/Competitor_Analysis.md).
 - [Ủy nhiệm dự án (Project Charter)](<../../Project_Governance & Stakeholder/Project_Charter.md>).

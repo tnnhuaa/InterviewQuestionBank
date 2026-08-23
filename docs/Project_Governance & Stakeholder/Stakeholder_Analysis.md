@@ -1,152 +1,151 @@
 # STAKEHOLDER ANALYSIS — INTERVIEW PRACTICE PLATFORM
 
-## 1. Tóm tắt
+## 1. Summary
 
-Dự án tạo giá trị ban đầu từ JD-to-preparation-plan và giá trị thực hành từ Mentor Marketplace. Governance phải bảo vệ dữ liệu JD của Student, chất lượng taxonomy/mapping và trải nghiệm của cả Student/Mentor, đồng thời cho Sponsor/Product Owner đủ dữ liệu để kiểm soát phạm vi, chất lượng và tính khả thi.
+The project creates initial value from JD-to-preparation-plan and practice value from the Mentor Marketplace. Governance must protect the Student's JD data, taxonomy/mapping quality, and the experience of both Student and Mentor, while giving the Sponsor/Product Owner enough data to control scope, quality, and feasibility.
 
 ## 2. Sponsor
 
-Sponsor: **Giảng viên Ngô Huy Biên và Ngô Ngọc Đăng Khoa**; formal approval record được ghi tại Charter khi ký.
+Sponsors: **Lecturers Ngô Huy Biên and Ngô Ngọc Đăng Khoa**; the formal approval record is noted in the Charter when signed.
 
-### 2.1 Kỳ vọng của Sponsor
+### 2.1 Sponsor expectations
 
-- Proposal, phạm vi và baseline có bằng chứng.
-- MVP hoàn thành trong thời gian và ngân sách được duyệt.
-- Critical workflow được kiểm thử và UAT.
-- Nhóm báo cáo risk, change và blocker kịp thời.
-- Kết luận Go/Pivot/Stop dựa trên KPI, không dựa trên số lượng tính năng.
+- Proposal, scope, and baseline have evidence.
+- The MVP is completed within the approved time and budget.
+- Critical workflows are tested and UAT-covered.
+- The team reports risk, change, and blockers in time.
+- Go/Pivot/Stop conclusions are based on KPIs, not on feature count.
 
 ## 3. Stakeholder register
 
-| ID | Stakeholder | Lợi ích/nhu cầu | Power | Interest | Chiến lược |
+| ID | Stakeholder | Interest/needs | Power | Interest | Strategy |
 |---|---|---|---|---|---|
-| ST-01 | Sponsor/giảng viên | Kết quả học tập, governance, chất lượng deliverable | Cao | Cao | Manage closely |
-| ST-02 | Gia Thành — PM/Scrum Master, initiation & estimation | Kế hoạch, ước lượng, delivery, risk và team health | Cao | Cao | Manage closely |
-| ST-03 | Hùng — UI/UX | Luồng người dùng, nguyên mẫu, khả dụng và bằng chứng nghiên cứu | Trung bình | Cao | Manage closely |
-| ST-04 | Hưng — Product Owner/BA | Giá trị sản phẩm, tầm nhìn, phạm vi, backlog và acceptance | Cao | Cao | Manage closely |
-| ST-05 | Trí — PoC/E2E | Tính khả thi kỹ thuật, PoC luồng cốt lõi, kiểm thử đầu-cuối và dữ liệu kiểm chứng | Trung bình | Cao | Manage closely |
-| ST-06 | Luân — Architecture/technical lead | Kiến trúc, ADR, công nghệ, ràng buộc kỹ thuật và hỗ trợ PoC | Cao trong kỹ thuật | Cao | Manage closely |
-| ST-07 | Tuấn Anh — Trưởng nhóm / leadership & governance | Điều phối nhóm, scope/priority governance, escalation, tích hợp sản phẩm, configuration/document control và delivery readiness | Cao trong delivery | Cao | Manage closely |
-| ST-08 | Development team | Requirement rõ, môi trường và quyết định kịp thời | Trung bình | Cao | Keep engaged |
-| ST-09 | Sinh viên/ứng viên | JD được xử lý riêng tư, plan/mapping dễ hiểu và booking có ngữ cảnh | Trung bình | Cao | Co-design/test |
-| ST-10 | Mentor/HR | JD/topic cần luyện rõ, lịch kiểm soát được, uy tín và feedback phù hợp | Trung bình | Cao | Co-design/test |
-| ST-11 | Administrator/moderator | Taxonomy/alias, quy trình duyệt, report và audit rõ | Trung bình | Cao | Involve early |
-| ST-12 | Hosting/database provider | Sử dụng đúng quota và điều khoản | Cao gián tiếp | Thấp | Monitor |
-| ST-13 | Extraction/OCR, email/calendar/video provider | Tích hợp ổn định, tuân thủ privacy/policy và có fallback | Cao gián tiếp | Thấp | Monitor/fallback |
-| ST-14 | Cố vấn pháp lý/privacy | Consent, privacy notice, terms và xử lý dữ liệu | Trung bình | Trung bình | Consult |
+| ST-01 | Sponsor/lecturers | Learning outcomes, governance, deliverable quality | High | High | Manage closely |
+| ST-02 | Gia Thành — Project Planning & Estimation Analyst / Full-stack Developer | Baseline, resources, cost, estimates, and Full-stack implementation | Medium | High | Keep engaged |
+| ST-03 | Hùng — UI/UX Designer / Front-end Developer | User flows, prototype, usability, research evidence, and interface | Medium | High | Manage closely |
+| ST-04 | Hưng — Product Owner / Business Analyst | Product value, vision, scope, backlog, and acceptance | High | High | Manage closely |
+| ST-05 | Trí — PoC / Integration & E2E Developer | Technical feasibility, PoC, integration, end-to-end tests, and verification data | Medium | High | Manage closely |
+| ST-06 | Luân — Architecture / Technical Lead | Architecture, ADRs, technology, technical constraints, and PoC support | High in engineering | High | Manage closely |
+| ST-07 | Tuấn Anh — Project Manager / Team Leader / Timekeeper | Team operations, deadline and Kanban management, escalation, integration, review/merge, and delivery readiness | High | High | Manage closely |
+| ST-08 | Development team | Clear requirements, environment, and timely decisions | Medium | High | Keep engaged |
+| ST-09 | Students/candidates | Private JD processing, understandable plan/mapping, and contextual booking | Medium | High | Co-design/test |
+| ST-10 | Mentors/HR | Clear JD/topics to practice, manageable schedule, reputation, and suitable feedback | Medium | High | Co-design/test |
+| ST-11 | Administrators/moderators | Clear taxonomy/aliases, approval process, reports, and audit | Medium | High | Involve early |
+| ST-12 | Hosting/database providers | Correct quota and terms usage | Indirect high | Low | Monitor |
+| ST-13 | Extraction/OCR, email/calendar/video providers | Stable integration, privacy/policy compliance, and fallback | Indirect high | Low | Monitor/fallback |
+| ST-14 | Legal/privacy advisers | Consent, privacy notice, terms, and data processing | Medium | Medium | Consult |
 
-## 4. Nhu cầu, trách nhiệm và thẩm quyền
+## 4. Needs, responsibilities, and authority
 
 ### Sponsor
 
-- Phê duyệt charter, baseline và change lớn.
-- Gỡ blocker vượt thẩm quyền nhóm.
-- Xem báo cáo milestone, risk và KPI.
+- Approve charter, baseline, and major changes.
+- Remove blockers beyond team authority.
+- Review milestone, risk, and KPI reports.
 
 ### Product Owner
 
-- Làm rõ value proposition và release goal.
-- Sắp xếp backlog, chấp nhận/reject story và quyết định trade-off.
-- Xác nhận Go/Pivot/Stop cùng Sponsor.
+- Clarify the value proposition and release goal.
+- Order the backlog, accept/reject stories, and decide trade-offs.
+- Confirm Go/Pivot/Stop with the Sponsor.
 
-### PM/Scrum Master, initiation & estimation
+### Project Planning & Estimation Analyst / Full-stack Developer
 
-- Duy trì kế hoạch, dependency, risk register và communication cadence.
-- Tổ chức sprint events và escalation.
-- Bảo đảm quyết định được ghi lại.
+- Create and update the Charter, Resource Plan, Cost–Time–Resources, and two independent estimates.
+- Analyze capacity, baseline, and plan impact to provide PM decision data.
+- Contribute Full-stack development in mentor verification, availability, JD service, and notification.
 
-### UI/UX
+### UI/UX Designer / Front-end Developer
 
-- Duy trì luồng người dùng, clickable prototype và handoff bám theo backlog đã duyệt.
-- Thu thập bằng chứng nghiên cứu/khả dụng và nêu rõ điểm chưa được kiểm chứng.
-- Phối hợp với Product Owner để truy vết thay đổi nguyên mẫu về requirement và acceptance criteria.
+- Maintain user flows, clickable prototype, and handoff aligned with the approved backlog.
+- Gather research/usability evidence and state clearly what remains unverified.
+- Coordinate with the Product Owner to trace prototype changes to requirements and acceptance criteria.
 
-### PoC/E2E
+### PoC / Integration & E2E Developer
 
-- Thực hiện PoC luồng cốt lõi, dữ liệu seed, kiểm thử đầu-cuối và bằng chứng Pass/Fail cho rủi ro kỹ thuật.
-- Kiểm chứng extraction/mapping, booking concurrency, authorization và reliability theo gate đã duyệt.
-- Phối hợp với Architecture/technical lead; PoC không tự thay đổi phạm vi hoặc ADR.
+- Run core-loop PoCs, seed data, end-to-end tests, and Pass/Fail evidence for technical risks.
+- Verify extraction/mapping, booking concurrency, authorization, and reliability against approved gates.
+- Coordinate with the architecture/technical lead; a PoC does not by itself change scope or ADRs.
 
-### Architecture/technical lead
+### Architecture / Technical Lead
 
-- Sở hữu technology stack, ADR, ranh giới hệ thống và các ràng buộc kỹ thuật/bảo mật.
-- Hướng dẫn kỹ thuật cho PoC và implementation, đồng thời ghi rõ quyết định Accepted/Pending/Rejected.
-- Đánh giá tác động kiến trúc của thay đổi backlog nhưng không thay quyền ưu tiên/acceptance của Product Owner.
+- Own the technology stack, ADRs, system boundaries, and technical/security constraints.
+- Guide PoC and implementation technically while recording Accepted/Pending/Rejected decisions.
+- Assess the architecture impact of backlog changes without overriding the Product Owner's priority/acceptance authority.
 
-### Trưởng nhóm / leadership & governance
+### Project Manager / Team Leader / Timekeeper
 
-- Điều phối nhóm, dependency và WIP kỹ thuật giữa prototype, requirement, architecture, PoC và implementation.
-- Tham gia phê duyệt scope/priority cùng PO/PM, hỗ trợ escalation và theo dõi delivery readiness.
-- Thực hiện hoặc phân công phần tích hợp sản phẩm: repository foundation, CI quality gate, shared contracts và end-to-end integration.
-- Quản lý configuration/document workflow: đúng cây thư mục, owner/reviewer, version, link/evidence và consistency trước merge.
-- Tổ chức technical/document review và theo dõi action item đến khi đóng. Hưng với vai trò Product Owner/BA vẫn sắp thứ tự backlog và chấp nhận story; phê duyệt governance của Trưởng nhóm không thay quyền acceptance này.
+- Assign roles and weekly work, manage deadlines, and track the Kanban flow across prototype, requirements, architecture, PoC, and implementation.
+- Make operational decisions, coordinate scope/priority with the Product Owner, handle escalations, and track delivery readiness.
+- Perform or assign product integration work: repository foundation, CI quality gate, shared contracts, and end-to-end integration.
+- Manage the configuration/document workflow: correct directory tree, owner/reviewer, version, links/evidence, and consistency before merge.
+- Organize technical/document reviews and track action items to closure. Hưng, as Product Owner / Business Analyst, still orders the backlog and accepts stories; the Project Manager's operational decisions do not override this acceptance authority.
 
 ### Development team
 
-- Ước lượng, thiết kế, phát triển, test và cập nhật tài liệu.
-- Tuân thủ Definition of Done, security và privacy controls.
-- Nêu blocker và rủi ro kỹ thuật sớm.
+- Estimate, design, develop, test, and update documentation.
+- Comply with Definition of Done, security, and privacy controls.
+- Raise blockers and technical risks early.
 
-### Sinh viên/ứng viên
+### Students/candidates
 
-- Cung cấp discovery evidence và tham gia usability/UAT.
-- Chỉ upload JD có quyền sử dụng; kiểm tra/sửa text trước khi xác nhận analysis.
-- Cung cấp mục tiêu booking trung thực, tuân thủ lịch và community rules.
-- Chỉ chia sẻ dữ liệu cần thiết.
+- Provide discovery evidence and join usability/UAT.
+- Upload only JDs they have the right to use; review/edit text before confirming analysis.
+- Provide honest booking goals, respect the schedule, and follow community rules.
+- Share only necessary data.
 
-### Mentor/HR
+### Mentors/HR
 
-- Cung cấp bằng chứng xác minh và lịch chính xác.
-- Chỉ sử dụng JD/preparation-plan context được chia sẻ cho mục đích của booking.
-- Thực hiện mock interview trong phạm vi đã công bố.
-- Gửi feedback có cấu trúc và tuân thủ privacy/community rules.
+- Provide verification evidence and accurate availability.
+- Use the shared JD/preparation-plan context only for the purpose of the booking.
+- Run mock interviews within the published scope.
+- Submit structured feedback and comply with privacy/community rules.
 
 ### Administrator
 
-- Duyệt mentor/câu hỏi, xử lý report và quản lý taxonomy/alias; không xem JD riêng tư nếu không có thẩm quyền nghiệp vụ.
-- Giữ audit trail cho quyết định moderation và booking exception.
+- Approve mentors/questions, process reports, and manage taxonomy/aliases; do not view private JDs without business authority.
+- Keep an audit trail for moderation decisions and booking exceptions.
 
-### Nhà cung cấp dịch vụ
+### Service providers
 
-- Cung cấp hosting, database/storage, extraction/OCR, email hoặc video meeting theo SLA/quota đã chọn.
-- Không được xem là nguồn chân lý cho booking hoặc kết quả analysis; hệ thống phải có trạng thái nội bộ, kiểm tra output và fallback.
+- Provide hosting, database/storage, extraction/OCR, email, or video meeting per the chosen SLA/quota.
+- Must not be treated as the source of truth for bookings or analysis results; the system must maintain internal state, output checks, and fallback.
 
 ## 5. Power–Interest matrix
 
-| Nhóm | Stakeholder | Cách quản lý |
+| Group | Stakeholders | Management approach |
 |---|---|---|
-| Power cao, Interest cao | Sponsor, Product Owner, PM/Scrum Master, Architecture/technical lead, Trưởng nhóm | Trao đổi thường xuyên; xin quyết định theo milestone và điều phối integration |
-| Power cao, Interest thấp | Nhà cung cấp hạ tầng/tích hợp | Theo dõi quota, outage, điều khoản; chuẩn bị fallback |
-| Power thấp/trung bình, Interest cao | Team, Student, Mentor, Admin | Đồng thiết kế, demo, research và UAT định kỳ |
-| Power thấp, Interest thấp | Công chúng/đối tác tương lai | Theo dõi; cập nhật khi phạm vi mở rộng |
+| High power, high interest | Sponsor, Product Owner, Project Manager/Team Leader, and Architecture/Technical Lead | Frequent communication; request decisions per milestone and coordinate integration |
+| High power, low interest | Infrastructure/integration providers | Monitor quota, outages, terms; prepare fallback |
+| Low/medium power, high interest | Team, Student, Mentor, Admin | Co-design, demos, research, and periodic UAT |
+| Low power, low interest | Public/future partners | Monitor; update when scope expands |
 
-## 6. Baseline decisions và review trigger
+## 6. Baseline decisions and review triggers
 
-- Sponsor: Ngô Huy Biên và Ngô Ngọc Đăng Khoa; formal signatures vẫn được lưu tại Charter.
-- Capacity: 6 thành viên × 16 giờ/tuần trong 8 tuần, khoảng 653 giờ sau reserve; không dùng reserve để thêm scope.
-- Pilot: Front-end Intern/Junior; 20 JD, 12 Student, 4 Mentor và 12 booking theo PD-01.
-- File/OCR/mapping, booking, privacy, meeting và reminder dùng PD-02–PD-08 trong Product Backlog.
-- Mentor pilot cần identity evidence và public professional profile hoặc verifiable experience evidence; Admin review reason/audit trước `Approved`.
-- Go khi blind-set recall/precision@10 ≥80%, critical tests 100%, không còn Critical/High defect và pilot đạt ≥10 Confirmed/≥8 Completed; Pivot/Stop khi không đạt sau một remediation cycle hoặc phải bỏ security/privacy gate.
-- Mọi thay đổi baseline cần evidence, impact tới scope/schedule/cost và owner approval qua change control.
+- Sponsors: Ngô Huy Biên and Ngô Ngọc Đăng Khoa; formal signatures remain recorded in the Charter.
+- Capacity: 6 members × 16 hours/week over 8 weeks, about 653 hours after reserve; do not use the reserve to add scope.
+- Pilot: Front-end Intern/Junior; 20 JDs, 12 Students, 4 Mentors, and 12 bookings per PD-01.
+- File/OCR/mapping, booking, privacy, meeting, and reminder use PD-02–PD-08 in the Product Backlog.
+- Pilot Mentors need identity evidence and a public professional profile or verifiable experience evidence; Admin reviews reason/audit before `Approved`.
+- Go when blind-set recall/precision@10 ≥80%, critical tests 100%, no Critical/High defects remain, and the pilot reaches ≥10 Confirmed/≥8 Completed; Pivot/Stop when these are not met after one remediation cycle or when a security/privacy gate must be dropped.
+- Any baseline change needs evidence, impact on scope/schedule/cost, and owner approval via change control.
 
-## 7. Kế hoạch truyền thông
+## 7. Communication plan
 
-| Nội dung | Người tham gia | Nhịp | Kênh | Owner |
+| Content | Participants | Cadence | Channel | Owner |
 |---|---|---|---|---|
-| Daily coordination | Nhóm dự án | Hằng ngày làm việc | Chat/stand-up | Scrum Master |
-| Integration/document-control review | Tuấn Anh và owner từng deliverable | Hai lần/tuần và trước merge | PR + checklist + action items | Tuấn Anh |
-| Backlog refinement | PO, BA, team | Mỗi tuần | Công cụ backlog | PO |
-| Sprint planning/review/retro | PO và team | Mỗi sprint | Meeting + backlog | Scrum Master |
-| Risk/change review | Sponsor, PO, PM, Trưởng nhóm | Mỗi tuần hoặc khi vượt ngưỡng | Risk/change log | PM |
-| Student research | BA/UX và sinh viên | Theo research plan | Interview/test | Research owner |
-| Mentor review | PO/BA và mentor | Trước prototype, pilot | Interview/demo | PO |
-| Milestone report | Sponsor và nhóm | Mỗi milestone | Báo cáo ngắn | PM |
+| Kanban coordination | Project team | When assigning work, a blocker arises, or a change needs confirming | Messenger + Kanban | Tuấn Anh |
+| Integration/document-control review | Tuấn Anh and each deliverable's owner | Twice weekly and before merge | PR + checklist + action items | Tuấn Anh |
+| Backlog refinement | PO, BA, team | Weekly | Backlog tool | PO |
+| Flow/replenishment review | PO and team | Weekly or when work needs adding/confirming | Kanban + backlog | Tuấn Anh |
+| Risk/change review | Sponsor, PO, and PM | Weekly or when thresholds are exceeded | Risk/change log | Tuấn Anh |
+| Student research | BA/UX and students | Per research plan | Interview/test | Research owner |
+| Mentor review | PO/BA and mentors | Before prototype and pilot | Interview/demo | PO |
+| Milestone report | Sponsor and team | Per milestone | Short report | PM |
 
-### 7.1 Quy tắc truyền thông
+### 7.1 Communication rules
 
-- Mọi quyết định scope, acceptance và change phải được ghi trong nguồn dùng chung.
-- Không đưa dữ liệu cá nhân hoặc link họp vào kênh công khai.
-- Blocker ảnh hưởng sprint goal phải được nêu trong ngày làm việc.
-- Research note phải tách nhận định của nhóm khỏi lời/evidence của người tham gia.
-
+- Every scope, acceptance, and change decision must be recorded in the shared source.
+- Do not put personal data or meeting links in public channels.
+- Members raise blockers to the Messenger group when found so Tuấn Anh and the team can decide how to handle them; the team does not set a fixed response time.
+- Research notes must separate the team's interpretation from participants' words/evidence.

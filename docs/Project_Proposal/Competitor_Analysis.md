@@ -25,7 +25,7 @@ The market already demonstrates demand for question banks, peer practice, and me
 | LeetCode Study Plans      |          Strong for coding |               No |                     No | Automated technical judging | Algorithms and coding practice                             |
 | Mentori Vietnam           |             Career content |              Yes |      Service-dependent |            Mentor-dependent | Broad mentoring in Vietnam                                 |
 | Mentora                   | Content and learning paths |              Yes |      Service-dependent |         Programme-dependent | Mentoring and training                                     |
-| Proposed product          |     Explainable JD mapping | Approved mentors | Yes, linked to JD/plan |      Rubric and next action | JD-first preparation for entry-level candidates in Vietnam |
+| Proposed product          | Explainable JD mapping with deterministic guardrails | Approved mentors | Yes, linked to JD/plan | Rubric and next action | JD-first preparation for entry-level candidates in Vietnam |
 
 ## 4. Competitor assessment
 
@@ -45,10 +45,12 @@ The market already demonstrates demand for question banks, peer practice, and me
 ## 6. Advantages that still require proof
 
 1. Users can turn a JD into corrected text and a preparation plan more easily than by manual aggregation.
-2. Requirement detection and question mapping meet blind-JD thresholds and remain explainable.
+2. Requirement detection and question mapping meet blind-JD thresholds, remain explainable, and retain a rule/manual fallback when the AI provider fails.
 3. Mentor bookings carrying JD/plan context complete at an acceptable rate.
 4. Rubric-based feedback creates clearer next actions than free-form feedback and updates the same plan.
 5. Student affordability and mentor incentives must be researched after the free pilot; they cannot be inferred from it.
+
+These hypotheses trace to the business case, KPIs, and Go/Pivot/Stop criteria in the [Project Proposal](Project_Proposal.md). They are not proven advantages.
 
 ## 7. Sources
 

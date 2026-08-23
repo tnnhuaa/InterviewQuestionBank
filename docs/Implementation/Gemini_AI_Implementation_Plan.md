@@ -1,29 +1,29 @@
-# Kế hoạch triển khai Gemini AI cho PrepVI
+# Gemini AI Implementation Plan for PrepVI
 
-| Thuộc tính | Giá trị |
+| Attribute | Value |
 | --- | --- |
-| Trạng thái | Approved for implementation behind feature flags |
-| Nguồn thảo luận | `docs/Project_Architecture/Gemini_AI_Integration_Discussion.md` |
-| Phạm vi | JD analysis, recommendation explanation, interview agenda và feedback draft |
-| Nguyên tắc | Gemini chỉ hỗ trợ; PostgreSQL, policy và deterministic scorer vẫn là nguồn chân lý |
+| Status | Approved for implementation behind feature flags |
+| Discussion source | `docs/Project_Architecture/Gemini_AI_Integration_Discussion.md` |
+| Scope | JD analysis, recommendation explanation, interview agenda, and feedback drafts |
+| Principle | Gemini only assists; PostgreSQL, policy, and the deterministic scorer remain the source of truth |
 
-## 1. Điều kiện trước khi triển khai
+## 1. Conditions before implementation
 
-- ADR-005 là quyết định triển khai hybrid Gemini; ADR-004 tiếp tục giữ rule-based matching làm baseline/fallback.
-- Không cho Gemini tự tạo taxonomy, Question, Mentor, slot, booking, feedback chính thức hoặc thay đổi state nghiệp vụ.
-- Gemini failure không được chặn Preparation Plan, Booking hoặc Feedback; flow rule-based/manual luôn phải hoạt động.
-- Không gửi original JD file, password/token, verification evidence, meeting link, recording hoặc transcript.
-- Không triển khai Gemini reranking trong phiên bản đầu. Question score và Mentor order vẫn deterministic.
+- ADR-005 is the hybrid Gemini implementation decision; ADR-004 keeps rule-based matching as the baseline/fallback.
+- Gemini must not create taxonomy, Questions, Mentors, slots, bookings, official feedback, or change business state itself.
+- Gemini failure must not block the Preparation Plan, Booking, or Feedback; the rule-based/manual flow must always work.
+- Never send the original JD file, passwords/tokens, verification evidence, meeting links, recordings, or transcripts.
+- No Gemini reranking in the first version. Question scores and Mentor order remain deterministic.
 
-## 2. Quyết định cấu hình ban đầu
+## 2. Initial configuration decisions
 
 ### Model
 
-- Model đã chốt: `gemini-3.5-flash-lite`.
-- Dùng model stable cụ thể; không dùng alias `latest`, model preview hoặc experimental trong production.
-- Dùng cùng một model cho JD extraction, explanation, agenda và feedback draft ở phiên bản đầu để giảm biến số khi đánh giá.
-- Chỉ tách model theo tác vụ sau khi có số liệu latency, token, chi phí và chất lượng trên corpus của nhóm.
-- Trên Gemini API Free tier hiện tại, model này có giới hạn hiển thị `15 RPM`, `250K TPM` và `500 RPD`; ứng dụng đặt budget thấp hơn quota provider để dành biên an toàn.
+- Chosen model: `gemini-3.5-flash-lite`.
+- Use a specific stable model; never use the `latest` alias, preview models, or experimental models in production.
+- Use the same model for JD extraction, explanation, agenda, and feedback draft in the first version to reduce variables when evaluating.
+- Split models per task only after latency, token, cost, and quality data exist on the team's own corpus.
+- On the current Gemini API Free tier, this model shows limits of `15 RPM`, `250K TPM`, and `500 RPD`; the application sets a budget below the provider quota to leave a safety margin.
 
 ```dotenv
 AI_PROVIDER=gemini
@@ -49,35 +49,35 @@ GEMINI_CIRCUIT_BREAKER_RESET_SECONDS=60
 AI_RESULT_RETENTION_DAYS=30
 ```
 
-`GEMINI_API_KEY` chỉ tồn tại ở backend/secret manager. Không tạo biến `VITE_GEMINI_*` và không gọi Gemini trực tiếp từ frontend.
+`GEMINI_API_KEY` exists only in backend/secret manager. Do not create `VITE_GEMINI_*` variables and do not call Gemini directly from the frontend.
 
-### Các quyết định đã hiện thực hóa
+### Decisions already implemented
 
-- Requirement có confidence dưới `0.75` bắt buộc Student accept/edit/unmapped trước matching.
-- JD analysis gửi corrected text đã xác nhận; original file không được gửi cho Gemini.
-- Budget ứng dụng mặc định thấp hơn Free tier và có giới hạn riêng theo Student; có thể điều chỉnh bằng biến môi trường.
-- Ghi chú feedback draft được mã hóa, xóa sau xử lý hoặc tối đa 24 giờ; metadata/result AI dùng retention theo cấu hình.
-- Cả bốn feature được triển khai nhưng mặc định tắt độc lập.
-- Feedback giữ rubric cố định `technical/communication/structure` 0–5 trong increment này.
-- Admin chỉ có thể tắt khẩn cấp feature qua Operations Queue; việc bật ở deployment vẫn do biến môi trường/secret manager kiểm soát.
+- Requirements with confidence below `0.75` force the Student to accept/edit/mark unmapped before matching.
+- JD analysis sends confirmed corrected text only; the original file is never sent to Gemini.
+- The application budget is below the Free tier by default and has a per-Student limit; it can be adjusted via environment variables.
+- Feedback draft notes are encrypted and deleted after processing or within 24 hours; AI metadata/results use the configured retention.
+- All four features are implemented but disabled independently by default.
+- Feedback keeps the fixed `technical/communication/structure` rubric at 0–5 in this increment.
+- Admins can only emergently disable features via the Operations Queue; enabling at deployment remains controlled by environment variables/secret manager.
 
-## 3. Hiện trạng UI và khoảng trống
+## 3. Current UI state and gaps
 
-| Luồng | Hiện trạng | Thay đổi AI cần thiết |
+| Flow | Current state | Required AI change |
 | --- | --- | --- |
-| Upload/paste JD | Đã có | Thông báo dữ liệu nào được xử lý; frontend không giữ API key |
-| Review corrected text | Một phần | Tạo analysis job, polling, retry và fallback rule-based |
-| Requirement mapping | Một phần | Evidence highlight, confidence, nhãn AI, accept/edit/unmapped |
-| Question recommendation | Đã có deterministic flow | Giữ score hiện tại; AI chỉ giải thích candidate đã hợp lệ |
-| Preparation Plan | Đã gom Question, next action và Mentor | Chọn topic cần Mentor hỗ trợ; trạng thái explanation |
-| Mentor candidates | Đã hard-filter và deterministic rank | AI explanation; không tự tạo/rerank candidate ở bản đầu |
-| Mentor detail → Booking | Một phần | Giữ `planId` và selected topic khi qua Mentor detail |
-| Booking | Backend đã revalidate plan/expertise/slot | Không giao mutation hoặc state transition cho AI |
-| Mentor booking detail | Chưa có AI | CTA tạo agenda draft và editor để Mentor xác nhận |
-| Feedback | Manual form đã có | AI draft theo từng field, không ghi đè nội dung Mentor đã nhập |
-| Operations | Chưa có AI case | Retry/dismiss/disable feature và reference ID |
+| Upload/paste JD | Done | Inform what data is processed; frontend does not hold API keys |
+| Review corrected text | Partial | Create analysis job, polling, retry, and rule-based fallback |
+| Requirement mapping | Partial | Evidence highlight, confidence, AI label, accept/edit/unmapped |
+| Question recommendation | Deterministic flow done | Keep current scores; AI only explains valid candidates |
+| Preparation Plan | Groups Question, next action, and Mentor | Choose topics for Mentor support; explanation state |
+| Mentor candidates | Hard-filtered and deterministic rank | AI explanation; no creation/reranking in the first version |
+| Mentor detail → Booking | Partial | Keep `planId` and selected topic through Mentor detail |
+| Booking | Backend revalidates plan/expertise/slot | Do not give AI mutations or state transitions |
+| Mentor booking detail | No AI yet | CTA to create agenda draft and an editor for Mentor confirmation |
+| Feedback | Manual form exists | AI draft per field, without overwriting Mentor-entered content |
+| Operations | No AI case yet | Retry/dismiss/disable feature and reference ID |
 
-## 4. Kiến trúc triển khai
+## 4. Implementation architecture
 
 ```text
 AI route/controller
@@ -87,29 +87,29 @@ AI route/controller
         → GeminiProvider
 ```
 
-- Dùng SDK server-side `@google/genai`, Gemini API `v1` và structured JSON output.
-- Mọi output phải qua JSON Schema/Zod và domain validation.
-- Evidence span phải nằm trong corrected text.
-- Taxonomy ID/slug phải tồn tại và active.
-- Question/Mentor ID phải thuộc candidate set do backend cung cấp.
-- Prompt coi nội dung JD là untrusted data và không cho instruction trong JD thay đổi system policy.
-- Circuit breaker chuyển sang rule-based/manual flow khi provider lỗi liên tiếp.
+- Use the server-side SDK `@google/genai`, Gemini API `v1`, and structured JSON output.
+- Every output must pass JSON Schema/Zod and domain validation.
+- Evidence spans must be inside the corrected text.
+- Taxonomy IDs/slugs must exist and be active.
+- Question/Mentor IDs must belong to the candidate set provided by the backend.
+- Prompts treat JD content as untrusted data and must not let instructions in the JD change system policy.
+- The circuit breaker switches to the rule-based/manual flow on consecutive provider failures.
 
-## 5. Migration và dữ liệu
+## 5. Migration and data
 
-Thêm chuỗi migration AI:
+Add the AI migration series:
 
-- `005_gemini_ai_assistance.sql`: `ai_jobs`, `ai_runs`, requirement decisions, explanation và draft tables.
-- `006_ai_private_draft_inputs.sql`: input ghi chú Mentor được mã hóa và có thời hạn tối đa 24 giờ.
-- `007_ai_operations.sql`: feature control có version cho thao tác tắt khẩn cấp được audit.
-- `ai_jobs`: kind, resource, status, attempt, processing lease, available time và safe error code.
-- `ai_runs`: provider, model, prompt/schema version, input/output hash, latency, token/cost metadata và correlation ID.
-- `ai_requirement_decisions`: Student accept/edit/unmapped cho requirement.
-- `ai_recommendation_explanations`: explanation gắn với candidate ID hợp lệ.
+- `005_gemini_ai_assistance.sql`: `ai_jobs`, `ai_runs`, requirement decisions, explanation, and draft tables.
+- `006_ai_private_draft_inputs.sql`: encrypted Mentor draft inputs with a max 24-hour lifespan.
+- `007_ai_operations.sql`: versioned feature control for audited emergency-disable actions.
+- `ai_jobs`: kind, resource, status, attempt, processing lease, available time, and safe error code.
+- `ai_runs`: provider, model, prompt/schema version, input/output hash, latency, token/cost metadata, and correlation ID.
+- `ai_requirement_decisions`: Student accept/edit/unmapped for requirements.
+- `ai_recommendation_explanations`: explanations tied to valid candidate IDs.
 - `interview_agenda_drafts`.
 - `feedback_drafts`.
 
-Trạng thái job:
+Job states:
 
 ```text
 PENDING → PROCESSING → SUCCEEDED
@@ -118,16 +118,16 @@ PENDING → PROCESSING → SUCCEEDED
                      → CANCELLED
 ```
 
-Không lưu raw prompt/response trong application log. Database ưu tiên lưu normalized result đã validate, hash và metadata điều tra.
+Never log raw prompts/responses in the application log. The database prefers storing validated normalized results, hashes, and investigation metadata.
 
 ## 6. Vertical slices
 
 ### Slice A — AI foundation
 
-- Feature flags, Gemini adapter, prompt/schema registry và redaction.
-- Job runner có lease, retry tối đa hai lần, timeout, quota và circuit breaker.
-- OpenAPI contract cho job status, result metadata và recovery.
-- Error code: `AI_TIMEOUT`, `AI_QUOTA_EXCEEDED`, `AI_INVALID_OUTPUT`, `AI_REQUEST_INVALID`, `AI_DISABLED`, `AI_PROVIDER_FAILURE`.
+- Feature flags, Gemini adapter, prompt/schema registry, and redaction.
+- Job runner with lease, max two retries, timeout, quota, and circuit breaker.
+- OpenAPI contract for job status, result metadata, and recovery.
+- Error codes: `AI_TIMEOUT`, `AI_QUOTA_EXCEEDED`, `AI_INVALID_OUTPUT`, `AI_REQUEST_INVALID`, `AI_DISABLED`, `AI_PROVIDER_FAILURE`.
 
 ### Slice B — JD analysis
 
@@ -139,34 +139,34 @@ GET   /job-descriptions/{id}/analysis
 PATCH /job-descriptions/{id}/requirements/{requirementId}
 ```
 
-1. Student xác nhận corrected text.
-2. Backend tạo idempotent job từ resource version, input hash, prompt/schema/model version.
-3. Gemini trích xuất requirement, evidence và taxonomy candidate.
-4. Backend validate và lưu normalized result.
-5. Student xác nhận low-confidence/unmapped requirement.
-6. Bộ tìm câu hỏi tiếp tục dùng trọng số `40/30/15/15`, ngưỡng phù hợp `60` điểm và thứ tự phân xử cố định.
-7. Nếu Gemini lỗi, worker chạy analyzer rule-based hiện tại và trả `SUCCEEDED_WITH_FALLBACK`.
+1. The Student confirms corrected text.
+2. The backend creates an idempotent job from the resource version, input hash, and prompt/schema/model version.
+3. Gemini extracts requirements, evidence, and taxonomy candidates.
+4. The backend validates and stores normalized results.
+5. The Student confirms low-confidence/unmapped requirements.
+6. The question finder continues to use the `40/30/15/15` weights, the `60`-point threshold, and fixed tie-breaking order.
+7. If Gemini fails, the worker runs the current rule-based analyzer and returns `SUCCEEDED_WITH_FALLBACK`.
 
-### Slice C — Smart Plan và Mentor explanation
+### Slice C — Smart Plan and Mentor explanation
 
-- Giữ Question scorer và Mentor ranking hiện tại.
-- Chỉ gửi candidate set đã hard-filter cùng public expertise, topic overlap và goal tối thiểu.
-- Gemini trả explanation theo ID thuộc candidate set.
-- UI phân biệt rõ “Điểm phù hợp do quy tắc hệ thống” và “Giải thích được AI hỗ trợ”.
-- Khi AI lỗi vẫn hiển thị deterministic reason hiện tại.
+- Keep the current Question scorer and Mentor ranking.
+- Send only the hard-filtered candidate set with public expertise, topic overlap, and minimal goal.
+- Gemini returns explanations by IDs within the candidate set.
+- The UI clearly distinguishes "Fit score from system rules" and "AI-assisted explanation".
+- When AI fails, the current deterministic reason is still shown.
 
-Luồng UI:
+UI flow:
 
 ```text
 Preparation Plan
-→ Chọn topic cần Mentor hỗ trợ
-→ Xem candidate hợp lệ
-→ Xem Mentor detail giữ planId/topicIds
-→ Chọn slot
-→ Backend revalidate và tạo Booking
+→ Choose topic needing Mentor support
+→ View valid candidates
+→ View Mentor detail keeping planId/topicIds
+→ Choose slot
+→ Backend revalidates and creates Booking
 ```
 
-### Slice D — Agenda và feedback draft
+### Slice D — Agenda and feedback drafts
 
 ```http
 POST  /bookings/{id}/agenda-drafts
@@ -175,42 +175,42 @@ POST  /bookings/{id}/feedback-drafts
 PATCH /bookings/{id}/feedback-drafts/{draftId}
 ```
 
-- Mentor chủ động yêu cầu draft.
-- Agenda chỉ dùng role/seniority, topic, goal và Question Published trong booking snapshot.
-- Feedback draft chỉ hỗ trợ điền rubric/strengths/weaknesses/next actions.
-- Không ghi đè nội dung Mentor đã nhập.
-- Mentor phải review và submit bằng mutation feedback hiện có.
-- Student vẫn chủ động chọn `actionIds` để cập nhật plan.
+- The Mentor explicitly requests the draft.
+- Agenda uses only role/seniority, topics, goal, and Published Questions from the booking snapshot.
+- Feedback drafts only help fill rubric/strengths/weaknesses/next actions.
+- Do not overwrite content the Mentor entered.
+- The Mentor must review and submit via the existing feedback mutation.
+- The Student still actively chooses `actionIds` to update the plan.
 
-### Slice E — Operations và rollout
+### Slice E — Operations and rollout
 
-- AI job hết retry tạo operation case với reference ID.
+- A failed AI job after retries creates an operation case with a reference ID.
 - Admin action allowlist: `RETRY_AI_JOB`, `DISMISS`, `DISABLE_FEATURE`.
-- Rollout lần lượt local → staging → pilot nhỏ.
-- Chỉ xem xét Gemini reranking sau khi có labeled dataset và tiêu chí so sánh với deterministic baseline.
+- Rollout sequence: local → staging → small pilot.
+- Consider Gemini reranking only after a labeled dataset and comparison criteria against the deterministic baseline exist.
 
-## 7. Manual validation và release gate
+## 7. Manual validation and release gate
 
-Không thêm automated-test implementation theo phạm vi đã khóa. Walkthrough thủ công cần bao gồm:
+No automated-test implementation is added in the locked scope. The manual walkthrough must cover:
 
-- JD tiếng Việt, tiếng Anh và nội dung trộn hai ngôn ngữ.
-- Low-confidence, unmapped và evidence span không hợp lệ.
-- Prompt injection được nhúng trong JD.
-- Gemini timeout, `429`, `503`, invalid JSON và safety block.
-- Question chưa Published và Mentor chưa Approved không bao giờ xuất hiện.
-- Booking revalidation vẫn bảo đảm chỉ một transaction chiếm slot.
-- AI failure không làm mất corrected text, Mentor note hoặc feedback form state.
-- User khác không đọc được AI result của JD/plan/booking.
-- Tắt toàn bộ feature flags vẫn hoàn thành flow rule-based/manual end-to-end.
+- Vietnamese JDs, English JDs, and mixed-language content.
+- Low-confidence, unmapped, and invalid evidence spans.
+- Prompt injection embedded in a JD.
+- Gemini timeout, `429`, `503`, invalid JSON, and safety block.
+- Unpublished Questions and unapproved Mentors never appear.
+- Booking revalidation still guarantees only one transaction takes the slot.
+- AI failure does not lose corrected text, Mentor notes, or feedback form state.
+- Other users cannot read the AI results of another JD/plan/booking.
+- With all feature flags off, the rule-based/manual flow still completes end to end.
 
 Release gate:
 
-- Requirement extraction và Question precision@10 không thấp hơn baseline; mục tiêu ban đầu `≥80%` trên corpus có nhãn.
-- Candidate eligibility đạt `100%`.
-- Có evidence cho latency, token/cost, invalid-output, low-confidence và fallback rate.
-- Không còn Critical/High defect trong AI flow hoặc fallback flow.
+- Requirement extraction and Question precision@10 are not below baseline; initial target `≥80%` on the labeled corpus.
+- Candidate eligibility reaches `100%`.
+- Evidence exists for latency, token/cost, invalid output, low confidence, and fallback rate.
+- No Critical/High defects remain in the AI flow or fallback flow.
 
-## 8. Thứ tự commit/PR
+## 8. Commit/PR order
 
 1. `docs: approve hybrid Gemini architecture`
 2. `feat(ai): add provider adapter and job persistence`
@@ -220,9 +220,9 @@ Release gate:
 6. `feat(operations): add AI recovery and feature controls`
 7. `docs: add manual AI validation evidence`
 
-Mỗi feature mặc định `false` cho đến khi migration, OpenAPI, UI fallback và walkthrough tương ứng hoàn tất.
+Each feature defaults to `false` until the corresponding migration, OpenAPI, UI fallback, and walkthrough are complete.
 
-## 9. Tài liệu Gemini tham khảo
+## 9. Gemini reference documentation
 
 - [Models](https://ai.google.dev/gemini-api/docs/models)
 - [API versions](https://ai.google.dev/gemini-api/docs/api-versions)

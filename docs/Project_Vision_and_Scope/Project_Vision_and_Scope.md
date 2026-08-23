@@ -9,7 +9,7 @@
 | Main update          | JD-first revision in commit `7ca1f6e`, PR `#6`, 16 August 2026                 |
 | Status               | Internally updated; formal acceptance is not recorded                          |
 
-The Charter assigns Hùng to UI/UX, Trí to PoC/E2E, Luân to architecture, Tuấn Anh to governance, and Gia Thành to planning. These assignments do not prove that each person reviewed this document.
+The Charter assigns Hưng as Product Owner / Business Analyst; Hùng as UI/UX Designer / Front-end Developer; Trí as PoC / Integration & E2E Developer; Luân as Architecture / Technical Lead; Tuấn Anh as Project Manager / Team Leader / Timekeeper; and Gia Thành as Project Planning & Estimation Analyst / Full-stack Developer. These assignments do not prove that each person reviewed this document.
 
 ## 2. Product overview
 
@@ -145,7 +145,7 @@ These are planning assumptions, not confirmed results.
 
 ## 10. Constraints
 
-- Six members, eight weeks, and about 653 available hours after a 15% reserve.
+- Six members, eight weeks, and about 653 available hours after a 15% reserve; the team uses Kanban throughput to forecast release scope.
 - Internal cash limit of VND 1,125,000.
 - JD input limit: 50,000 characters or one file up to 10 MB; PDF up to five pages.
 - OCR supports Vietnamese and English, with a 60-second timeout and two attempts.
@@ -167,11 +167,11 @@ Git proves that the document changed. It does not prove Product Owner acceptance
 
 ## 12. References
 
-- [Project Proposal](../Project_Proposal/Project_Proposal_Draft.md)
+- [Project Proposal](../Project_Proposal/Project_Proposal.md)
 - [Product Backlog and Acceptance Criteria](Product_Backlog_and_Acceptance_Criteria.md)
 - [Current-State Workflow](Current_State_Workflow.md)
 - [Future-State Workflow](Future_State_Workflow.md)
-- [Project Charter](<../Project_Governance & Stakeholder/Project_Charter.md>)
+- [Project Charter](../Project_Governance%20%26%20Stakeholder/Project_Charter.md)
 - [Feasibility Study](../Project_Feasibility/feasibility.md)
 - [Prototype Workflow](../Project_Prototype/Prototype_Workflow.md)
 - [Software Architecture](../Project_Architecture/software_architecture.md)

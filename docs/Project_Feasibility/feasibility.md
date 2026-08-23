@@ -2,89 +2,89 @@
 
 ## 1. Executive summary
 
-MVP **khả thi có điều kiện** về kỹ thuật và vận hành nếu lấy luồng JD → extraction/correction → requirement analysis → Question mapping → preparation plan làm giá trị đầu vào; giữ Question Bank, mentor booking và feedback làm vòng thực hành; dùng công cụ họp ngoài; và hoàn thành PoC cho xử lý JD, mapping, concurrency, authorization và notification. Planning baseline là 8 tuần, khoảng 653 giờ capacity và trần tiền mặt 1.125.000 VNĐ; khả năng bàn giao chỉ được kết luận sau khi nhóm xác nhận 134 SP bằng Planning Poker, cập nhật hai estimate độc lập và có khoảng velocity thực tế.
+The MVP is **conditionally feasible** technically and operationally if the JD → extraction/correction → requirement analysis → Question mapping → preparation plan flow is treated as the value entry point; the Question Bank, mentor booking, and feedback remain the practice loop; external meeting tools are used; and PoCs are completed for JD processing, mapping, concurrency, authorization, and notification. The planning baseline is 8 weeks, roughly 653 hours of capacity, and a cash ceiling of 1,125,000 VND. Delivery capability can only be concluded after the team confirms the 134 SP with Planning Poker, updates both independent estimates, and has a realistic throughput range.
 
 ## 2. Technical feasibility
 
-| Năng lực | Đánh giá | Điều kiện |
+| Capability | Assessment | Conditions |
 |---|---|---|
-| Web CRUD/search/filter | Khả thi | Taxonomy/index và test multi-tag |
-| Authentication/RBAC | Khả thi có điều kiện | Object-level authorization và negative tests |
-| JD intake/extraction | Khả thi có rủi ro | Một PDF/PNG/JPEG ≤10 MB, PDF ≤5 trang; direct extraction trước, OCR VI/EN fallback, correction gate và safe failure |
-| Requirement analysis/Question mapping | Khả thi có rủi ro | 20 JD có nhãn; versioned taxonomy/alias/rules; blind-set recall và precision@10 ≥80% |
-| Preparation plan | Khả thi | Trace tới JD/requirement/Question version và object-level authorization |
-| Mentor verification | Khả thi | Workflow moderation và audit |
-| Availability/booking | Khả thi có rủi ro | Transaction/unique constraint chống double booking |
-| Notification | Khả thi có rủi ro | Outbox/retry; không làm rollback booking |
-| Feedback/review | Khả thi | Completed-only rule, privacy và moderation |
-| Video meeting | Khả thi bằng tích hợp nhẹ | External/manual link trong MVP |
-| AI/payment | Loại khỏi MVP | Chỉ xem xét sau validation |
+| Web CRUD/search/filter | Feasible | Taxonomy/index and multi-tag tests |
+| Authentication/RBAC | Conditionally feasible | Object-level authorization and negative tests |
+| JD intake/extraction | Feasible with risk | One PDF/PNG/JPEG ≤10 MB, PDF ≤5 pages; direct extraction first, VI/EN OCR fallback, correction gate and safe failure |
+| Requirement analysis/Question mapping | Feasible with risk | 20 labeled JDs; versioned taxonomy/alias/rules; blind-set recall and precision@10 ≥80% |
+| Preparation plan | Feasible | Traceability to JD/requirement/Question version and object-level authorization |
+| Mentor verification | Feasible | Moderation workflow and audit |
+| Availability/booking | Feasible with risk | Transactional/unique constraints prevent double booking |
+| Notification | Feasible with risk | Outbox/retry; must not roll back booking |
+| Feedback/review | Feasible | Completed-only rule, privacy and moderation |
+| Video meeting | Feasible with light integration | External/manual link in MVP |
+| AI/payment | Excluded from MVP | Consider only after validation |
 
-PoC bắt buộc:
+Mandatory PoCs:
 
-1. JD hợp lệ tạo văn bản có thể sửa bằng direct extraction hoặc OCR fallback; lỗi tệp thất bại an toàn.
-2. Requirement/alias được chuẩn hóa và mapping chỉ trả Question `PUBLISHED`, có source/topic/reason/version và ổn định cùng phiên bản.
-3. Hai request đồng thời không thể xác nhận cùng một slot.
-4. User khác không thể đọc/sửa JD, plan, booking, meeting link hoặc feedback.
-5. Booking transition hợp lệ và có audit trail.
-6. Question filter đúng với nhiều position/topic.
-7. Email failure không làm mất booking; retry idempotent.
+1. A valid JD produces editable text via direct extraction or OCR fallback; file errors fail safely.
+2. Requirements/aliases are normalized, and mapping returns only `PUBLISHED` Questions with source/topic/reason/version, stable within a version.
+3. Two simultaneous requests cannot confirm the same slot.
+4. Unrelated users cannot read or modify JD, plan, booking, meeting link, or feedback.
+5. Booking transitions are valid and auditable.
+6. Question filters work correctly across multiple positions/topics.
+7. Email failure does not lose a booking; retry is idempotent.
 
-## 3. Schedule và resource feasibility
+## 3. Schedule and resource feasibility
 
-Trạng thái: **Có đường cơ sở lập kế hoạch; chưa có cam kết sprint**.
+Status: **Planning baseline exists; no formal delivery commitment yet**.
 
-- Capacity: 6 thành viên × 16 giờ/tuần × 8 tuần = 768 giờ danh nghĩa; dự phòng 15% để lại khoảng 653 giờ cho scope.
-- Backlog: 27 story R1 Must = 134 SP; thông lượng cần thiết 33,5 SP/sprint chỉ là mốc so sánh.
-- Nhóm phải Planning Poker, tách/chấp nhận ngoại lệ cho story 8 SP, theo dõi velocity chậm/nhanh sau 2–3 sprint và dựng đường will-have/might-have trước khi cam kết fixed-date release.
-- Schedule được xem là khả thi khi Must backlog nằm trong khoảng velocity × 4 sprint và vẫn giữ reserve cho discovery, integration, defect, security/privacy và UAT.
+- Capacity: 6 members × 16 hours/week × 8 weeks = 768 nominal hours; a 15% reserve leaves about 653 hours for scope.
+- Backlog: 27 R1 Must stories = 134 SP; the required throughput of 33.5 SP/week over four reconstructed execution weeks is only a comparison marker.
+- The team must run Planning Poker, split or accept the 8-SP exception, track a throughput range after 2–3 weeks of data, and build a will-have/might-have line before committing to a fixed-date release.
+- The schedule is considered feasible when the Must backlog fits within the forecast throughput range while reserving capacity for discovery, integration, defects, security/privacy, and UAT.
 
-## 4. Operational và market feasibility
+## 4. Operational and market feasibility
 
-| Khía cạnh | Đánh giá | Validation |
+| Aspect | Assessment | Validation |
 |---|---|---|
-| Nhu cầu sinh viên | Có giả thuyết cần kiểm chứng | ≥70% discovery sample xác nhận pain chuẩn bị theo JD |
-| Giá trị JD-to-plan | Có điều kiện | ≥80% hoàn tất tác vụ; extraction ≥90%; blind-set recall/precision@10 ≥80% |
-| Mentor supply | Có điều kiện | 4 mentor Approved, mỗi người ≥3 slot cho pilot |
-| Booking operation | Có điều kiện | Policy cancel/reschedule/no-show và admin owner |
-| Feedback quality | Có điều kiện | Mentor dùng được rubric; ≥90% complete |
-| Moderation | Có điều kiện | Provenance câu hỏi, report và appeal |
-| Plan-to-mentor loop | Chưa chứng minh | 12 booking hợp lệ; mục tiêu ≥10 Confirmed và ≥8 Completed |
+| Student need | Hypothesis to verify | ≥70% of the discovery sample confirms a JD-based preparation pain point |
+| JD-to-plan value | Conditional | ≥80% task completion; extraction ≥90%; blind-set recall/precision@10 ≥80% |
+| Mentor supply | Conditional | 4 Approved mentors, each with ≥3 slots for the pilot |
+| Booking operation | Conditional | Cancel/reschedule/no-show policy and admin owner |
+| Feedback quality | Conditional | Mentors can use the rubric; ≥90% complete |
+| Moderation | Conditional | Question provenance, report and appeal |
+| Plan-to-mentor loop | Not yet proven | 12 valid bookings; targets ≥10 Confirmed and ≥8 Completed |
 
-Marketplace có rủi ro chicken-and-egg nhưng không chặn toàn bộ giá trị vì Student nhận preparation plan trước khi đặt Mentor. Pilot giới hạn Front-end Intern/Junior dùng JavaScript/TypeScript/React, 20 JD đã khử định danh, 12 Student và 4 Mentor tự nguyện.
+The marketplace has a chicken-and-egg risk, but it does not block overall value because the Student receives a preparation plan before booking a Mentor. The pilot is limited to Front-end Intern/Junior candidates using JavaScript/TypeScript/React, 20 de-identified JDs, 12 Students, and 4 volunteer Mentors.
 
 ## 5. Economic feasibility
 
-Trạng thái: **Có đường cơ sở tiền mặt cho thử nghiệm; chưa chứng minh unit economics**.
+Status: **Cash baseline exists for the trial; unit economics not proven**.
 
-- Direct cash: tên miền 300.000 VNĐ + hỗ trợ 12 Student participant 600.000 VNĐ = 900.000 VNĐ.
-- Contingency 25% = 225.000 VNĐ; cash ceiling = 1.125.000 VNĐ.
-- Mentor pilot tham gia tự nguyện; payment, escrow, payout và commission không thuộc MVP.
-- Chi phí lao động phải theo dõi riêng; giá trị quy đổi học thuật không phải khoản lương hoặc cash cost.
-- Mọi dịch vụ OCR/email/hosting trả phí cần báo giá có ngày, impact và change approval trước khi thay baseline nội bộ/free tier.
+- Direct cash: domain 300,000 VND + supporting 12 Student participants 600,000 VND = 900,000 VND.
+- 25% contingency = 225,000 VND; cash ceiling = 1,125,000 VND.
+- Pilot mentors participate voluntarily; payment, escrow, payout, and commission are out of MVP scope.
+- Labor cost must be tracked separately; the academic conversion rate is not a wage or cash cost.
+- Any paid OCR/email/hosting service needs a dated quote, impact assessment, and change approval before replacing the internal/free-tier baseline.
 
-## 6. Legal, privacy và ethical feasibility
+## 6. Legal, privacy, and ethical feasibility
 
-MVP khả thi có điều kiện nếu:
+The MVP is conditionally feasible if:
 
-- Có privacy notice, consent và mục đích xử lý rõ.
-- Thu thập tối thiểu dữ liệu; JD gốc xóa ≤24 giờ, dữ liệu dẫn xuất sau 90 ngày không hoạt động, booking/feedback sau 180 ngày, active deletion ≤7 ngày và backup expiry ≤30 ngày.
-- Meeting link, verification evidence và feedback không công khai.
-- Question có provenance và không sao chép nội dung có bản quyền trái phép.
-- Review/report có guideline, moderation và appeal.
-- Không ghi âm/phiên âm trong MVP.
-- Terms nêu rõ cancellation, no-show, refund/credit và giới hạn trách nhiệm.
+- A privacy notice, consent, and clear processing purpose exist.
+- Data is minimal: original JD deleted within ≤24 hours, derived data after 90 days of inactivity, booking/feedback after 180 days, active deletion ≤7 days, and backup expiry ≤30 days.
+- Meeting links, verification evidence, and feedback are not public.
+- Questions have provenance and do not copy copyrighted content without authorization.
+- Reviews/reports have guidelines, moderation, and appeal.
+- No recording/transcription in the MVP.
+- Terms state cancellation, no-show, refund/credit, and liability limits.
 
-## 7. Khuyến nghị và Go/No-Go gates
+## 7. Recommendation and Go/No-Go gates
 
-| Gate | Go khi | No-Go/Pivot khi |
+| Gate | Go when | No-Go/Pivot when |
 |---|---|---|
-| G1 Problem | Pain được xác nhận và có hành vi hiện tại | Chỉ có ý kiến chung, không có nhu cầu thực |
-| G2 JD data | Có 20 JD hợp pháp/khử định danh, 12 calibration + 8 blind và nhãn hai lượt | Không có corpus hoặc nhãn không đủ tin cậy |
-| G3 Prototype | ≥80% task JD-to-plan và plan-to-booking hoàn tất | Luồng không hiểu hoặc cần hỗ trợ lớn |
-| G4 Technical | 7 PoC bắt buộc pass; blind recall/precision@10 ≥80% | Extraction/mapping không đạt, double booking hoặc access leak chưa kiểm soát |
-| G5 Supply | 4 Mentor Approved có ≥3 slot/người | Không tuyển được supply đúng phân khúc |
-| G6 Delivery | Must backlog nằm trong velocity range/capacity/budget | Core loop không thể hoàn tất trong baseline |
-| G7 Pilot | ≥10 Confirmed, ≥8 Completed; feedback hữu ích | Completion/value quá thấp sau một remediation cycle |
+| G1 Problem | Pain is confirmed with current behavior | Only general opinions, no real need |
+| G2 JD data | 20 legal/de-identified JDs, 12 calibration + 8 blind, double-labeled | No corpus or unreliable labels |
+| G3 Prototype | ≥80% JD-to-plan and plan-to-booking tasks complete | Flow is unintelligible or requires heavy support |
+| G4 Technical | 7 mandatory PoCs pass; blind recall/precision@10 ≥80% | Extraction/mapping fails, double booking or access leaks uncontrolled |
+| G5 Supply | 4 Approved mentors with ≥3 slots each | Cannot recruit supply in the right segment |
+| G6 Delivery | Must backlog fits throughput range/capacity/budget | Core loop cannot complete within baseline |
+| G7 Pilot | ≥10 Confirmed, ≥8 Completed; feedback useful | Completion/value too low after one remediation cycle |
 
-Khuyến nghị hiện tại: **Proceed với thử nghiệm hẹp và PoC; chỉ Go cho phát hành khi các gate đạt**. Planning baseline dùng cho điều phối nội bộ; phê duyệt chính thức vẫn cần chữ ký Sponsor Ngô Huy Biên và Ngô Ngọc Đăng Khoa.
+Current recommendation: **proceed with a narrow trial and PoC; go to release only when the gates pass**. The planning baseline is for internal coordination; official approval still requires Sponsor signatures from Ngô Huy Biên and Ngô Ngọc Đăng Khoa.

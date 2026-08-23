@@ -6,7 +6,8 @@
 | ------------------------------ | --------------------------------------------- |
 | Sponsors                       | Lecturers Ngô Huy Biên and Ngô Ngọc Đăng Khoa |
 | Product Owner                  | Hưng                                          |
-| Project Manager / Scrum Master | Gia Thành                                     |
+| Project Manager / Team Leader / Timekeeper | Tuấn Anh                         |
+| Project Planning & Estimation Analyst / Full-stack Developer | Gia Thành       |
 | Team                           | Gia Thành, Hùng, Hưng, Trí, Luân, Tuấn Anh    |
 | Version                        | 1.0 — planning baseline                       |
 | Baseline date                  | 14 August 2026                                |
@@ -64,21 +65,21 @@ ADR-005 later added optional Gemini support behind feature flags. It does not ad
 
 ## 5. Team and authority
 
-| Member    | Main role                      | Main outputs                                                                |
-| --------- | ------------------------------ | --------------------------------------------------------------------------- |
-| Gia Thành | Project Manager/Scrum Master   | Charter, resources, estimates, schedule, and risk coordination              |
-| Tuấn Anh  | Team Lead                      | Team coordination, scope governance, escalation, and delivery readiness     |
-| Hùng      | UI/UX                          | Prototype, workflow, and usability evidence                                 |
-| Hưng      | Product Owner/Business Analyst | Vision and Scope, Product Backlog, acceptance criteria, and future workflow |
-| Trí       | PoC/E2E                        | PoCs, seed data, tests, and high-risk technical evidence                    |
-| Luân      | Architecture/Technical Lead    | Technology stack, ADRs, architecture, and technical support                 |
+| Member    | Main role                                                     | Main outputs                                                                                                  |
+| --------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Tuấn Anh  | Project Manager / Team Leader / Timekeeper                    | Assign roles and work, manage deadlines and Kanban, decide escalations, review merges, and confirm Done      |
+| Gia Thành | Project Planning & Estimation Analyst / Full-stack Developer   | Maintain the Charter, resources, cost and estimates; implement Mentor verification, availability, JD, and notifications |
+| Hưng      | Product Owner / Business Analyst                              | Own Vision and Scope, Product Backlog, acceptance criteria, future workflow, and User Story acceptance       |
+| Luân      | Architecture / Technical Lead                                 | Own the technology stack, ADRs, architecture, and technical support                                          |
+| Hùng      | UI/UX Designer / Front-end Developer                          | Produce the prototype, workflow, usability evidence, and front-end interface                                 |
+| Trí       | PoC / Integration & E2E Developer                             | Build PoCs, seed data, integrations, end-to-end tests, and technical-risk evidence                           |
 
 Decision rules:
 
 - Sponsors approve the Charter, baseline scope, and major changes.
 - The Product Owner sets backlog priority and accepts stories.
-- The Project Manager coordinates schedule, dependencies, risks, and reports.
-- The Team Lead supports team-wide decisions and escalation.
+- Tuấn Anh assigns work, manages deadlines and the Kanban flow, resolves escalations, reviews merges, and confirms delivery.
+- Gia Thành maintains planning and estimation data for project decisions and also contributes as a Full-stack Developer.
 - Technical decisions follow accepted ADRs.
 
 These role assignments do not prove that a person reviewed a specific change. A review record is still required.
@@ -135,7 +136,7 @@ These are planned milestones, not proof of completion. The repository has CI but
 | Sponsor         | Ngô Huy Biên       | Pending                               |
 | Sponsor         | Ngô Ngọc Đăng Khoa | Pending                               |
 | Product Owner   | Hưng               | Role assigned; signature not recorded |
-| Project Manager | Gia Thành          | Role assigned; signature not recorded |
+| Project Manager | Tuấn Anh           | Role assigned; signature not recorded |
 
 Until Sponsor approval is recorded, this Charter is an internal planning baseline.
 
@@ -149,7 +150,7 @@ Git records:
 
 The repository does not contain named review comments or signed approval.
 
-- [Project Proposal](../Project_Proposal/Project_Proposal_Draft.md)
+- [Project Proposal](../Project_Proposal/Project_Proposal.md)
 - [Project Vision and Scope](../Project_Vision_and_Scope/Project_Vision_and_Scope.md)
 - [Resource Plan](../Project_Resource_Plan/ResourcePlan.md)
 - [Feasibility Study](../Project_Feasibility/feasibility.md)

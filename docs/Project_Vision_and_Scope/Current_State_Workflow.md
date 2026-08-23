@@ -1,115 +1,114 @@
 # Interview Practice Platform — Current-State Workflow
 
-## 1. Định nghĩa workflow
+## 1. Workflow definition
 
-Current state mô tả cách sinh viên hiện chuẩn bị phỏng vấn khi chưa có nền tảng tích hợp. Quy trình bắt đầu từ lúc người học chọn vị trí mục tiêu và kết thúc khi họ nhận feedback rời rạc hoặc bước vào buổi phỏng vấn thật.
+The current state describes how a Student prepares for interviews today, without an integrated platform. The process starts when the Student picks a target role and ends when they receive fragmented feedback or walk into a real interview.
 
-## 2. Kịch bản chính
+## 2. Main scenario
 
-An chuẩn bị ứng tuyển Front-end Intern. An đọc JD, tìm câu hỏi từ nhiều nguồn, ghi chú câu trả lời và nhờ người quen luyện cùng. Phần lớn thời gian bị dùng cho việc chọn tài liệu và điều phối; An không có rubric để biết câu trả lời cần cải thiện ở đâu.
+An prepares for a Front-end Intern application. An reads a JD, searches for questions across many sources, notes down answers, and asks an acquaintance for a mock session. Most of the time goes into selecting materials and coordination; An has no rubric telling them where the answer needs improvement.
 
-## 3. End-to-end workflow hiện tại
+## 3. Current end-to-end workflow
 
 ```mermaid
 flowchart TD
-    A["Chọn vị trí/JD mục tiêu"] --> B["Tìm câu hỏi trên nhiều nguồn"]
-    B --> C["Tự kiểm tra và lưu tài liệu"]
-    C --> D["Tự viết/đọc câu trả lời"]
-    D --> E{"Có người luyện cùng?"}
-    E -- "Không" --> F["Tiếp tục tự luyện hoặc đi phỏng vấn thật"]
-    E -- "Có" --> G["Nhắn tin mô tả mục tiêu"]
-    G --> H["Trao đổi lịch, chi phí và công cụ họp"]
+    A["Choose target role/JD"] --> B["Search questions across sources"]
+    B --> C["Self-check and store materials"]
+    C --> D["Write/read answers yourself"]
+    D --> E{"Has a practice partner?"}
+    E -- "No" --> F["Continue self-practice or go to a real interview"]
+    E -- "Yes" --> G["Message a description of the goal"]
+    G --> H["Negotiate schedule, cost, and meeting tool"]
     H --> I["Mock interview"]
-    I --> J["Nhận feedback bằng lời/tin nhắn"]
-    J --> K["Tự quyết định nội dung luyện tiếp"]
+    I --> J["Receive verbal/message feedback"]
+    J --> K["Decide what to practice next yourself"]
 ```
 
-## 4. Đặc tả workflow
+## 4. Workflow specification
 
-| Bước | Actor | Input | Hoạt động | Output | Pain/risk |
+| Step | Actor | Input | Activity | Output | Pain/risk |
 |---|---|---|---|---|---|
-| CS-01 | Student | JD hoặc tên vị trí | Xác định chủ đề cần chuẩn bị | Danh sách chủ đề tự suy luận | Thiếu cấu trúc, phụ thuộc kinh nghiệm |
-| CS-02 | Student | Từ khóa tìm kiếm | Tìm blog, video, social, AI, kho bài | Nhiều nguồn nội dung | Trùng lặp, khó kiểm chứng |
-| CS-03 | Student | Link/nội dung | Lưu notes/bookmark/spreadsheet | Bộ tài liệu cá nhân | Khó duy trì và tìm lại |
-| CS-04 | Student | Câu hỏi | Đọc/viết đáp án, tự đánh giá | Câu trả lời nháp | Không có feedback đáng tin cậy |
-| CS-05 | Student | Mạng lưới cá nhân | Tìm bạn/mentor/HR | Một số contact | Khó đúng chuyên môn/lịch |
-| CS-06 | Hai bên | Mục tiêu, lịch, giá | Trao đổi qua tin nhắn | Thỏa thuận không cấu trúc | Chậm, thiếu thông tin, trùng lịch |
-| CS-07 | Hai bên | Link họp | Mock interview | Trải nghiệm luyện tập | Chất lượng phụ thuộc người hỗ trợ |
-| CS-08 | Mentor/peer | Ghi chú tự do | Nhận xét qua lời/tin nhắn | Feedback rời rạc | Không theo rubric, khó so sánh |
-| CS-09 | Student | Feedback | Tự chọn nội dung luyện tiếp | Kế hoạch cá nhân | Hành động có thể mơ hồ |
+| CS-01 | Student | JD or role name | Determine topics to prepare | Self-inferred topic list | Unstructured, depends on experience |
+| CS-02 | Student | Search keywords | Find blogs, videos, social, AI, question banks | Many content sources | Duplicate, hard to verify |
+| CS-03 | Student | Link/content | Save to notes/bookmarks/spreadsheet | Personal material set | Hard to maintain and retrieve |
+| CS-04 | Student | Questions | Read/write answers, self-assess | Draft answers | No reliable feedback |
+| CS-05 | Student | Personal network | Find friends/mentor/HR | Some contacts | Hard to match expertise/schedule |
+| CS-06 | Both sides | Goal, schedule, price | Negotiate via messages | Unstructured agreement | Slow, incomplete, schedule conflicts |
+| CS-07 | Both sides | Meeting link | Mock interview | Practice experience | Quality depends on the helper |
+| CS-08 | Mentor/peer | Free-form notes | Give verbal/message feedback | Fragmented feedback | No rubric, hard to compare |
+| CS-09 | Student | Feedback | Choose next topics yourself | Personal plan | Actions may be vague |
 
-## 5. Mô hình dữ liệu hiện tại
+## 5. Current data model
 
-### Thông tin vị trí và câu hỏi
+### Position and question information
 
-- Tên công ty/vị trí/JD.
-- Link nguồn, câu hỏi, câu trả lời nháp.
-- Tag hoặc folder do người học tự đặt.
-- Trạng thái luyện thường không nhất quán.
+- Company/role/JD name.
+- Source link, questions, draft answers.
+- Tags or folders created by the learner.
+- Practice status is often inconsistent.
 
-### Thông tin mentor và lịch
+### Mentor and schedule information
 
-- Profile/link mạng xã hội.
-- Nội dung hội thoại về kinh nghiệm, mục tiêu, giá và lịch.
-- Link họp hoặc contact riêng.
-- Không có một booking record dùng chung.
+- Social profile/link.
+- Conversation content about experience, goals, price, and schedule.
+- Meeting link or private contact.
+- No shared booking record.
 
 ### Feedback
 
-- Tin nhắn, email, tài liệu hoặc lời nói.
-- Ít khi có cùng tiêu chí giữa hai buổi.
-- Không nối trực tiếp đến câu hỏi/chủ đề cần luyện.
+- Messages, emails, documents, or spoken words.
+- Rarely uses the same criteria between sessions.
+- Not linked directly to the question/topic that needs practice.
 
-## 6. Các biến thể phổ biến
+## 6. Common variations
 
-### 6.1 Tự luyện hoàn toàn
+### 6.1 Fully self-directed practice
 
-Người học đọc câu hỏi, dùng AI hoặc đáp án mẫu để tự kiểm tra. Cách này dễ tiếp cận nhưng không mô phỏng áp lực, câu hỏi tiếp nối và đánh giá của con người.
+The learner reads questions and uses AI or sample answers to self-check. This is accessible but does not simulate pressure, follow-up questions, or human assessment.
 
 ### 6.2 Peer practice
 
-Hai ứng viên luyện cùng nhau. Chi phí thấp và dễ lặp lại, nhưng độ chính xác và chiều sâu feedback phụ thuộc năng lực của peer.
+Two candidates practice together. Cost is low and it is easy to repeat, but feedback accuracy and depth depend on the peer's ability.
 
-### 6.3 Mentor/coaching qua nền tảng khác
+### 6.3 Mentor/coaching on another platform
 
-Người học đặt coach trên một nền tảng mentoring. Chất lượng có thể cao, nhưng Question Bank và lịch sử luyện thường nằm ngoài dịch vụ.
+The learner books a coach on a mentoring platform. Quality can be high, but the Question Bank and practice history usually stay outside the service.
 
-### 6.4 Nhờ người quen/đồng nghiệp
+### 6.4 Asking acquaintances/colleagues
 
-Có độ tin cậy cá nhân nhưng phụ thuộc mạng lưới, thiện chí và lịch rảnh; khó mở rộng hoặc duy trì đều đặn.
+Personal trust is high but it depends on network, goodwill, and free time; hard to scale or sustain consistently.
 
-## 7. Phân tích pain point
+## 7. Pain point analysis
 
-### 7.1 Tìm và kiểm tra nội dung là nút thắt đầu tiên
+### 7.1 Finding and verifying content is the first bottleneck
 
-Người học dành thời gian tìm, đối chiếu và tổ chức câu hỏi trước khi thực sự luyện tập.
+The learner spends time searching, cross-checking, and organizing questions before actually practicing.
 
-### 7.2 Tự luyện không phản ánh đầy đủ buổi phỏng vấn
+### 7.2 Self-practice does not fully mirror an interview
 
-Đọc đáp án không kiểm tra được cách nói thành tiếng, phản ứng trước follow-up và khả năng giữ câu trả lời đúng trọng tâm.
+Reading answers does not test speaking aloud, reacting to follow-ups, or staying on topic.
 
-### 7.3 Điều phối mentor tạo ma sát
+### 7.3 Mentor coordination creates friction
 
-Mục tiêu, phạm vi, lịch, giá và công cụ họp được thương lượng qua nhiều lượt tin nhắn.
+Goal, scope, schedule, price, and meeting tools are negotiated over many message rounds.
 
-### 7.4 Feedback thiếu cấu trúc
+### 7.4 Feedback is unstructured
 
-Người học nhận xét chung nhưng thiếu strength, weakness, evidence và next action.
+The learner gets general comments without strength, weakness, evidence, and next action.
 
-### 7.5 Dữ liệu không tạo thành vòng lặp
+### 7.5 Data does not form a loop
 
-JD, câu hỏi, mentor, booking và feedback nằm ở nhiều nơi. Người học phải tự chuyển feedback thành kế hoạch luyện tiếp.
+JD, questions, mentors, bookings, and feedback live in many places. The learner must convert feedback into a practice plan themselves.
 
-## 8. Evidence cần thu
+## 8. Evidence to collect
 
-- Thời gian trung bình để tìm một bộ câu hỏi phù hợp.
-- Tỷ lệ sinh viên từng mock interview và lý do chưa thử.
-- Thời gian từ lúc tìm mentor đến lúc xác nhận lịch.
-- Chất lượng feedback hiện tại theo rubric mẫu.
-- Mức tự tin trước/sau một buổi luyện.
-- Willingness to pay và chi phí thực tế gần nhất.
+- Average time to find a suitable question set.
+- Share of students who ever did a mock interview and reasons for not trying.
+- Time from finding a mentor to confirming a schedule.
+- Current feedback quality against a sample rubric.
+- Confidence before/after a practice session.
+- Willingness to pay and the most recent actual cost.
 
-## 9. Kết quả current state
+## 9. Current-state findings
 
-Workflow hiện tại khả dụng nhưng phân mảnh. Baseline này cần được kiểm chứng bằng discovery trước khi dùng làm bằng chứng rằng MVP đã cải thiện trải nghiệm.
-
+The current workflow is usable but fragmented. This baseline must be validated with discovery before being used as evidence that the MVP improved the experience.

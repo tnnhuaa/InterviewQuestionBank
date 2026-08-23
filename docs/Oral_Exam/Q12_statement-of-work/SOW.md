@@ -89,11 +89,11 @@ Bản Statement of Work này được thiết lập dựa trên các tài liệu
 1. **Cấu trúc SOW:** 
    - Lấy cảm hứng từ slide `06. Software Project Planning.pdf`, Slide 12 (*Statement of Work*). Cấu trúc tuân thủ nguyên tắc trả lời câu hỏi "WHAT" thông qua các đề mục tiêu chuẩn như Purpose, Scope, Period of performance, Deliverables schedule, Acceptance criteria, Assumptions.
 2. **Khái quát Dự án, Vấn đề, Giải pháp và Phạm vi:** 
-   - Lấy từ `docs/Project_Proposal/Project_Proposal_Draft.md` (Các phần Mục đích, Vấn đề, Phạm vi MVP, Kết quả mong đợi).
+   - Lấy từ `docs/Project_Proposal/Project_Proposal.md` (các phần Mục đích, Vấn đề, Phạm vi MVP và Kết quả mong đợi).
    - Tham khảo bổ sung từ `docs/Project_Vision_and_Scope/Project_Vision_and_Scope.md` (Đặc biệt phần Ranh giới phạm vi, Giả định và Ràng buộc bảo mật dữ liệu JD).
 3. **Chi phí, Thời gian, Nguồn lực và Lịch trình Giao nộp:** 
    - Trích xuất từ `docs/Project_Resource_Plan/Cost_Time_Resources.md` (Các mục Baseline planning, Cash budget 1.125.000 VNĐ, Lịch và tolerance 8 tuần với mốc ngày cụ thể).
 4. **Tiêu chí nghiệm thu (Acceptance Criteria):** 
    - Tổng hợp từ mục *Mục tiêu sản phẩm và cách đo* trong `Project_Vision_and_Scope.md` (Precision ≥80%, Pilot KPI) và các ràng buộc từ `Cost_Time_Resources.md`.
 5. **Trách nhiệm (Roles):** 
-   - Bám sát bảng phân công vai trò trong `Project_Proposal_Draft.md`.
+   - Bám sát bảng phân công vai trò trong `Project_Proposal.md`.

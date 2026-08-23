@@ -47,7 +47,7 @@ Every transition is manual. Role context, weak topics, and practice goals do not
 | Capability                      | Current tool combination                 | Interview Practice Platform MVP                                            |
 | ------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------- |
 | JD intake and extraction        | Manual reading, copying, or separate OCR | Paste/file input, direct extraction, OCR fallback, and correction gate     |
-| Requirement-to-question mapping | Candidate inference                      | Taxonomy and aliases plus versioned rule scores, source, topic, and reason |
+| Requirement-to-question mapping | Candidate inference                      | Versioned rule scores with source, topic, and reason; optional Gemini support behind feature flags and validation |
 | Preparation plan                | Separate notes or spreadsheet            | Plan traced to JD, requirement, question, and next action                  |
 | Question taxonomy               | Different classification per source      | Shared role, topic, type, and difficulty taxonomy                          |
 | Practice tracking               | Manual notes                             | Bookmarks and basic practice status                                        |
@@ -59,7 +59,7 @@ Every transition is manual. Role context, weak topics, and practice goals do not
 
 ## 6. Business-case implication
 
-The MVP has initial value if it reduces friction from JD to preparation plan, even before a mentor booking. The team must measure JD-to-plan task completion, extraction success, blind-set recall and precision@10, plan activation, booking conversion and completion, and feedback quality. If plans are useful but candidates do not proceed to mentors, the team should reassess the marketplace value proposition and mentor supply rather than treat the whole product as invalid.
+The MVP has initial value if it reduces friction from JD to preparation plan, even before a mentor booking. The team must measure JD-to-plan task completion, extraction success, blind-set recall and precision@10, plan activation, booking conversion and completion, and feedback quality. Gemini remains an optional support layer; the rule/manual flow must preserve the core value when the provider fails. If plans are useful but candidates do not proceed to mentors, the team should reassess the marketplace value proposition and mentor supply rather than treat the whole product as invalid. The [Project Proposal](Project_Proposal.md) contains the complete business case and investment logic.
 
 ## 7. Evidence limitation
 

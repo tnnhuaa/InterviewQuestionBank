@@ -1,77 +1,77 @@
 # Cost, Time and Resources Baseline - Interview Practice Platform
 
-## 1. Baseline được đề xuất
+## 1. Proposed baseline
 
-| Hạng mục | Baseline planning |
+| Item | Planning baseline |
 |---|---|
 | Start / finish | 29/06/2026-23/08/2026 |
-| Thời lượng | 8 tuần, 6 giai đoạn theo Project Charter |
-| Team / capacity | 6 người x 16 giờ/tuần x 8 tuần = 768 giờ danh nghĩa; khoảng 653 giờ cam kết sau reserve 15% |
-| Estimate điều hành | Bottom-up + Three-point: 527 giờ expected, 606 giờ sau contingency 15%; đang dựa trên 20 Must story cũ và phải cập nhật cho 27 story/134 SP |
-| Cross-check | Top-down parametric Count-Compute + structured expert judgment: 565 giờ, 650 giờ sau contingency 15%; đang dựa trên 20 Must story cũ và phải cập nhật cho 27 story/134 SP |
-| Cash budget ceiling | **1.125.000 VND** |
-| Labor value tham chiếu | 606 giờ x 50.000 VND/giờ = **30.300.000 VND** |
-| Total economic planning value | **31.425.000 VND** (= cash + labor value) |
+| Duration | 8 weeks, 6 phases per the Project Charter |
+| Team / capacity | 6 people x 16 hours/week x 8 weeks = 768 nominal hours; about 653 hours committed after a 15% reserve |
+| Operating estimate | Bottom-up + Three-point: 527 expected hours, 606 hours after a 15% contingency; currently based on the old 20 Must stories and must be updated for 27 stories/134 SP |
+| Cross-check | Top-down parametric Count-Compute + structured expert judgment: 565 hours, 650 hours after a 15% contingency; currently based on the old 20 Must stories and must be updated for 27 stories/134 SP |
+| Cash budget ceiling | **1,125,000 VND** |
+| Reference labor value | 606 hours x 50,000 VND/hour = **30,300,000 VND** |
+| Total economic planning value | **31,425,000 VND** (= cash + labor value) |
 
-Labor value chỉ dùng để so sánh phương án và không phải khoản nhóm phải chi. Đơn giá 50.000 VND/giờ là **giả định học thuật thống nhất của nhóm**, không phải báo giá thị trường hay lương thực tế; phải thay bằng báo giá/đơn giá được Sponsor chấp nhận nếu dự án chuyển thành triển khai thương mại.
+The labor value is only for comparing alternatives; it is not an amount the team must spend. The 50,000 VND/hour rate is a **team-agreed academic assumption**, not a market quote or real salary; it must be replaced with a Sponsor-accepted quote/rate if the project moves to commercial deployment.
 
-Để giữ cửa sổ 8 tuần, baseline chỉ bao gồm core loop JD intake, extraction/OCR, requirement analysis, question mapping, preparation plan, self-practice hoặc booking mentor, feedback và các kiểm soát kỹ thuật bắt buộc. PM/PO phải dời Should/Could và mọi hạng mục ngoài core loop; thay đổi làm forecast vượt 653 giờ phải được Sponsor/PO phê duyệt.
+To keep the 8-week window, the baseline covers only the JD intake, extraction/OCR, requirement analysis, question mapping, preparation plan, self-practice or mentor booking, feedback, and required technical controls. The PM/PO must defer Should/Could and any non-core-loop items; changes that push the forecast beyond 653 hours require Sponsor/PO approval.
 
-Backlog hiện có 27 story R1 Bắt buộc với 134 SP. Capacity 653 giờ vẫn là ràng buộc kế hoạch, nhưng 606/650 giờ chưa phải cam kết cho backlog hiện tại cho đến khi Nhóm phát triển hoàn tất Planning Poker, truy vết từng story vào WBS/PERT và cập nhật cả hai estimate độc lập.
+The current backlog has 27 R1 Mandatory stories with 134 SP. The 653-hour capacity remains the planning constraint, but 606/650 hours are not yet a commitment for the current backlog until the development team finishes Planning Poker, traces each story into the WBS/PERT, and updates both independent estimates.
 
-## 2. Lịch và tolerance
+## 2. Schedule and tolerance
 
-| Giai đoạn | Thời gian | Exit criteria |
+| Phase | Period | Exit criteria |
 |---|---|---|
 | Discovery/charter | 29/06-05/07 | Problem evidence, charter, resource baseline |
-| Prototype/requirements | 06/07-12/07 | Workflow, backlog, prototype được chấp nhận |
+| Prototype/requirements | 06/07-12/07 | Workflow, backlog, prototype accepted |
 | Foundation | 13/07-19/07 | Architecture, auth, CI/CD, data foundation |
-| JD intake & analysis | 20/07-26/07 | Nhập JD, extract/OCR, xác nhận text, taxonomy mapping và preparation plan pass |
+| JD intake & analysis | 20/07-26/07 | JD input, extract/OCR, text confirmation, taxonomy mapping, and preparation plan pass |
 | Marketplace core loop | 27/07-09/08 | Booking-to-feedback E2E pass |
-| UAT/release | 10/08-23/08 | UAT evidence, zero Critical/High defect và pilot sẵn sàng |
+| UAT/release | 10/08-23/08 | UAT evidence, zero Critical/High defects, pilot ready |
 
-Reforecast và escalation khi forecast vượt 8 tuần, vượt khoảng 653 giờ, vượt cash ceiling, hoặc bất kỳ PoC critical nào chưa pass. Estimate là dự báo, không phải cam kết; baseline chỉ thành commitment sau khi Sponsor/PO phê duyệt scope, capacity và budget.
+Reforecast and escalate when the forecast exceeds 8 weeks, ~653 hours, the cash ceiling, or when any critical PoC fails. Estimates are forecasts, not commitments; the baseline only becomes a commitment after the Sponsor/PO approves scope, capacity, and budget.
 
 ## 3. Direct cash cost
 
-| Nhóm | Cơ sở tính | Baseline (VND) |
+| Group | Basis | Baseline (VND) |
 |---|---|---:|
-| Domain | 1 domain cho pilot, giới hạn 1 năm | 300.000 |
-| Hosting, database, storage | Free tier trong phát triển/pilot nhỏ | 0 |
-| Email/notification, meeting | Free tier + link họp ngoài | 0 |
-| Design, CI/CD, repository | Công cụ giáo dục/free tier | 0 |
-| Discovery/UAT | 12 lượt cảm ơn x 50.000 VND | 600.000 |
-| Security/monitoring | Tool miễn phí phù hợp MVP | 0 |
-| Contingency cash | 25% trên 900.000 VND direct cost | 225.000 |
-| **Tổng cash budget** |  | **1.125.000** |
+| Domain | 1 domain for the pilot, 1-year limit | 300,000 |
+| Hosting, database, storage | Free tier for development/small pilot | 0 |
+| Email/notification, meeting | Free tier + external meeting link | 0 |
+| Design, CI/CD, repository | Educational/free-tier tools | 0 |
+| Discovery/UAT | 12 thank-you gifts x 50,000 VND | 600,000 |
+| Security/monitoring | Free tools suitable for MVP | 0 |
+| Cash contingency | 25% of the 900,000 VND direct cost | 225,000 |
+| **Total cash budget** |  | **1,125,000** |
 
-Đây là envelope planning ngày 14/08/2026, không phải bảng giá nhà cung cấp. Trước khi mua, owner phải lưu price page/báo giá, thời điểm tra cứu, thời hạn và phương án hủy; chi ngoài baseline cần change request.
+This is envelope planning from 14/08/2026, not a vendor price list. Before purchasing, the owner must record the price page/quote, lookup time, validity, and cancellation options; spending beyond the baseline needs a change request.
 
-## 4. Phân bổ labor value theo working estimate hiện tại
+## 4. Labor value allocation per the current working estimate
 
-| Nhóm công việc | Expected effort (giờ) | Labor value (VND) |
+| Work group | Expected effort (hours) | Labor value (VND) |
 |---|---:|---:|
-| Product/PM/discovery | 70 | 3.500.000 |
-| UX/prototype | 42 | 2.100.000 |
-| Architecture/DevOps | 52 | 2.600.000 |
-| Front-end | 112 | 5.600.000 |
-| Back-end/integration | 124 | 6.200.000 |
-| QA/UAT | 65 | 3.250.000 |
-| Content/operations | 52 | 2.600.000 |
-| Management/documentation | 10 | 500.000 |
-| **Expected effort** | **527** | **26.350.000** |
-| Contingency 15% | 79 | 3.950.000 |
-| **Baseline labor value** | **606** | **30.300.000** |
+| Product/PM/discovery | 70 | 3,500,000 |
+| UX/prototype | 42 | 2,100,000 |
+| Architecture/DevOps | 52 | 2,600,000 |
+| Front-end | 112 | 5,600,000 |
+| Back-end/integration | 124 | 6,200,000 |
+| QA/UAT | 65 | 3,250,000 |
+| Content/operations | 52 | 2,600,000 |
+| Management/documentation | 10 | 500,000 |
+| **Expected effort** | **527** | **26,350,000** |
+| 15% contingency | 79 | 3,950,000 |
+| **Baseline labor value** | **606** | **30,300,000** |
 
-## 5. Contingency và kiểm soát
+## 5. Contingency and control
 
-- Reserve 15% trong capacity và contingency 15% trong effort chỉ dùng cho rủi ro/uncertainty đã nêu; không tự động dùng để thêm scope.
-- Cash contingency chỉ do PM ghi nhận, Product Owner xác nhận và Sponsor phê duyệt khi phát sinh.
-- Theo dõi committed/actual cash, actual effort, forecast-to-complete và variance mỗi sprint.
-- Nếu cần giữ deadline, cắt US-21–23 (Should/Could) trước. Không đưa AI, video hoặc payment vào MVP để "tăng giá trị" mà không rebaseline.
+- The 15% capacity reserve and the 15% effort contingency are only for the stated risks/uncertainty; they are not automatically used to add scope.
+- Cash contingency is recorded by the PM, confirmed by the Product Owner, and approved by the Sponsor when it arises.
+- Track committed/actual cash, actual effort when available, forecast-to-complete, and variance weekly or whenever the baseline changes.
+- If the deadline must be kept, cut US-21–23 (Should/Could) first. Do not add AI, video, or payment to the MVP "for value" without a rebaseline.
 
-## 6. Tham chiếu phương pháp
+## 6. Methodology references
 
-- `docs/refs/05-2-introduction-to-software-estimation.md`, slide 006-007: estimate dự báo size, duration, cost; effort = staff x time.
-- `docs/refs/05-2-introduction-to-software-estimation.md`, slide 013-016 và 020-024: phân biệt estimate/commitment, quản lý cone of uncertainty và dùng count/compute trước judgment.
-- Chi tiết hai phương pháp, dữ liệu đầu vào, công thức và chênh lệch nằm tại `Estimation_Comparison.md`.
+- `docs/refs/05-2-introduction-to-software-estimation.md`, slides 006-007: estimates forecast size, duration, cost; effort = staff x time.
+- `docs/refs/05-2-introduction-to-software-estimation.md`, slides 013-016 and 020-024: distinguish estimate/commitment, manage the cone of uncertainty, and use count/compute before judgment.
+- See `Estimation_Comparison.md` for details of the two methods, inputs, formulas, and the difference.
