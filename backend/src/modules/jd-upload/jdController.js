@@ -1,9 +1,7 @@
 import multer from "multer";
 import { extractTextFromImage } from "./ocrService.js";
 
-// Lỗi 1: Sử dụng multer nhưng không có hàm kiểm tra định dạng file (fileFilter)
-// => Người dùng có thể tải lên file .exe, .sh... thay vì PDF/Ảnh (như log dòng 42)
-export const upload = multer({ 
+export const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 } // Chỉ giới hạn dung lượng, không giới hạn loại file
 });
