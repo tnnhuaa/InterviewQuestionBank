@@ -2,7 +2,7 @@
 
 ## 1. Current status
 
-This guide explains local setup and manual release checks. It is not proof of a working Continuous Delivery pipeline or a real staging/pilot deployment.
+This guide explains local setup and manual release checks. Provider-specific Terraform and Git-triggered Render deployment now exist for the public frontend and API, but this guide is not proof of a complete production-ready Continuous Delivery pipeline or a fully validated pilot.
 
 The repository has:
 
@@ -10,18 +10,22 @@ The repository has:
 - npm scripts, database migrations and seeds;
 - local PostgreSQL and Mailpit in Docker Compose;
 - environment examples and health/readiness endpoints; and
-- manual validation steps.
+- manual validation steps;
+- Terraform configuration for two imported Render services (API and static frontend); and
+- Git-based Render auto-deploy from `main`, with a public frontend and API health endpoint.
 
-The repository does not have:
+The repository contains Vitest suites, but the current GitHub Actions workflow does not run `npm test`. Local test output and CI status are separate evidence until a test step is added to the workflow.
 
-- a deployment workflow or deployment script;
+The current delivery setup does not have:
+
 - a versioned deployment artifact;
-- provider-specific deployment files;
 - a protected staging or production environment;
-- a deployed URL or deployment log; or
+- an automated post-deploy readiness/smoke-test gate;
+- a deployed background worker;
+- a recorded backup/rollback/restore drill tied to a deployment; or
 - a deployment result email.
 
-Vercel, Render, and Neon are proposed in the architecture. The repository does not prove that the team selected or configured them.
+Render is the configured frontend/API provider and Supabase supplies PostgreSQL outside the current Terraform state. The repository includes an IaC guide and a redacted Terraform plan, but Terraform apply remains controlled/manual and the hosted worker-dependent flows are incomplete. A health response proves process availability at one time; it does not prove database readiness, worker availability, complete E2E behavior, or an uptime SLA.
 
 ## 2. Local release-candidate setup
 
@@ -54,6 +58,7 @@ The migration order is:
 → 006_ai_private_draft_inputs
 → 007_ai_operations
 → 008 migrations in repository order
+→ 009_preparation_context_management
 ```
 
 Demo/load seeds require `ALLOW_NON_PRODUCTION_SEED=true`. Never run them in production. Never point `db:reset` at a shared or production database.
@@ -145,17 +150,17 @@ Run once with all AI flags disabled and once with the required flag enabled.
 
 Monitor latency, error rate, extraction queue, empty mappings, booking conflicts, dead outbox messages, unauthorised access, and retention cleanup. Do not use direct database edits as a normal operation.
 
-## 8. Information needed for a real deployment guide
+## 8. Remaining information and evidence needed for complete delivery operations
 
-Before the team can claim Continuous Delivery, it must agree on:
+Before the team can claim complete production-ready Continuous Delivery, it must record or complete:
 
-1. frontend, API, worker, database, storage, and email providers;
-2. account, environment, domain, and secret owners;
-3. deployment trigger and approval rules;
-4. artifact naming and versioning;
-5. same-origin `/api` routing;
-6. migration lock, backup, and forward-fix steps;
-7. smoke/UAT gates and rollback conditions; and
-8. monitoring and deployment notification channel.
+1. a supported background-worker deployment and its scaling/singleton policy;
+2. account, environment, domain, database, storage, email, and secret owners;
+3. production approval rules in addition to Render's Git trigger;
+4. deployed commit/artifact naming and versioning;
+5. verification of the same-origin `/api` route and deployed `FRONTEND_ORIGIN`/CORS configuration;
+6. migration lock, backup, forward-fix, rollback, and restore-drill evidence;
+7. automated post-deploy readiness/smoke gates and retained UAT results; and
+8. monitoring, alerting, and a deployment-notification record.
 
-The first real deployment must record the environment, commit SHA, run ID, time, gate results, approver, deployed URL, and a redacted deployment notification.
+Each release/deployment evidence package must record the environment, commit SHA, provider deploy/run ID, time, gate results, approver, deployed URL, and a redacted deployment notification when available.

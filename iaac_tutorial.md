@@ -1,7 +1,8 @@
 # Hướng dẫn IaC với Terraform + Render (PrepVI) — step-by-step thực tế
 
-> Tài liệu này ghi lại **toàn bộ quy trình đã làm** (từ lấy key đến plan/push) để phục vụ
-> Q15 — DevOps. Mọi lệnh đều chạy trên Windows PowerShell, Terraform đặt tại `C:\terraform\`.
+> Tài liệu này ghi lại quy trình Terraform/Render đã thực hiện và các bước vận hành cần review
+> trước khi apply để phục vụ Q15 - DevOps. Mọi lệnh được mô tả cho Windows PowerShell;
+> đường dẫn cài Terraform có thể khác giữa các máy.
 
 ---
 
@@ -9,9 +10,9 @@
 
 | Thành phần | Trạng thái |
 |---|---|
-| CI | ✅ Đã có: `.github/workflows/ci.yml` (lint, typecheck, OpenAPI drift, migration, build, secret-scan, email notify) |
+| CI | ✅ Đã có: `.github/workflows/ci.yml` (lint, typecheck, OpenAPI drift, migration, seed verification, build và secret scan). Workflow hiện chưa chạy `npm test` và không gửi deployment email. |
 | CD | ✅ Render tự deploy bằng Git khi push `main` (webhook tự động) |
-| IaC | ✅ Terraform `infra/` — import 2 service thật vào state |
+| IaC | ✅ Terraform `infra/` - import và mô tả 2 service thật. Plan được lưu cho thấy 2 thay đổi in-place, vì vậy chưa được gọi là no-op/khớp 100%. |
 | DB | Supabase chung nhóm (không thuộc IaC) |
 | Worker | ⏸️ Chưa deploy (worker không có gói free, bắt buộc Starter $7/tháng) — chức năng bị giới hạn xem mục 8 |
 
@@ -115,11 +116,12 @@ git add infra iaac_tutorial.md
 git commit -m "feat(devops): terraform IaC for prepvi (api + frontend)"
 git push
 ```
-Checklist screenshot Q15-DevOps:
-- [ ] `terraform init` + `validate` + `plan` (ảnh)
-- [ ] Result import: `Import successful! The resource is now managed by Terraform` (x2)
-- [ ] CI workflow xanh (đã có sẵn)
-- [ ] Render service tự deploy khi push `main` (ảnh Deploy log / URL hoạt động)
+Checklist evidence Q15-DevOps:
+- [x] Terraform configuration and redacted plan are stored in the repository.
+- [x] A successful CI/secret-scan screenshot is retained in the oral-exam evidence set.
+- [x] Public frontend and API-health captures are retained in the Q15 evidence set.
+- [ ] The repository does not retain the two original import-success screenshots; do not claim they are attached.
+- [ ] A Render deploy-log screenshot tied to a commit still needs to be retained if required by the examiner.
 
 ## 10. Worker — quyết định & giới hạn (ghi chú cho Q15)
 
@@ -141,18 +143,17 @@ Công việc của worker (`backend/src/worker/index.js`, poll 2s): extract text
 | Plan báo đổi env liên tục | tfvars khác giá trị Dashboard | đồng nhất giá trị rồi mới apply |
 | `free → starter` trong plan | cấu hình starter nhưng service free | **KHÔNG apply** nếu không muốn tốn tiền |
 
-## 12. Bằng chứng (screenshots thực tế)
+## 12. Retained evidence
 
-Lưu 2 ảnh vào `docs/DevOps/` với đúng tên dưới:
+The repository currently retains:
 
-- `docs/DevOps/01-init-validate.png` — `terraform init` + `validate` thành công
-- `docs/DevOps/02-import.png` — import 2 service (api + static site) thành công
+- `docs/DevOps/03-plan.txt` - a redacted Terraform plan showing `0 to add, 2 to change, 0 to destroy`;
+- `docs/Oral_Exam/Q15_devops/img/Q15-01-live-frontend.png` - the public frontend;
+- `docs/Oral_Exam/Q15_devops/img/Q15-02-infrastructure-topology.png` - the reviewed topology and worker limitation;
+- `docs/Oral_Exam/Q15_devops/img/Q15-03-api-health.png` - the API health response and configuration caveat; and
+- `docs/Oral_Exam/Q17_monitoring-and-control/img/Q17-06-ci-success-no-leaks.png` - a successful CI/secret-scan run.
 
-![](docs/DevOps/01-init-validate.png)
-
-![](docs/DevOps/02-import.png)
-
-(Mục dưới đây được thêm sau khi chạy `plan` — dán tiếp ảnh `03-plan.png`.)
+The original Terraform init/import screenshots referenced in an earlier draft are not present. They must not be listed as attached evidence unless the team recaptures and commits them.
 
 ## 13. Tổng kết tệp
 
