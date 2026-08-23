@@ -124,10 +124,9 @@ Terraform không lưu thông tin bí mật thật. `terraform.tfvars` bị bỏ 
 
 ## 9. Tài liệu in kèm
 
-- [Q15 Print Report - English](Q15_DevOps_Report_EN.md).
 - [GitHub Actions CI](../../../.github/workflows/ci.yml).
 - [Terraform main configuration](../../../infra/main.tf).
-- [IaC tutorial](../../../iaac_tutorial.md).
+- Các hình Q15-01 đến Q15-04 trong mục minh chứng hình ảnh.
 
 ## 10. Checklist tự học
 

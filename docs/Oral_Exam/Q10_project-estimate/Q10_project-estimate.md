@@ -1,10 +1,8 @@
 # Câu 10 - Ước lượng dự án
 
-## 1. Phân công và nguồn tài liệu
+## 1. Nguồn tài liệu
 
-- `Task_Final.md` giao Hưng chuẩn bị câu 10.
-- Trong W10, Gia Thành/Thành viên 1 phụ trách các tài liệu ước lượng Time-Cost-Resource.
-- Vì vậy, Hưng là người phụ trách câu thi; số liệu phải được dẫn từ các artifact do Gia Thành và nhóm tạo, không nhận là số liệu do Hưng tự tính.
+Phần trả lời sử dụng số liệu từ các tài liệu ước lượng chung của nhóm. Các số liệu được dẫn lại đúng theo nguồn, không được trình bày như kết quả tính mới hoặc thành tích của một cá nhân.
 
 Nguồn chính:
 
@@ -113,7 +111,6 @@ Không. Story Point là thước đo tương đối về độ lớn, phức t�
 
 ## 8. Tài liệu in kèm
 
-- [Q10 Print Report - English](Q10_Project_Estimate_Report_EN.md).
 - [Estimation Comparison](../../Project_Resource_Plan/Estimation_Comparison.md).
 - [Cost, Time and Resources](../../Project_Resource_Plan/Cost_Time_Resources.md).
 - [Resource Plan](../../Project_Resource_Plan/ResourcePlan.md).

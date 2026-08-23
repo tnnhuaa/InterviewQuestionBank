@@ -151,7 +151,6 @@ Kết quả quality gates cùng môi trường:
 
 ## 9. Tài liệu in kèm
 
-- [Q20 Print Report - English](Q20_Test_Plan_Report_EN.md).
 - [Manual Validation and Operations](../../Implementation/Manual_Validation_and_Operations.md).
 - [GitHub Actions CI](../../../.github/workflows/ci.yml).
 

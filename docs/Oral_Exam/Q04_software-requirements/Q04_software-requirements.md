@@ -42,7 +42,7 @@
 ### WHEN - Tài liệu được tạo và cập nhật khi nào?
 
 - `0743a68` ngày 13/08/2026: thư mục tài liệu ban đầu được tạo.
-- `7ca1f6e` ngày 16/08/2026, PR #6: hoàn thiện phạm vi và Product Backlog theo phân công Thành viên 3.
+- `7ca1f6e` ngày 16/08/2026, PR #6: cập nhật phạm vi và Product Backlog của nhóm.
 - `f0292a3` ngày 23/08/2026, PR #23: hòa giải tài liệu dùng chung và chuẩn hóa bản tiếng Anh.
 - `fd8a30b` là mốc mã nguồn được dùng cho lần đối chiếu hiện trạng này.
 
@@ -50,7 +50,6 @@ Git chứng minh tài liệu đã thay đổi. Repository không lưu chữ ký 
 
 ### EVIDENCE - Minh chứng nào được dùng?
 
-- Phân công W10 trong `Task_W10.pdf`.
 - Lịch sử Git của Product Backlog.
 - Product Backlog, Future-State Workflow và Vision and Scope hiện hành.
 - Các mô-đun, tệp chuyển đổi cơ sở dữ liệu, tuyến API và màn hình trong mã nguồn tại `fd8a30b`.
@@ -153,23 +152,16 @@ AC mô tả điều kiện chấp nhận riêng của một câu chuyện. Defin
 
 ## 10. Minh chứng hình ảnh
 
-**Hình Q04-01 - Phân công W10 gốc cho Hưng/Thành viên 3.**
+**Hình Q04-01 - Ranh giới bản phát hành và số liệu Product Backlog.**
 
-![W10 assignment for Member 3](img/Q04-01-w10-assignment.png)
+![Release boundary and ordered backlog](img/Q04-01-release-boundary.png)
 
-Ảnh gốc dùng tiếng Việt xen một số tên tài liệu tiếng Anh. Nội dung xác nhận Hưng phụ trách Vision, Scope, Product Backlog, tiêu chí chấp nhận và Future-State Workflow.
+**Hình Q04-02 - Lịch sử thay đổi Product Backlog trong Git.**
 
-**Hình Q04-02 - Ranh giới bản phát hành và số liệu Product Backlog.**
-
-![Release boundary and ordered backlog](img/Q04-02-release-boundary.png)
-
-**Hình Q04-03 - Lịch sử thay đổi Product Backlog trong Git.**
-
-![Backlog document history](img/Q04-03-git-history.png)
+![Backlog document history](img/Q04-02-git-history.png)
 
 ## 11. Tài liệu in kèm
 
-- [Q04 Print Report - English](Q04_print_submission.md).
 - [Product Backlog and Acceptance Criteria](../../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md).
 - [Future-State Workflow](../../Project_Vision_and_Scope/Future_State_Workflow.md).
 

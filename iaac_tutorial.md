@@ -1,12 +1,12 @@
 # Hướng dẫn IaC với Terraform + Render (PrepVI) — step-by-step thực tế
 
-> Tài liệu này ghi lại quy trình Terraform/Render đã thực hiện và các bước vận hành cần review
-> trước khi apply để phục vụ Q15 - DevOps. Mọi lệnh được mô tả cho Windows PowerShell;
+> Tài liệu này ghi lại quy trình Terraform/Render đã thực hiện và các bước vận hành chung
+> cần review trước khi apply. Mọi lệnh được mô tả cho Windows PowerShell;
 > đường dẫn cài Terraform có thể khác giữa các máy.
 
 ---
 
-## 0. Kết quả DevOps của dự án — tóm tắt cho Q15
+## 0. Kết quả DevOps của dự án
 
 | Thành phần | Trạng thái |
 |---|---|
@@ -109,21 +109,21 @@ env_session_secret = "..."                # từ file .env gốc repo
 ```
 > Với demo/nộp bài: upload screenshot `plan` là đủ bằng chứng — apply chỉ làm khi muốn sửa env thật.
 
-## 9. Bước 8 — Push & bằng chứng nộp Q15
+## 9. Bước 8 — Push và lưu bằng chứng
 
 ```powershell
 git add infra iaac_tutorial.md
 git commit -m "feat(devops): terraform IaC for prepvi (api + frontend)"
 git push
 ```
-Checklist evidence Q15-DevOps:
+Checklist evidence DevOps:
 - [x] Terraform configuration and redacted plan are stored in the repository.
 - [x] A successful CI/secret-scan screenshot is retained in the oral-exam evidence set.
-- [x] Public frontend and API-health captures are retained in the Q15 evidence set.
+- [x] Public frontend and API-health captures are retained in the DevOps evidence set.
 - [ ] The repository does not retain the two original import-success screenshots; do not claim they are attached.
 - [ ] A Render deploy-log screenshot tied to a commit still needs to be retained if required by the examiner.
 
-## 10. Worker — quyết định & giới hạn (ghi chú cho Q15)
+## 10. Worker — quyết định và giới hạn vận hành
 
 Công việc của worker (`backend/src/worker/index.js`, poll 2s): extract text JD upload (OCR), gửi email/SMS outbox (verify, reset password, mời admin, booking, feedback, reminder 24h/1h), AI jobs (khi `AI_ENABLED=true`), dọn-dẹp file & AI input, publish review + rating mentor, escalate link phòng họp quá hạn.
 
