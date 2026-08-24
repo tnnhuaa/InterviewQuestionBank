@@ -223,7 +223,7 @@ An item enters Ready only when the applicable conditions are met:
 1. actor, value, priority, dependencies, and testable AC are clear;
 2. required process, prototype, API, data, and architecture inputs exist;
 3. the item follows approved product/technical decisions or has an approved change;
-4. the Development Team confirms its estimate;
+4. the implementation team confirms its estimate;
 5. an eight-point item is split or accepted as an exception;
 6. evidence-sensitive work has test data and expected results;
 7. Product Owner, implementer, and QA responsibility agree it can be verified within the WIP policy.

@@ -32,7 +32,7 @@ MVP được đánh giá theo các tiêu chí sau:
 
 1. **Technology/System:** Core workflow có thể triển khai ổn định, bảo mật và có bằng chứng PoC.
 2. **Resource:** Nhóm có đủ nhân lực, kỹ năng và effort capacity để hoàn thành Must scope.
-3. **Schedule:** Must scope có thể nằm trong velocity/capacity của 4 sprint trong baseline 8 tuần.
+3. **Schedule:** Must scope có thể nằm trong throughput/capacity của luồng Kanban theo tuần trong baseline 8 tuần.
 4. **Operational:** Quy trình moderation, mentor approval, booking, feedback, support và failure handling có thể vận hành được.
 5. **Market:** Có pain thực tế, demand đủ rõ và mentor supply đủ cho pilot.
 6. **Economic:** Chi phí pilot hợp lý so với giá trị học được; các cost/benefit chính được nhận diện và kiểm soát.
@@ -77,28 +77,28 @@ Nhóm hiện có **6 thành viên**, mỗi người dự kiến dành trung bìn
 
 Phạm vi bắt buộc của MVP hiện được thể hiện bằng **Must backlog gồm 27 user story, tổng 134 Story Point (SP)**. Con số này giúp nhóm hình dung quy mô tương đối của phần việc bắt buộc, nhưng chưa nên được xem là cam kết giao hàng cuối cùng vì Story Point chỉ là estimate tương đối và team chưa có đủ dữ liệu thực tế để chứng minh tốc độ hoàn thành tương ứng.
 
-Để kiểm tra liệu nguồn lực hiện tại có thực sự đủ hay không, nhóm sẽ xác nhận lại estimate của Must backlog bằng **Planning Poker** và theo dõi **velocity thực tế** trong các sprint đầu. Nếu velocity cho thấy phần Must có thể hoàn thành trong capacity còn lại mà vẫn giữ được reserve cho integration, defect và UAT, nguồn lực được xem là phù hợp. Ngược lại, nếu workload vượt quá khả năng thực tế của team, nhóm phải giảm hoặc ưu tiên lại scope thay vì sử dụng toàn bộ reserve hoặc cắt giảm quality activities.
+Để kiểm tra liệu nguồn lực hiện tại có thực sự đủ hay không, nhóm sẽ xác nhận lại estimate của Must backlog trong backlog refinement — có thể dùng **Planning Poker** để hiệu chỉnh Story Point trước khi đưa hạng mục vào Ready — và theo dõi **throughput/cycle time thực tế** trên luồng Kanban theo tuần. Nếu dữ liệu throughput cho thấy phần Must có thể hoàn thành trong capacity còn lại mà vẫn giữ được reserve cho integration, defect và UAT, nguồn lực được xem là phù hợp. Ngược lại, nếu workload vượt quá khả năng thực tế của team, nhóm phải giảm hoặc ưu tiên lại scope thay vì sử dụng toàn bộ reserve hoặc cắt giảm quality activities. Planning Poker ở đây là kỹ thuật ước lượng tương đối, không phải nghi thức Scrum và không thay thế dữ liệu throughput.
 
 **Kết luận:** Resource feasibility hiện được đánh giá là **khả thi có điều kiện**. Nhóm có đủ quy mô nhân lực và một capacity baseline rõ ràng, nhưng kết luận cuối cùng phụ thuộc vào việc xác nhận lại Must backlog và đối chiếu nó với năng lực thực tế của team trong quá trình triển khai.
 
 ### 5.3 Schedule feasibility
 
-Trạng thái: **Có planning baseline; chưa có cam kết sprint cuối cùng**.
+Trạng thái: **Có planning baseline; chưa có cam kết phát hành cuối cùng**.
 
-- Timeline: 8 tuần ≈ 4 sprint.
+- Timeline: cửa sổ kế hoạch 8 tuần từ 29/06 đến 23/08/2026; phần thực hiện được tái dựng trong bốn tuần từ 27/07 đến 23/08. Nhóm vận hành Kanban theo tuần, không chia sprint.
 - Backlog baseline: 134 SP.
-- Throughput cần thiết trung bình: khoảng 33,5 SP/sprint, chỉ dùng làm mốc so sánh.
-- Schedule được xem là feasible khi Must backlog nằm trong khoảng **velocity × 4 sprint**, đồng thời vẫn giữ reserve cho defect, integration, security/privacy và UAT.
+- Mốc tải trung bình: khoảng 33,5 SP/tuần trên bốn tuần thực hiện tái dựng (`134 / 4`), chỉ dùng làm mốc so sánh chứ không phải throughput đo được.
+- Schedule được xem là feasible khi Must backlog nằm trong khoảng **throughput** của nhóm trên số tuần còn lại, đồng thời vẫn giữ reserve cho defect, integration, security/privacy và UAT.
 
-Risk chính là nhóm cam kết fixed-date release dựa trên SP trước khi có velocity thật.
+Risk chính là nhóm cam kết fixed-date release dựa trên SP trước khi có dữ liệu throughput/cycle time thật.
 
 Mitigation:
 
-- Đo velocity từ sprint thực tế.
+- Đo throughput và cycle time từ luồng Kanban thực tế.
 - Dựng đường **will-have / might-have**.
 - Cắt scope trước khi cắt quality gate.
 
-**Kết luận:** Schedule feasibility hiện **chưa đủ bằng chứng để cam kết**, nhưng có khả năng feasible nếu velocity thực tế hỗ trợ Must scope.
+**Kết luận:** Schedule feasibility hiện **chưa đủ bằng chứng để cam kết**, nhưng có khả năng feasible nếu throughput thực tế hỗ trợ Must scope.
 
 ### 5.4 Market feasibility
 
@@ -213,7 +213,7 @@ Validation đề xuất:
 | G3 Prototype | ≥80% task JD-to-plan và plan-to-booking hoàn tất | Luồng không hiểu hoặc cần hỗ trợ lớn |
 | G4 Technical | 7 PoC bắt buộc pass; blind recall/precision@10 ≥80% | Extraction/mapping không đạt, double booking hoặc access leak chưa kiểm soát |
 | G5 Supply | 4 Mentor Approved có ≥3 slot/người | Không tuyển được supply đúng phân khúc |
-| G6 Delivery | Must backlog nằm trong velocity range/capacity/budget | Core loop không thể hoàn tất trong baseline |
+| G6 Delivery | Must backlog nằm trong throughput range/capacity/budget | Core loop không thể hoàn tất trong baseline |
 | G7 Pilot | ≥10 Confirmed, ≥8 Completed; feedback hữu ích | Completion/value quá thấp sau một remediation cycle |
 | G8 Cultural acceptance | Student/Mentor acceptance đạt ngưỡng pilot và không còn recurring trust/privacy concern nghiêm trọng | User từ chối upload JD, không tin mapping/feedback hoặc mentor workflow có burden quá cao |
 | G9 Economic pilot | Pilot nằm trong 1.125.000 VNĐ và tạo đủ evidence cho quyết định tiếp theo | Cost vượt baseline mà validation value không tương xứng |
@@ -222,6 +222,6 @@ Validation đề xuất:
 
 **Proceed với thử nghiệm hẹp và PoC; chưa Go cho full release.**
 
-MVP hiện có cơ sở tốt về technology/system, resource và operational feasibility, nhưng vẫn cần bằng chứng thực tế cho market demand, cultural acceptance, velocity và mapping quality. Economic feasibility đủ cho pilot nhỏ, nhưng chưa đủ dữ liệu để kết luận commercial ROI hoặc unit economics.
+MVP hiện có cơ sở tốt về technology/system, resource và operational feasibility, nhưng vẫn cần bằng chứng thực tế cho market demand, cultural acceptance, throughput và mapping quality. Economic feasibility đủ cho pilot nhỏ, nhưng chưa đủ dữ liệu để kết luận commercial ROI hoặc unit economics.
 
 Planning baseline được dùng cho điều phối nội bộ, phê duyệt chính thức vẫn cần chữ ký Sponsor Ngô Huy Biên và Ngô Ngọc Đăng Khoa.
