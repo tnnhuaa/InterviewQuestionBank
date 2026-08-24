@@ -192,6 +192,28 @@ AC mô tả điều kiện chấp nhận riêng của một câu chuyện. Defin
 
 ![Lịch sử Product Backlog trên GitHub](../../print/Q04_software-requirements/img/Q04-02-backlog-history-github.png)
 
+Các hình Q04-03 đến Q04-07 được chụp trực tiếp từ ứng dụng tại baseline `d19f346`, sau khi áp dụng đầy đủ migration cùng reference/demo seed. Chúng chứng minh các màn hình tương ứng tồn tại và sử dụng dữ liệu thật của môi trường demo tại thời điểm chụp; không thay thế kết quả UAT hoặc quyết định chấp nhận của Product Owner.
+
+**Hình Q04-03 - Màn hình đăng nhập thật của PrepVI, thể hiện điểm vào chung cho các vai trò.**
+
+![Màn hình đăng nhập PrepVI](../../print/Q04_software-requirements/img/Q04-03-login.png)
+
+**Hình Q04-04 - Học viên quản lý JD và kế hoạch thuộc tài khoản, gồm trạng thái xử lý và thao tác xem, đổi tên hoặc lưu trữ.**
+
+![Quản lý JD và kế hoạch](../../print/Q04_software-requirements/img/Q04-04-preparation-contexts.png)
+
+**Hình Q04-05 - Ngân hàng câu hỏi chỉ hiển thị câu hỏi đã công bố, kèm chủ đề, độ khó và nguồn.**
+
+![Ngân hàng câu hỏi](../../print/Q04_software-requirements/img/Q04-05-question-bank.png)
+
+**Hình Q04-06 - Kế hoạch luyện tập nối câu hỏi với Mentor đã được duyệt, chuyên môn phù hợp và lịch trống tương lai.**
+
+![Kế hoạch và Mentor phù hợp](../../print/Q04_software-requirements/img/Q04-06-plan-and-mentor.png)
+
+**Hình Q04-07 - Biểu mẫu đặt lịch mang đúng kế hoạch, phiên bản chủ đề, Mentor, khung giờ và mục tiêu buổi phỏng vấn.**
+
+![Đặt lịch với ngữ cảnh kế hoạch](../../print/Q04_software-requirements/img/Q04-07-booking-context.png)
+
 ## 12. Tài liệu in kèm
 
 - [Software Requirements Report](../../print/Q04_software-requirements/Software_Requirements_Report.md).

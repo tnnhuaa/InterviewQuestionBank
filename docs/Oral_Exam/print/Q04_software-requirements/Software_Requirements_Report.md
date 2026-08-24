@@ -114,6 +114,28 @@ A proposed requirement change is recorded, classified and assessed before the re
 
 **Figure 2.** The real GitHub history window for the Product Backlog artifact.
 
+The following application evidence was captured from the system at baseline `d19f346` after applying the current migrations and reference/demo seed. It demonstrates that the referenced interfaces and seeded workflows were available at capture time. It is not a substitute for story-indexed UAT evidence or formal Product Owner acceptance.
+
+![PrepVI sign-in interface](img/Q04-03-login.png)
+
+**Figure 3.** The real sign-in interface provides the common authenticated entry point required by the identity stories.
+
+![Student-owned JD and preparation-plan contexts](img/Q04-04-preparation-contexts.png)
+
+**Figure 4.** The real Student context-management interface exposes owned JD and preparation-plan records, processing states and lifecycle actions.
+
+![Published Question Bank](img/Q04-05-question-bank.png)
+
+**Figure 5.** The real Question Bank interface shows published questions together with topic, difficulty and provenance information.
+
+![Preparation plan and eligible Mentor](img/Q04-06-plan-and-mentor.png)
+
+**Figure 6.** The real preparation-plan interface connects a versioned question set to an approved Mentor with matching expertise and future availability.
+
+![Booking request with preparation-plan context](img/Q04-07-booking-context.png)
+
+**Figure 7.** The real booking interface carries the selected plan, topic version, Mentor, slot and Student goal into the booking request.
+
 ## 11. Limitations
 
 - The repository does not contain a signed requirements-baseline approval.

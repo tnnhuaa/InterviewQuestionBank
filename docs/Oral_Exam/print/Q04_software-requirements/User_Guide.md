@@ -14,7 +14,7 @@
 
 PrepVI helps a Student turn a job description into interview requirements, relevant Question Bank items, a preparation plan and a Mentor booking. Mentors manage profiles, expertise, availability, meetings and feedback. Administrators review restricted operations, Mentor verification and Question Bank content.
 
-Use the public deployment only with accounts and data authorized for that environment. For a reproducible local walkthrough, follow the root `README.md`, apply migrations and reference/demo seeds, then sign in with the demo accounts documented there. Never put passwords, tokens, raw private job descriptions, verification evidence or meeting links into screenshots or support reports.
+Use the public deployment only with accounts and data authorized for that environment. For a reproducible walkthrough, follow the root `README.md`, apply migrations and reference/demo seeds, then sign in with the demo accounts documented there. Never put passwords, tokens, raw private job descriptions, verification evidence or meeting links into screenshots or support reports.
 
 ## 2. Common navigation and account behavior
 
@@ -26,6 +26,10 @@ Use the public deployment only with accounts and data authorized for that enviro
 
 For a recoverable error, read the action shown in the error panel. Support details contain a safe reference/correlation identifier, timestamp and route; they must not contain the submitted password or private request body.
 
+![PrepVI sign-in interface](img/Q04-03-login.png)
+
+**Figure 1.** The sign-in interface. The screenshot contains no entered credential.
+
 ## 3. Student workflow
 
 ### 3.1 Profile and Question Bank
@@ -33,6 +37,10 @@ For a recoverable error, read the action shown in the error panel. Support detai
 - Open the profile area to maintain learning goals and profile context.
 - Open the Question Bank to search published questions, view details and track practice.
 - Only published questions with valid taxonomy and provenance are public or eligible for deterministic matching.
+
+![Published Question Bank](img/Q04-05-question-bank.png)
+
+**Figure 2.** Published questions are presented with searchable topic, difficulty and source information.
 
 ### 3.2 Create and manage a job-description context
 
@@ -44,6 +52,10 @@ For a recoverable error, read the action shown in the error panel. Support detai
 6. Map requirements, select appropriate questions and create a preparation plan.
 7. Return to the context-management page to rename, inspect or archive owned JD/plan records. Archiving removes a context from new selections but retains protected history.
 
+![Student-owned JD and preparation-plan contexts](img/Q04-04-preparation-contexts.png)
+
+**Figure 3.** The context-management page distinguishes JD processing states from active preparation plans and exposes the allowed lifecycle actions.
+
 ### 3.3 Find a Mentor and book a session
 
 1. Open an active preparation plan and select Mentor candidates, or open **Mentor** from navigation.
@@ -53,6 +65,14 @@ For a recoverable error, read the action shown in the error panel. Support detai
 5. For a confirmed session, open the interview-session detail page. A meeting link is visible only to allowed participants during the policy window.
 6. Report a missing/broken link only when the interface enables that action. Follow the replacement/reschedule recovery shown by the system.
 7. After completion, view Mentor feedback, explicitly apply selected next actions to the plan and submit at most one eligible review.
+
+![Preparation plan and eligible Mentor](img/Q04-06-plan-and-mentor.png)
+
+**Figure 4.** A versioned preparation plan displays the selected question and an approved Mentor whose expertise and future slot match the plan.
+
+![Booking request with preparation-plan context](img/Q04-07-booking-context.png)
+
+**Figure 5.** Before submission, the booking form shows the selected plan, topic version, Mentor, slot and Student goal.
 
 ## 4. Mentor workflow
 
@@ -96,7 +116,7 @@ For a recoverable error, read the action shown in the error panel. Support detai
 
 ![Public PrepVI frontend](../Q15_devops/img/Q15-01-live-frontend.png)
 
-**Figure 1.** A real public PrepVI frontend window. It proves point-in-time reachability only; the operational limitations above still apply.
+**Figure 6.** A real public PrepVI frontend window. It proves point-in-time reachability only; the operational limitations above still apply.
 
 - [Software Requirements and Product Backlog Report](Software_Requirements_Report.md)
 - [Product Backlog and Acceptance Criteria](../../../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md)
