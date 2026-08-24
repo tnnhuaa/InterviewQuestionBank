@@ -1,21 +1,22 @@
-# Hướng dẫn IaC với Terraform + Render (PrepVI) — step-by-step thực tế
+# Hướng dẫn IaC với Terraform + Render (PrepVI) - quy trình thực tế
 
-> Tài liệu này ghi lại **toàn bộ quy trình đã làm** (từ lấy key đến plan/push) để phục vụ
-> Q15 — DevOps. Mọi lệnh đều chạy trên Windows PowerShell, Terraform đặt tại `C:\terraform\`.
+> Tài liệu này ghi lại quy trình Terraform/Render đã thực hiện và các bước vận hành chung
+> cần xem xét trước khi áp dụng. Mọi lệnh được mô tả cho Windows PowerShell;
+> đường dẫn cài Terraform có thể khác giữa các máy.
 
 ---
 
-## 0. Kết quả DevOps của dự án — tóm tắt cho Q15
+## 0. Kết quả DevOps của dự án
 
 | Thành phần | Trạng thái |
 |---|---|
-| CI | ✅ Đã có: `.github/workflows/ci.yml` (lint, typecheck, OpenAPI drift, migration, build, secret-scan, email notify) |
-| CD | ✅ Render tự deploy bằng Git khi push `main` (webhook tự động) |
-| IaC | ✅ Terraform `infra/` — import 2 service thật vào state |
+| CI | ✅ Đã có: `.github/workflows/ci.yml` (lint, kiểm tra kiểu, độ lệch OpenAPI, migration, xác minh seed, build và quét thông tin bí mật). Workflow hiện chưa chạy `npm test` và không gửi email kết quả triển khai. |
+| Triển khai từ Git | ✅ Render tự dựng và triển khai khi `main` thay đổi; đây chưa phải quy trình Continuous Deployment hoàn chỉnh. |
+| IaC | ✅ Terraform `infra/` - nhập và mô tả hai dịch vụ thật. Plan được lưu cho thấy hai thay đổi tại chỗ, vì vậy chưa được gọi là không có thay đổi/khớp 100%. |
 | DB | Supabase chung nhóm (không thuộc IaC) |
-| Worker | ⏸️ Chưa deploy (worker không có gói free, bắt buộc Starter $7/tháng) — chức năng bị giới hạn xem mục 8 |
+| Worker | ⏸️ Chưa triển khai theo quyết định hosting/chi phí hiện tại; chức năng bị giới hạn xem mục 10. |
 
-## 1. Hạ tầng ThẬT (đọc từ Render API `/v1/services`)
+## 1. Hạ tầng thật (đọc từ Render API `/v1/services`)
 
 | Service | ID | Kiểu | Cách build | Plan |
 |---|---|---|---|---|
@@ -23,7 +24,7 @@
 | `InterviewQuestionBank-fe` | `srv-da403pbtqb8s73fpnmig` | static_site | Git, `npm ci; npm run build --workspace frontend`, publish `frontend/dist` | — |
 | worker | ❌ không có | — | — | — |
 
-→ **Không dùng Docker Hub**: Render build trực tiếp từ Git repo. Không tạo job CD mới trong GitHub Actions (Render Git-deploy là CD hiện tại; thêm job sẽ trùng lặp).
+→ **Không dùng Docker Hub:** Render dựng trực tiếp từ Git. GitHub Actions hiện không có job triển khai; tích hợp Git của Render là một cơ chế riêng và chưa có đầy đủ cổng kiểm thử, staging hoặc kiểm tra sau triển khai.
 
 ## 2. Bước 1 — Cài Terraform trên Windows
 
@@ -43,7 +44,7 @@
   ```powershell
   curl.exe -H "Authorization: Bearer rnd_...KEY..." https://api.render.com/v1/owners
   ```
-- **Lưu ý bảo mật:** không dán key vào chat/group/ảnh chụp. Key cấp cho account đã deploy (`tea-d3kv25b3fgac73a56m4g` — team account).
+- **Lưu ý bảo mật:** không dán khóa vào chat, tài liệu nộp hoặc ảnh chụp. Chỉ tài khoản vận hành được ủy quyền mới tạo và sử dụng khóa.
 
 ## 4. Bước 3 — Lấy danh sách service + ID
 
@@ -57,20 +58,19 @@
 ## 5. Bước 4 — Điền `infra/terraform.tfvars`
 
 ```powershell
-cd F:\D\Uni\YEAR_3\SEM_3\QLPM\InterviewQuestionBank\infra
+Set-Location <duong-dan-repository>\infra
 copy terraform.tfvars.example terraform.tfvars
 notepad terraform.tfvars
 ```
-Điền **6 giá trị** này:
+Điền các giá trị mà `infra/variables.tf` thực sự yêu cầu:
 ```ini
 render_api_key   = "rnd_..."              # bước 3 (dán từ bạn cấp)
 render_owner_id  = "tea_..."              # bước 3
-env_database_url = "postgresql://..."     # từ file .env gốc repo (Supabase chung)
-env_session_secret = "..."                # từ file .env gốc repo
+env_database_url = "postgresql://..."
+env_session_secret = "..."
+env_gemini_api_key = "..."                # để trống/chỉ điền khi cấu hình AI được phê duyệt
 ```
-> **Nguồn env nào đúng?** API `/v1/services/{id}/env-vars` thường **trả rỗng/ẩn giá trị secret** — đừng tốn thời gian. Cách chắc chắn gấp đôi:
-> 1. **`.env` gốc repo** (`F:\D\...\InterviewQuestionBank\.env`) — nguồn nhóm dùng chung; đã có `DATABASE_URL` + `SESSION_SECRET`.
-> 2. **Dashboard Render** → service → tab **Environment** (hoặc Environment Groups) — chỉ check khi cần.
+> **Nguồn giá trị đúng:** secret manager/nguồn nội bộ đã được nhóm phê duyệt hoặc tab **Environment** của dịch vụ Render. Không lấy secret từ chat, tài liệu nộp, ảnh chụp hoặc một tệp `.env` đã commit. API provider có thể ẩn giá trị nhạy cảm; người không có quyền phải dừng và nhờ người vận hành được ủy quyền.
 >
 > ⚠️ Nếu service thật đang **thiếu** 2 biến này → app sẽ crash khi khởi động; `terraform plan` sẽ báo "add env" và apply sẽ tự sửa.
 
@@ -98,36 +98,37 @@ env_session_secret = "..."                # từ file .env gốc repo
 ```
 
 **Đọc kết quả:**
-- Lý tưởng: `No changes` — IaaC khớp 100%.
-- Khác env: plan báo thay đổi env (VD: service đang thiếu `DATABASE_URL` → plan "thêm") — chấp nhận được.
+- `No changes` cho biết config/state/provider không có khác biệt tại thời điểm plan; không chứng minh ứng dụng khỏe.
+- Khác biến môi trường: phải review từng mục và bảo đảm không xóa/thay giá trị đang cần. Không mặc định coi khác biệt là chấp nhận được.
 - ⚠️ Nếu báo `plan "free" → "starter"` **hoặc lỗi enum** `invalid plan value "free"`: provider Render ghi danh sách plan là `starter/standard/pro...` — nếu lỗi, **đổi hướng**: không quản lý service free bằng Terraform (giữ quản lý tay), hoặc nâng starter (tốn tiền). Báo nhóm trước.
 
 **Khi muốn đồng bộ thật:**
 ```powershell
 & "C:\terraform\terraform.exe" apply
 ```
-> Với demo/nộp bài: upload screenshot `plan` là đủ bằng chứng — apply chỉ làm khi muốn sửa env thật.
+> Ảnh `plan` chỉ là bằng chứng xem trước. Chỉ `apply` sau plan mới, review đầy đủ, phê duyệt và kế hoạch xác minh/khôi phục phù hợp.
 
-## 9. Bước 8 — Push & bằng chứng nộp Q15
+## 9. Bước 8 — Push và lưu bằng chứng
 
 ```powershell
 git add infra iaac_tutorial.md
 git commit -m "feat(devops): terraform IaC for prepvi (api + frontend)"
 git push
 ```
-Checklist screenshot Q15-DevOps:
-- [ ] `terraform init` + `validate` + `plan` (ảnh)
-- [ ] Result import: `Import successful! The resource is now managed by Terraform` (x2)
-- [ ] CI workflow xanh (đã có sẵn)
-- [ ] Render service tự deploy khi push `main` (ảnh Deploy log / URL hoạt động)
+Checklist evidence DevOps:
+- [x] Terraform configuration and redacted plan are stored in the repository.
+- [x] A successful CI/secret-scan screenshot is retained in the oral-exam evidence set.
+- [x] Public frontend and API-health captures are retained in the DevOps evidence set.
+- [ ] The repository does not retain the two original import-success screenshots; do not claim they are attached.
+- [ ] A Render deploy-log screenshot tied to a commit still needs to be retained if required by the examiner.
 
-## 10. Worker — quyết định & giới hạn (ghi chú cho Q15)
+## 10. Worker — quyết định và giới hạn vận hành
 
-Công việc của worker (`backend/src/worker/index.js`, poll 2s): extract text JD upload (OCR), gửi email/SMS outbox (verify, reset password, mời admin, booking, feedback, reminder 24h/1h), AI jobs (khi `AI_ENABLED=true`), dọn-dẹp file & AI input, publish review + rating mentor, escalate link phòng họp quá hạn.
+Công việc của worker (`backend/src/worker/index.js`) gồm xử lý trích xuất/OCR, hộp thư chờ email và thông báo trong ứng dụng, AI job khi được bật, dọn tệp/AI input hết hạn, công khai đánh giá và cập nhật xếp hạng đến hạn, cùng chuyển cấp phục hồi liên kết họp.
 
-**Chưa deploy worker → mất những gì:** upload JD chờ extract (có fallback dán text thủ công), email & in-app notification, review công khai & rating mentor, cleanup storage, escalate link. **Không ảnh hưởng:** app hiện vẫn chạy, đặt lịch/paste text/AI tắt (`AI_ENABLED=false`).
+**Chưa triển khai worker:** không được coi các luồng OCR nền, outbox, lịch nhắc, cleanup, review publication/rating và meeting recovery escalation là đang chạy liên tục trên môi trường hosted. Các đường dán/sửa thủ công và phục hồi trong UI chỉ giảm tác động, không thay thế worker.
 
-**Lý do:** Render background worker **không có gói free** (Starter $7/tháng). Chọn giữ nguyên free → worker nằm ngoài IaC; muốn đầy đủ: thêm resource `render_background_worker` + đổi plan starter.
+**Lý do được lưu trong repository:** cấu hình Terraform hiện chỉ quản lý API/frontend và nhóm chưa phê duyệt phương án hosting/chi phí cho worker. Trước pilot phải chọn, triển khai và lưu bằng chứng readiness/retry/recovery; không dùng tài liệu này để khẳng định một mức giá Render hiện hành.
 
 ## 11. Lỗi thường gặp & cách xử lý
 
@@ -141,26 +142,25 @@ Công việc của worker (`backend/src/worker/index.js`, poll 2s): extract text
 | Plan báo đổi env liên tục | tfvars khác giá trị Dashboard | đồng nhất giá trị rồi mới apply |
 | `free → starter` trong plan | cấu hình starter nhưng service free | **KHÔNG apply** nếu không muốn tốn tiền |
 
-## 12. Bằng chứng (screenshots thực tế)
+## 12. Minh chứng được lưu
 
-Lưu 2 ảnh vào `docs/DevOps/` với đúng tên dưới:
+Repository hiện lưu:
 
-- `docs/DevOps/01-init-validate.png` — `terraform init` + `validate` thành công
-- `docs/DevOps/02-import.png` — import 2 service (api + static site) thành công
+- `docs/DevOps/03-plan.txt`: Terraform plan đã che dữ liệu nhạy cảm, cho biết `0 to add, 2 to change, 0 to destroy`;
+- `docs/Oral_Exam/Q15_devops/img/Q15-01-live-frontend.png`: frontend công khai;
+- `docs/Oral_Exam/Q15_devops/img/Q15-02-github-actions.png`: cửa sổ GitHub Actions thật;
+- `docs/Oral_Exam/Q15_devops/img/Q15-03-terraform-github.png`: cấu hình Terraform trong cửa sổ GitHub thật; và
+- `docs/Oral_Exam/Q15_devops/img/Q15-04-api-health-terminal.png`: kiểm tra API health của môi trường production trong Windows Terminal thật.
 
-![](docs/DevOps/01-init-validate.png)
-
-![](docs/DevOps/02-import.png)
-
-(Mục dưới đây được thêm sau khi chạy `plan` — dán tiếp ảnh `03-plan.png`.)
+Ảnh gốc của `terraform init`/`terraform import` được nhắc trong bản nháp cũ không tồn tại. Không liệt kê chúng là minh chứng đính kèm trừ khi nhóm chụp lại và commit.
 
 ## 13. Tổng kết tệp
 
 | File | Vai trò |
 |---|---|
-| `infra/providers.tf` | Block terraform + provider render |
-| `infra/variables.tf` | Input (sensitive: API key, owner, DB URL, session secret...) |
-| `infra/main.tf` | 2 resource: `render_web_service.api` + `render_static_site.frontend` |
+| `infra/providers.tf` | Khối Terraform và provider Render |
+| `infra/variables.tf` | Đầu vào (nhạy cảm: API key, owner, DB URL, session secret...) |
+| `infra/main.tf` | Hai tài nguyên: `render_web_service.api` và `render_static_site.frontend` |
 | `infra/outputs.tf` | URL/ID |
 | `infra/terraform.tfvars.example` | Mẫu điền (không secret) |
 | `infra/terraform.tfvars` | (gitignore) giá trị thật |

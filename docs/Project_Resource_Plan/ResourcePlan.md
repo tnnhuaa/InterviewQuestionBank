@@ -77,4 +77,4 @@ Runtime provider names are finalized in ADR-001 in the Architecture decisions ta
 
 - `docs/refs/03-software-project-initiation.md`, slides 008-009: a charter needs governance/resources; RAM/RACI clarifies responsibility.
 - `docs/refs/05-1-work-breakdown-structure.md`, slides 025 and 033: the WBS supports estimation/control; it includes only 100% of in-scope work.
-- `docs/Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md`: 20 Must stories, dependencies, and the Definition of Ready.
+- `docs/Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md`: the current 27-story/134-SP R1 Must baseline, dependencies, and the Definition of Ready. The 20-Must-story count belongs only to the historical 606/650-hour forecast and must not be presented as the current backlog count.

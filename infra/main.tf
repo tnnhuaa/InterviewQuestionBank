@@ -1,6 +1,8 @@
 # ============================================================================
 # PrepVI Infrastructure (IaaC với Terraform + Render)
-# Khớp 100% với hạ tầng đang chạy thực tế (git-native, plan free):
+# Mô tả hai dịch vụ Render đang chạy (git-native, plan free). Terraform plan
+# phải được review vì provider có thể đề xuất thay đổi in-place; không tuyên bố
+# cấu hình khớp 100% khi plan chưa ở trạng thái no-op:
 #   1. render_web_service  — API backend (rootDir=backend, Node, free)
 #   2. render_static_site  — Frontend SPA (build workspace frontend)
 # Không có background worker (chưa deploy). Không dùng Docker Hub.
