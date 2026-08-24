@@ -1,0 +1,120 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
+env:
+  DEPLOY_ENVIRONMENT: Production
+  DEPLOY_SERVICE: InterviewQuestionBank
+  DEPLOY_HEALTH_URL: https://api.prepvi.tinthanh.id.vn/api/v1/health
+  DEPLOY_COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+jobs:
+  deploy:
+    name: Deploy and verify
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      deploy_id: ${{ steps.trigger.outputs.deploy_id }}
+    steps:
+      - name: Check deployment configuration
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "RENDER_DEPLOY_HOOK is not configured."
+            exit 1
+          fi
+
+      - name: Trigger Render deployment
+        id: trigger
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          response_file="$(mktemp)"
+          trap 'rm -f "$response_file"' EXIT
+          curl --fail --silent --show-error \
+            --request POST \
+            --output "$response_file" \
+            "$RENDER_DEPLOY_HOOK"
+          deploy_id="$(jq -r '.deploy.id // .id // "not-returned"' "$response_file")"
+          echo "deploy_id=$deploy_id" >> "$GITHUB_OUTPUT"
+          echo "Render accepted the deployment request. Deploy ID: $deploy_id"
+
+      - name: Wait for Render deployment
+        run: sleep 75
+
+      - name: Verify production health
+        run: |
+          for attempt in $(seq 1 18); do
+            if curl --fail --silent --show-error \
+              --max-time 20 \
+              "$DEPLOY_HEALTH_URL" > /dev/null; then
+              echo "Production health check passed on attempt $attempt."
+              exit 0
+            fi
+            echo "Health check attempt $attempt failed; retrying in 10 seconds."
+            sleep 10
+          done
+          echo "Production health check did not pass."
+          exit 1
+
+  notify:
+    name: Send deployment result email
+    if: >-
+      always() &&
+      (github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success')
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Send deployment result email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_HOST }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          secure: true
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          from: ${{ secrets.NOTIFY_FROM }}
+          to: ${{ secrets.NOTIFY_TO }}
+          subject: >-
+            [DEPLOY] ${{ github.repository }} /
+            ${{ env.DEPLOY_ENVIRONMENT }} /
+            ${{ needs.deploy.result == 'success' && 'SUCCESS' || 'FAILURE' }}
+          html_body: |
+            <html>
+              <body style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #1f2937;">
+                <h2>
+                  Deployment: ${{ needs.deploy.result == 'success' && 'SUCCESS' || 'FAILURE' }}
+                </h2>
+                <table style="border-collapse: collapse; width: 100%; max-width: 620px;">
+                  <tr><td style="padding: 6px; font-weight: bold;">Repository</td><td><code>${{ github.repository }}</code></td></tr>
+                  <tr><td style="padding: 6px; font-weight: bold;">Environment</td><td>${{ env.DEPLOY_ENVIRONMENT }}</td></tr>
+                  <tr><td style="padding: 6px; font-weight: bold;">Service</td><td>${{ env.DEPLOY_SERVICE }}</td></tr>
+                  <tr><td style="padding: 6px; font-weight: bold;">Commit</td><td><code>${{ env.DEPLOY_COMMIT }}</code></td></tr>
+                  <tr><td style="padding: 6px; font-weight: bold;">Render deploy ID</td><td><code>${{ needs.deploy.outputs.deploy_id || 'not available' }}</code></td></tr>
+                  <tr><td style="padding: 6px; font-weight: bold;">Workflow result</td><td><code>${{ needs.deploy.result }}</code></td></tr>
+                  <tr><td style="padding: 6px; font-weight: bold;">Health URL</td><td><a href="${{ env.DEPLOY_HEALTH_URL }}">${{ env.DEPLOY_HEALTH_URL }}</a></td></tr>
+                  <tr><td style="padding: 6px; font-weight: bold;">Workflow</td><td><a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">View deployment run</a></td></tr>
+                </table>
+                <p style="color: #6b7280; font-size: 12px;">
+                  SUCCESS means the Render deploy hook accepted the request and the production health check passed after the wait period.
+                </p>
+              </body>
+            </html>
