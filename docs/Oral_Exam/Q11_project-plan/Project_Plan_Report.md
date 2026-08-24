@@ -1,397 +1,397 @@
-# Kế hoạch dự án — Interview Practice Platform
+# Project Plan — Interview Practice Platform
 
-## Thông tin kiểm soát tài liệu
+## Document control
 
-| Thuộc tính                 | Nội dung                                                                   |
-| -------------------------- | -------------------------------------------------------------------------- |
-| Tên tài liệu               | Project Plan — Interview Practice Platform                                 |
-| Phiên bản                  | 1.0                                                                        |
-| Ngày lập báo cáo           | 23/08/2026                                                                 |
-| Giai đoạn áp dụng          | 29/06/2026–23/08/2026                                                      |
-| Chủ sở hữu và người điều hành kế hoạch | Tuấn Anh — Project Manager / Team Leader / Timekeeper                  |
-| Phụ trách dữ liệu planning và estimation | Gia Thành — Project Planning & Estimation Analyst / Full-stack Developer |
-| Người review               | Tuấn Anh                                                                   |
-| Ngày review                | 23/08/2026                                                                 |
-| Xác nhận phạm vi sản phẩm  | Hưng — Product Owner/Business Analyst                                      |
-| Sponsor                    | Giảng viên Ngô Huy Biên và Ngô Ngọc Đăng Khoa                              |
-| Trạng thái                 | Đã review nội bộ; chưa có phê duyệt chính thức toàn bộ kế hoạch từ Sponsor |
+| Attribute | Content |
+| --------- | ------- |
+| Document name | Project Plan — Interview Practice Platform |
+| Version | 1.0 |
+| Report date | 23/08/2026 |
+| Period covered | 29/06/2026–23/08/2026 |
+| Owner and plan administrator | Tuấn Anh — Project Manager / Team Leader / Timekeeper |
+| Responsible for planning and estimation data | Gia Thành — Project Planning & Estimation Analyst / Full-stack Developer |
+| Reviewer | Tuấn Anh |
+| Review date | 23/08/2026 |
+| Product scope confirmation | Hưng — Product Owner/Business Analyst |
+| Sponsor | Lecturers Ngô Huy Biên and Ngô Ngọc Đăng Khoa |
+| Status | Reviewed internally; full plan not yet officially approved by the Sponsor |
 
-### Lịch sử tài liệu
+### Document history
 
-| Mốc tài liệu                 | Thời điểm        | Nội dung                                                                                                                                                                                                             | Người thực hiện              |
-| ---------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| Các tài liệu planning đơn lẻ | 09/08–21/08/2026 | Nhóm lập và cập nhật Proposal, Charter, Vision and Scope, Product Backlog, Resource Plan, estimate, cost baseline, feasibility và ADR. Đây là nguồn của Project Plan, chưa phải một phiên bản Project Plan hợp nhất. | Các owner theo từng tài liệu |
-| Project Plan 1.0             | 23/08/2026       | Tuấn Anh hợp nhất các tài liệu nguồn, bổ sung diễn biến thực tế, quyết định pivot, Planned–Actual và giới hạn bằng chứng; đồng thời review khác biệt giữa nguồn đơn lẻ với bản hợp nhất.                             | Tuấn Anh                     |
+| Document milestone | Date | Content | Person |
+| ------------------ | ---- | ------- | ------ |
+| Individual planning documents | 09/08–21/08/2026 | The team created and updated the Proposal, Charter, Vision and Scope, Product Backlog, Resource Plan, estimate, cost baseline, feasibility, and ADRs. These are the sources of the Project Plan, not a single consolidated Project Plan version. | Each document's owner |
+| Project Plan 1.0 | 23/08/2026 | Tuấn Anh consolidated the source documents, added the actual sequence of events, the pivot decision, Planned–Actual, and evidence limits; and reviewed the differences between the individual sources and the consolidated version. | Tuấn Anh |
 
-Phiên bản 1.0 là Project Plan hợp nhất chính thức đầu tiên của nhóm. Vì trước đó nhóm quản lý nội dung planning bằng nhiều file riêng, báo cáo không tạo lịch sử phiên bản Project Plan giả cho giai đoạn 09/08–21/08.
+Version 1.0 is the team's first official consolidated Project Plan. Because the team previously managed planning content across separate files, the report does not create a fake Project Plan version history for 09/08–21/08.
 
-## 1. Tóm tắt điều hành
+## 1. Executive summary
 
-Interview Practice Platform là web MVP hỗ trợ ứng viên chuẩn bị phỏng vấn từ một Job Description (JD) cụ thể. Sản phẩm nối các bước nhập JD, trích xuất hoặc OCR, xác nhận văn bản, phân tích yêu cầu, ánh xạ câu hỏi, lập kế hoạch ôn tập, tự luyện hoặc đặt lịch Mentor và nhận feedback.
+Interview Practice Platform is a web MVP that helps candidates prepare for interviews from a specific Job Description (JD). The product connects the steps of entering a JD, extracting or OCR-ing it, confirming the text, analysing requirements, mapping questions, building a study plan, self-practising or booking a Mentor, and receiving feedback.
 
-Kế hoạch dự án được lập trong bối cảnh nhóm thay đổi đề tài giữa học phần. Nhóm bắt đầu với Splitly trong cửa sổ tám tuần, từ ngày 29/06 đến 23/08/2026. Sau phần trình bày giữa kỳ ngày 24/07, nhóm nhận ra ý tưởng này chưa đủ mạnh về giá trị sản phẩm, người dùng và khả năng duy trì. Nhóm mất thời gian brainstorm, chốt sơ bộ InterviewQuestionBank ngày 09/08, thực hiện lại Initiation và Planning, rồi triển khai dự án mới từ ngày 10/08 đến 23/08.
+The project plan was created in the context of the team changing topic mid-course. The team started with Splitly in the eight-week window, from 29/06 to 23/08/2026. After the midterm presentation on 24/07, the team realised this idea was not strong enough on product value, users, and sustainability. The team spent time brainstorming, preliminary-settled on InterviewQuestionBank on 09/08, re-did Initiation and Planning, then implemented the new project from 10/08 to 23/08.
 
-Do InterviewQuestionBank không được theo dõi từ đầu cửa sổ học phần, nhóm tái dựng bốn tuần execution từ ngày 27/07 đến 23/08. Việc tái dựng dựa trên kinh nghiệm thực hiện Splitly, backlog của dự án mới và hướng dẫn của giảng viên về trường hợp thiếu dữ liệu theo dõi ban đầu. Bốn tuần này là **kế hoạch hồi cứu**, không phải lịch sử actual. Diễn biến thực tế và baseline tái dựng luôn được trình bày tách biệt trong báo cáo.
+Because InterviewQuestionBank was not tracked from the start of the course window, the team reconstructed four weeks of execution from 27/07 to 23/08. The reconstruction is based on the Splitly execution experience, the new project's backlog, and the lecturer's guidance on the case of missing early tracking data. These four weeks are a **retrospective plan**, not actual history. Actual events and the reconstructed baseline are always presented separately in the report.
 
-Kế hoạch sử dụng capacity danh nghĩa 768 giờ cho sáu thành viên, giữ reserve 15% và giới hạn khoảng 653 giờ cho phạm vi. Trần tiền mặt là 1.125.000 VNĐ; chi phí tiền mặt thực tế là 0 VNĐ vì nhóm chỉ dùng các dịch vụ free tier. Các mức 606 giờ và 650 giờ chỉ là hai working forecast lịch sử trên 20 Must story cũ; backlog hiện tại có 27 story R1 Bắt buộc, tương đương 134 Story Point (SP), nên nhóm chưa xem các con số này là cam kết phát hành.
+The plan uses nominal capacity of 768 hours for six members, keeps a 15% reserve, and caps about 653 hours for the scope. The cash ceiling is 1,125,000 VND; actual cash cost is 0 VND because the team uses only free-tier services. The 606-hour and 650-hour figures are just two historical working forecasts on the old 20 Must stories; the current backlog has 27 mandatory R1 stories, equal to 134 Story Points (SP), so the team does not treat these numbers as a release commitment.
 
-## 2. Bối cảnh và cơ sở lập kế hoạch
+## 2. Context and planning basis
 
-### 2.1 Diễn biến thực tế
+### 2.1 Actual sequence of events
 
-| Thời điểm        | Sự kiện và quyết định                                                                                                                                                        |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 29/06/2026       | Nhóm bắt đầu cửa sổ dự án tám tuần với đề tài Splitly.                                                                                                                       |
-| 24/07/2026       | Sau phần trình bày giữa kỳ, giảng viên đánh giá ý tưởng Splitly còn yếu. Nhóm đã đi vào execution và phần risk management của học phần nhưng phải xem lại bài toán sản phẩm. |
-| 24/07–09/08/2026 | Nhóm brainstorm nhiều hướng nhưng bị chững lại trong quá trình chọn ý tưởng.                                                                                                 |
-| 09/08/2026       | Nhóm chốt sơ bộ InterviewQuestionBank và thực hiện lại Project Initiation cùng Project Planning.                                                                             |
-| 10/08/2026       | Nhóm bắt đầu execution thực tế cho dự án mới.                                                                                                                                |
-| 12/08/2026       | Nhóm trao đổi trực tiếp với giảng viên lý thuyết; hướng InterviewQuestionBank được đánh giá là phù hợp để tiếp tục.                                                          |
-| 13/08/2026       | Nhóm xác nhận chính thức hướng “web interview” và chuẩn bị phân chia công việc.                                                                                              |
-| 14/08/2026       | Nhóm trao đổi trực tiếp với giảng viên thực hành. Thầy đề nghị ưu tiên pain point của ứng viên và thu gọn PoC thành JD → OCR → Question Bank.                                |
-| 16/08/2026       | Tuấn Anh tái dựng Kanban từ Product Backlog để tổ chức các task hoàn thành User Story.                                                                                       |
-| 23/08/2026       | Kết thúc cửa sổ tám tuần của học phần và tổng hợp Project Plan.                                                                                                              |
+| Date | Event and decision |
+| ---- | ------------------ |
+| 29/06/2026 | The team started the eight-week project window with the Splitly topic. |
+| 24/07/2026 | After the midterm presentation, the lecturers assessed the Splitly idea as weak. The team had entered execution and the risk-management part of the course but had to revisit the product problem. |
+| 24/07–09/08/2026 | The team brainstormed many directions but stalled during idea selection. |
+| 09/08/2026 | The team preliminary-settled on InterviewQuestionBank and re-did Project Initiation and Project Planning. |
+| 10/08/2026 | The team began actual execution for the new project. |
+| 12/08/2026 | The team talked directly with the theory lecturer; the InterviewQuestionBank direction was assessed as suitable to continue. |
+| 13/08/2026 | The team formally confirmed the "web interview" direction and prepared to divide the work. |
+| 14/08/2026 | The team talked directly with the practical lecturer. He suggested prioritising the candidate pain point and narrowing the PoC to JD → OCR → Question Bank. |
+| 16/08/2026 | Tuấn Anh reconstructed the Kanban from the Product Backlog to organise tasks that complete User Stories. |
+| 23/08/2026 | The end of the eight-week course window and the consolidation of the Project Plan. |
 
-Hai lần trao đổi với giảng viên diễn ra trực tiếp, không có ảnh hoặc biên bản. Báo cáo ghi lại nội dung do thành viên xác nhận, không trình bày đó là trích dẫn nguyên văn hay bằng chứng phê duyệt chính thức.
+The two lecturer discussions were face-to-face with no screenshot or minutes. The report records the content as confirmed by the members, not as a verbatim quotation or an official approval.
 
-### 2.2 Lý do dừng đầu tư vào Splitly
+### 2.2 Why the team stopped investing in Splitly
 
-Trước khi nhóm đổi đề tài, thầy Biên đã nêu ba vấn đề giúp cả nhóm nhìn lại Splitly:
+Before the team changed topic, lecturer Biên raised three issues that helped the whole team reconsider Splitly:
 
-- Người dùng có thể ghi trực tiếp ai nợ ai bao nhiêu và tự bù trừ, thay vì tải ứng dụng hoặc mở web để nhập bill rồi chỉ nhận một phép xử lý đơn giản.
-- Nhóm chưa có người dùng thật hoặc dữ liệu cho thấy người dùng sẵn sàng tải và sử dụng sản phẩm.
-- Nhóm dự định cung cấp miễn phí nhưng chưa giải thích được nguồn lợi nhuận hoặc cơ chế duy trì sản phẩm nếu đưa ra thị trường.
+- Users could record directly who owes whom and how much, and settle it themselves, instead of installing an app or opening a web page to enter a bill and get back a simple calculation.
+- The team had no real users or data showing users were willing to download and use the product.
+- The team planned to offer it for free but could not explain the source of profit or the mechanism to sustain the product if taken to market.
 
-Các vấn đề trên cho thấy Splitly chưa có value proposition đủ mạnh. Vì vậy, nhóm không chỉ đổi tên đề tài mà quay lại hai bước Initiation và Planning để xác định lại vấn đề, stakeholder, workflow, phạm vi và nguồn lực.
+These issues showed that Splitly did not yet have a strong enough value proposition. So the team did not just rename the topic; it went back to the Initiation and Planning steps to redefine the problem, stakeholders, workflow, scope, and resources.
 
-### 2.3 Đầu vào của Project Plan
+### 2.3 Inputs to the Project Plan
 
-Project Plan hợp nhất các nguồn sau:
+The Project Plan consolidates the following sources:
 
-| Nguồn                                              | Vai trò trong kế hoạch                                                                                             |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Project Proposal                                   | Xác định vấn đề, giá trị, phạm vi, điều kiện tiếp tục và trần nguồn lực.                                           |
-| Project Charter                                    | Xác định Sponsor, vai trò, milestone, constraint và quyền phê duyệt.                                               |
-| Vision and Scope                                   | Giữ ranh giới sản phẩm và workflow mục tiêu.                                                                       |
-| Product Backlog and Acceptance Criteria            | Cung cấp 27 story R1 Bắt buộc, 134 SP, dependency, acceptance criteria, Definition of Ready và Definition of Done. |
-| Resource Plan                                      | Xác định capacity, reserve, ownership, công cụ và rủi ro nguồn lực.                                                |
-| Estimation Comparison                              | Cung cấp hai dự báo độc lập và giới hạn của dữ liệu 20 Must story cũ.                                              |
-| Cost–Time–Resources Baseline                       | Xác định lịch tham chiếu, effort, chi phí và ngưỡng escalation.                                                    |
-| Feasibility Study, Architecture và ADR             | Đặt các điều kiện Go/No-Go, kiểm soát kỹ thuật và quality gate.                                                    |
-| Lịch sử Splitly, trao đổi nhóm và góp ý giảng viên | Giải thích nguyên nhân pivot, cách thu gọn MVP và cơ sở của lịch tái dựng.                                         |
+| Source | Role in the plan |
+| ------ | ---------------- |
+| Project Proposal | Defines the problem, value, scope, continuation conditions, and resource ceiling. |
+| Project Charter | Defines the Sponsor, roles, milestones, constraints, and approval authority. |
+| Vision and Scope | Holds the product boundary and target workflow. |
+| Product Backlog and Acceptance Criteria | Provides 27 mandatory R1 stories, 134 SP, dependencies, acceptance criteria, Definition of Ready, and Definition of Done. |
+| Resource Plan | Defines capacity, reserve, ownership, tools, and resource risk. |
+| Estimation Comparison | Provides two independent forecasts and the limits of the old 20 Must-story data. |
+| Cost–Time–Resources Baseline | Defines the reference schedule, effort, cost, and escalation threshold. |
+| Feasibility Study, Architecture, and ADRs | Sets the Go/No-Go conditions, technical controls, and quality gate. |
+| Splitly history, team discussions, and lecturer feedback | Explains the reason for the pivot, how the MVP was narrowed, and the basis of the reconstructed schedule. |
 
-## 3. Mục tiêu và tiêu chí thành công
+## 3. Objectives and success criteria
 
-### 3.1 Mục tiêu dự án
+### 3.1 Project objectives
 
-Mục tiêu của dự án là kiểm chứng một quy trình chuẩn bị phỏng vấn có truy vết từ JD đến hành động cải thiện:
+The project's objective is to validate a traceable interview-preparation process from JD to improvement action:
 
 ```text
-JD → trích xuất/OCR → xác nhận văn bản → phân tích yêu cầu
-   → ánh xạ Question Bank → preparation plan
-   → tự luyện hoặc đặt lịch Mentor → feedback → cập nhật kế hoạch
+JD → extraction/OCR → confirm text → requirement analysis
+   → Question Bank mapping → preparation plan
+   → self-practice or Mentor booking → feedback → update plan
 ```
 
-Pilot tập trung vào ứng viên Front-end Intern/Junior tại Việt Nam, trước hết với JavaScript, TypeScript và React. Kế hoạch chuẩn bị phải tạo giá trị độc lập ngay cả khi ứng viên chưa đặt lịch Mentor.
+The pilot targets Front-end Intern/Junior candidates in Vietnam, initially with JavaScript, TypeScript, and React. The preparation plan must create value on its own even before a candidate books a Mentor.
 
-### 3.2 Chỉ số và ngưỡng đánh giá
+### 3.2 Metrics and evaluation thresholds
 
-| Mục tiêu                  | Chỉ số                                                      |             Ngưỡng đề xuất |
-| ------------------------- | ----------------------------------------------------------- | -------------------------: |
-| Xác nhận pain point       | Mẫu discovery xác nhận ít nhất một pain cốt lõi             |                       ≥70% |
-| Hoàn tất JD-to-plan       | Ứng viên nhập JD, sửa văn bản và tạo được kế hoạch          |                       ≥80% |
-| Chất lượng phân tích      | Blind requirement recall và precision@10                    |                       ≥80% |
-| Tính truy vết             | Kết quả đủ source, topic, reason và version                 |                       100% |
-| Kích hoạt từ kế hoạch     | Ứng viên mở câu hỏi hoặc luồng Mentor từ plan               |                       ≥80% |
-| Pilot booking             | Booking hợp lệ / confirmed / completed                      |              12 / ≥10 / ≥8 |
-| Feedback có thể hành động | Booking hoàn thành có điểm mạnh, điểm yếu và bước tiếp theo |                       ≥90% |
-| Giá trị cảm nhận          | Điểm hữu ích và mức tự tin sau–trước                        | ≥4/5; tăng trung bình ≥1/5 |
-| Chất lượng kỹ thuật       | Critical workflow pass; defect trước UAT                    |      100%; 0 Critical/High |
+| Objective | Metric | Proposed threshold |
+| --------- | ------ | -----------------: |
+| Confirm the pain point | Discovery sample confirms at least one core pain | ≥70% |
+| Complete JD-to-plan | Candidate enters a JD, edits the text, and produces a plan | ≥80% |
+| Analysis quality | Blind requirement recall and precision@10 | ≥80% |
+| Traceability | Result has sufficient source, topic, reason, and version | 100% |
+| Activation from plan | Candidate opens a question or the Mentor flow from the plan | ≥80% |
+| Pilot booking | Valid / confirmed / completed bookings | 12 / ≥10 / ≥8 |
+| Actionable feedback | Completed booking has strengths, weaknesses, and next steps | ≥90% |
+| Perceived value | Usefulness score and before–after confidence | ≥4/5; average increase ≥1/5 |
+| Technical quality | Critical workflow passes; defects before UAT | 100%; 0 Critical/High |
 
-Đây là ngưỡng đề xuất cho pilot hẹp, không phải kết quả actual đã đạt.
+These are proposed thresholds for a narrow pilot, not actual results already achieved.
 
-## 4. Phạm vi và sản phẩm bàn giao
+## 4. Scope and deliverables
 
-### 4.1 Phạm vi MVP
+### 4.1 MVP scope
 
-- Xác thực và phân quyền cho Student, Mentor và Administrator.
-- Nhập JD bằng văn bản hoặc PDF/PNG/JPEG; trích xuất trực tiếp hoặc OCR tiếng Việt/Anh.
-- Cho người dùng kiểm tra và sửa văn bản sau khi trích xuất.
-- Nhận diện yêu cầu, chuẩn hóa taxonomy và ánh xạ sang Question Bank có giải thích.
-- Tạo preparation plan truy vết về JD, requirement và phiên bản câu hỏi.
-- Hỗ trợ Question Bank, bookmark và trạng thái luyện tập cơ bản.
-- Quản lý hồ sơ, xác minh và lịch rảnh của Mentor.
-- Đặt lịch, đổi hoặc hủy lịch; dùng link họp bên ngoài.
-- Gửi notification hỗ trợ booking nhưng không làm hỏng transaction chính.
-- Thu feedback theo rubric, cập nhật kế hoạch và hỗ trợ moderation tối thiểu.
+- Authentication and role-based access for Student, Mentor, and Administrator.
+- JD intake by text or PDF/PNG/JPEG; direct extraction or Vietnamese/English OCR.
+- Let the user review and edit the text after extraction.
+- Identify requirements, normalise the taxonomy, and map onto the Question Bank with an explanation.
+- Build a preparation plan traceable to the JD, requirements, and question version.
+- Support the Question Bank, bookmarks, and basic practice status.
+- Manage Mentor profiles, verification, and availability.
+- Book, reschedule, or cancel; use external meeting links.
+- Send booking-supporting notifications without breaking the main transaction.
+- Collect rubric-based feedback, update the plan, and provide minimal moderation.
 
-### 4.2 Phạm vi loại trừ
+### 4.2 Out of scope
 
-- AI interviewer, chatbot phỏng vấn hoặc chấm điểm tự động.
-- Phân tích giọng nói/video, recording hoặc transcript tích hợp.
-- Video call tích hợp; MVP dùng link họp bên ngoài hoặc nhập thủ công.
-- Payment, escrow, payout và commission.
-- Mobile native, ATS/nộp hồ sơ, OCR tổng quát hoặc marketplace đa quốc gia.
-- ML recommendation không có deterministic guardrail.
+- AI interviewer, interview chatbot, or automatic grading.
+- Voice/video analysis, integrated recording, or transcription.
+- Integrated video calls; the MVP uses external meeting links or manual entry.
+- Payment, escrow, payout, and commission.
+- Native mobile, ATS/job application, general OCR, or a multi-country marketplace.
+- ML recommendation without a deterministic guardrail.
 
-Gemini chỉ có thể hỗ trợ phân tích hoặc soạn nháp sau feature flag và validation. Rule/manual flow phải tiếp tục hoạt động khi nhà cung cấp lỗi.
+Gemini may only support analysis or drafting behind a feature flag and validation. Rule/manual flows must keep working when a provider fails.
 
-### 4.3 Sự thay đổi của giải pháp
+### 4.3 How the solution changed
 
-Ý tưởng InterviewQuestionBank ban đầu thiên về Mentor: Mentor nhận lịch hẹn, phỏng vấn, gửi feedback và có thể dùng AI để phỏng vấn thử. Giải pháp đã có Question Bank nhưng chưa có chuỗi nhập JD, phân tích yêu cầu, chọn câu hỏi và đề xuất Mentor phù hợp cho ứng viên.
+The original InterviewQuestionBank idea leaned toward the Mentor: a Mentor accepts bookings, conducts interviews, sends feedback, and might use AI for mock interviews. The solution already had a Question Bank but lacked the chain of JD intake, requirement analysis, question selection, and recommending a suitable Mentor to the candidate.
 
-Sau góp ý ngày 14/08, nhóm lấy pain point “ứng viên không biết ôn gì cho một JD cụ thể” làm trọng tâm. PoC mới gồm nhập JD, trích xuất/OCR, sửa văn bản, nhận diện kỹ năng, chuẩn hóa taxonomy và ánh xạ câu hỏi. Nhóm giữ luồng Mentor đã làm ở một nhánh riêng, sau đó kết hợp hai luồng trong MVP hiện tại.
+After the 14/08 feedback, the team centred on the pain point "candidates do not know what to study for a specific JD." The new PoC consists of JD intake, extraction/OCR, text editing, skill recognition, taxonomy normalisation, and question mapping. The team kept the Mentor flow already built on a separate branch, then combined the two flows in the current MVP.
 
-## 5. Cách tiếp cận lập kế hoạch
+## 5. Planning approach
 
-### 5.1 Các giả định chính
+### 5.1 Key assumptions
 
-| Giả định                                  | Cách sử dụng và giới hạn                                                                                                  |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Cửa sổ dự án vẫn là tám tuần              | Giữ ràng buộc học phần 29/06–23/08 dù dự án mới chỉ execution thực tế trong hai tuần.                                     |
-| Sáu thành viên dành 16 giờ/tuần           | Dùng để tính capacity; không phải cam kết làm thêm giờ.                                                                   |
-| Reserve 15%                               | Bảo vệ discovery, review, test, defect, tài liệu, học công nghệ và rủi ro; không dùng để thêm scope.                      |
-| Execution tái dựng trong bốn tuần         | Dùng để lập lịch và phân bổ backlog; không thay thế actual tracking.                                                      |
-| Kinh nghiệm Splitly là dữ liệu tham chiếu | Dùng để ước lượng khi thiếu dữ liệu ban đầu của InterviewQuestionBank; không được gọi là historical actual của dự án mới. |
-| Pilot dùng free tier và Mentor tự nguyện  | Chưa chứng minh unit economics hoặc chi phí vận hành thương mại.                                                          |
+| Assumption | Use and limit |
+| ---------- | ------------- |
+| Project window remains eight weeks | Keep the course constraint 29/06–23/08 even though the new project only actually executed for two weeks. |
+| Six members give 16 hours/week | Used to compute capacity; not a commitment to work overtime. |
+| 15% reserve | Protects discovery, review, test, defect, documentation, learning new technology, and risk; not used to add scope. |
+| Four weeks of reconstructed execution | Used for scheduling and backlog allocation; does not replace actual tracking. |
+| Splitly experience is reference data | Used to estimate when InterviewQuestionBank early data is missing; must not be called historical actual of the new project. |
+| Pilot uses free tiers and volunteer Mentors | Does not yet demonstrate unit economics or commercial operating cost. |
 
-### 5.2 Baseline sáu giai đoạn
+### 5.2 Six-phase baseline
 
-| Giai đoạn              | Khoảng thời gian tham chiếu | Exit criteria                                                           |
-| ---------------------- | --------------------------- | ----------------------------------------------------------------------- |
-| Discovery/Charter      | 29/06–05/07                 | Problem evidence, Charter và resource baseline.                         |
-| Prototype/Requirements | 06/07–12/07                 | Workflow, backlog và prototype được chấp nhận nội bộ.                   |
-| Foundation             | 13/07–19/07                 | Architecture, auth, CI/CD và data foundation.                           |
-| JD intake & analysis   | 20/07–26/07                 | Nhập JD, OCR, xác nhận text, taxonomy mapping và preparation plan pass. |
-| Mentor core loop       | 27/07–09/08                 | Booking-to-feedback E2E pass.                                           |
-| UAT/Release            | 10/08–23/08                 | Có UAT evidence, không còn defect Critical/High và pilot sẵn sàng.      |
+| Phase | Reference time range | Exit criteria |
+| ----- | -------------------- | ------------- |
+| Discovery/Charter | 29/06–05/07 | Problem evidence, Charter, and resource baseline. |
+| Prototype/Requirements | 06/07–12/07 | Workflow, backlog, and prototype accepted internally. |
+| Foundation | 13/07–19/07 | Architecture, auth, CI/CD, and data foundation. |
+| JD intake & analysis | 20/07–26/07 | JD entry, OCR, text confirmation, taxonomy mapping, and preparation plan pass. |
+| Mentor core loop | 27/07–09/08 | End-to-end booking-to-feedback passes. |
+| UAT/Release | 10/08–23/08 | UAT evidence exists, no Critical/High defects, and pilot is ready. |
 
-Bảng trên là baseline lập kế hoạch cho dự án mới trong cửa sổ tám tuần. Nó không mô tả đúng trình tự lịch sử vì nhóm còn thực hiện Splitly trước ngày 09/08.
+The table above is a planning baseline for the new project in the eight-week window. It does not describe the actual historical sequence, since the team was still executing Splitly before 09/08.
 
-### 5.3 Execution bốn tuần được tái dựng
+### 5.3 Four-week reconstructed execution
 
-| Tuần tái dựng    | User Story trọng tâm                                                                                                  | Ý nghĩa                                             |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| W1 — 27/07–02/08 | Đăng ký/đăng nhập, vai trò, nhập JD, trích xuất, sửa văn bản, hồ sơ Student/Mentor                                    | Foundation và intake.                               |
-| W2 — 03/08–09/08 | Quản lý Question Bank/taxonomy, phân tích JD, ánh xạ yêu cầu, tạo preparation plan, duyệt Mentor và quản lý lịch rảnh | Chuẩn bị nội dung và nguồn cung Mentor.             |
-| W3 — 10/08–16/08 | Duyệt/tìm câu hỏi, luyện tập, tìm Mentor, gắn JD hoặc plan vào booking, gửi và xử lý yêu cầu đặt lịch, link họp ngoài | Core transaction; trùng một phần execution thực tế. |
-| W4 — 17/08–23/08 | Hủy/đổi lịch, notification, feedback, review và cập nhật preparation plan                                             | Hoàn tất vòng lặp và ổn định release.               |
+| Reconstructed week | Focus User Stories | Meaning |
+| ------------------ | ------------------ | ------- |
+| W1 — 27/07–02/08 | Register/login, roles, JD entry, extraction, text editing, Student/Mentor profiles | Foundation and intake. |
+| W2 — 03/08–09/08 | Question Bank/taxonomy management, JD analysis, requirement mapping, preparation plan generation, Mentor approval and availability management | Content and Mentor supply preparation. |
+| W3 — 10/08–16/08 | Review/find questions, practice, find a Mentor, attach a JD or plan to a booking, send/handle booking requests, external meeting link | Core transaction; partly overlaps actual execution. |
+| W4 — 17/08–23/08 | Cancel/reschedule, notification, feedback, review, and preparation plan update | Complete the loop and stabilise release. |
 
-Ngày 16/08, Tuấn Anh tái dựng Kanban từ Product Backlog. Backlog cung cấp mã US, priority, release, dependency, SP, acceptance criteria và Definition of Ready/Done. Assignee, tuần thực hiện và ngày `Ready/Done` trên board là dữ liệu tái dựng, không có sẵn trong backlog.
+On 16/08, Tuấn Anh reconstructed the Kanban from the Product Backlog. The backlog provides the US code, priority, release, dependency, SP, acceptance criteria, and Definition of Ready/Done. The assignee, execution week, and `Ready/Done` dates on the board are reconstructed data, not present in the backlog.
 
-Kanban gồm Product Backlog; Ready với WIP 6; In Progress với WIP 6; Review với WIP 3; và bốn cột Done theo tuần. Trello chỉ quản lý các task cần để hoàn thành User Story trong backlog. PoC không được đưa lên Trello.
+The Kanban has a Product Backlog; Ready with WIP 6; In Progress with WIP 6; Review with WIP 3; and four weekly Done columns. Trello only manages the tasks needed to complete the User Stories in the backlog. The PoC is not on Trello.
 
-## 6. Nguồn lực và trách nhiệm
+## 6. Resources and responsibility
 
 ### 6.1 Capacity
 
-| Hạng mục                    |                                   Giá trị |
-| --------------------------- | ----------------------------------------: |
-| Số thành viên               |                                         6 |
-| Thời lượng                  |                                    8 tuần |
-| Giờ/người/tuần              |                                    16 giờ |
-| Capacity danh nghĩa         |                      6 × 8 × 16 = 768 giờ |
-| Reserve                     |                           15% = 115,2 giờ |
-| Capacity giới hạn cho scope |                            Khoảng 653 giờ |
-| Nhịp review kế hoạch        | Theo tuần hoặc khi baseline/luồng Kanban thay đổi đáng kể |
+| Item | Value |
+| ---- | ----: |
+| Members | 6 |
+| Duration | 8 weeks |
+| Hours/person/week | 16 hours |
+| Nominal capacity | 6 × 8 × 16 = 768 hours |
+| Reserve | 15% = 115.2 hours |
+| Capacity capped for scope | About 653 hours |
+| Plan review cadence | Weekly, or when the baseline/Kanban flow changes significantly |
 
 ### 6.2 Ownership
 
-| Thành viên/vai trò                 | Ownership chính                                                                | Trách nhiệm phối hợp                                                  |
-| ---------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| Tuấn Anh — Project Manager / Team Leader / Timekeeper | Điều hành, phân vai, deadline, Kanban, escalation, integration và delivery | Scope/priority coordination, review/merge, xác nhận Done và stakeholder alignment. |
-| Gia Thành — Project Planning & Estimation Analyst / Full-stack Developer | Charter, estimation, plan, cost/time/resource và implementation Full-stack | Review requirement, UAT và tài liệu. |
-| Hưng — Product Owner / Business Analyst | Vision, scope, backlog, acceptance criteria và business rule | Discovery, ưu tiên giá trị và UAT acceptance. |
-| Luân — Architecture / Technical Lead | ADR, stack, security, consistency và reliability design | Review kỹ thuật cho PoC và các luồng quan trọng. |
-| Hùng — UI/UX Designer / Front-end Developer | Research, workflow, clickable prototype, usability và giao diện | UI acceptance và accessibility. |
-| Trí — PoC / Integration & E2E Developer | PoC, seed data, integration test và technical-risk evidence | Core flow implementation. |
-| Sponsor                            | Phê duyệt Charter, baseline và thay đổi lớn                                    | Quyết định Go, Pivot hoặc Stop ở các gate quan trọng.                 |
+| Member/role | Primary ownership | Coordination responsibility |
+| ----------- | ----------------- | --------------------------- |
+| Tuấn Anh — Project Manager / Team Leader / Timekeeper | Operations, role assignment, deadlines, Kanban, escalation, integration, and delivery | Scope/priority coordination, review/merge, confirm Done, and stakeholder alignment. |
+| Gia Thành — Project Planning & Estimation Analyst / Full-stack Developer | Charter, estimation, plan, cost/time/resource, and Full-stack implementation | Requirement review, UAT, and documentation. |
+| Hưng — Product Owner / Business Analyst | Vision, scope, backlog, acceptance criteria, and business rules | Discovery, value prioritisation, and UAT acceptance. |
+| Luân — Architecture / Technical Lead | ADRs, stack, security, consistency, and reliability design | Technical review for the PoC and critical flows. |
+| Hùng — UI/UX Designer / Front-end Developer | Research, workflow, clickable prototype, usability, and interface | UI acceptance and accessibility. |
+| Trí — PoC / Integration & E2E Developer | PoC, seed data, integration testing, and technical-risk evidence | Core flow implementation. |
+| Sponsor | Approve the Charter, baseline, and major changes | Go, Pivot, or Stop decisions at key gates. |
 
-Các vai trò front-end, back-end, QA, DevOps và content được giao theo work package; nhóm không giả định mỗi chức danh chỉ thuộc một người. Story chỉ được kéo vào Ready khi đạt Definition of Ready và được người thực hiện tham gia estimate.
+Front-end, back-end, QA, DevOps, and content roles are assigned by work package; the team does not assume each title belongs to only one person. A story is only pulled into Ready when it meets its Definition of Ready and the implementer has joined the estimate.
 
-## 7. Kế hoạch effort và chi phí
+## 7. Effort and cost plan
 
 ### 7.1 Effort
 
-Hai phương pháp đã được dùng để kiểm tra chéo:
+Two methods were used to cross-check:
 
-| Phương pháp                              |             Kết quả lịch sử | Cách sử dụng                                         |
-| ---------------------------------------- | --------------------------: | ---------------------------------------------------- |
-| Bottom-up + Three-point/PERT             | 606 giờ sau contingency 15% | Working forecast có truy vết theo epic/work package. |
-| Top-down Count–Compute + expert judgment | 650 giờ sau contingency 15% | Guardrail bảo thủ so với capacity khoảng 653 giờ.    |
+| Method | Historical result | Use |
+| ------ | ----------------: | --- |
+| Bottom-up + Three-point/PERT | 606 hours after 15% contingency | Working forecast traceable by epic/work package. |
+| Top-down Count–Compute + expert judgment | 650 hours after 15% contingency | Conservative guardrail against the ≈653 hours capacity. |
 
-Hai phép tính dùng 20 Must story ở thời điểm inception. Backlog chốt sau đó có 27 story R1 Bắt buộc, 134 SP. Vì vậy:
+The two calculations used the 20 Must stories at inception. The backlog locked afterwards has 27 mandatory R1 stories, 134 SP. Therefore:
 
-- 606/650 giờ không phải actual.
-- 606/650 giờ chưa phải commitment cho backlog hiện tại.
-- 47 giờ chênh giữa 606 và capacity không phải phần trống để thêm scope.
-- Trước khi cam kết release, nhóm cần Planning Poker cho backlog hiện tại, cập nhật WBS/PERT và kiểm tra bằng hai estimate độc lập.
+- 606/650 hours are not actual.
+- 606/650 hours are not yet a commitment for the current backlog.
+- The 47-hour difference between 606 and capacity is not spare room to add scope.
+- Before a release commitment, the team needs Planning Poker on the current backlog, an updated WBS/PERT, and a check with two independent estimates.
 
 ### 7.2 Direct cash baseline
 
-| Nhóm chi phí                  | Cơ sở                              | Baseline (VNĐ) |
-| ----------------------------- | ---------------------------------- | -------------: |
-| Domain                        | Một domain cho pilot trong một năm |        300.000 |
-| Hosting, database, storage    | Free tier cho phát triển/pilot nhỏ |              0 |
-| Email/notification và meeting | Free tier, dùng link họp ngoài     |              0 |
-| Design, CI/CD và repository   | Công cụ giáo dục/free tier         |              0 |
-| Discovery/UAT                 | 12 lượt cảm ơn × 50.000            |        600.000 |
-| Security/monitoring           | Công cụ miễn phí phù hợp MVP       |              0 |
-| Direct cash                   |                                    |        900.000 |
-| Contingency tiền mặt          | 25% direct cash                    |        225.000 |
-| **Trần tiền mặt**             |                                    |  **1.125.000** |
+| Cost group | Basis | Baseline (VND) |
+| ---------- | ----- | -------------: |
+| Domain | One domain for a one-year pilot | 300,000 |
+| Hosting, database, storage | Free tier for dev/small pilot | 0 |
+| Email/notification and meeting | Free tier, external meeting link | 0 |
+| Design, CI/CD, repository | Education/free-tier tools | 0 |
+| Discovery/UAT | 12 thank-you tokens × 50,000 | 600,000 |
+| Security/monitoring | Free tools suitable for an MVP | 0 |
+| Direct cash | | 900,000 |
+| Cash contingency | 25% of direct cash | 225,000 |
+| **Cash ceiling** | | **1,125,000** |
 
-Đây là envelope planning ngày 14/08/2026, không phải số tiền actual đã chi hay báo giá nhà cung cấp. Đến ngày 23/08/2026, **actual cash cost là 0 VNĐ** vì nhóm chỉ dùng các gói free tier và không mua domain hoặc chi khoản cảm ơn discovery/UAT theo baseline. Nếu phát sinh khoản mua sau thời điểm báo cáo, owner phải lưu nguồn giá, thời điểm kiểm tra và điều kiện hủy.
+This is an envelope plan dated 14/08/2026, not actual spending or vendor quotes. As of 23/08/2026, **actual cash cost is 0 VND** because the team used only free-tier packages and did not buy a domain or spend the discovery/UAT thank-you amount per the baseline. If any purchase occurs after the report date, the owner must record the price source, the check time, and the cancellation conditions.
 
-Giá trị lao động tham chiếu là 606 giờ × 50.000 VNĐ/giờ = 30.300.000 VNĐ. Đơn giá 50.000 VNĐ/giờ chỉ là giả định học thuật của nhóm, không phải lương thực tế hoặc báo giá thị trường.
+The reference labour value is 606 hours × 50,000 VND/hour = 30,300,000 VND. The 50,000 VND/hour rate is only an academic assumption by the team, not real wages or a market quote.
 
-## 8. Phương pháp phát triển và cơ chế điều hành
+## 8. Development method and operating mechanism
 
-Nhóm áp dụng cách làm thích ứng trong giới hạn học phần:
+The team applies an adaptive approach within the course limits:
 
-1. Product Owner quản lý backlog và acceptance criteria; Tuấn Anh với vai trò Project Manager / Team Leader / Timekeeper điều hành delivery, deadline, Kanban và risk; Gia Thành chuẩn bị dữ liệu cost, resource, estimate và baseline để hỗ trợ quyết định.
-2. Nhóm ưu tiên Must story phục vụ core loop JD-to-feedback; Should/Could chỉ được nhận khi reserve và critical flow vẫn an toàn.
-3. Nhóm vận hành Kanban theo tuần. Tuấn Anh review WIP, blocker, chất lượng và forecast-to-complete mỗi tuần hoặc khi cần chốt thay đổi.
-4. Kanban giới hạn WIP để tránh mở quá nhiều việc cùng lúc: Ready 6, In Progress 6 và Review 3.
-5. Git/GitHub quản lý version, Pull Request và traceability. CI kiểm tra lint, typecheck, OpenAPI drift, migration, seed, build và secret scan.
-6. Figma lưu prototype và usability evidence; Markdown trong repository lưu Proposal, Charter, ADR, kế hoạch và test evidence.
-7. PoC dùng để giảm bất định kỹ thuật, nhưng không nằm trên Trello. Trello chỉ phân rã và theo dõi task hoàn thành các User Story trong backlog.
+1. The Product Owner manages the backlog and acceptance criteria; Tuấn Anh, as Project Manager / Team Leader / Timekeeper, runs delivery, deadlines, Kanban, and risk; Gia Thành prepares cost, resource, estimate, and baseline data to support decisions.
+2. The team prioritises Must stories that serve the core JD-to-feedback loop; Should/Could are only taken when the reserve and critical flow remain safe.
+3. The team runs a weekly Kanban. Tuấn Anh reviews WIP, blockers, quality, and forecast-to-complete each week, or whenever a change needs to be locked.
+4. The Kanban limits WIP to avoid opening too much at once: Ready 6, In Progress 6, and Review 3.
+5. Git/GitHub manages versioning, Pull Requests, and traceability. CI checks lint, typecheck, OpenAPI drift, migration, seed, build, and secret scan.
+6. Figma stores prototype and usability evidence; Markdown in the repository stores the Proposal, Charter, ADRs, plans, and test evidence.
+7. The PoC reduces technical uncertainty but is not on Trello. Trello only breaks down and tracks tasks that complete the User Stories in the backlog.
 
-## 9. Quản lý chất lượng, rủi ro và thay đổi
+## 9. Quality, risk, and change management
 
 ### 9.1 Quality gate
 
-- Chỉ câu hỏi `PUBLISHED` và Mentor `APPROVED` được đưa vào kết quả phù hợp.
-- Người dùng phải xác nhận văn bản sau extraction/OCR.
-- Booking phải chống double booking, kiểm soát object authorization và lưu audit.
-- Lỗi notification không được làm mất booking đã ghi nhận.
-- Critical workflow phải có unit, integration, E2E hoặc UAT evidence phù hợp.
-- Không phát hành pilot khi còn defect Critical/High.
+- Only `PUBLISHED` Questions and `APPROVED` Mentors are included in the relevant results.
+- Users must confirm the text after extraction/OCR.
+- Booking must prevent double booking, enforce object authorization, and record an audit.
+- Notification errors must not lose an already-recorded booking.
+- Critical workflows must have appropriate unit, integration, E2E, or UAT evidence.
+- Do not release the pilot while Critical/High defects remain.
 
-### 9.2 Rủi ro trọng yếu
+### 9.2 Key risks
 
-| Rủi ro                       | Dấu hiệu                                                    | Ứng phó                                                                    |
-| ---------------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Không đủ Mentor              | Dưới 4 Mentor hoặc dưới 3 slot/người                        | Outreach sớm, concierge pilot và giữ giá trị của preparation plan độc lập. |
-| Extraction/mapping không đạt | Recall hoặc precision@10 dưới 80%                           | Correction gate, corpus có nhãn, taxonomy review và rule fallback.         |
-| AI/provider lỗi              | Schema/evidence fail, quota hoặc latency tăng               | Feature flag, validation và manual fallback.                               |
-| Booking sai hoặc lộ dữ liệu  | Double booking, invalid transition hoặc truy cập trái quyền | Transaction, unique constraint, audit và negative test.                    |
-| Scope vượt giới hạn          | Thêm AI/video/payment hoặc forecast vượt 653 giờ            | Cắt Should/Could, lập change request và rebaseline.                        |
-| Thiếu dữ liệu theo dõi       | Không có timesheet, throughput lịch sử hoặc trạng thái gốc  | Gắn nhãn reconstructed, không suy diễn thành actual.                       |
+| Risk | Signal | Response |
+| ---- | ------ | -------- |
+| Not enough Mentors | Fewer than 4 Mentors or fewer than 3 slots/person | Early outreach, concierge pilot, and keeping the preparation plan valuable on its own. |
+| Extraction/mapping fails | Recall or precision@10 below 80% | Correction gate, labelled corpus, taxonomy review, and rule fallback. |
+| AI/provider error | Schema/evidence fail, quota or latency rising | Feature flag, validation, and manual fallback. |
+| Wrong booking or data exposure | Double booking, invalid transition, or unauthorised access | Transaction, unique constraint, audit, and negative test. |
+| Scope exceeds the limit | Adding AI/video/payment or forecast over 653 hours | Cut Should/Could, raise a change request, and rebaseline. |
+| Missing tracking data | No timesheet, historical throughput, or original status | Label as reconstructed; do not infer as actual. |
 
-### 9.3 Ngưỡng reforecast và escalation
+### 9.3 Reforecast and escalation thresholds
 
-PM phải reforecast và trình PO/Sponsor khi xảy ra một trong các trường hợp:
+The PM must reforecast and escalate to the PO/Sponsor when any of these occurs:
 
-- dự báo vượt ngày 23/08/2026;
-- forecast effort vượt khoảng 653 giờ;
-- committed/actual cash có nguy cơ vượt 1.125.000 VNĐ;
-- critical PoC không đạt gate;
-- công việc bị kẹt hoặc throughput thấp kéo dài hai tuần;
-- thay đổi chạm core scope, privacy, authorization, booking consistency hoặc release quality.
+- the forecast exceeds 23/08/2026;
+- the forecast effort exceeds about 653 hours;
+- committed/actual cash risks exceeding 1,125,000 VND;
+- a critical PoC fails a gate;
+- work is blocked or throughput stays low for two weeks;
+- a change touches core scope, privacy, authorization, booking consistency, or release quality.
 
-Change request phải nêu nguyên nhân, ảnh hưởng đến scope/time/cost/resource/risk, phương án lựa chọn và người phê duyệt. Reserve không tự động cấp quyền thêm phạm vi.
+A change request must state the cause, the impact on scope/time/cost/resource/risk, the alternatives, and the approver. The reserve does not automatically grant authority to add scope.
 
-## 10. Sử dụng, cập nhật và trạng thái kế hoạch
+## 10. Plan use, updates, and status
 
-Project Plan được dùng để thống nhất nhóm sẽ làm gì, trong giới hạn nào và ai chịu trách nhiệm. Product Backlog chuyển phạm vi thành User Story và acceptance criteria; Resource Plan chuyển vai trò thành ownership; Architecture và ADR cụ thể hóa các constraint kỹ thuật; Trello phân rã User Story thành task thực hiện.
+The Project Plan is used to align on what the team will do, within which limits, and who is responsible. The Product Backlog translates scope into User Stories and acceptance criteria; the Resource Plan translates roles into ownership; Architecture and ADRs specify the technical constraints; Trello breaks User Stories into implementation tasks.
 
-Trong giai đoạn 10/08–23/08, nhóm dùng baseline mới để triển khai các hạng mục thuộc luồng JD-first và Mentor. Các thay đổi quan trọng gồm:
+During 10/08–23/08, the team used the new baseline to implement items in the JD-first and Mentor flows. The key changes were:
 
-1. Dừng tiếp tục đầu tư vào Splitly và quay lại Initiation/Planning.
-2. Chuyển từ hướng Mentor-first/AI mock interview sang candidate-first.
-3. Thêm JD intake, OCR, correction, requirement analysis, Question Bank mapping và preparation plan.
-4. Giữ luồng Mentor đã có để tích hợp sau thay vì bỏ toàn bộ phần đã làm.
-5. Loại AI interviewer, video tích hợp, payment, mobile native và ATS khỏi MVP.
-6. Tái dựng Kanban ngày 16/08 từ backlog để mô tả phân bổ User Story theo bốn tuần.
+1. Stopped further investment in Splitly and returned to Initiation/Planning.
+2. Moved from a Mentor-first/AI mock-interview direction to candidate-first.
+3. Added JD intake, OCR, correction, requirement analysis, Question Bank mapping, and preparation plan.
+4. Kept the existing Mentor flow to integrate later instead of discarding all the work already done.
+5. Removed the AI interviewer, integrated video, payment, native mobile, and ATS from the MVP.
+6. Reconstructed the Kanban on 16/08 from the backlog to describe the distribution of User Stories across four weeks.
 
-### 10.1 Đối chiếu Planned–Actual từ backlog và Reconstructed Kanban
+### 10.1 Planned–Actual comparison from the backlog and Reconstructed Kanban
 
-Product Backlog đặt baseline R1 gồm 27 User Story Bắt buộc, tương đương 134 SP. Ảnh Reconstructed Kanban cho thấy 26 User Story Bắt buộc đã nằm trong bốn cột Done, tương đương 129 SP. Như vậy, mức hoàn thành ghi nhận trên board là **26/27 story và 129/134 SP, cùng đạt khoảng 96,3%**.
+The Product Backlog sets an R1 baseline of 27 mandatory User Stories, equal to 134 SP. The Reconstructed Kanban screenshot shows 26 mandatory User Stories in the four Done columns, equal to 129 SP. So the completion recorded on the board is **26/27 stories and 129/134 SP, both about 96.3%**.
 
-| Khoảng giao việc → Done trên board                    | User Story Bắt buộc đã hoàn thành                      | Số story |      SP |
-| ----------------------------------------------------- | ------------------------------------------------------ | -------: | ------: |
-| W1 — 27/07–02/08                                      | US-01, US-02, US-24, US-25, US-26, US-03, US-07        |        7 |      34 |
-| W2 — 03/08–09/08; riêng US-09 kéo dài đến 16/08       | US-27, US-18, US-28, US-29, US-08, US-09               |        6 |      34 |
-| W3 — 10/08–16/08; US-04 được đánh dấu xong ngày 11/08 | US-04, US-05, US-06, US-10, US-30, US-11, US-12, US-14 |        8 |      34 |
-| W4 — giao từ 17/08, đánh dấu xong trong 18/08–23/08   | US-13, US-15, US-17, US-16, US-19                      |        5 |      27 |
-| **Tổng đã Done**                                      | **26 User Story Bắt buộc**                             |   **26** | **129** |
+| Assigned → Done range on the board | Mandatory User Stories completed | Stories | SP |
+| ---------------------------------- | -------------------------------- | -------: | -------: |
+| W1 — 27/07–02/08 | US-01, US-02, US-24, US-25, US-26, US-03, US-07 | 7 | 34 |
+| W2 — 03/08–09/08; US-09 separately ran to 16/08 | US-27, US-18, US-28, US-29, US-08, US-09 | 6 | 34 |
+| W3 — 10/08–16/08; US-04 marked done on 11/08 | US-04, US-05, US-06, US-10, US-30, US-11, US-12, US-14 | 8 | 34 |
+| W4 — assigned from 17/08, marked done within 18/08–23/08 | US-13, US-15, US-17, US-16, US-19 | 5 | 27 |
+| **Total Done** | **26 mandatory User Stories** | **26** | **129** |
 
-US-20, “Giải quyết báo cáo và ngoại lệ”, còn trong Product Backlog với 5 SP. Hai story R1 Mở rộng US-21–US-22, tổng 8 SP, và story Tương lai US-23, 8 SP, chưa được thực hiện; ba story này không thuộc 134 SP Bắt buộc. Tại thời điểm chụp, các cột Ready, In Progress và Review đều không có card.
+US-20, "Handle reports and exceptions", remains in the Product Backlog with 5 SP. Two expanded R1 stories US-21–US-22, totalling 8 SP, and one Future story US-23, 8 SP, were not implemented; these three are not part of the mandatory 134 SP. At the time of the screenshot, the Ready, In Progress, and Review columns all had no cards.
 
-Các ngày trên board được tính từ lúc thành viên nhận/giao task đến khi card được đánh dấu Done. Chúng phản ánh **elapsed time của task trên Reconstructed Kanban**, không phải actual effort theo giờ. Nhóm không có timesheet để quy đổi các khoảng ngày này thành person-hour. Ngoài ra, board được tái dựng ngày 16/08, nên số liệu cho biết trạng thái nhóm đã ghi nhận lại, không chứng minh toàn bộ card được cập nhật theo thời gian thực từ ngày 27/07.
+The dates on the board are counted from when a member received/was assigned the task to when the card was marked Done. They reflect the **elapsed time of the task on the Reconstructed Kanban**, not actual per-hour effort. The team has no timesheet to convert these date ranges into person-hours. In addition, the board was reconstructed on 16/08, so the figures describe the state the team recorded retrospectively and do not prove every card was updated in real time from 27/07.
 
-### 10.2 Trạng thái tại ngày 23/08/2026
+### 10.2 Status as of 23/08/2026
 
-- Proposal phiên bản 0.4 ngày 21/08 là bản đề xuất đã chốt nội bộ.
-- Project Plan này hợp nhất scope, schedule, cost, resource, ownership và các quyết định pivot.
-- Tuấn Anh đã review bản hợp nhất ngày 23/08 bằng cách đối chiếu với các tài liệu planning đơn lẻ và các dữ kiện nhóm xác nhận.
-- Kế hoạch chưa có phê duyệt chính thức toàn bộ baseline từ Sponsor.
-- Actual cash cost là 0 VNĐ; board ghi nhận 129/134 SP Bắt buộc đã Done; nhóm không có actual effort theo giờ.
-- Bốn tuần trên Kanban là reconstruction có disclosure, không phải tracking gốc.
+- The Proposal version 0.4 on 21/08 is the internally-finalised proposal.
+- This Project Plan consolidates scope, schedule, cost, resource, ownership, and the pivot decisions.
+- Tuấn Anh reviewed the consolidated version on 23/08 by comparing it against the individual planning documents and the facts the team confirmed.
+- The plan does not yet have formal baseline approval from the Sponsor.
+- Actual cash cost is 0 VND; the board records 129/134 mandatory SP as Done; the team has no actual per-hour effort.
+- The four weeks on the Kanban are a disclosed reconstruction, not original tracking.
 
-## 11. Bằng chứng và giới hạn kiểm chứng
+## 11. Evidence and verification limits
 
-### 11.1 Quyết định phạm vi
+### 11.1 Scope decisions
 
-**Hình 1 — Phạm vi MVP candidate-first sau khi ưu tiên giá trị chuẩn bị phỏng vấn theo JD.**
+**Figure 1 — Candidate-first MVP scope after prioritising JD-based preparation value.**
 
-![Phạm vi MVP candidate-first](img/Q11-01-mvp-scope-candidate-first.png)
+![Candidate-first MVP scope](img/Q11-01-mvp-scope-candidate-first.png)
 
-**Hình 2 — Nhóm xác nhận chính thức ý tưởng web interview ngày 13/08/2026.**
+**Figure 2 — The team formally confirms the web-interview idea on 13/08/2026.**
 
-![Nhóm xác nhận ý tưởng web interview](img/Q11-02-team-confirms-interview-idea.png)
+![Team confirms the web-interview idea](img/Q11-02-team-confirms-interview-idea.png)
 
-**Hình 3 — Thành viên tóm tắt góp ý của giảng viên thực hành ngày 14/08/2026.**
+**Figure 3 — A member summarises the practical lecturer's feedback on 14/08/2026.**
 
-![Tóm tắt góp ý về pain point ứng viên](img/Q11-03-instructor-feedback-summary.png)
+![Summary of feedback on the candidate pain point](img/Q11-03-instructor-feedback-summary.png)
 
-**Hình 4 — Nhóm thông báo cập nhật phạm vi và chuẩn bị Pull Request để review.**
+**Figure 4 — The team announces the scope update and prepares a Pull Request for review.**
 
-![Thông báo cập nhật phạm vi và kế hoạch](img/Q11-04-team-updates-scope-and-plan.png)
+![Scope and plan update announcement](img/Q11-04-team-updates-scope-and-plan.png)
 
-**Hình 5 — PoC ứng viên và quyết định giữ luồng Mentor riêng.**
+**Figure 5 — Candidate PoC and the decision to keep a separate Mentor flow.**
 
-![PoC ứng viên và luồng Mentor](img/Q11-05-candidate-poc-and-mentor-split.png)
+![Candidate PoC and Mentor flow](img/Q11-05-candidate-poc-and-mentor-split.png)
 
-### 11.2 Kế hoạch thực hiện tái dựng
+### 11.2 Reconstructed execution plan
 
-**Hình 6 — Reconstructed Kanban tổ chức task theo User Story trong bốn tuần.**
+**Figure 6 — Reconstructed Kanban organising tasks by User Story across four weeks.**
 
-![Reconstructed Kanban theo User Story](img/Q11-06-reconstructed-kanban-user-stories.png)
+![Reconstructed Kanban by User Story](img/Q11-06-reconstructed-kanban-user-stories.png)
 
-Năm hình đầu là trao đổi nội bộ sau các buổi góp ý. Chúng chứng minh nhóm đã tóm tắt ý kiến, thống nhất hướng đi và cập nhật phạm vi; chúng không phải ảnh giảng viên phê duyệt Project Plan. Hình 6 là board được Tuấn Anh tái dựng ngày 16/08; board không chứng minh card đã được cập nhật đúng thời điểm trong quá khứ.
+The first five figures are internal discussions after the feedback sessions. They show the team summarised the feedback, agreed on the direction, and updated the scope; they are not screenshots of the lecturers approving the Project Plan. Figure 6 is a board Tuấn Anh reconstructed on 16/08; the board does not prove the cards were updated at the correct time in the past.
 
-## 12. Đánh giá kế hoạch và kết luận
+## 12. Plan assessment and conclusion
 
-Ngày 23/08/2026, Tuấn Anh review bản Project Plan 1.0 bằng cách so sánh nội dung hợp nhất với Proposal, Charter, Vision and Scope, Product Backlog, Resource Plan, Estimation Comparison, Cost–Time–Resources, Feasibility Study, ADR, lịch sử Git và Reconstructed Kanban. Việc review tập trung vào tính đầy đủ, nhất quán, khả thi, truy vết và mức độ phân biệt giữa kế hoạch, actual và dữ liệu tái dựng.
+On 23/08/2026, Tuấn Anh reviewed Project Plan 1.0 by comparing the consolidated content against the Proposal, Charter, Vision and Scope, Product Backlog, Resource Plan, Estimation Comparison, Cost–Time–Resources, Feasibility Study, ADRs, Git history, and the Reconstructed Kanban. The review focused on completeness, consistency, feasibility, traceability, and the separation between plan, actual, and reconstructed data.
 
-Review phát hiện sáu khác biệt chính giữa các tài liệu đơn lẻ và bản Project Plan cần nộp:
+The review found six key differences between the individual documents and the Project Plan for submission:
 
-1. Thông tin về scope, schedule, cost, resource và ownership nằm rải rác, chưa có một báo cáo Project Plan hợp nhất.
-2. Cửa sổ học phần tám tuần, execution thực tế hai tuần và lịch tái dựng bốn tuần dễ bị hiểu là cùng một loại dữ liệu.
-3. Hai estimate 606/650 giờ dùng 20 Must story cũ, trong khi backlog hiện tại có 27 story Bắt buộc và 134 SP.
-4. Trello chỉ theo dõi task hoàn thành User Story; PoC nằm ngoài Trello và board được tái dựng ngày 16/08.
-5. Cash ceiling 1.125.000 VNĐ là baseline, còn actual cash cost là 0 VNĐ do nhóm dùng free tier.
-6. Góp ý của giảng viên xác nhận hướng ý tưởng, không phải phê duyệt chính thức toàn bộ Project Plan.
+1. Scope, schedule, cost, resource, and ownership information was scattered, with no consolidated Project Plan report.
+2. The eight-week course window, two-week actual execution, and four-week reconstructed schedule could easily be read as the same kind of data.
+3. The two estimates of 606/650 hours used the old 20 Must stories, while the current backlog has 27 mandatory stories and 134 SP.
+4. Trello only tracks tasks that complete User Stories; the PoC is outside Trello and the board was reconstructed on 16/08.
+5. The 1,125,000 VND cash ceiling is a baseline, while actual cash cost is 0 VND because the team used free tiers.
+6. The lecturer feedback confirmed the direction of the idea, not the official approval of the whole Project Plan.
 
-Tuấn Anh đã xử lý các khác biệt trên trong phiên bản 1.0: hợp nhất tài liệu, tách ba lớp thời gian, thêm bảng Planned–Actual, ghi rõ giới hạn của estimate và Kanban, cập nhật actual cash, bổ sung bằng chứng thay đổi phạm vi và giữ trạng thái Sponsor chưa phê duyệt. Sau review, Project Plan đáp ứng mục đích quản trị ở mức baseline nội bộ: có mục tiêu, phạm vi, lịch, effort, ngân sách, ownership, quality gate, risk, change control và bằng chứng thay đổi.
+Tuấn Anh addressed these differences in version 1.0: consolidated the documents, separated the three time layers, added a Planned–Actual table, stated the limits of the estimate and Kanban, updated actual cash, added scope-change evidence, and kept the Sponsor status as not yet approved. After review, the Project Plan meets the governance purpose at an internal baseline level: it has objectives, scope, schedule, effort, budget, ownership, quality gate, risk, change control, and change evidence.
 
-Giới hạn lớn nhất là dữ liệu actual về tiến độ và effort. Nhóm chỉ execution InterviewQuestionBank trong hai tuần, trong khi kế hoạch phải mô tả cửa sổ tám tuần. Việc tái dựng bốn tuần giúp giải thích cách phân bổ backlog nhưng không thay thế timesheet, throughput lịch sử, burndown hoặc board được cập nhật tại thời điểm thực hiện. Estimate 606/650 giờ cũng đã lệch phiên bản backlog. Riêng actual cash đã được nhóm xác nhận là 0 VNĐ do chỉ dùng free tier.
+The biggest limitation is actual progress and effort data. The team only executed InterviewQuestionBank for two weeks, while the plan must describe the eight-week window. The four-week reconstruction helps explain how the backlog was allocated but does not replace a timesheet, historical throughput, burndown, or a board updated at execution time. The 606/650-hour estimates are also out of step with the backbone version. Actual cash, however, was confirmed by the team as 0 VND because only free tiers were used.
 
-Vì vậy, khuyến nghị của kế hoạch là **tiếp tục có điều kiện**. Trước khi xem đây là commitment phát hành, nhóm cần cập nhật estimate cho 27 R1 Must story/134 SP, hoàn tất các PoC và quality gate, rồi xin PO/Sponsor phê duyệt baseline hoặc quyết định Go, Pivot hay Stop.
+Therefore the plan's recommendation is **continue conditionally**. Before treating this as a release commitment, the team needs to update the estimate for the 27 R1 Must stories/134 SP, complete the PoCs and quality gate, then ask the PO/Sponsor to approve the baseline or decide Go, Pivot, or Stop.
 
-## 13. Xác nhận và phê duyệt
+## 13. Confirmation and approval
 
-| Vai trò                      | Người phụ trách    | Nội dung xác nhận                                | Trạng thái                |
-| ---------------------------- | ------------------ | ------------------------------------------------ | ------------------------- |
-| Project Manager / Team Leader / Timekeeper | Tuấn Anh | Điều hành, deadline, Kanban, risk, integration và readiness | Đã review ngày 23/08/2026 |
-| Project Planning & Estimation Analyst / Full-stack Developer | Gia Thành | Baseline, cost, resource, estimate và phần implementation phụ trách | Chờ xác nhận |
-| Product Owner / Business Analyst | Hưng | Mục tiêu, phạm vi, backlog và acceptance | Chờ xác nhận |
-| Sponsor                      | Ngô Huy Biên       | Baseline và thay đổi lớn                         | Chờ phê duyệt chính thức  |
-| Sponsor                      | Ngô Ngọc Đăng Khoa | Baseline và thay đổi lớn                         | Chờ phê duyệt chính thức  |
+| Role | Person in charge | Confirmation content | Status |
+| ---- | ---------------- | -------------------- | ------ |
+| Project Manager / Team Leader / Timekeeper | Tuấn Anh | Operations, deadlines, Kanban, risk, integration, and readiness | Reviewed 23/08/2026 |
+| Project Planning & Estimation Analyst / Full-stack Developer | Gia Thành | Baseline, cost, resource, estimate, and responsible implementation | Awaiting confirmation |
+| Product Owner / Business Analyst | Hưng | Objectives, scope, backlog, and acceptance | Awaiting confirmation |
+| Sponsor | Ngô Huy Biên | Baseline and major changes | Awaiting official approval |
+| Sponsor | Ngô Ngọc Đăng Khoa | Baseline and major changes | Awaiting official approval |
 
-## 14. Tài liệu tham chiếu
+## 14. References
 
 - `docs/Project_Proposal/Project_Proposal.md`
 - `docs/Project_Governance & Stakeholder/Project_Charter.md`

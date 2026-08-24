@@ -1,117 +1,117 @@
 # INTERVIEWQUESTIONBANK
 
-## BÁO CÁO BÀI HỌC KINH NGHIỆM DỰ ÁN
+## Project Lessons Learned Report
 
-- **Phiên bản:** 1.0
-- **Ngày phát hành:** 23/08/2026
-- **Chủ sở hữu:** Tuấn Anh — Project Manager / Team Leader / Timekeeper
-**Trạng thái:** Đã review và thống nhất nội bộ
+- **Version:** 1.0
+- **Release date:** 23/08/2026
+- **Owner:** Tuấn Anh — Project Manager / Team Leader / Timekeeper
+**Status:** Reviewed and agreed internally
 
 ---
 
-## 1. Mục đích và phạm vi
+## 1. Purpose and scope
 
-Báo cáo này tổng hợp những kinh nghiệm có thể tái sử dụng từ quá trình thực hiện Splitly và chuyển hướng sang InterviewQuestionBank. Tài liệu chỉ giữ các bài học đã được nhóm xác nhận, có sự kiện thực tế, nguyên nhân, tác động, hành động và người chịu trách nhiệm.
+This report consolidates the reusable lessons from executing Splitly and the pivot to InterviewQuestionBank. The document keeps only lessons the team confirmed, each with a real event, cause, impact, action, and responsible person.
 
-Nhóm không yêu cầu mỗi thành viên phải có một bài học riêng. Các ý trùng nhau được gom thành hai bài học chung: đánh giá tính khả thi ở giai đoạn khởi tạo và kiểm soát secret/dependency trong repository.
+The team does not require every member to have their own lesson. Duplicated ideas are merged into two shared lessons: assessing feasibility at the initiation stage, and controlling secrets/generated dependencies in the repository.
 
-## 2. Cơ sở hình thành tài liệu
+## 2. Basis for the document
 
-Tuấn Anh tổng hợp tài liệu từ ngày 20/08/2026 và hoàn thiện ngày 23/08/2026. Các nguồn chính gồm Project Charter, Project Proposal, Project Plan, Product Backlog, Kanban tái dựng, Git/PR/CI, ảnh brainstorm và phản hồi trực tiếp của thầy Biên, thầy Khoa.
+Tuấn Anh compiled the document starting 20/08/2026 and finalised it on 23/08/2026. The main sources are the Project Charter, Project Proposal, Project Plan, Product Backlog, the reconstructed Kanban, Git/PR/CI, brainstorm screenshots, and direct feedback from lecturers Biên and Khoa.
 
-Với mỗi bài học, nhóm đối chiếu:
+For each lesson, the team cross-checked:
 
-- sự kiện và bằng chứng;
-- nguyên nhân và tác động;
-- điều cần giữ hoặc thay đổi;
-- hành động, owner, thời hạn và cách đo;
-- xác nhận của người liên quan.
+- the event and evidence;
+- the cause and impact;
+- what to keep or change;
+- the action, owner, deadline, and measurement;
+- confirmation from those involved.
 
-Tuấn Anh và các thành viên liên quan review từng phần. Nhóm thường chốt qua Messenger ngay khi phần đó hoàn thành, không lập biên bản retrospective riêng. Tất cả thành viên đã đồng ý với nội dung version 1.0; Tuấn Anh là người quyết định cuối cùng.
+Tuấn Anh and the relevant members reviewed each section. The team usually confirmed over Messenger as soon as a section was complete, without a separate retrospective minutes document. All members agreed with version 1.0; Tuấn Anh made the final decision.
 
 ## 3. Lessons Learned Register
 
-### LL-01 — Đánh giá tính khả thi ngay trong Initiation
+### LL-01 — Assess feasibility during Initiation
 
-**Sự kiện.** Nhóm khởi đầu với Splitly nhưng chưa phân tích đủ sâu tính khả thi, giá trị sử dụng và khả năng phát triển thành sản phẩm. Sau phản hồi giữa kỳ, nhóm quay lại tìm đề tài nhưng đến tuần 7 vẫn chưa chốt được ý tưởng. Quan điểm giữa các thành viên khác nhau, trong khi một số thành viên chưa chủ động đề xuất cách tháo gỡ.
+**Event.** The team started with Splitly but did not analyse feasibility, use value, and product potential deeply enough. After midterm feedback, the team went back to looking for a topic but still had not settled on an idea by week 7. Views differed between members, and some members did not proactively propose a way out.
 
-Tuấn Anh tổ chức brainstorm và dùng các câu hỏi đánh giá khách quan: sản phẩm thay thế công cụ hiện tại như thế nào, người dùng có sẵn sàng chuyển sang dùng hay không, giải pháp nào đã tồn tại, rủi ro nào có thể xảy ra, và ý tưởng có phù hợp với thời gian còn lại hay không. Nhóm đồng thời xin phản hồi trực tiếp từ thầy Biên và thầy Khoa, rồi chốt InterviewQuestionBank theo hướng tập trung vào ứng viên.
+Tuấn Anh organised a brainstorm and used objective evaluation questions: how the product replaces existing tools, whether users are willing to switch, which solutions already exist, what risks could arise, and whether the idea fits the remaining time. The team also requested direct feedback from lecturers Biên and Khoa, then settled on InterviewQuestionBank, focused on candidates.
 
-**Tác động.** Nhóm phải quay lại Initiation và Planning, làm lại Charter, Proposal và Project Plan. Thời gian thực hiện thực tế cho dự án mới chỉ còn từ 10/08 đến 23/08. Tuy nhiên, việc đánh giá lại giúp nhóm hiểu sâu hơn về tính khả thi và xác định được PoC có giá trị rõ: hỗ trợ người học cải thiện cách trả lời phỏng vấn và nhận biết phần cần tập trung để được đánh giá cao.
+**Impact.** The team had to go back to Initiation and Planning, redoing the Charter, Proposal, and Project Plan. The actual execution window for the new project was only from 10/08 to 23/08. However, the re-evaluation helped the team understand feasibility more deeply and identify a clearly valuable PoC: supporting learners in improving how they answer interviews and recognising what to focus on to be rated highly.
 
-**Bài học.** Tính khả thi phải được đánh giá trước khi chốt đề tài và baseline kế hoạch. Một ý tưởng không nên được chấp nhận chỉ vì có thể xây dựng về mặt kỹ thuật; nhóm còn phải kiểm tra vấn đề thực, giải pháp thay thế, động lực sử dụng, rủi ro, giá trị và giới hạn thời gian.
+**Lesson.** Feasibility must be assessed before settling on a topic and the plan baseline. An idea should not be accepted just because it is technically buildable; the team must also check the real problem, alternatives, motivation to use, risk, value, and time constraints.
 
-**Hành động cho dự án sau.** Bổ sung Feasibility Gate ở cuối Initiation. Trước khi duyệt Charter hoặc Proposal, nhóm phải có bảng tiêu chí so sánh ý tưởng, review nội bộ và xác nhận sớm của stakeholder phù hợp.
+**Action for the next project.** Add a Feasibility Gate at the end of Initiation. Before approving a Charter or Proposal, the team must have an idea comparison scorecard, an internal review, and early confirmation from the appropriate stakeholder.
 
 - **Owner:** Tuấn Anh.
-- **Thời hạn:** Trước khi kết thúc Initiation của dự án sau.
-- **Cách đo:** Có decision matrix được review và không phải quay lại Initiation vì giá trị cốt lõi chưa được kiểm chứng.
+- **Deadline:** Before the end of Initiation for the next project.
+- **Measurement:** A reviewed decision matrix exists, and the team does not have to return to Initiation because the core value was not validated.
 
-**Trạng thái:** Accepted; đã áp dụng khi chọn InterviewQuestionBank.
+**Status:** Accepted; applied when choosing InterviewQuestionBank.
 
-### LL-02 — Không đưa secret và dependency sinh tự động vào repository
+### LL-02 — Do not commit secrets and generated dependencies to the repository
 
-**Sự kiện.** Trong pull request của Trí, file `.env` chứa credential và thư mục `node_modules` được đưa lên repository. Tuấn Anh phát hiện trong quá trình review cùng quy trình CI/secret scan. Nguyên nhân là thiếu bước tự kiểm tra trước khi push và ignore rule chưa đầy đủ.
+**Event.** In Trí's pull request, the `.env` file containing credentials and the `node_modules` directory were pushed to the repository. Tuấn Anh found this during review along with the CI/secret-scan process. The cause was a missing self-check before push and an incomplete ignore rule.
 
-**Tác động.** Credential bị lộ và repository tăng kích thước không cần thiết. Nhóm phải loại file, revoke credential cũ và tạo key mới.
+**Impact.** Credentials were exposed and the repository grew unnecessarily. The team had to remove the files, revoke the old credentials, and create new keys.
 
-**Bài học.** Secret phải nằm ngoài version control; dependency sinh tự động phải được tái tạo từ manifest và không được commit. Review thủ công cần kết hợp với ignore rule và secret scan tự động.
+**Lesson.** Secrets must stay outside version control; generated dependencies must be rebuilt from the manifest and never committed. Manual review needs to be combined with ignore rules and automatic secret scanning.
 
-**Hành động đã hoàn tất.** Nhóm loại `.env` và `node_modules`, revoke key cũ, tạo key mới, bổ sung `.gitignore`, sửa cấu hình Gitleaks và chạy lại CI. Lần chạy sau cho thấy cả `quality` và `secret-scan` thành công, không phát hiện leak. Sự cố không tái diễn.
+**Action completed.** The team removed `.env` and `node_modules`, revoked the old key, created a new key, updated `.gitignore`, fixed the Gitleaks configuration, and re-ran CI. The next run showed both `quality` and `secret-scan` passing with no leak detected. The incident did not recur.
 
 - **Owner:** Trí.
-- **Thời hạn:** Hoàn tất trong giai đoạn 16–20/08/2026.
-- **Cách đo:** Không tái diễn; secret scan sau sửa thành công.
+- **Deadline:** Completed during 16–20/08/2026.
+- **Measurement:** No recurrence; secret scan passes after the fix.
 
-**Trạng thái:** Closed.
+**Status:** Closed.
 
-## 4. Đánh giá và kiểm soát chất lượng
+## 4. Quality assessment and control
 
-Register được xem là đạt khi mỗi bài học có sự kiện cụ thể, nguồn kiểm tra được, nguyên nhân, tác động, hành động, owner, thời hạn và cách đo. Cách viết tập trung vào hệ thống và hành vi có thể thay đổi, không dùng tài liệu để quy lỗi cá nhân.
+The register is considered complete when each lesson has a specific event, a verifiable source, a cause, an impact, an action, an owner, a deadline, and a measurement. The writing focuses on systems and changeable behaviour, and does not use the document to blame individuals.
 
-Kết quả review nội bộ:
+Internal review results:
 
-| Tiêu chí | Kết quả |
+| Criterion | Result |
 | --- | --- |
-| Sự kiện và nguồn | Đạt |
-| Nguyên nhân và tác động | Đạt |
-| Hành động, owner, thời hạn | Đạt |
-| Bằng chứng đã áp dụng | Đạt |
-| Đồng thuận của nhóm | Đạt |
-| Biên bản retrospective riêng | Không có; nhóm chốt qua Messenger |
-| Số liệu người dùng cho hiệu quả PoC | Chưa có; không đưa ra tuyên bố định lượng |
+| Event and source | Pass |
+| Cause and impact | Pass |
+| Action, owner, deadline | Pass |
+| Evidence of application | Pass |
+| Team agreement | Pass |
+| Separate retrospective minutes | None; the team confirmed over Messenger |
+| User data for PoC effectiveness | Not yet available; no quantitative claim made |
 
-Nhóm sẽ theo dõi hiệu quả cải tiến trong dự án sau bằng **cycle time trên Kanban**, không dùng sprint hoặc velocity làm chỉ số bắt buộc.
+The team will track improvement effectiveness in the next project using **cycle time on Kanban**, not using sprint or velocity as a mandatory metric.
 
-## 5. Phụ lục minh chứng
+## 5. Evidence appendix
 
-### 5.1 Brainstorm và đánh giá ý tưởng
+### 5.1 Brainstorm and idea assessment
 
-![Brainstorm và đánh giá ý tưởng](img/Q21-01-brainstorm-idea-evaluation.png)
+![Brainstorm and idea assessment](img/Q21-01-brainstorm-idea-evaluation.png)
 
-*Hình 1 — Minh chứng review/brainstorm cuối để chọn ý tưởng dựa trên góp ý của giảng viên và kinh nghiệm nhóm.*
+*Figure 1 — Evidence of the final review/brainstorm to choose an idea based on lecturer feedback and team experience.*
 
-### 5.2 Sự cố secret và kết quả kiểm soát
+### 5.2 Secret incident and control result
 
-![PR có env và node_modules](../Q16_team-management/img/Q16-02-pr3-env-node-modules-redacted.png)
+![PR with env and node_modules](../Q16_team-management/img/Q16-02-pr3-env-node-modules-redacted.png)
 
-*Hình 2 — Pull request chứa `.env` và `node_modules`; dữ liệu nhạy cảm trong bản lưu đã được che.*
+*Figure 2 — Pull request containing `.env` and `node_modules`; sensitive data in the saved file was redacted.*
 
-![CI thành công và không phát hiện leak](../Q17_monitoring-and-control/img/Q17-06-ci-success-no-leaks.png)
+![CI passing with no leaks detected](../Q17_monitoring-and-control/img/Q17-06-ci-success-no-leaks.png)
 
-*Hình 3 — CI sau sửa: quality và secret-scan thành công, không phát hiện leak.*
+*Figure 3 — CI after the fix: quality and secret-scan pass, no leak detected.*
 
-## 6. Lịch sử phiên bản
+## 6. Version history
 
-| Phiên bản | Ngày | Nội dung | Người cập nhật/review |
+| Version | Date | Content | Updated/reviewed by |
 | --- | --- | --- | --- |
-| 0.1 | 20/08/2026 | Tổng hợp bản nháp từ tài liệu, Git, PR và CI. | Tuấn Anh |
-| 1.0 | 23/08/2026 | Chốt hai bài học; bổ sung action, owner, tiêu chí đo và minh chứng. | Tuấn Anh và người liên quan; Tuấn Anh chốt cuối |
+| 0.1 | 20/08/2026 | Compiled a draft from documents, Git, PR, and CI. | Tuấn Anh |
+| 1.0 | 23/08/2026 | Settled on two lessons; added action, owner, measurement criteria, and evidence. | Tuấn Anh and those involved; Tuấn Anh made the final call |
 
-## 7. Nguồn kiểm chứng
+## 7. Verification sources
 
-- Project Proposal và Project Plan version đã chốt.
-- Product Backlog và Kanban tái dựng.
-- GitHub pull request, `.github/workflows/ci.yml` và ảnh CI.
-- Commit `7b51d07` cùng regression test cho practice-progress 500 và duplicate-content 409.
-- Phản hồi trực tiếp của thầy Biên, thầy Khoa và xác nhận của các thành viên.
+- Finalised version of the Project Proposal and Project Plan.
+- Product Backlog and reconstructed Kanban.
+- GitHub pull request, `.github/workflows/ci.yml`, and CI screenshots.
+- Commit `7b51d07` and the regression tests for practice-progress 500 and duplicate-content 409.
+- Direct feedback from lecturers Biên and Khoa and confirmation from the members.

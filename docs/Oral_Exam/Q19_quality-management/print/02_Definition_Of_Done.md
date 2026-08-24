@@ -1,22 +1,23 @@
-# ĐỊNH NGHĨA HOÀN THÀNH (DEFINITION OF DONE - DoD)
-**Dự án:** Hệ thống Luyện thi Phỏng vấn
+# Definition of Done (DoD)
 
-Để một User Story (Task) trên Kaban được di chuyển sang cột **DONE**, phải thỏa mãn toàn bộ các điều kiện dưới đây:
+**Project:** Interview Practice Platform
 
-## 1. Khía cạnh Code & Kỹ thuật
-- [ ] Code đã được đẩy lên nhánh riêng trên Github.
-- [ ] Code không vi phạm các luật của linter (chạy qua lệnh `npm run lint` không báo lỗi đỏ).
-- [ ] Không chứa các console.log, comment rác, hoặc hard-code dữ liệu.
+For a User Story (Task) on the Kanban board to move into the **DONE** column, every condition below must be met:
 
-## 2. Khía cạnh Kiểm thử (Testing)
-- [ ] Đã viết Unit Test cho logic/tính năng mới.
-- [ ] Toàn bộ các Unit Test cũ và mới đều Pass 100% khi chạy ở local.
-- [ ] Đã được QA/Tester test thủ công và verify chức năng chạy đúng với Acceptance Criteria (Tiêu chí nghiệm thu) ban đầu.
+## 1. Code and Technical
+- [ ] Code has been pushed to its own branch on GitHub.
+- [ ] Code does not violate any lint rules (`npm run lint` runs with no errors).
+- [ ] No leftover `console.log`, junk comments, or hard-coded data.
 
-## 3. Khía cạnh Review & Quy trình
-- [ ] Đã tạo Pull Request (PR) hợp lệ lên nhánh `develop`.
-- [ ] Đã được ít nhất một thành viên khác trong team thực hiện Code Review và **Approve** PR.
-- [ ] Các xung đột mã nguồn  đã được giải quyết triệt để.
+## 2. Testing
+- [ ] Unit tests have been written for the new logic or feature.
+- [ ] All existing and new unit tests pass 100% when run locally.
+- [ ] The feature has been manually tested by a QA/tester and confirmed to work against the original Acceptance Criteria.
 
-## 4. Khía cạnh Tài liệu (Documentation)
-- [ ] Nếu thay đổi CSDL, các script migration đã được đính kèm.
+## 3. Review and Process
+- [ ] A valid Pull Request (PR) has been opened to the `develop` branch.
+- [ ] At least one other team member has performed a code review and **Approve**d the PR.
+- [ ] Any source-control conflicts have been fully resolved.
+
+## 4. Documentation
+- [ ] If the database changed, the migration scripts are attached.

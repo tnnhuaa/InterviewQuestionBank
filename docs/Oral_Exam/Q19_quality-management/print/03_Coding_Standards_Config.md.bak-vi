@@ -1,8 +1,9 @@
-# Coding Standards Configuration
+# CẤU HÌNH ĐẢM BẢO CODING STANDARDS
+**Dự án:** Hệ thống Luyện thi Phỏng vấn
 
-**Project:** Interview Practice Platform
 
-## 1. Prettier configuration (`.prettierrc`)
+
+## 1. Cấu hình Prettier (`.prettierrc`)
 
 ```json
 {
@@ -16,8 +17,8 @@
 }
 ```
 
-## 2. ESLint configuration (`.eslintrc.json`)
-*Purpose: catch unused variable declarations, syntax errors, and bad coding habits while typing.*
+## 2. Cấu hình ESLint (`.eslintrc.json`)
+*Mục đích: Bắt các lỗi khai báo biến không dùng, lỗi cú pháp hoặc thói quen code xấu ngay trong lúc gõ code.*
 
 ```json
 {

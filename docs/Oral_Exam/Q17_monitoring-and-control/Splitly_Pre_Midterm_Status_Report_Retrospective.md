@@ -1,83 +1,83 @@
-# Báo cáo trạng thái hồi cứu — Splitly trước giữa kỳ
+# Splitly Pre-Midterm Status Report — Retrospective
 
-## 1. Thông tin báo cáo
+## 1. Report information
 
-| Thuộc tính               | Nội dung                                                  |
-| ------------------------ | --------------------------------------------------------- |
-| Dự án                    | Splitly — Smart Expense Sharing Platform                  |
-| Kỳ báo cáo được tái dựng | 13/07–19/07/2026, tuần trước buổi giữa kỳ ngày 24/07/2026 |
-| Ngày lập hồi cứu         | 23/08/2026                                                |
-| Người tổng hợp           | Tuấn Anh                                                  |
-| Trạng thái tổng thể      | **At Risk (Vàng)**                                        |
+| Attribute | Content |
+| --------- | ------- |
+| Project | Splitly — Smart Expense Sharing Platform |
+| Reporting period (reconstructed) | 13/07–19/07/2026, the week before the midterm session on 24/07/2026 |
+| Retrospective created | 23/08/2026 |
+| Compiled by | Tuấn Anh |
+| Overall status | **At Risk (Amber)** |
 
-> **Disclosure:** Nhóm không lập status report tại thời điểm 13/07–19/07. Báo cáo này được tái dựng ngày 23/08 từ bộ tài liệu Splitly mà nhóm xác nhận đã dùng trước giữa kỳ và từ diễn biến sau buổi trình bày. Báo cáo không thay thế snapshot board, timesheet hoặc biên bản được lập tại thời điểm đó.
+> **Disclosure:** The team did not produce a status report during 13/07–19/07. This report was reconstructed on 23/08 from the Splitly document set the team confirmed was used before the midterm, and from what happened after the presentation. It does not replace the board snapshot, timesheet, or minutes that would have been produced at the time.
 
-## 2. Tóm tắt điều hành
+## 2. Executive summary
 
-Đến tuần trước giữa kỳ, Splitly đã có phần lớn baseline ở mức tài liệu: Project Charter đề ngày 15/07, Proposal đề ngày 16/07, cùng Vision & Scope, backlog, acceptance criteria, workflow, prototype, architecture, Resource Plan, Cost–Time–Resources và Feasibility Study [S1–S9]. Những artifact này làm rõ bài toán chia hóa đơn, phạm vi MVP và hướng kỹ thuật.
+By the week before the midterm, Splitly had most of its baseline in document form: a Project Charter dated 15/07, a Proposal dated 16/07, plus Vision & Scope, backlog, acceptance criteria, workflow, prototype, architecture, Resource Plan, Cost–Time–Resources, and a Feasibility Study [S1–S9]. These artifacts clarified the bill-splitting problem, the MVP scope, and the technical direction.
 
-Tuy nhiên, các nguồn đều mô tả Splitly là dự án mới hoặc proposed baseline; chúng không chứng minh tính năng đã hoàn thành [S1, S3, S4]. Nhóm cũng chưa có board lịch sử, timesheet hoặc test result để tính phần trăm hoàn thành thực tế. Vì vậy, trạng thái trước giữa kỳ được đánh giá là **At Risk**: planning đã hình thành nhưng tính hấp dẫn của ý tưởng, mức sẵn sàng sử dụng và mô hình duy trì sản phẩm chưa được kiểm chứng đủ mạnh.
+However, all sources describe Splitly as a new or proposed baseline; they do not demonstrate completed functionality [S1, S3, S4]. The team also had no board history, timesheet, or test results from which to compute a real percentage complete. For that reason the pre-midterm status is assessed as **At Risk**: the planning had formed, but the appeal of the idea, the readiness for use, and the sustainability model were not strongly validated.
 
-## 3. Phạm vi và đầu ra đã hình thành
+## 3. Scope and outputs produced
 
-| Nhóm đầu ra                   | Trạng thái có thể chứng minh                                                                                      | Nguồn             |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------- |
-| Project initiation            | Charter 1.0 ở trạng thái proposed baseline, pending approval; sponsor ghi Naver nhưng PM/PO và các chữ ký còn TBD | [S1]              |
-| Business proposal             | Proposal 2.0 draft mô tả vấn đề, công cụ hiện có, đối thủ, market gap và giá trị đề xuất                          | [S2]              |
-| Product baseline              | Vision, phạm vi MVP, backlog 21 User Story và acceptance criteria đã được mô tả                                   | [S3], [S4]        |
-| Workflow và prototype         | Có current/future workflow và prototype cho luồng nhập hóa đơn thủ công lẫn Gemini-assisted                       | [S5], [S6]        |
-| Technical planning            | Kiến trúc modular monolith, React/Node/MongoDB và các adapter Gemini/VietQR/email đã được đề xuất                 | [S7]              |
-| Resource, cost và feasibility | Có kế hoạch sáu thành viên, capacity, chi phí dự kiến và kết luận Conditional Go                                  | [S8], [S9], [S10] |
+| Output group | Provable status | Source |
+| ------------ | --------------- | ------ |
+| Project initiation | Charter 1.0 at proposed-baseline status, pending approval; sponsor recorded as Naver, but PM/PO and the remaining signatures are TBD | [S1] |
+| Business proposal | Proposal 2.0 draft describing the problem, existing tools, competitors, market gap, and proposed value | [S2] |
+| Product baseline | Vision, MVP scope, 21 User Story backlog, and acceptance criteria described | [S3], [S4] |
+| Workflow and prototype | Current/future workflow and prototype for both manual and Gemini-assisted bill entry | [S5], [S6] |
+| Technical planning | Modular monolith architecture on React/Node/MongoDB, with Gemini/VietQR/email adapters proposed | [S7] |
+| Resource, cost, feasibility | Six-person plan with capacity, projected cost, and a Conditional Go conclusion | [S8], [S9], [S10] |
 
-Các trạng thái trên phản ánh mức độ hoàn thiện của tài liệu. Không có đủ bằng chứng để chuyển chúng thành tỷ lệ hoàn thành phần mềm hoặc khẳng định MVP đã chạy end-to-end.
+These statuses reflect document completeness. There is insufficient evidence to convert them into a software completion percentage or to claim the MVP ran end-to-end.
 
-## 4. Đánh giá kế hoạch so với bối cảnh thực tế
+## 4. Plan assessment against the real context
 
-| Khía cạnh          | Kế hoạch trong tài liệu Splitly                                                                                                    | Đánh giá hồi cứu                                                                                                                        |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Thời gian          | Mười tuần, 120 person-days/960 giờ [S1, S8, S9]                                                                                    | Không khớp cửa sổ học phần tám tuần 29/06–23/08 mà nhóm đã xác nhận. Baseline cần được reconcile trước khi dùng để cam kết delivery.    |
-| Phạm vi            | Authentication, group, ba cách chia bill, Gemini OCR, VietQR, payment confirmation, reminder, notification và history [S1, S3, S4] | Phạm vi lớn so với thời gian và chưa có actual tracking để chứng minh khả năng hoàn thành.                                              |
-| Chi phí            | USD 360 cho sáu tài khoản Codex Plus, trần USD 432 [S1, S9]                                                                        | Đây là forecast, không phải actual cash. Tài liệu chưa có chứng từ hoặc actual cost.                                                    |
-| Khả thi kỹ thuật   | Feasibility Study kết luận Conditional Go nếu bảo vệ MVP, làm PoC sớm và giữ manual fallback [S10]                                 | Có hướng kiểm soát kỹ thuật, nhưng các go/no-go gate chưa có kết quả thực thi trong bộ tài liệu.                                        |
-| Khả thi thị trường | Proposal lập luận cho luồng receipt-to-settlement và VietQR [S2]                                                                   | Chưa có bằng chứng người dùng thật sẵn sàng đổi từ note/chat/calculator hoặc tải sản phẩm; revenue/sustainability chưa được chứng minh. |
+| Aspect | Planned in the Splitly documents | Retrospective assessment |
+| ------ | -------------------------------- | ------------------------ |
+| Time | Ten weeks, 120 person-days / 960 hours [S1, S8, S9] | Does not match the eight-week course window (29/06–23/08) the team confirmed. The baseline needs reconciling before it is used to commit to delivery. |
+| Scope | Authentication, groups, three bill-splitting modes, Gemini OCR, VietQR, payment confirmation, reminders, notifications, and history [S1, S3, S4] | Scope is large relative to the time available, and there is no actual tracking to demonstrate feasibility of completion. |
+| Cost | USD 360 for six Codex Plus accounts, cap USD 432 [S1, S9] | This is a forecast, not actual cash. The documents contain no invoices or actual cost. |
+| Technical feasibility | Feasibility Study concluded Conditional Go if MVP is protected, an early PoC is done, and a manual fallback is kept [S10] | There is a technical control direction, but none of the go/no-go gates have execution results in the document set. |
+| Market feasibility | Proposal argues for the receipt-to-settlement flow and VietQR [S2] | No evidence that real users are ready to switch from notes/chat/calculator or to install the product; revenue/sustainability is not demonstrated. |
 
-## 5. Issue và risk quan trọng
+## 5. Key issues and risks
 
-1. **Business-value risk:** lợi ích của một ứng dụng riêng chưa vượt rõ chi phí người dùng phải mở web/app và nhập bill, trong khi họ có thể ghi nhanh ai nợ ai bao nhiêu.
-2. **Adoption risk:** chưa có người dùng thật tải hoặc dùng sản phẩm; proposal mới dừng ở lập luận và benchmark đối thủ.
-3. **Sustainability risk:** nhóm dự kiến cung cấp miễn phí nhưng chưa xác định nguồn thu hoặc lý do duy trì sản phẩm sau môn học.
-4. **Schedule risk:** baseline mười tuần không khớp cửa sổ học phần tám tuần.
-5. **Scope risk:** nhiều capability phụ thuộc nhau, gồm OCR, tính toán tài chính, payment status và notification, trong khi chưa có actual progress đáng tin cậy.
-6. **Technical and data risk:** chính Feasibility Study đánh dấu rủi ro cao ở correctness, OCR/provider, secret, privacy và external-service availability [S10].
+1. **Business-value risk:** the benefit of a standalone app does not clearly exceed the cost to the user of opening a web/app and entering bills, when they could instead quickly record who owes whom and how much.
+2. **Adoption risk:** no real users have downloaded or used the product; the proposal stops at argumentation and competitor benchmarks.
+3. **Sustainability risk:** the team planned to offer the product free but did not identify a revenue source or a reason to keep the product running after the course.
+4. **Schedule risk:** the ten-week baseline does not match the eight-week course window.
+5. **Scope risk:** many interdependent capabilities, OCR, financial calculation, payment status, and notifications, while there is no reliable actual progress.
+6. **Technical and data risk:** the Feasibility Study itself flags high risk in correctness, OCR/provider, secrets, privacy, and external-service availability [S10].
 
-Ba rủi ro đầu chỉ được nhận diện rõ sau phản biện trực tiếp của giảng viên tại buổi giữa kỳ; vì vậy, đây là đánh giá hồi cứu chứ không phải issue log được nhóm ghi trước ngày 24/07.
+The first three risks were only clearly identified after direct critique from the lecturer during the midterm session; accordingly this is a retrospective assessment, not an issue log the team produced before 24/07.
 
-## 6. Quyết định và hành động sau kỳ báo cáo
+## 6. Decisions and actions after the reporting period
 
-Sau buổi trình bày giữa kỳ, nhóm nhận ra Splitly chưa đủ mạnh về business value và khả năng được sử dụng. Nhóm không tiếp tục coi baseline Splitly là kế hoạch thực thi phù hợp mà quay lại tìm ý tưởng mới. Giai đoạn brainstorm kéo dài đến 09/08; sau khi chốt InterviewQuestionBank, nhóm làm lại Project Initiation và Project Planning rồi tiếp tục execution trong thời gian còn lại.
+After the midterm presentation, the team recognised that Splitly was not strong enough on business value and usability. The team stopped treating the Splitly baseline as a suitable execution plan and returned to seeking a new idea. The brainstorming phase ran until 09/08; after settling on InterviewQuestionBank, the team re-did Project Initiation and Project Planning and then continued execution in the remaining time.
 
-| Hành động kiểm soát                   | Kết quả                                                                               |
-| ------------------------------------- | ------------------------------------------------------------------------------------- |
-| Dừng cam kết mở rộng Splitly          | Tránh tiếp tục đầu tư vào một business case chưa được xác nhận                        |
-| Quay lại ideation và đánh giá ý tưởng | Dùng phản biện về problem, alternatives, adoption, risk và sustainability để sàng lọc |
-| Chọn InterviewQuestionBank            | Chuyển sang pain point chuẩn bị phỏng vấn theo JD                                     |
-| Làm lại Initiation và Planning        | Tạo Charter, Proposal, backlog, architecture, resource/cost plan và scope mới         |
+| Control action | Outcome |
+| -------------- | ------- |
+| Stop committing to scaling Splitly | Avoided further investment in an unconfirmed business case |
+| Return to ideation and idea assessment | Used the critique on problem, alternatives, adoption, risk, and sustainability as a screening filter |
+| Chose InterviewQuestionBank | Moved to the pain point of JD-based interview preparation |
+| Redid Initiation and Planning | Created a new Charter, Proposal, backlog, architecture, resource/cost plan, and scope |
 
-## 7. Giới hạn dữ liệu
+## 7. Data limitations
 
-- Không có status report được lập trong tuần 13/07–19/07.
-- Không có snapshot board Splitly theo ngày hoặc timesheet.
-- Không có actual cost, actual effort hoặc phần trăm hoàn thành phần mềm đáng tin cậy.
-- Không dùng số lượng tài liệu để thay cho phần trăm hoàn thành sản phẩm.
-- Các tài liệu ngoài Charter và Proposal không ghi ngày rõ trong nội dung; việc xếp chúng vào bộ trước giữa kỳ dựa trên xác nhận của nhóm.
+- No status report was produced during the week 13/07–19/07.
+- No dated Splitly board snapshot or timesheet exists.
+- No reliable actual cost, actual effort, or software completion percentage.
+- The number of documents is not used as a substitute for product completion percentage.
+- Documents other than the Charter and Proposal do not state dates clearly in their content; placing them in the pre-midterm set is based on the team's confirmation.
 
-## 8. Nguồn nội bộ
+## 8. Internal sources
 
 - **[S1]** `F:/Obsidian/Uni/QLDUPM/Spiltly/docs/Project_Governance & Stakeholder/Project_Charter.md` — Document Control, Objectives, Scope, Milestones, Risks.
 - **[S2]** `F:/Obsidian/Uni/QLDUPM/Spiltly/docs/Project_Proposal/Project_Proposal_Draft.md` — Problem Statement, Competitor Context, Business Value.
 - **[S3]** `F:/Obsidian/Uni/QLDUPM/Spiltly/docs/Project_Vision_and_Scope/Project_Vision_and_Scope.md` — Product Positioning, Goals, MVP Scope, Constraints.
-- **[S4]** `F:/Obsidian/Uni/QLDUPM/Spiltly/docs/Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md` — release boundary, 21 User Story và acceptance criteria.
-- **[S5]** `F:/Obsidian/Uni/QLDUPM/Spiltly/docs/Project_Vision_and_Scope/Current_State_Workflow.md` và `Future_State_Workflow.md`.
+- **[S4]** `F:/Obsidian/Uni/QLDUPM/Spiltly/docs/Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md` — release boundary, 21 User Stories and acceptance criteria.
+- **[S5]** `F:/Obsidian/Uni/QLDUPM/Spiltly/docs/Project_Vision_and_Scope/Current_State_Workflow.md` and `Future_State_Workflow.md`.
 - **[S6]** `F:/Obsidian/Uni/QLDUPM/Spiltly/docs/Project_Prototype/Prototype_Workflow.md`.
 - **[S7]** `F:/Obsidian/Uni/QLDUPM/Spiltly/docs/Project_Architecture/software_architecture.md`.
 - **[S8]** `F:/Obsidian/Uni/QLDUPM/Spiltly/docs/Project_Resource_Plan/ResourcePlan.md`.

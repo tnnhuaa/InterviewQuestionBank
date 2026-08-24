@@ -1,207 +1,207 @@
-# Báo cáo — Quản lý và phát triển nhóm
+# Team Management Report
 
-## Thông tin kiểm soát tài liệu
+## Document control
 
-| Thuộc tính                 | Nội dung                                                                   |
-| -------------------------- | -------------------------------------------------------------------------- |
-| Tên tài liệu               | Team Management Report — PrepVI (Interview Practice Platform)              |
-| Phiên bản                  | 1.0                                                                        |
-| Ngày lập báo cáo           | 23/08/2026                                                                 |
-| Giai đoạn áp dụng          | 29/06/2026–23/08/2026                                                      |
-| Chủ sở hữu và người tổng hợp | Tuấn Anh — Project Manager / Team Leader / Timekeeper                    |
-| Người review               | Tuấn Anh                                                                   |
-| Ngày review                | 23/08/2026                                                                 |
+| Attribute | Content |
+| --------- | ------- |
+| Document name | Team Management Report — PrepVI (Interview Practice Platform) |
+| Version | 1.0 |
+| Report date | 23/08/2026 |
+| Period covered | 29/06/2026–23/08/2026 |
+| Owner and compiler | Tuấn Anh — Project Manager / Team Leader / Timekeeper |
+| Reviewer | Tuấn Anh |
+| Review date | 23/08/2026 |
 
-> **Lưu ý về dữ liệu:** Báo cáo chỉ dùng dữ kiện nhóm xác nhận và nội dung trong repository, không dựng biên bản họp, timesheet hay dữ liệu tracking không thực sự tồn tại. Dữ liệu tái dựng được ghi rõ, không trình bày như actual.
+> **Data note:** The report uses only facts the team confirmed and content in the repository; it does not fabricate meeting minutes, timesheets, or tracking data that do not actually exist. Reconstructed data is labelled clearly and is not presented as actual.
 
-## 1. Tóm tắt điều hành
+## 1. Executive summary
 
-Nhóm có sáu thành viên và vận hành theo cơ cấu dự án tập trung (projectized), với một đầu mối quyết định. Trong cửa sổ học phần tám tuần 29/06–23/08/2026, nhóm trải qua đủ các giai đoạn hình thành và phát triển: làm việc với Splitly lúc đầu, bế tắc về ý tưởng sau phản biện giữa kỳ, rồi thống nhất hướng mới InterviewQuestionBank ngày 09/08 và thực hiện trong hai tuần cuối, từ 10/08 đến 23/08.
+The team has six members and operates in a projectized structure with a single decision point. Within the eight-week course window 29/06–23/08/2026, the team went through the full forming-and-developing cycle: working on Splitly first, stuck on the idea after midterm critique, then agreeing on the new direction InterviewQuestionBank on 09/08 and executing during the final two weeks, from 10/08 to 23/08.
 
-Phân công dựa trên vai trò và kỹ năng từ các dự án trước; việc được giao theo tuần, deadline mặc định 22:00 thứ Bảy, thành viên xác nhận nhận việc qua Messenger và mọi thay đổi đi qua pull request có review. Vấn đề quản lý con người lớn nhất là mọi quyết định đều phụ thuộc vào một người, còn độ phức tạp giữa các phần việc không đồng đều khiến một số task trễ hạn. Cả hai đã được xử lý nhưng nguyên nhân gốc vẫn còn.
+Assignment is based on roles and skills from earlier projects; work is assigned by week, the default deadline is Saturday 22:00, members confirm acceptance of tasks over Messenger, and every change goes through a reviewed pull request. The biggest people-management issue was that every decision depended on one person, while uneven task complexity caused some tasks to slip. Both were handled, but the root causes remain.
 
-## 2. Bối cảnh và mục tiêu
+## 2. Context and objectives
 
-### 2.1 Bối cảnh học phần
+### 2.1 Course context
 
-| Thời điểm        | Sự kiện                                                                                                   |
-| ---------------- | --------------------------------------------------------------------------------------------------------- |
-| 29/06/2026       | Nhóm bắt đầu cửa sổ dự án tám tuần với đề tài Splitly.                                                     |
-| 24/07/2026       | Sau buổi giữa kỳ, giảng viên phản biện giá trị sản phẩm của Splitly; nhóm phải xem lại bài toán.           |
-| 24/07–09/08/2026 | Nhóm brainstorm nhưng chưa chốt được hướng mới.                                                            |
-| 09/08/2026       | Nhóm chốt sơ bộ InterviewQuestionBank và làm lại Initiation, Planning.                                    |
-| 10/08/2026       | Nhóm bắt đầu execution thực tế cho đề tài mới.                                                             |
-| 13/08/2026       | Nhóm xác nhận chính thức hướng “web interview” và chuẩn bị phân chia công việc.                           |
-| 14/08/2026       | Giảng viên thực hành góp ý ưu tiên pain point ứng viên; nhóm thu hẹp thành candidate-first theo JD.        |
-| 16/08/2026       | Tuấn Anh tái dựng Kanban từ Product Backlog.                                                               |
-| 23/08/2026       | Kết thúc cửa sổ học phần; review Project Plan 1.0 và bước vào tổng kết.                                   |
+| Date | Event |
+| ---- | ----- |
+| 29/06/2026 | The team started the eight-week project window with the Splitly topic. |
+| 24/07/2026 | After the midterm session, the lecturers critiqued Splitly's product value; the team had to revisit the problem. |
+| 24/07–09/08/2026 | The team brainstormed but had not settled on a new direction. |
+| 09/08/2026 | The team preliminary-settled on InterviewQuestionBank and redid Initiation and Planning. |
+| 10/08/2026 | The team began actual execution for the new topic. |
+| 13/08/2026 | The team formally confirmed the "web interview" direction and prepared to divide the work. |
+| 14/08/2026 | The lecturer for the practical session gave feedback prioritising the candidate pain point; the team narrowed to candidate-first by JD. |
+| 16/08/2026 | Tuấn Anh reconstructed the Kanban from the Product Backlog. |
+| 23/08/2026 | End of the course window; reviewed Project Plan 1.0 and moved into wrap-up. |
 
-### 2.2 Mục tiêu của công tác quản lý nhóm
+### 2.2 Objectives of team management
 
-- Phân định vai trò và trách nhiệm rõ ràng cho sáu thành viên.
-- Phân công công việc theo tuần, có deadline, đầu ra và người kiểm tra chéo.
-- Tích hợp công việc của nhiều workstream qua Git/GitHub và pull request.
-- Xử lý blocker, thay đổi phạm vi và các vấn đề về người.
-- Đảm bảo delivery nằm trong giới hạn thời gian còn lại sau khi pivot.
+- Define clear roles and responsibilities for the six members.
+- Assign work by week, with a deadline, output, and a cross-checker.
+- Integrate work from multiple workstreams through Git/GitHub and pull requests.
+- Handle blockers, scope changes, and people issues.
+- Ensure delivery stays within the time remaining after the pivot.
 
-## 3. Cơ sở lý thuyết
+## 3. Theoretical basis
 
-### 3.1 Năm giai đoạn phát triển nhóm (Tuckman)
+### 3.1 Five stages of team development (Tuckman)
 
-| Giai đoạn  | Đặc điểm                                                             | Việc người lãnh đạo nên làm                              |
-| ---------- | -------------------------------------------------------------------- | -------------------------------------------------------- |
-| Forming    | Thành viên dè dặt, mục tiêu và vai trò chưa rõ                        | Làm rõ mục tiêu, vai trò, công cụ và cách giao tiếp      |
-| Storming   | Xuất hiện khác biệt về ưu tiên, cách làm hoặc quyền quyết định        | Lắng nghe, làm rõ tiêu chí và giữ thảo luận vào vấn đề   |
-| Norming    | Nhóm thống nhất quy tắc và tin nhau hơn                               | Chuẩn hóa cách làm và giao trách nhiệm rõ                |
-| Performing | Nhóm chủ động phối hợp để đạt mục tiêu                                 | Trao quyền, gỡ blocker, tránh can thiệp quá mức          |
-| Adjourning | Công việc kết thúc, bàn giao và rút kinh nghiệm                       | Ghi nhận đóng góp, bàn giao tri thức, rút bài học        |
+| Stage | Characteristics | What the leader should do |
+| ----- | --------------- | ------------------------- |
+| Forming | Members are cautious; goals and roles are unclear | Clarify goals, roles, tools, and how the team communicates |
+| Storming | Differences emerge in priorities, approach, or decision authority | Listen, clarify criteria, and keep discussion on the problem |
+| Norming | The team agrees on rules and trusts each other more | Standardise the way of working and assign responsibility clearly |
+| Performing | The team proactively coordinates to reach its goals | Empower, remove blockers, and avoid over-interfering |
+| Adjourning | Work ends; handover and lessons learned | Acknowledge contributions, transfer knowledge, and extract lessons |
 
-### 3.2 Các loại hình tổ chức
+### 3.2 Organisational types
 
-| Loại             | Quyền của PM | Nguồn lực                             | Đặc điểm                                             |
-| ---------------- | ------------ | ------------------------------------- | ---------------------------------------------------- |
-| Chức năng        | Thấp         | Thuộc trưởng bộ phận                  | Nhân sự theo chuyên môn; dự án qua nhiều phòng       |
-| Theo dự án       | Cao          | Dành chủ yếu cho dự án                | Nhóm tập trung một dự án; PM điều phối trực tiếp     |
-| Ma trận yếu      | Thấp         | Functional Manager giữ quyền chính    | PM giống điều phối viên                              |
-| Ma trận cân bằng | Chia sẻ      | PM và Functional Manager cùng quản lý | Cần phối hợp thẩm quyền rõ                           |
-| Ma trận mạnh     | Khá cao      | PM kiểm soát phần lớn nguồn lực       | Gần projectized nhưng chuyên môn thuộc phòng ban     |
+| Type | PM authority | Resources | Characteristics |
+| ---- | ------------ | --------- | --------------- |
+| Functional | Low | Belong to the department head | Staff by specialism; projects run across departments |
+| Projectized | High | Dedicates mainly to the project | Team focused on one project; PM coordinates directly |
+| Weak matrix | Low | Functional manager holds primary authority | PM acts more like a coordinator |
+| Balanced matrix | Shared | PM and functional manager both manage | Needs clear authority coordination |
+| Strong matrix | Fairly high | PM controls most of the resources | Close to projectized, but specialism belongs to departments |
 
-### 3.3 Theory X, Y và Z
+### 3.3 Theory X, Y, and Z
 
-- **Theory X:** con người ngại làm và cần kiểm soát chặt; hữu ích ngắn hạn, dễ giảm sáng tạo.
-- **Theory Y:** con người tự định hướng khi hiểu mục tiêu và được trao trách nhiệm; quản lý tập trung gỡ cản trở và phản hồi.
-- **Theory Z:** đầu tư vào giá trị chung, niềm tin, quyết định có sự tham gia và trách nhiệm cá nhân.
+- **Theory X:** people avoid work and need tight control; useful short-term, but tends to reduce creativity.
+- **Theory Y:** people direct themselves when they understand the goal and are given responsibility; management focuses on removing obstacles and giving feedback.
+- **Theory Z:** invests in shared values, trust, participative decisions, and individual responsibility.
 
-### 3.4 Tháp nhu cầu Maslow
+### 3.4 Maslow's hierarchy of needs
 
-Từ thấp đến cao gồm nhu cầu sinh lý, an toàn, quan hệ/thuộc về, được tôn trọng và tự thể hiện. Trong nhóm sinh viên, người lãnh đạo không thể đáp ứng mọi nhu cầu, nhưng có thể tạo môi trường an toàn khi nêu lỗi, giữ lịch làm việc hợp lý, xây cảm giác thuộc về, ghi nhận đóng góp và giao cơ hội học kỹ năng mới.
+From low to high: physiological, safety, belonging/relationships, esteem, and self-actualisation. In a student team, the leader cannot meet every need, but can create a safe environment for raising errors, keep a reasonable work schedule, build a sense of belonging, acknowledge contributions, and hand out opportunities to learn new skills.
 
-## 4. Cách áp dụng vào dự án
+## 4. How this was applied to the project
 
-### 4.1 Cơ cấu vai trò
+### 4.1 Role structure
 
-Cách tổ chức của nhóm gần với **projectized**: sáu thành viên cùng làm một sản phẩm, không thuộc các phòng ban chức năng, có vai trò dự án riêng và Tuấn Anh giữ quyền điều hành trực tiếp.
+The team's organisation is close to **projectized**: six members working on one product, not belonging to functional departments, each with a project role, and Tuấn Anh holds direct operating authority.
 
-| Thành viên | Vai trò chính                              | Trách nhiệm / đầu ra                                                                      |
-| ---------- | ------------------------------------------ | ------------------------------------------------------------------------------------------ |
-| Tuấn Anh   | Project Manager / Team Leader / Timekeeper | Phân vai, giao việc, deadline và Kanban, chốt quyết định, review/merge, xác nhận Done      |
-| Gia Thành  | Project Planning & Estimation Analyst / Full-stack Developer | Charter, Resource Plan, Cost–Time–Resources, hai estimate và implementation Full-stack |
-| Hưng       | Product Owner / Business Analyst           | Vision & Scope, Product Backlog, acceptance criteria, workflow và acceptance               |
-| Luân       | Architecture / Technical Lead              | Technology stack, ADR, architecture và hỗ trợ kỹ thuật PoC/implementation                  |
-| Hùng       | UI/UX Designer / Front-end Developer       | Clickable prototype, workflow, bằng chứng usability và giao diện front-end                 |
-| Trí        | PoC / Integration & E2E Developer          | PoC core flow, seed data, tích hợp, test đầu-cuối và bằng chứng rủi ro kỹ thuật            |
+| Member | Primary role | Responsibility / output |
+| ------ | ------------ | ----------------------- |
+| Tuấn Anh | Project Manager / Team Leader / Timekeeper | Assign roles and work, manage deadlines and Kanban, make final decisions, review/merge, confirm Done |
+| Gia Thành | Project Planning & Estimation Analyst / Full-stack Developer | Charter, Resource Plan, Cost–Time–Resources, two estimates, and Full-stack implementation |
+| Hưng | Product Owner / Business Analyst | Vision & Scope, Product Backlog, acceptance criteria, workflow, and acceptance |
+| Luân | Architecture / Technical Lead | Technology stack, ADRs, architecture, and technical support for PoC/implementation |
+| Hùng | UI/UX Designer / Front-end Developer | Clickable prototype, workflow, usability evidence, and the front-end interface |
+| Trí | PoC / Integration & E2E Developer | Core-flow PoC, seed data, integration, end-to-end testing, and technical-risk evidence |
 
-### 4.2 Quá trình hình thành và phát triển nhóm
+### 4.2 Team forming and development process
 
-| Giai đoạn  | Sự kiện của nhóm                                                                   | Giới hạn diễn giải                                                            |
-| ---------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Forming    | 29/06: sáu thành viên bắt đầu dự án Splitly                                        | Chưa có biên bản lập nhóm hoặc bằng chứng vai trò ban đầu                      |
-| Storming   | 24/07–09/08: bế tắc brainstorming, chưa chốt hướng mới sau phản biện của giảng viên | Bất ổn về mục tiêu/quyết định; không đủ bằng chứng gọi là xung đột cá nhân    |
-| Norming    | 09/08–14/08: chốt InterviewQuestionBank, tham khảo giảng viên, làm lại Initiation/Planning, chuyển candidate-first | Nhóm giữ vai trò cũ và ánh xạ scope mới theo phần việc tương tự |
-| Performing | 10/08–23/08: phát triển song song, tích hợp qua PR/CI; board ghi 129/134 SP Bắt buộc Done | Board tái dựng 16/08; không dùng SP/commit xếp hạng thành viên |
-| Adjourning | 23/08: review Project Plan 1.0, bước vào tổng kết và Lessons Learned             | Chỉ nói “bắt đầu close”; chưa có bằng chứng nhóm đã giải thể                   |
+| Stage | Team events | Interpretation limits |
+| ----- | ----------- | --------------------- |
+| Forming | 29/06: six members started the Splitly project | No team-formation minutes or early role evidence |
+| Storming | 24/07–09/08: brainstorming deadlock, no new direction after the lecturer critique | Uncertainty about goals/decisions; not enough evidence to call it personal conflict |
+| Norming | 09/08–14/08: settled on InterviewQuestionBank, consulted lecturers, redid Initiation/Planning, moved candidate-first | The team kept existing roles and mapped the new scope onto similar work |
+| Performing | 10/08–23/08: developed in parallel, integrated via PR/CI; board recorded 129/134 mandatory SP as Done | Board reconstructed on 16/08; SP/commits not used to rank members |
+| Adjourning | 23/08: reviewed Project Plan 1.0, moved into wrap-up and Lessons Learned | Only "starting to close" is mentioned; no evidence the team dissolved |
 
-### 4.3 Quy tắc làm việc nhóm đã áp dụng
+### 4.3 Team working rules applied
 
-| Quy tắc                    | Nội dung                                                                                          |
-| -------------------------- | ------------------------------------------------------------------------------------------------- |
-| Phân công                  | Tuấn Anh giao việc theo tuần; bảng tuần ghi thành viên, cụm phụ trách, nội dung, file đầu ra, người cross-check |
-| Deadline mặc định          | 22:00 thứ Bảy hằng tuần; khi nhiều thành viên bận lịch khác, Tuấn Anh nới hạn cho cả nhóm         |
-| Kênh liên lạc              | Messenger; thành viên thả tim tin nhắn phân công để xác nhận đã nhận việc                         |
-| Nhịp họp                   | Không họp cố định; chỉ họp khi có quyết định cần chốt để tránh lệch hướng                         |
-| Blocker                    | Báo lên nhóm Messenger để cả nhóm trao đổi; nhóm không quy định thời gian phản hồi                |
-| Quy tắc repository         | Không push trực tiếp lên `main`; thay đổi qua pull request và cần ít nhất một approval            |
-| Definition of Done         | Owner tự kiểm tra acceptance criteria trước PR; Tuấn Anh review, feedback, merge, xác nhận Done   |
-| Chất lượng tự động         | GitHub Actions: lint, typecheck, OpenAPI drift, migration, seed, build và Gitleaks                |
+| Rule | Content |
+| ---- | ------- |
+| Assignment | Tuấn Anh assigns work by week; the weekly table records member, cluster, content, output file, and cross-checker |
+| Default deadline | Saturday 22:00 each week; when several members are busy with other schedules, Tuấn Anh extends the deadline for the whole team |
+| Communication channel | Messenger; members react with a heart on assignment messages to confirm they received the task |
+| Meeting cadence | No fixed meetings; only meet when a decision needs to be locked, to avoid drifting off course |
+| Blocker | Raise it in the Messenger group so the whole team can discuss; the team does not set a response time |
+| Repository rule | Do not push directly to `main`; changes go through a pull request and need at least one approval |
+| Definition of Done | Owner self-checks acceptance criteria before the PR; Tuấn Anh reviews, gives feedback, merges, and confirms Done |
+| Automated quality | GitHub Actions: lint, typecheck, OpenAPI drift, migration, seed, build, and Gitleaks |
 
-### 4.4 Quy trình phân công trong bảng tuần
+### 4.4 Assignment process in the weekly table
 
-1. Tuấn Anh lập bảng giao việc: thành viên, cụm phụ trách, nội dung cụ thể, file đầu ra, người cross-check.
-2. Gửi bảng qua Messenger; thành viên thả tim để xác nhận đã nhận thông tin.
-3. Thành viên thực hiện trên branch, tự kiểm tra acceptance criteria rồi tạo pull request.
-4. Người cross-check và Tuấn Anh review, chỉ ra phần chưa đạt; CI chạy quality gate.
-5. Sau ít nhất một approval, Tuấn Anh merge và xác nhận trạng thái Done.
+1. Tuấn Anh builds the assignment table: member, cluster, specific content, output file, and cross-checker.
+2. Sends the table over Messenger; members react with a heart to confirm they received it.
+3. Members work on a branch, self-check acceptance criteria, then open a pull request.
+4. The cross-checker and Tuấn Anh review and flag what is not yet met; CI runs the quality gate.
+5. After at least one approval, Tuấn Anh merges and confirms the Done status.
 
-## 5. Vấn đề quản lý con người thực tế
+## 5. Real people-management issues
 
-| Sự kiện thật                                                    | Nguyên nhân                                                                  | Cách nhóm xử lý                                                                                                                                    | Kết quả và giới hạn                                                                                                                          |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| 24/07–09/08: bế tắc brainstorm                                   | Thành viên đưa ý kiến nhưng không tự quyết; nhóm thiếu tiêu chí sàng lọc chung | Tuấn Anh tổ chức brainstorm, đánh giá ý tưởng theo sản phẩm hiện có, khả năng kết hợp giải pháp, mức sẵn sàng đổi công cụ của người dùng và rủi ro; tự chốt phương án và tham khảo giảng viên | Chốt InterviewQuestionBank 09/08 và thực hiện từ 10/08. Phá được bế tắc nhưng tập trung quyết định vào một người |
-| Một số phần việc trễ deadline                                    | Độ phức tạp task không đồng đều; thành viên bận lịch nộp bài môn khác          | Tuấn Anh nới deadline cho cả nhóm thay vì chỉ điều chỉnh cá nhân                                                                                   | Giữ mức hoàn thiện tương đối đồng đều; chưa có timesheet nên không đo được mức trễ chính xác                                               |
-| Trí commit `.env` (có key) và `node_modules` vào repository       | Thiếu bước tự kiểm tra file nhạy cảm và file sinh tự động trước khi push        | Tuấn Anh phát hiện qua review/CI; Trí loại file trong `df3d6c1`; Tuấn Anh bổ sung rule `.gitignore` trong `0556a6e`; nhóm revoke credential cũ, tạo key mới | Loại file nhạy cảm và dependency khỏi phiên bản theo dõi; giảm nguy cơ lặp lại nhưng credential đã từng lộ trong lịch sử Git                      |
+| Actual event | Cause | How the team handled it | Result and limits |
+| ------------ | ----- | ----------------------- | ------------------ |
+| 24/07–09/08: brainstorming deadlock | Members offered ideas but did not decide; the team lacked a shared screening criterion | Tuấn Anh organised a brainstorm, evaluating ideas against existing products, the ability to combine solutions, users' willingness to switch tools, and risk; he decided the approach himself and consulted the lecturers | Settled on InterviewQuestionBank on 09/08 and executed from 10/08. Broke the deadlock but concentrated decisions in one person |
+| Some tasks missed the deadline | Uneven task complexity; members busy with other coursework deadlines | Tuấn Anh extended the deadline for the whole team rather than adjusting individuals | Kept a relatively even level of completeness; no timesheet, so exact lateness could not be measured |
+| Trí committed `.env` (with keys) and `node_modules` to the repository | Missing self-check for sensitive and generated files before pushing | Tuấn Anh found it through review/CI; Trí removed the files in `df3d6c1`; Tuấn Anh added `.gitignore` rules in `0556a6e`; the team revoked the old credentials and created new keys | Removed sensitive files and dependencies from version control; reduced the chance of recurrence, but the credentials had already been exposed in Git history |
 
-### 5.1 Đánh giá từ góc độ lý thuyết
+### 5.1 Assessment from a theoretical viewpoint
 
-- **Tuckman:** nhóm đạt Norming–Performing trong hai tuần cuối nhờ giữ vai trò, stack quen thuộc và hành trình candidate-first rõ ràng. Giai đoạn Storming xuất phát từ bất ổn mục tiêu sau khi đề tài cũ bị phản biện, không phải xung đột cá nhân.
-- **Tổ chức:** cơ cấu gần projectized, với thẩm quyền phân vai, chốt ý tưởng và điều chỉnh deadline đúng với vai trò thực tế của Tuấn Anh.
-- **Theory Y và X:** giao vai trò theo kinh nghiệm và để thành viên dùng stack quen thuộc phù hợp Theory Y. Khi nhóm bị bế tắc, Tuấn Anh điều hành trực tiếp và kiểm soát quyết định chặt hơn, có nét gần Theory X, nhưng chưa đủ để nói anh cho rằng thành viên lười biếng.
-- **Maslow:** nhóm chưa có bằng chứng về hoạt động tạo động lực, cross-training hoặc coaching; môi trường an toàn kỹ thuật (CI, review, sai sót có hướng khắc phục) phản ánh một phần nhu cầu an toàn và thuộc về.
+- **Tuckman:** the team reached Norming–Performing in the final two weeks by keeping the same roles, a familiar stack, and a clear candidate-first journey. The Storming stage arose from goal uncertainty after the old topic was critiqued, not personal conflict.
+- **Organisation:** the structure is close to projectized, with authority to assign roles, lock the idea, and adjust deadlines matching Tuấn Anh's actual role.
+- **Theory Y and X:** assigning roles by experience and letting members use a familiar stack fits Theory Y. When the team was stuck, Tuấn Anh directed directly and controlled decisions more tightly, which shows some Theory X traits, but not enough to say he believes members are lazy.
+- **Maslow:** the team has no evidence of motivation-building, cross-training, or coaching activities; the technical safety environment (CI, review, a recovery path for mistakes) partly reflects safety and belonging needs.
 
-## 6. Bằng chứng
+## 6. Evidence
 
-### 6.1 Ảnh nhóm tại buổi học cuối
+### 6.1 Group photo at the final class
 
-![Ảnh nhóm tại buổi học cuối](img/Q16-04-group-final-class.png)
+![Group photo at the final class](img/Q16-04-group-final-class.png)
 
-Hình 1 là ảnh nhóm chụp tại buổi học cuối, dùng để minh chứng sự hiện diện và thời điểm nhóm làm việc.
+Figure 1 is a group photo taken at the final class, used as evidence of presence and of when the team was working.
 
-### 6.2 Bảng phân công tuần 6
+### 6.2 Week 6 assignment table
 
-![Bảng phân công tuần 6](img/Q16-03-weekly-assignment-w6.png)
+![Week 6 assignment table](img/Q16-03-weekly-assignment-w6.png)
 
-Hình 2 ghi nhận sáu cụm phụ trách tuần 6: Governance/Stakeholder, Business/Competitor, Product Vision/Scope/UX, Requirement/Acceptance, Architecture/Technical PoC và Feasibility/Project Planning. Bảng cho thấy cách phân công và lịch dự kiến, nhưng không chứng minh mọi đầu ra hoàn thành đúng 22:00 thứ Bảy.
+Figure 2 records six week-6 clusters: Governance/Stakeholder, Business/Competitor, Product Vision/Scope/UX, Requirement/Acceptance, Architecture/Technical PoC, and Feasibility/Project Planning. The table shows how work was assigned and the planned schedule, but does not prove every output was completed by Saturday 22:00.
 
-### 6.3 Xác nhận nhận việc qua Messenger
+### 6.3 Task acceptance confirmation over Messenger
 
-![Tin nhắn Messenger có phản ứng tim](img/Q16-06-messenger-heart-ack.png)
+![Messenger message with a heart reaction](img/Q16-06-messenger-heart-ack.png)
 
-Hình 3 cho thấy tin nhắn phân công có phản ứng tim. Phản ứng này chỉ xác nhận thành viên đã tiếp nhận thông tin, không chứng minh công việc đã bắt đầu hoặc hoàn thành.
+Figure 3 shows an assignment message with a heart reaction. This reaction confirms only that the member received the information; it does not prove the work had started or was finished.
 
-### 6.4 Sự cố credential và cách khắc phục
+### 6.4 Credential incident and remediation
 
-![PR #3 có .env và node_modules, đã che credential](img/Q16-02-pr3-env-node-modules-redacted.png)
+![PR #3 with .env and node_modules, credentials redacted](img/Q16-02-pr3-env-node-modules-redacted.png)
 
-![GitHub Actions secret-scan thất bại](img/Q16-05-secret-scan-failed.png)
+![GitHub Actions secret-scan failed](img/Q16-05-secret-scan-failed.png)
 
-Hình 4 chứng minh `.env` và `node_modules` xuất hiện trong diff PR #3, giá trị credential đã được che. Hình 5 cho thấy job `secret-scan` thất bại vì thiếu `GITHUB_TOKEN` khi quét pull request, nên ảnh này không chứng minh Gitleaks phát hiện credential trong `.env`. Cách khắc phục nằm trong commit `df3d6c1` (16/08) và `0556a6e` (18/08); credential cũ đã được revoke.
+Figure 4 shows `.env` and `node_modules` appearing in the PR #3 diff, with credential values redacted. Figure 5 shows the `secret-scan` job failing because `GITHUB_TOKEN` was missing when scanning a pull request, so this image does not prove Gitleaks detected the credentials in `.env`. The fix is in commits `df3d6c1` (16/08) and `0556a6e` (18/08); the old credentials were revoked.
 
-### 6.5 Bằng chứng về thay đổi phạm vi
+### 6.5 Evidence of scope change
 
-Các ảnh `../Q11_project-plan/img/Q11-02-team-confirms-interview-idea.png` đến `Q11-05-candidate-poc-and-mentor-split.png` cho thấy nhóm xác nhận hướng InterviewQuestionBank ngày 13/08, tóm tắt góp ý giảng viên 14/08, cập nhật phạm vi candidate-first và quyết định giữ luồng Mentor riêng.
+The images `../Q11_project-plan/img/Q11-02-team-confirms-interview-idea.png` through `Q11-05-candidate-poc-and-mentor-split.png` show the team confirming the InterviewQuestionBank direction on 13/08, a summary of lecturer feedback on 14/08, the candidate-first scope update, and the decision to keep a separate Mentor flow.
 
-## 7. Đánh giá
+## 7. Assessment
 
-### 7.1 Điểm mạnh
+### 7.1 Strengths
 
-- Vai trò, ownership và DoD được ghi thành tài liệu, có người cross-check.
-- Công việc được chia theo tuần, có file đầu ra rõ ràng và deadline mặc định.
-- Messenger giúp xác nhận nhận việc nhanh; blocker được đưa lên nhóm chat.
-- Git/GitHub và CI tạo lịch sử thay đổi cùng quality gate tự động.
-- Giữ vai trò, stack quen thuộc và một đầu mối quyết định giúp nhóm thoát bế tắc trong thời gian gấp.
-- Các sự cố kỹ thuật được xử lý kịp thời và có hướng phòng ngừa.
+- Roles, ownership, and DoD are documented, with a cross-checker in place.
+- Work is divided by week with a clear output file and a default deadline.
+- Messenger enables quick task-acceptance confirmation; blockers are raised in the group chat.
+- Git/GitHub and CI provide a change history and an automated quality gate.
+- Keeping familiar roles, a familiar stack, and a single decision point helped the team escape the deadlock under time pressure.
+- Technical incidents were handled promptly and with a preventive direction.
 
-### 7.2 Điểm yếu
+### 7.2 Weaknesses
 
-- Nhóm không có biên bản họp, retrospective record hoặc action-item log.
-- Không quy định thời gian phản hồi trên Messenger, nên việc escalation phụ thuộc vào thành viên chủ động theo dõi nhóm chat.
-- Chưa có actual effort theo giờ, contribution review theo tuần hay dữ liệu tracking đáng tin cậy.
-- Quyền quyết định tập trung vào Tuấn Anh; các thành viên chưa có phạm vi tự quyết rõ.
-- Việc nới deadline chưa đi kèm phân tích nguyên nhân định lượng.
-- Chưa có bằng chứng về hoạt động tạo động lực, coaching, cross-training hoặc xử lý xung đột.
+- The team has no meeting minutes, retrospective records, or action-item log.
+- No response time is defined on Messenger, so escalation depends on members proactively monitoring the group chat.
+- No actual per-hour effort, weekly contribution review, or reliable tracking data.
+- Decision authority is concentrated in Tuấn Anh; members lack a clear scope of autonomy.
+- Deadline extensions were not accompanied by quantitative cause analysis.
+- No evidence of motivation-building, coaching, cross-training, or conflict-handling activities.
 
-### 7.3 Cải tiến cho lần sau
+### 7.3 Improvements for next time
 
-1. Chia nhỏ task, ước lượng sơ bộ và review độ phức tạp sớm.
-2. Trao quyền quyết định trong phạm vi rõ ràng cho từng owner, giảm phụ thuộc vào một người.
-3. Ghi biên bản ngắn khi có quyết định quan trọng và theo dõi action item.
-4. Thu actual effort và phân tích nguyên nhân trễ thay vì chỉ nới deadline.
-5. Thêm checklist trước push: file nhạy cảm, file sinh tự động và secret.
+1. Split tasks smaller, estimate roughly, and review complexity early.
+2. Give each owner a clear scope of decision authority to reduce dependence on one person.
+3. Keep short minutes for important decisions and track action items.
+4. Collect actual effort and analyse the cause of lateness instead of just extending deadlines.
+5. Add a pre-push checklist: sensitive files, generated files, and secrets.
 
-## 8. Kết luận
+## 8. Conclusion
 
-Nhóm đã trải qua đầy đủ các giai đoạn phát triển và đạt mức Norming–Performing khi làm đề tài mới. Những quy tắc làm việc đơn giản, nhất quán giúp nhóm giao việc, phối hợp và tích hợp công việc hiệu quả. Hạn chế lớn nhất là dữ liệu theo dõi con người gần như không tồn tại và quyền quyết định tập trung vào một người; đây là hai hướng cải tiến chính cho các dự án sau.
+The team went through the full development cycle and reached Norming–Performing while working on the new topic. Simple, consistent working rules helped the team assign, coordinate, and integrate work effectively. The biggest limitation is that people-tracking data is almost nonexistent and decision authority concentrates in one person; these are the two main areas to improve in future projects.
 
-## 9. Tài liệu tham chiếu
+## 9. References
 
 - `docs/Project_Governance & Stakeholder/Project_Charter.md`
 - `docs/Project_Governance & Stakeholder/Stakeholder_Analysis.md`
@@ -212,5 +212,5 @@ Nhóm đã trải qua đầy đủ các giai đoạn phát triển và đạt m�
 - `docs/Oral_Exam/Q11_project-plan/img/Q11-03-instructor-feedback-summary.png`
 - `docs/Oral_Exam/Q11_project-plan/img/Q11-04-team-updates-scope-and-plan.png`
 - `docs/Oral_Exam/Q11_project-plan/img/Q11-05-candidate-poc-and-mentor-split.png`
-- Git history và pull request merge từ 13/08/2026 đến 20/08/2026
+- Git history and pull request merges from 13/08/2026 to 20/08/2026
 - `.github/workflows/ci.yml`

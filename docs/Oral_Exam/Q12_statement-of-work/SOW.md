@@ -1,99 +1,99 @@
-# STATEMENT OF WORK (SOW)
+# Statement of Work (SOW)
 
-## Thông tin kiểm soát tài liệu
-- **Tên dự án:** Interview Practice Platform (Nền tảng luyện phỏng vấn)
-- **Nhóm thực hiện:** Gia Thành, Hùng, Hưng, Trí, Luân, Tuấn Anh.
-- **Ngày lập:** 21/08/2026
-- **Phiên bản:** 1.0
-
----
-
-## 1. Mục đích (Purpose)
-Xây dựng một ứng dụng web (MVP) giúp ứng viên Việt Nam (sinh viên năm cuối, người chuẩn bị thực tập hoặc cấp đầu vào) chuyển đổi một Mô tả công việc (Job Description - JD) cụ thể thành một kế hoạch ôn tập phỏng vấn có cấu trúc. Ứng dụng cung cấp ngân hàng câu hỏi để tự luyện tập và kết nối ứng viên với các Cố vấn (Mentor) để phỏng vấn thử (mock interview) và nhận phản hồi (feedback).
-
-## 2. Mục tiêu của công việc (Objectives of the work)
-- Hoàn thành phiên bản MVP của hệ thống trong vòng 8 tuần.
-- Đảm bảo quy trình xử lý JD (bao gồm trích xuất văn bản, phân tích yêu cầu và ánh xạ câu hỏi) đạt độ chính xác cao
-
-## 3. Phạm vi công việc (Scope of work)
-### 3.1. Các hạng mục trong phạm vi (In Scope)
-- **Trọng tâm:** 
-  - Tính năng nhập JD: dán văn bản hoặc tải tệp 
-  - Trích xuất văn bản và sử dụng OCR nội bộ  cho ảnh/scan. Cung cấp giao diện cho Student hiệu chỉnh và xác nhận văn bản JD.
-  - Phân tích yêu cầu từ JD, chuẩn hóa phân loại  và ánh xạ  với Ngân hàng câu hỏi để tạo Kế hoạch chuẩn bị .
-- **Luồng Mentor (Phát triển song song & tích hợp):**
-  - Hệ thống phân quyền cho 3 vai trò: Student, Mentor, Admin.
-  - Quản lý Ngân hàng câu hỏi (tìm kiếm, lọc, đánh dấu).
-  - Quản lý hồ sơ Mentor, xác minh và thiết lập lịch rảnh.
-  - Luồng đặt lịch (Booking) kèm ngữ cảnh từ JD/Plan.
-  - Tích hợp link họp ngoài hệ thống (Google Meet/Zoom) và thông báo qua Email.
-  - Hệ thống đánh giá và phản hồi (Feedback) dựa trên rubric có sẵn.
-
-### 3.2. Các hạng mục ngoài phạm vi 
-- Phỏng vấn tự động bằng AI, chấm điểm câu trả lời, phân tích giọng nói/video.
-- Gợi ý câu hỏi bằng mô hình học máy
-- Gọi video, ghi âm, phiên âm trực tiếp trên nền tảng.
-- Cổng thanh toán, ký quỹ, tính hoa hồng và chi trả tự động.
-- Ứng dụng di động 
-
-## 4. Địa điểm làm việc 
-- Team: Làm việc tại Simple Coffee tại địa chỉ: 218 Lê Lai, Bến Thành, Hồ Chí Minh 70000, Việt Nam
-- Họp online qua google meet 
-- Giao tiếp qua messenger 
-- Quản lý công việc qua trello 
-- Lưu trữ mã nguồn và tài liệu trên github 
-
-## 5. Thời gian thực hiện (Period of performance)
-- **Khung thời gian học phần:** 8 tuần (29/06/2026 - 23/08/2026).
-  - *Giai đoạn 1 (29/06 - 24/07):* Thực hiện dự án cũ (Splitly), sau đó hủy bỏ do không khả thi.
-  - *Giai đoạn 2 (10/08 - 23/08):* Triển khai thực tế dự án InterviewQuestionBank (2 tuần execution).
-- **Tổng thời gian thực hiện :** Khoảng 653 giờ 
-
-## 6. Lịch trình giao nộp 
-
-- **Tuần 1 (27/07 - 02/08) - Foundation & Prototype:** Khởi tạo kiến trúc, thiết kế nguyên mẫu, xác định Workflow và Product Backlog.
-- **Tuần 2 (03/08 - 09/08) - Candidate PoC:** Phát triển các tính năng lõi (JD Intake, OCR, trích xuất văn bản).
-- **Tuần 3 (10/08 - 16/08) - Mapping & Integration:** Hoàn thiện ánh xạ Ngân hàng câu hỏi (Taxonomy mapping), tạo Preparation Plan và kết hợp luồng Mentor.
-- **Tuần 4 (17/08 - 23/08) - UAT & Release:** Bàn giao hoàn chỉnh luồng Booking tới Feedback (E2E), báo cáo kiểm thử (không còn lỗi Critical/High), hệ thống sẵn sàng cho Pilot.
-
-## 7. Tiêu chuẩn áp dụng 
-- Sử dụng mô hình Kaban
-
-## 8. Tiêu chí nghiệm thu (Acceptance criteria)
-- Hệ thống trích xuất và ánh xạ thành công bộ test 20 JD (có khử định danh) đạt Precision@10 và Recall ≥ 80%.
-- Toàn bộ luồng nghiệp vụ cốt lõi  pass 100% các kịch bản kiểm thử 
-- Kết thúc quá trình UAT không tồn tại lỗi  ở mức độ Critical hoặc High.
-
-## 9. Các giả định (Assumptions)
-- Nguồn lực đảm bảo 6 thành viên đóng góp trung bình 16 giờ/người/tuần.
-- Ngân sách cho phép  ở mức 1.125.000 VNĐ là đủ để chi trả cho chi phí Domain và quà tri ân Pilot. Cấu hình Server/Database  tận dụng các gói miễn phí 
-
-## 10. Trách nhiệm các bên (Roles & Responsibilities)
-- **Gia Thành (PM/Scrum Master):** Lên lịch trình, theo dõi tiến độ, ước lượng và quản lý rủi ro.
-- **Tuấn Anh (Team Leader):** Lãnh đạo, quản trị dự án, điều phối giữa các thành viên.
-- **Hưng (Product Owner/BA):** Sở hữu Product Vision, quản lý Backlog và duyệt tiêu chí nghiệm thu.
-- **Luân (Architecture/Tech Lead):** Thiết kế kiến trúc và quyết định kỹ thuật.
-- **Hùng (UI/UX Designer):** Thiết kế giao diện và trải nghiệm người dùng, nguyên mẫu (Prototype).
-- **Trí (PoC/E2E):** Kiểm chứng tính khả thi kỹ thuật và tích hợp end-to-end.
-
-## 11. Quy trình quản lý thay đổi (Change management process)
-- Bất kỳ thay đổi nào ảnh hưởng đến Phạm vi (Scope), Lịch trình (Schedule) hoặc Ngân sách (Budget) vượt ngoài khoảng dung sai (tolerance) đều phải được đệ trình thông qua Yêu cầu thay đổi (Change Request - CR).
-- Ban kiểm soát thay đổi (CCB) bao gồm Sponsor, PO, PM và Tech Lead sẽ phân tích tác động và ra quyết định (Approve/Reject). Trừ các lỗi (Defects) vi phạm tiêu chí nghiệm thu ban đầu sẽ được ưu tiên sửa mà không cần CR.
+## Document control
+- **Project name:** Interview Practice Platform
+- **Executing team:** Gia Thành, Hùng, Hưng, Trí, Luân, Tuấn Anh.
+- **Created:** 21/08/2026
+- **Version:** 1.0
 
 ---
 
-## 12. References (Nguồn tham khảo)
+## 1. Purpose
+Build a web application (MVP) that helps Vietnamese candidates (final-year students, people preparing for internships, or entry-level applicants) turn a specific Job Description (JD) into a structured interview-preparation plan. The application provides a question bank for self-practice and connects candidates with Mentors for mock interviews and feedback.
 
-Bản Statement of Work này được thiết lập dựa trên các tài liệu nền tảng sau:
+## 2. Objectives of the work
+- Complete the MVP version of the system within 8 weeks.
+- Ensure the JD processing pipeline (text extraction, requirement analysis, and question mapping) reaches a high accuracy.
 
-1. **Cấu trúc SOW:** 
-   - Lấy cảm hứng từ slide `06. Software Project Planning.pdf`, Slide 12 (*Statement of Work*). Cấu trúc tuân thủ nguyên tắc trả lời câu hỏi "WHAT" thông qua các đề mục tiêu chuẩn như Purpose, Scope, Period of performance, Deliverables schedule, Acceptance criteria, Assumptions.
-2. **Khái quát Dự án, Vấn đề, Giải pháp và Phạm vi:** 
-   - Lấy từ `docs/Project_Proposal/Project_Proposal.md` (các phần Mục đích, Vấn đề, Phạm vi MVP và Kết quả mong đợi).
-   - Tham khảo bổ sung từ `docs/Project_Vision_and_Scope/Project_Vision_and_Scope.md` (Đặc biệt phần Ranh giới phạm vi, Giả định và Ràng buộc bảo mật dữ liệu JD).
-3. **Chi phí, Thời gian, Nguồn lực và Lịch trình Giao nộp:** 
-   - Trích xuất từ `docs/Project_Resource_Plan/Cost_Time_Resources.md` (Các mục Baseline planning, Cash budget 1.125.000 VNĐ, Lịch và tolerance 8 tuần với mốc ngày cụ thể).
-4. **Tiêu chí nghiệm thu (Acceptance Criteria):** 
-   - Tổng hợp từ mục *Mục tiêu sản phẩm và cách đo* trong `Project_Vision_and_Scope.md` (Precision ≥80%, Pilot KPI) và các ràng buộc từ `Cost_Time_Resources.md`.
-5. **Trách nhiệm (Roles):** 
-   - Bám sát bảng phân công vai trò trong `Project_Proposal.md`.
+## 3. Scope of work
+### 3.1. In Scope
+- **Focus:**
+  - JD intake feature: paste text or upload a file.
+  - Text extraction, including internal OCR for images/scans. Provide an interface for the Student to edit and confirm the JD text.
+  - Analyse requirements from the JD through standardised classification, then map them against the Question Bank to generate a Preparation Plan.
+- **Mentor flow (developed in parallel and integrated):**
+  - Role-based access for three roles: Student, Mentor, Admin.
+  - Question Bank management (search, filter, bookmark).
+  - Mentor profile management, verification, and availability setup.
+  - Booking flow carrying context from the JD/Plan.
+  - Integration with external meeting links (Google Meet/Zoom) and email notifications.
+  - Rubric-based Feedback and rating system.
+
+### 3.2. Out of Scope
+- AI-based automated interviewing, answer grading, and voice/video analysis.
+- Machine-learning question recommendations.
+- In-platform video calling, recording, and live transcription.
+- Payment gateway, escrow, commission calculation, and automatic payout.
+- Mobile application.
+
+## 4. Work location
+- Team: works at Simple Coffee, 218 Lê Lai, Bến Thành, Hồ Chí Minh 70000, Vietnam.
+- Online meetings via Google Meet.
+- Communication via Messenger.
+- Task management via Trello.
+- Source code and documents stored on GitHub.
+
+## 5. Period of performance
+- **Course framework:** 8 weeks (29/06/2026 - 23/08/2026).
+  - *Phase 1 (29/06 - 24/07):* Worked on the previous project (Splitly), then abandoned it as unfeasible.
+  - *Phase 2 (10/08 - 23/08):* Actual execution of the InterviewQuestionBank project (2 weeks).
+- **Total effort:** Approximately 653 hours.
+
+## 6. Deliverables schedule
+
+- **Week 1 (27/07 - 02/08) - Foundation & Prototype:** Set up the architecture, design the prototype, and define the workflow and Product Backlog.
+- **Week 2 (03/08 - 09/08) - Candidate PoC:** Build the core features (JD Intake, OCR, text extraction).
+- **Week 3 (10/08 - 16/08) - Mapping & Integration:** Complete the Question Bank taxonomy mapping, generate the Preparation Plan, and integrate the Mentor flow.
+- **Week 4 (17/08 - 23/08) - UAT & Release:** Hand over the end-to-end Booking-to-Feedback flow, provide the test report (no remaining Critical/High defects), and make the system ready for Pilot.
+
+## 7. Applicable standards
+- Uses the Kanban model.
+
+## 8. Acceptance criteria
+- The system successfully extracts and maps a test suite of 20 (de-identified) JDs, achieving Precision@10 and Recall ≥ 80%.
+- The entire core business flow passes 100% of the test scenarios.
+- No Critical or High severity defects remain after the UAT process.
+
+## 9. Assumptions
+- Resource availability: six members contributing an average of 16 hours per person per week.
+- Budget: 1,125,000 VND is sufficient to cover domain costs and pilot thank-you gifts. Server/database configuration uses free tiers.
+
+## 10. Roles & Responsibilities
+- **Gia Thành (PM/Scrum Master):** Owns the schedule, tracks progress, estimates, and manages risk.
+- **Tuấn Anh (Team Leader):** Leads and administers the project, coordinates between members.
+- **Hưng (Product Owner/BA):** Owns the Product Vision, manages the Backlog, and approves acceptance criteria.
+- **Luân (Architecture/Tech Lead):** Designs the architecture and makes technical decisions.
+- **Hùng (UI/UX Designer):** Designs the interface, user experience, and prototype.
+- **Trí (PoC/E2E):** Validates technical feasibility and end-to-end integration.
+
+## 11. Change management process
+- Any change affecting Scope, Schedule, or Budget beyond the agreed tolerance must be submitted through a Change Request (CR).
+- The Change Control Board (CCB), made up of the Sponsor, PO, PM, and Tech Lead, analyses the impact and decides (Approve/Reject). Defects that violate the original acceptance criteria are prioritised for fixing without requiring a CR.
+
+---
+
+## 12. References
+
+This Statement of Work is based on the following foundation documents:
+
+1. **SOW structure:**
+   - Inspired by slide `06. Software Project Planning.pdf`, Slide 12 (*Statement of Work*). The structure answers the "WHAT" question through standard sections such as Purpose, Scope, Period of performance, Deliverables schedule, Acceptance criteria, and Assumptions.
+2. **Project, Problem, Solution, and Scope overview:**
+   - Taken from `docs/Project_Proposal/Project_Proposal.md` (Purpose, Problem, MVP Scope, and Expected Outcome sections).
+   - Further reference from `docs/Project_Vision_and_Scope/Project_Vision_and_Scope.md` (especially the scope boundary, assumptions, and JD data constraint sections).
+3. **Cost, Time, Resources, and Deliverables schedule:**
+   - Extracted from `docs/Project_Resource_Plan/Cost_Time_Resources.md` (Baseline planning, cash budget 1,125,000 VND, and the 8-week schedule and tolerance with specific dates).
+4. **Acceptance criteria:**
+   - Compiled from the *product objectives and how they are measured* section of `Project_Vision_and_Scope.md` (Precision ≥80%, Pilot KPI) and the constraints in `Cost_Time_Resources.md`.
+5. **Roles:**
+   - Follows the role assignment table in `Project_Proposal.md`.

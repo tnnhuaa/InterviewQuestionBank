@@ -1,23 +1,23 @@
-# BIÊN BẢN THANH TRA MÃ NGUỒN 
-**Dự án:** Hệ thống Luyện thi Phỏng vấn
-**Hình thức:** Bình luận đánh giá trực tiếp trên Github Pull Request
+# Code Inspection Log
 
-**Pull Request #25:** Thêm chức năng Upload và OCR Job Description (JD)
-**Người Code (Assignee):** Minh Trí
-**Người Review (Reviewer):** Tuấn Anh
+**Project:** Interview Practice Platform
+**Method:** Direct review comments on GitHub Pull Requests
 
-## Chi tiết các lỗi phát hiện trong quá trình Review:
+**Pull Request #25:** Added the Job Description (JD) upload and OCR feature
+**Assignee:** Minh Trí
+**Reviewer:** Tuấn Anh
 
-**1. Lỗi bảo mật / Xử lý file (File: `jdController.js - Dòng 42`)**
-- *Tuấn Anh (Reviewer):* Chỗ này nhận file upload từ user nhưng chưa kiểm tra định dạng MIME type, nếu user upload file `.exe` hoặc script độc hại thay vì PDF/Image thì hệ thống OCR sẽ sập. Cần thêm hàm validation trước khi lưu file.
-- *Minh Trí (Assignee):* Đã ghi nhận. Sẽ thêm middleware `multer` filter file theo `.pdf, .png, .jpg`.
+## Issues found during review
+
+**1. Security / File handling issue (File: `jdController.js` — line 42)**
+- *Tuấn Anh (Reviewer):* This path receives an uploaded file from the user but does not validate the MIME type. If a user uploads an `.exe` or a malicious script instead of a PDF/image, the OCR will fail. Add a validation function before saving the file.
+- *Minh Trí (Assignee):* Noted. I will add a `multer` middleware filter for `.pdf, .png, .jpg` files.
 ![alt text](image.png)
 
-**2. Lỗi hiệu năng (File: `ocrService.js - Dòng 80`)**
-- *Tuấn Anh (Reviewer):* Đang gọi API của bên thứ 3 (Google Vision) mà không bỏ trong khối `try...catch`. Lỡ API bên thứ 3 timeout thì Node.js sẽ crash toàn bộ app.
-- *Minh Trú (Assignee):* Đúng rồi, quên mất. Đã bổ sung `try...catch` và xử lý trả về mã lỗi 500 cho FE. (Đã commit sửa lỗi `fix: add error handling for OCR API`).
+**2. Performance issue (File: `ocrService.js` — line 80)**
+- *Tuấn Anh (Reviewer):* This code calls a third-party API (Google Vision) outside a `try...catch` block. If the third-party API times out, Node.js will crash the whole application.
+- *Minh Trí (Assignee):* You're right, I missed that. I have added the `try...catch` and return an error code 500 to the frontend. (Fix committed: `fix: add error handling for OCR API`).
 ![alt text](image-1.png)
 
-
-**=> Kết luận:** Pull Request bị **Request Changes** lần 1. Sau khi Tuấn Anh fix xong 2 lỗi trên, Reviewer mới nhấn **Approve** và cho Merge code vào nhánh chính.
+**=> Conclusion:** The Pull Request received **Request Changes** on the first pass. After the assignee fixed both issues above, the reviewer pressed **Approve** and merged the code into the main branch.
 ![alt text](image-2.png)

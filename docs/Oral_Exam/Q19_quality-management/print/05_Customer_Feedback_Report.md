@@ -1,25 +1,27 @@
-# BIÊN BẢN PHẢN HỒI TỪ KHÁCH HÀNG (CUSTOMER FEEDBACK REPORT)
-**Dự án:** Hệ thống Luyện thi Phỏng vấn (Interview Practice Platform)
-**Giai đoạn:** User Acceptance Testing (UAT) 
-**Đại diện khách hàng:** Thầy 
+# Customer Feedback Report
 
-## 1. Điểm Khách hàng Hài lòng (Satisfied)
-- Chức năng Upload JD và tự động trích xuất từ khóa hoạt động khá mượt mà.
-- Giao diện đặt lịch (Booking Mentor) trực quan, có tính năng xem lịch rảnh (Availability) giống Google Calendar rất dễ hiểu.
+**Project:** Interview Practice Platform
+**Phase:** User Acceptance Testing (UAT)
+**Customer representative:** Lecturer
 
-## 2. Vấn đề Khách hàng Báo cáo (Customer Problems & True Defects)
-**Lỗi logic (Defects):**
-- Lúc sinh viên chọn chức năng "Lọc Mentor theo kỹ năng ReactJS", danh sách trả về toàn báo rỗng dù có Mentor dạy ReactJS.
-- **Yêu cầu xử lý:** Fix gấp lỗi query API search mentor.
+## 1. Points the customer was satisfied with
+- The JD upload and automatic keyword extraction feature works smoothly.
+- The Mentor booking interface is visual and the availability view (similar to Google Calendar) is easy to understand.
 
-**Lỗi giao diện (Usability Issues):**
-- Khi sinh viên làm bài Test xong, nút "Nộp bài" nằm tuốt dưới cùng màn hình, phải cuộn mỏi tay mới thấy.
-- **Yêu cầu xử lý:** Đưa nút "Nộp bài" lên góc phải trên cùng (sticky banner) để dễ bấm hơn.
+## 2. Problems reported by the customer
 
-**Hiệu năng (Performance):**
-- Mỗi lần upload file JD PDF cỡ 5MB thì app quay mòng mòng tới hơn 15 giây mới hiện kết quả.
-- **Yêu cầu xử lý:** Cần tối ưu lại API xử lý OCR, hoặc hiện thanh Progress Bar để user biết hệ thống đang xử lý, tránh việc user tưởng app bị đơ nên bấm reload lại.
+**Defects (logic errors):**
+- When a student selects "Filter mentors by ReactJS skill", the returned list is empty even though ReactJS mentors exist.
+- **Action required:** Fix the mentor search API query as a priority.
 
-## 3. Quyết định (Decision)
-- **Kết luận:** Khách hàng **CHƯA NGHIỆM THU (Not Accepted)** Sprint 3 do vướng lỗi "Lọc Mentor" (Lỗi nghiêm trọng cản trở core flow).
-- **Hành động của Team:** Log toàn bộ lỗi trên vào Jira. Tập trung nguồn lực fix các lỗi này trong 2 ngày tới để khách hàng test lại.
+**Usability issues:**
+- After a student finishes a mock test, the "Submit" button sits at the very bottom of the screen and requires a long scroll to reach.
+- **Action required:** Move the "Submit" button to the top-right as a sticky banner so it is easier to tap.
+
+**Performance:**
+- Every time a ~5MB JD PDF is uploaded, the app spins for over 15 seconds before showing the result.
+- **Action required:** Optimise the OCR API, or show a progress bar so the user knows the system is working instead of assuming the app is frozen and reloading the page.
+
+## 3. Decision
+- **Conclusion:** The customer has **not accepted** Sprint 3 because of the "Filter mentors" bug, a severe issue that blocks the core flow.
+- **Team action:** Log all the above issues in Jira. Focus resources on fixing them within the next two days so the customer can test again.
