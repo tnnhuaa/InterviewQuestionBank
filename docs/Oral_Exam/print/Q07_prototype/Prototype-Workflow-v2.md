@@ -59,7 +59,8 @@ flowchart LR
 
 ## 3.3 S11 — Upload Job Description
 
-**Prototype frame:** [S11-jd-upload.png](../../../Project_Prototype/img/S11-jd-upload.png)
+**Prototype frame:** 
+![S11-jd-upload.png](../../../Project_Prototype/img/S11-jd-upload.png)
 
 **Purpose:** Reduce the starting barrier for a Student who does not know what to study.
 
@@ -82,7 +83,7 @@ flowchart LR
 
 ## 3.4 S12 — Review Extracted Content
 
-**Prototype frame:** [S12-ocr-review.png](../../../Project_Prototype/img/S12-ocr-review.png)
+**Prototype frame:** ![S12-ocr-review.png](../../../Project_Prototype/img/S12-ocr-review.png)
 
 **Purpose:** Give the Student control over the input before recommendations are generated.
 
@@ -103,7 +104,7 @@ flowchart LR
 
 ## 3.5 S13 — JD Requirement Mapping
 
-**Prototype frame:** [S13-jd-mapping.png](../../../Project_Prototype/img/S13-jd-mapping.png)
+**Prototype frame:** ![S13-jd-mapping.png](../../../Project_Prototype/img/S13-jd-mapping.png)
 
 **Purpose:** Explain how PrepVI interprets the JD before recommending questions.
 
@@ -130,8 +131,8 @@ flowchart LR
 
 **Prototype frames:**
 
-- [S14-recommended-question-set.png](../../../Project_Prototype/img/S14-recommended-question-set.png)
-- [S14-saved-question-set.png](../../../Project_Prototype/img/S14-saved-question-set.png)
+- ![S14-recommended-question-set.png](../../../Project_Prototype/img/S14-recommended-question-set.png)
+- ![S14-saved-question-set.png](../../../Project_Prototype/img/S14-saved-question-set.png)
 
 **Purpose:** Turn JD requirements into a concrete and explainable preparation starting point.
 
@@ -181,7 +182,7 @@ flowchart LR
 
 ## S02 — Question Bank
 
-**Prototype frame:** [S02-question-bank.png](../../../Project_Prototype/img/S02-question-bank.png)
+**Prototype frame:** ![S02-question-bank.png](../../../Project_Prototype/img/S02-question-bank.png)
 
 The Question Bank supports the Core Prototype but is not the main hypothesis being validated.
 
@@ -225,7 +226,7 @@ flowchart LR
 
 ### S04 — Find Mentor
 
-**Prototype frame:** [S04-mentor-search.png](../../../Project_Prototype/img/S04-mentor-search.png)
+**Prototype frame:** ![S04-mentor-search.png](../../../Project_Prototype/img/S04-mentor-search.png)
 
 - Filter by expertise, interview type, language, availability, and other useful attributes.
 - Show only Mentors eligible to receive bookings.
@@ -240,7 +241,7 @@ flowchart LR
 
 ### S06 — Booking Request
 
-**Prototype frame:** [S06-booking-request.png](../../../Project_Prototype/img/S06-booking-request.png)
+**Prototype frame:** ![S06-booking-request.png](../../../Project_Prototype/img/S06-booking-request.png)
 
 - Show fixed Mentor and slot summary.
 - Require interview goal / target role / practice focus.
@@ -249,21 +250,21 @@ flowchart LR
 
 ### S07 — Booking Status
 
-**Prototype frame:** [S07-booking-status.png](../../../Project_Prototype/img/S07-booking-status.png)
+**Prototype frame:** ![S07-booking-status.png](../../../Project_Prototype/img/S07-booking-status.png)
 
 - Show Pending, Confirmed, Reschedule proposed, Rejected, and Cancelled states.
 - Make the next valid action clear.
 
 ### S08 — Interview Session
 
-**Prototype frame:** [S08-interview-session.png](../../../Project_Prototype/img/S08-interview-session.png)
+**Prototype frame:** ![S08-interview-session.png](../../../Project_Prototype/img/S08-interview-session.png)
 
 - Show goal, topic, Mentor, local time, and external meeting information when appropriate.
 - Keep actions consistent with booking state.
 
 ### S09 — Session Feedback
 
-**Prototype frame:** [S09-session-feedback.png](../../../Project_Prototype/img/S09-session-feedback.png)
+**Prototype frame:** ![S09-session-feedback.png](../../../Project_Prototype/img/S09-session-feedback.png)
 
 - Show structured rubric feedback.
 - Include strengths, weaknesses, evidence, and next actions.
@@ -272,7 +273,7 @@ flowchart LR
 
 ### S10 — Mentor Review
 
-**Prototype frame:** [S10-mentor-review.png](../../../Project_Prototype/img/S10-mentor-review.png)
+**Prototype frame:** ![S10-mentor-review.png](../../../Project_Prototype/img/S10-mentor-review.png)
 
 - Allow rating and comment after an eligible completed booking.
 - Explain review visibility/moderation where relevant.
@@ -290,7 +291,7 @@ flowchart LR
 
 ### M05 — Booking Inbox
 
-**Prototype frame:** [M05-booking-inbox.png](../../../Project_Prototype/img/M05-booking-inbox.png)
+**Prototype frame:** ![M05-booking-inbox.png](../../../Project_Prototype/img/M05-booking-inbox.png)
 
 - Show Pending, Upcoming, Completed, and Cancelled bookings.
 - Show enough Student context for the Mentor to make a decision.
@@ -335,7 +336,7 @@ flowchart LR
 
 ### M02 — Verification Status
 
-**Prototype frame:** [M02-verification-status.png](../../../Project_Prototype/img/M02-verification-status.png)
+**Prototype frame:** ![M02-verification-status.png](../../../Project_Prototype/img/M02-verification-status.png)
 
 - Draft, Pending, Approved, and Rejected states.
 - Explain why a Mentor cannot publish availability until eligible.
@@ -343,14 +344,14 @@ flowchart LR
 
 ### M03 — Profile & Services
 
-**Prototype frame:** [M03-profile-services.png](../../../Project_Prototype/img/M03-profile-services.png)
+**Prototype frame:** ![M03-profile-services.png](../../../Project_Prototype/img/M03-profile-services.png)
 
 - Separate public profile data from private verification data.
 - Show service format, duration, expectations, and relevant policy information.
 
 ### M04 — Availability
 
-**Prototype frame:** [M04-availability.png](../../../Project_Prototype/img/M04-availability.png)
+**Prototype frame:** ![M04-availability.png](../../../Project_Prototype/img/M04-availability.png)
 
 - Create, edit, and remove future availability.
 - Show timezone clearly.
@@ -372,13 +373,13 @@ flowchart LR
 
 ### A01 — Operational Queue
 
-**Prototype frame:** [A01-operations-queue.png](../../../Project_Prototype/img/A01-operations-queue.png)
+**Prototype frame:** ![A01-operations-queue.png](../../../Project_Prototype/img/A01-operations-queue.png)
 
 - Prioritize actionable operational work such as pending Mentor reviews, reported questions, booking exceptions, and reports.
 
 ### A02 — Mentor Review
 
-**Prototype frame:** [A02-mentor-review.png](../../../Project_Prototype/img/A02-mentor-review.png)
+**Prototype frame:** ![A02-mentor-review.png](../../../Project_Prototype/img/A02-mentor-review.png)
 
 - Show profile preview, verification evidence, checklist, and prior decision context where relevant.
 - Require an explicit decision reason.
