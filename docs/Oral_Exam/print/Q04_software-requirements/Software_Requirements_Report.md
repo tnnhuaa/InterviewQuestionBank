@@ -69,6 +69,45 @@ The team applied the following process:
 
 Implementation of US-21, US-22 or US-23 does not automatically change this classification. A release-scope decision must update the backlog and its impact on capacity, dependencies, contracts and validation.
 
+### 5.1 Complete use-case catalogue
+
+The catalogue below makes every use-case identifier understandable without requiring the reader to infer meaning from a numeric range. The statements are concise representations of the current Product Backlog. Detailed Acceptance Criteria, dependencies, Business Rules and traceability remain controlled in the source backlog.
+
+| Use case | Capability | Actor and intended outcome | Classification | SP |
+| --- | --- | --- | --- | ---: |
+| US-01 | Identity | A user registers and signs in so personal data remains protected. | R1 Must | 8 |
+| US-02 | Authorization | An Administrator enforces Student, Mentor and Administrator roles so functions and data are properly restricted. | R1 Must | 3 |
+| US-03 | Student context | A Student saves the target role and interview goal so practice and booking use the same context. | R1 Must | 2 |
+| US-04 | Question Bank | A Student browses, searches and filters governed questions. | R1 Must | 5 |
+| US-05 | Question detail | A Student views question detail and answer criteria to understand what a good answer requires. | R1 Must | 2 |
+| US-06 | Practice | A Student bookmarks questions and tracks practice status to continue the preparation plan. | R1 Must | 3 |
+| US-07 | Mentor profile | A Mentor creates a profile and submits verification information to offer a trusted service. | R1 Must | 5 |
+| US-08 | Mentor governance | An Administrator approves or rejects Mentor verification with a recorded reason. | R1 Must | 3 |
+| US-09 | Availability | An approved Mentor manages valid future availability slots. | R1 Must | 5 |
+| US-10 | Mentor discovery | A Student finds approved Mentors by preparation-plan topic and availability. | R1 Must | 3 |
+| US-11 | Booking request | A Student submits a booking request with a goal and owned JD/preparation-plan context. | R1 Must | 5 |
+| US-12 | Booking handling | The owning Mentor accepts, rejects or proposes a new time through valid booking transitions. | R1 Must | 8 |
+| US-13 | Booking exceptions | A booking participant cancels or resolves a reschedule proposal under explicit policy. | R1 Must | 8 |
+| US-14 | Interview session | A booking participant receives controlled access to the external meeting link after confirmation. | R1 Must | 3 |
+| US-15 | Mentor feedback | The owning Mentor submits structured feedback after a completed interview session. | R1 Must | 5 |
+| US-16 | Feedback consumption | The booking Student views feedback and next actions to update the preparation plan. | R1 Must | 3 |
+| US-17 | Mentor review | The booking Student reviews the Mentor after completion. | R1 Must | 3 |
+| US-18 | Content governance | An Administrator manages and moderates questions and taxonomy before publication. | R1 Must | 5 |
+| US-19 | Notifications | A user receives reliable booking-event notifications even when a provider temporarily fails. | R1 Must | 8 |
+| US-20 | Operations | An authorized Administrator resolves reports and booking exceptions through governed actions. | R1 Must | 5 |
+| US-21 | Progress | A Student views a basic progress dashboard to identify what to practise next. | R1 Extended | 5 |
+| US-22 | Reminders | A booking participant receives scheduled reminders to reduce missed sessions. | R1 Extended | 3 |
+| US-23 | Data intake | An Administrator imports questions in bulk without bypassing governance or moderation. | Future/Maybe | 8 |
+| US-24 | JD intake | A Student pastes text or uploads a JD file to prepare for the exact target role. | R1 Must | 5 |
+| US-25 | JD extraction | A Student receives directly extracted or OCR-derived text for review. | R1 Must | 8 |
+| US-26 | JD correction | A Student reviews, edits and confirms extracted text before analysis. | R1 Must | 3 |
+| US-27 | JD analysis | A Student detects and normalizes the role, seniority, skills, technologies and requirements in a JD. | R1 Must | 8 |
+| US-28 | Question mapping | A Student maps JD requirements to governed questions to identify relevant preparation content. | R1 Must | 8 |
+| US-29 | Preparation plan | A Student reviews recommendation reasons and orders selected questions into an actionable plan. | R1 Must | 5 |
+| US-30 | Context handoff | A Student attaches the correct JD or preparation plan to a booking so the Mentor receives the required practice context. | R1 Must | 5 |
+
+Detailed source: [Product Backlog and Acceptance Criteria](../../../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md).
+
 ## 6. Acceptance and traceability controls
 
 A story is considered ready only when its actor, value, Acceptance Criteria, dependencies, estimate, rules and evidence needs are sufficiently clear. A story is considered done only when the applicable code, review, database, contract, security, documentation and validation requirements are satisfied.

@@ -97,6 +97,45 @@ Việc xem xét tài liệu và lịch sử Git chỉ chứng minh đã xem xét
 
 Câu chuyện 8 SP thể hiện độ lớn hoặc bất định cao và cần được nhóm phát triển cân nhắc tách trước khi đưa vào trạng thái Ready.
 
+### Danh mục đầy đủ 30 use case
+
+Bảng dưới đây giúp người đọc hiểu nội dung của từng mã use case thay vì chỉ nhìn thấy một khoảng số. Câu mô tả được rút gọn từ Product Backlog hiện hành; Acceptance Criteria, phụ thuộc, quy tắc nghiệp vụ và truy vết chi tiết vẫn được quản lý trong tài liệu nguồn.
+
+| Use case | Nhóm năng lực | Vai trò và kết quả mong muốn | Phân loại | SP |
+|---|---|---|---|---:|
+| US-01 | Định danh | Người dùng đăng ký và đăng nhập để bảo vệ dữ liệu cá nhân. | R1 bắt buộc | 8 |
+| US-02 | Phân quyền | Quản trị viên áp dụng đúng quyền Học viên, Người hướng dẫn và Quản trị viên để giới hạn chức năng/dữ liệu. | R1 bắt buộc | 3 |
+| US-03 | Ngữ cảnh Học viên | Học viên lưu vị trí mục tiêu và mục tiêu phỏng vấn để việc luyện tập và đặt lịch dùng cùng ngữ cảnh. | R1 bắt buộc | 2 |
+| US-04 | Ngân hàng câu hỏi | Học viên duyệt, tìm kiếm và lọc câu hỏi đã được quản trị nội dung. | R1 bắt buộc | 5 |
+| US-05 | Chi tiết câu hỏi | Học viên xem nội dung và tiêu chí trả lời để biết một câu trả lời tốt cần có gì. | R1 bắt buộc | 2 |
+| US-06 | Luyện tập | Học viên đánh dấu câu hỏi và theo dõi trạng thái luyện tập để tiếp tục kế hoạch. | R1 bắt buộc | 3 |
+| US-07 | Hồ sơ Người hướng dẫn | Người hướng dẫn tạo hồ sơ và gửi thông tin xác minh để cung cấp dịch vụ đáng tin cậy. | R1 bắt buộc | 5 |
+| US-08 | Duyệt Người hướng dẫn | Quản trị viên duyệt hoặc từ chối xác minh Người hướng dẫn kèm lý do. | R1 bắt buộc | 3 |
+| US-09 | Lịch rảnh | Người hướng dẫn đã được duyệt quản lý các khung giờ tương lai hợp lệ. | R1 bắt buộc | 5 |
+| US-10 | Tìm Người hướng dẫn | Học viên tìm Người hướng dẫn đã được duyệt theo chủ đề kế hoạch và lịch rảnh. | R1 bắt buộc | 3 |
+| US-11 | Yêu cầu đặt lịch | Học viên gửi yêu cầu đặt lịch kèm mục tiêu và ngữ cảnh JD/kế hoạch. | R1 bắt buộc | 5 |
+| US-12 | Xử lý lịch hẹn | Người hướng dẫn sở hữu lịch hẹn chấp nhận, từ chối hoặc đề xuất thời gian mới theo trạng thái hợp lệ. | R1 bắt buộc | 8 |
+| US-13 | Ngoại lệ lịch hẹn | Một bên tham gia hủy lịch hoặc giải quyết đề xuất đổi lịch theo chính sách rõ ràng. | R1 bắt buộc | 8 |
+| US-14 | Phiên phỏng vấn | Bên tham gia được truy cập có kiểm soát vào liên kết họp bên ngoài sau khi lịch được xác nhận. | R1 bắt buộc | 3 |
+| US-15 | Phản hồi của Người hướng dẫn | Người hướng dẫn gửi phản hồi có cấu trúc sau khi buổi phỏng vấn hoàn thành. | R1 bắt buộc | 5 |
+| US-16 | Tiếp nhận phản hồi | Học viên xem phản hồi và hành động tiếp theo để cập nhật kế hoạch luyện tập. | R1 bắt buộc | 3 |
+| US-17 | Đánh giá Người hướng dẫn | Học viên đánh giá Người hướng dẫn sau buổi phỏng vấn hoàn thành. | R1 bắt buộc | 3 |
+| US-18 | Quản trị nội dung | Quản trị viên quản lý, kiểm duyệt câu hỏi và hệ thống phân loại trước khi công bố. | R1 bắt buộc | 5 |
+| US-19 | Thông báo | Người dùng nhận thông báo sự kiện đặt lịch đáng tin cậy kể cả khi nhà cung cấp tạm thời lỗi. | R1 bắt buộc | 8 |
+| US-20 | Vận hành | Quản trị viên được cấp quyền giải quyết báo cáo và ngoại lệ lịch hẹn có kiểm soát. | R1 bắt buộc | 5 |
+| US-21 | Tiến độ | Học viên xem bảng tổng quan tiến độ cơ bản để biết nội dung cần luyện tiếp theo. | R1 mở rộng | 5 |
+| US-22 | Nhắc lịch | Bên tham gia nhận nhắc lịch theo lịch trình để giảm khả năng bỏ lỡ buổi phỏng vấn. | R1 mở rộng | 3 |
+| US-23 | Nhập dữ liệu | Quản trị viên nhập hàng loạt câu hỏi có kiểm soát mà không bỏ qua bước kiểm duyệt. | Tương lai | 8 |
+| US-24 | Tiếp nhận JD | Học viên dán văn bản hoặc tải tệp JD để chuẩn bị cho đúng vị trí ứng tuyển. | R1 bắt buộc | 5 |
+| US-25 | Trích xuất JD | Học viên nhận văn bản được trích xuất trực tiếp hoặc bằng OCR để kiểm tra nội dung JD. | R1 bắt buộc | 8 |
+| US-26 | Hiệu chỉnh JD | Học viên xem, sửa và xác nhận văn bản trích xuất trước khi phân tích. | R1 bắt buộc | 3 |
+| US-27 | Phân tích JD | Học viên nhận diện và chuẩn hóa vai trò, cấp độ, kỹ năng, công nghệ và yêu cầu trong JD. | R1 bắt buộc | 8 |
+| US-28 | Đối sánh câu hỏi | Học viên đối sánh yêu cầu JD với câu hỏi đã được quản trị để biết nội dung cần chuẩn bị. | R1 bắt buộc | 8 |
+| US-29 | Kế hoạch luyện tập | Học viên xem lý do đề xuất và sắp xếp câu hỏi thành kế hoạch có thể hành động. | R1 bắt buộc | 5 |
+| US-30 | Bàn giao ngữ cảnh | Học viên gắn đúng JD hoặc kế hoạch vào lịch hẹn để Người hướng dẫn nhận ngữ cảnh luyện tập cần thiết. | R1 bắt buộc | 5 |
+
+Nguồn chi tiết: [Product Backlog and Acceptance Criteria](../../../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md).
+
 ## 5. Ví dụ cụ thể: US-30
 
 **Câu chuyện:** Là Học viên (Student), tôi muốn gắn JD hoặc Preparation Plan của mình vào lịch hẹn để Người hướng dẫn (Mentor) nhận đúng ngữ cảnh luyện tập.
