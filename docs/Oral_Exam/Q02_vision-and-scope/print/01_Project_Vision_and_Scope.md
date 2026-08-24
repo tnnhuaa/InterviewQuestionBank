@@ -173,12 +173,12 @@ Git proves that the document changed. It does not prove Product Owner acceptance
 
 ## 12. References
 
-- [Project Proposal](../Project_Proposal/Project_Proposal.md)
-- [Product Backlog and Acceptance Criteria](Product_Backlog_and_Acceptance_Criteria.md)
-- [Current-State Workflow](Current_State_Workflow.md)
-- [Future-State Workflow](Future_State_Workflow.md)
-- [Project Charter](../Project_Governance%20%26%20Stakeholder/Project_Charter.md)
-- [Feasibility Study](../Project_Feasibility/feasibility.md)
-- [Prototype Workflow](../Project_Prototype/Prototype_Workflow.md)
-- [Software Architecture](../Project_Architecture/software_architecture.md)
+- [Project Proposal](../../../Project_Proposal/Project_Proposal.md)
+- [Product Backlog and Acceptance Criteria](../../../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md)
+- [Current-State Workflow](../../../Project_Vision_and_Scope/Current_State_Workflow.md)
+- [Future-State Workflow](../../../Project_Vision_and_Scope/Future_State_Workflow.md)
+- [Project Charter](../../../Project_Governance%20%26%20Stakeholder/Project_Charter.md)
+- [Feasibility Study](../../../Project_Feasibility/feasibility.md)
+- [Prototype Workflow](../../../Project_Prototype/Prototype_Workflow.md)
+- [Software Architecture](../../../Project_Architecture/software_architecture.md)
 - [ADR-005 — Hybrid Gemini Assistance](../../../Project_Architecture/ADR/ADR-005-Hybrid-Gemini-Assistance.md)

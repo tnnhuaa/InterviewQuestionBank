@@ -150,7 +150,7 @@ Git records:
 
 The repository does not contain named review comments or signed approval.
 
-- [Project Proposal](../Project_Proposal/Project_Proposal.md)
-- [Project Vision and Scope](../Project_Vision_and_Scope/Project_Vision_and_Scope.md)
-- [Resource Plan](../Project_Resource_Plan/ResourcePlan.md)
-- [Feasibility Study](../Project_Feasibility/feasibility.md)
+- [Project Proposal](../../../Project_Proposal/Project_Proposal.md)
+- [Project Vision and Scope](../../../Project_Vision_and_Scope/Project_Vision_and_Scope.md)
+- [Resource Plan](../../../Project_Resource_Plan/ResourcePlan.md)
+- [Feasibility Study](../../../Project_Feasibility/feasibility.md)

@@ -16,7 +16,7 @@
 | Last updated | 21/08/2026 |
 | Status | Internal planning baseline; awaiting formal Sponsor approval |
 
-The proposal explains why the project should be done and how the team intends to prove that value. [Project Vision and Scope](../Project_Vision_and_Scope/Project_Vision_and_Scope.md) and [Product Backlog and Acceptance Criteria](../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md) control detailed requirements. Architecture and technical decisions belong to the relevant ADRs.
+The proposal explains why the project should be done and how the team intends to prove that value. [Project Vision and Scope](../../../Project_Vision_and_Scope/Project_Vision_and_Scope.md) and [Product Backlog and Acceptance Criteria](../../../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md) control detailed requirements. Architecture and technical decisions belong to the relevant ADRs.
 
 ## 2. Proposal summary
 
@@ -51,7 +51,7 @@ Today, candidates must infer role, seniority, and skills from the JD; search que
 - **Sponsor and project team:** Sponsors approve the baseline and major changes; the Product Owner prioritizes value; Tuấn Anh, as Project Manager / Team Leader / Timekeeper, runs the team, time, Kanban, and risks; Gia Thành maintains planning/estimation data and contributes Full-stack development.
 - **Supporting parties:** HR/content experts, universities or career clubs, Students joining UAT, and email, online meeting, OCR, or AI providers.
 
-For power, interest, and coordination details, see [Stakeholder Analysis](../Project_Governance%20%26%20Stakeholder/Stakeholder_Analysis.md).
+For power, interest, and coordination details, see [Stakeholder Analysis](../../../Project_Governance%20%26%20Stakeholder/Stakeholder_Analysis.md).
 
 ### 3.3 Pain points to verify
 
@@ -67,9 +67,9 @@ The process analysis provides a rational basis for investigating the first four 
 
 ## 4. Existing solutions and competitive context
 
-Candidates can combine job sites, Google, YouTube, blogs, ChatGPT, LeetCode, notes, social media, calendars, and Google Meet/Zoom into a manual process. Each tool solves one step, but the data does not flow through. Candidates must still re-enter information, judge sources themselves, and connect feedback to their practice plan. [Existing Tools Analysis](Existing_Tools_Analysis.md) describes this process in detail.
+Candidates can combine job sites, Google, YouTube, blogs, ChatGPT, LeetCode, notes, social media, calendars, and Google Meet/Zoom into a manual process. Each tool solves one step, but the data does not flow through. Candidates must still re-enter information, judge sources themselves, and connect feedback to their practice plan. [Existing Tools Analysis](../../../Project_Proposal/Existing_Tools_Analysis.md) describes this process in detail.
 
-The market already has question banks, peer-practice platforms, and mentor coaching services. MentorCruise, interviewing.io, Pramp/Exponent Practice, LeetCode, Mentori Vietnam, and Mentora show that each part of the need already has users. The gap the project wants to verify is not "nobody has done this", but an explainable, JD-first experience suitable for entry-level candidates in Vietnam. The full comparison is in [Competitor Analysis](Competitor_Analysis.md).
+The market already has question banks, peer-practice platforms, and mentor coaching services. MentorCruise, interviewing.io, Pramp/Exponent Practice, LeetCode, Mentori Vietnam, and Mentora show that each part of the need already has users. The gap the project wants to verify is not "nobody has done this", but an explainable, JD-first experience suitable for entry-level candidates in Vietnam. The full comparison is in [Competitor Analysis](../../../Project_Proposal/Competitor_Analysis.md).
 
 ## 5. Proposed solution and business flow
 
@@ -146,7 +146,7 @@ The extended R1 covers only a basic progress dashboard and schedule reminders. T
 - ML recommendations without deterministic guardrails.
 - Native mobile, ATS/application submission, general OCR, and multi-country marketplaces.
 
-Scope, business rules, Definition of Done, and acceptance criteria are detailed in [Project Vision and Scope](../Project_Vision_and_Scope/Project_Vision_and_Scope.md) and [Product Backlog and Acceptance Criteria](../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md).
+Scope, business rules, Definition of Done, and acceptance criteria are detailed in [Project Vision and Scope](../../../Project_Vision_and_Scope/Project_Vision_and_Scope.md) and [Product Backlog and Acceptance Criteria](../../../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md).
 
 ## 8. Time, resources, and budget
 
@@ -165,7 +165,7 @@ Scope, business rules, Definition of Done, and acceptance criteria are detailed 
 
 134 SP is not yet a delivery commitment. The development team must run Planning Poker per story, update the two independent estimates, and use the actual throughput range to confirm the scope can be completed.
 
-The six project phases are Discovery/Charter, Requirement/Prototype, Foundation, JD intake & analysis, Mentor core loop, and UAT/Release. Milestones, assignments, and detailed costs are in [Project Charter](../Project_Governance%20%26%20Stakeholder/Project_Charter.md), [Resource Plan](../Project_Resource_Plan/ResourcePlan.md), and [Cost, Time and Resources](../Project_Resource_Plan/Cost_Time_Resources.md).
+The six project phases are Discovery/Charter, Requirement/Prototype, Foundation, JD intake & analysis, Mentor core loop, and UAT/Release. Milestones, assignments, and detailed costs are in [Project Charter](../../../Project_Governance%20%26%20Stakeholder/Project_Charter.md), [Resource Plan](../../../Project_Resource_Plan/ResourcePlan.md), and [Cost, Time and Resources](../../../Project_Resource_Plan/Cost_Time_Resources.md).
 
 ## 9. Feasibility and key risks
 
@@ -191,7 +191,7 @@ The six project phases are Discovery/Charter, Requirement/Prototype, Foundation,
 | Scope beyond baseline | AI/video/payment stories pulled into Ready or forecast beyond 653 hours | Change control, cut Should/Could, and rebaseline |
 | Pilot lacks evidence | Not enough Students, JDs, or bookings before the gates | Recruit from discovery and use a supported pilot when needed |
 
-The full analysis and seven Go/No-Go gates are in [Feasibility Study](../Project_Feasibility/feasibility.md).
+The full analysis and seven Go/No-Go gates are in [Feasibility Study](../../../Project_Feasibility/feasibility.md).
 
 ## 10. Expected outcomes and evaluation method
 
@@ -234,15 +234,15 @@ Before the pilot release, the team needs:
 
 ### 11.3 Reference documents
 
-- [Project Charter](../Project_Governance%20%26%20Stakeholder/Project_Charter.md)
-- [Project Vision and Scope](../Project_Vision_and_Scope/Project_Vision_and_Scope.md)
-- [Product Backlog and Acceptance Criteria](../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md)
-- [Product Decision Estimation Notes](../Project_Vision_and_Scope/Product_Decision_Estimation_Notes.md)
-- [Feasibility Study](../Project_Feasibility/feasibility.md)
-- [Cost, Time and Resources](../Project_Resource_Plan/Cost_Time_Resources.md)
-- [Software Architecture](../Project_Architecture/software_architecture.md)
-- [ADR-004 — JD Processing and Question Matching](../Project_Architecture/ADR/ADR-004-JD-Processing-and-Question-Matching.md)
-- [ADR-005 — Hybrid Gemini Assistance](../Project_Architecture/ADR/ADR-005-Hybrid-Gemini-Assistance.md)
+- [Project Charter](../../../Project_Governance%20%26%20Stakeholder/Project_Charter.md)
+- [Project Vision and Scope](../../../Project_Vision_and_Scope/Project_Vision_and_Scope.md)
+- [Product Backlog and Acceptance Criteria](../../../Project_Vision_and_Scope/Product_Backlog_and_Acceptance_Criteria.md)
+- [Product Decision Estimation Notes](../../../Project_Vision_and_Scope/Product_Decision_Estimation_Notes.md)
+- [Feasibility Study](../../../Project_Feasibility/feasibility.md)
+- [Cost, Time and Resources](../../../Project_Resource_Plan/Cost_Time_Resources.md)
+- [Software Architecture](../../../Project_Architecture/software_architecture.md)
+- [ADR-004 — JD Processing and Question Matching](../../../Project_Architecture/ADR/ADR-004-JD-Processing-and-Question-Matching.md)
+- [ADR-005 — Hybrid Gemini Assistance](../../../Project_Architecture/ADR/ADR-005-Hybrid-Gemini-Assistance.md)
 
 The proposal follows guidance from `docs/refs/02-software-project.md` (slide 032), `docs/refs/03-1-business-requirements.md` (slides 005 and 066), `docs/refs/03-software-project-initiation.md` (slides 015, 022–023) and `docs/refs/03-2-user-requirements.md` (slide 017).
 

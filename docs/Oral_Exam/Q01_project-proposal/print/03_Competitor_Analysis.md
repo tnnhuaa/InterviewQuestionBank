@@ -50,7 +50,7 @@ The market already demonstrates demand for question banks, peer practice, and me
 4. Rubric-based feedback creates clearer next actions than free-form feedback and updates the same plan.
 5. Student affordability and mentor incentives must be researched after the free pilot; they cannot be inferred from it.
 
-These hypotheses trace to the business case, KPIs, and Go/Pivot/Stop criteria in the [Project Proposal](Project_Proposal.md). They are not proven advantages.
+These hypotheses trace to the business case, KPIs, and Go/Pivot/Stop criteria in the [Project Proposal](../../../Project_Proposal/Project_Proposal.md). They are not proven advantages.
 
 ## 7. Workflow screenshots
 
