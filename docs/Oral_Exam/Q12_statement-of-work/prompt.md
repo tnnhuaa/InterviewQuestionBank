@@ -12,7 +12,7 @@ Mục Trích dẫn (References): Ở phần cuối cùng của bản SOW, bắt 
 Yêu cầu ở mục này: Hãy chỉ rõ và liệt kê chi tiết các thông tin, dữ kiện hoặc format bạn dùng trong SOW được lấy từ đâu (lấy từ slide bài giảng nào, file .md nào trong thư mục docs/, và nằm ở cụ thể đoạn/khúc nào trong file đó).
 
 
-""Tôi đang làm câu 12  trong [%C4%90%E1%BB%81-c%E1%BB%A7a-th%E1%BA%A7y.md](file;file:///d%3A/HCMUS/Nam_III_HK3/Software%20Project%20Management/InterviewQuestionBank/docs/slides/%C4%90%E1%BB%81-c%E1%BB%A7a-th%E1%BA%A7y.md)  về statement of work . 
-Reference: Tham khảo từ slide tôi để mọi thứ ở đây [slides](file;file:///d%3A/HCMUS/Nam_III_HK3/Software%20Project%20Management/InterviewQuestionBank/docs/slides)  và template [template](file;file:///d%3A/HCMUS/Nam_III_HK3/Software%20Project%20Management/InterviewQuestionBank/docs/Oral_Exam/template) 
-Task: Tôi muốn bạn lên plan cho tôi vào trong [Q11_project-plan.md](file;file:///d%3A/HCMUS/Nam_III_HK3/Software%20Project%20Management/InterviewQuestionBank/docs/Oral_Exam/Q11_project-plan/Q11_project-plan.md) . Chỉ rõ cho tôi cuối cùng ở cuối plan đó Mục reference bạn đến từ slide nào, chỗ hoặc file .md nào khúc nào "
+""Tôi đang làm câu 12  trong [Task_Final.md](../Task_Final.md)  về statement of work . 
+Reference: Tham khảo từ slide tôi để mọi thứ ở đây [refs](../../refs)  và template [template](../template) 
+Task: Tôi muốn bạn lên plan cho tôi vào trong [Q11_project-plan.md](../Q11_project-plan/Q11_project-plan.md) . Chỉ rõ cho tôi cuối cùng ở cuối plan đó Mục reference bạn đến từ slide nào, chỗ hoặc file .md nào khúc nào "
 --> Tôi muốn bạn chỉnh prompt lại cho tôi "
